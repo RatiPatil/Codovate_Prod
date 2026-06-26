@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const pool = require("../config/db");
+const { db } = require("../config/firebase");
 const auth = require("../middleware/auth");
 
 router.post("/save", auth, async (req, res) => {
@@ -16,80 +16,49 @@ router.post("/save", auth, async (req, res) => {
 
     console.log("📥 Saving onboarding for user:", req.user.id);
 
-    // Update name in users table
     if (full_name) {
-      await pool.query(
-        "UPDATE users SET name = $1 WHERE id = $2",
-        [full_name, req.user.id]
-      );
+      await db.collection("users").doc(req.user.id).update({ name: full_name });
     }
 
-    // Make sure student row exists
-    const check = await pool.query(
-      "SELECT id FROM students WHERE user_id = $1",
-      [req.user.id]
-    );
-    if (check.rows.length === 0) {
-      await pool.query(
-        "INSERT INTO students (user_id) VALUES ($1)",
-        [req.user.id]
-      );
-    }
-
-    // Clean the values
     const cleanYear = year ? parseInt(year) : null;
-    const cleanCompletion = profile_completion !== undefined && profile_completion !== "" 
-      ? parseInt(profile_completion) 
-      : null;
-    const cleanInterests = Array.isArray(career_interests) && career_interests.length > 0 
-      ? career_interests 
-      : null;
-    const cleanSkills = Array.isArray(skills) && skills.length > 0 
-      ? skills 
-      : null;
+    const cleanCompletion = profile_completion !== undefined && profile_completion !== ""
+      ? parseInt(profile_completion) : null;
+    const cleanInterests = Array.isArray(career_interests) && career_interests.length > 0
+      ? career_interests : null;
+    const cleanSkills = Array.isArray(skills) && skills.length > 0
+      ? skills : null;
 
-    await pool.query(
-      `UPDATE students SET
-        full_name         = COALESCE($1,  full_name),
-        phone             = COALESCE($2,  phone),
-        city              = COALESCE($3,  city),
-        college           = COALESCE($4,  college),
-        branch            = COALESCE($5,  branch),
-        year              = COALESCE($6,  year),
-        career_goal       = COALESCE($7,  career_goal),
-        career_interests  = COALESCE($8,  career_interests),
-        experience_level  = COALESCE($9,  experience_level),
-        skills            = COALESCE($10, skills),
-        portfolio_url     = COALESCE($11, portfolio_url),
-        github_url        = COALESCE($12, github_url),
-        linkedin_url      = COALESCE($13, linkedin_url),
-        bio               = COALESCE($14, bio),
-        profile_completion   = COALESCE($15, profile_completion),
-        onboarding_completed = COALESCE($16, onboarding_completed)
-      WHERE user_id = $17`,
-      [
-        full_name        || null,
-        phone            || null,
-        city             || null,
-        college          || null,
-        branch           || null,
-        cleanYear,
-        career_goal      || null,
-        cleanInterests,
-        experience_level || null,
-        cleanSkills,
-        portfolio_url    || null,
-        github_url       || null,
-        linkedin_url     || null,
-        bio              || null,
-        cleanCompletion,
-        onboarding_completed !== undefined ? onboarding_completed : null,
-        req.user.id,
-      ]
-    );
+    const updateData = {
+      full_name: full_name || null,
+      phone: phone || null,
+      city: city || null,
+      college: college || null,
+      branch: branch || null,
+      year: cleanYear,
+      career_goal: career_goal || null,
+      career_interests: cleanInterests,
+      experience_level: experience_level || null,
+      skills: cleanSkills,
+      portfolio_url: portfolio_url || null,
+      github_url: github_url || null,
+      linkedin_url: linkedin_url || null,
+      bio: bio || null,
+      profile_completion: cleanCompletion,
+      onboarding_completed: onboarding_completed !== undefined ? onboarding_completed : null,
+      user_id: req.user.id
+    };
+
+    // Remove undefined and null if you want clean docs, but keeping null to match previous coalesce logic
+    Object.keys(updateData).forEach(k => {
+      if (updateData[k] === undefined || updateData[k] === null) {
+        delete updateData[k];
+      }
+    });
+
+    await db.collection("student_profiles").doc(req.user.id).set(updateData, { merge: true });
 
     console.log("✅ Onboarding saved successfully");
-    res.json({ message: "Saved successfully.", profile_completion: cleanCompletion });
+    res.json({ message: "Saved.", profile_completion: cleanCompletion });
 
   } catch (err) {
     console.error("❌ Onboarding save error:", err.message);
@@ -99,19 +68,22 @@ router.post("/save", auth, async (req, res) => {
 
 router.get("/status", auth, async (req, res) => {
   try {
-    const result = await pool.query(
-      `SELECT s.onboarding_completed, s.profile_completion, u.name, u.email
-       FROM students s
-       JOIN users u ON u.id = s.user_id
-       WHERE s.user_id = $1`,
-      [req.user.id]
-    );
+    const profileDoc = await db.collection("student_profiles").doc(req.user.id).get();
+    const userDoc = await db.collection("users").doc(req.user.id).get();
 
-    if (result.rows.length === 0) {
+    if (!profileDoc.exists) {
       return res.json({ onboarding_completed: false, profile_completion: 0 });
     }
 
-    res.json(result.rows[0]);
+    const sp = profileDoc.data();
+    const u = userDoc.exists ? userDoc.data() : {};
+
+    res.json({
+      onboarding_completed: sp.onboarding_completed || false,
+      profile_completion: sp.profile_completion || 0,
+      name: u.name,
+      email: u.email
+    });
   } catch (err) {
     console.error("❌ Status error:", err.message);
     res.status(500).json({ message: "Server error: " + err.message });

@@ -1,8 +1,10 @@
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const ProtectedRoute = ({ children, requireOnboarding = true }) => {
-  const { token, loading, onboardingCompleted } = useAuth();
+  const { user, token, loading, onboardingCompleted } = useAuth();
+
+  const location = useLocation();
 
   if (loading || (token && onboardingCompleted === null)) {
     return (
@@ -12,9 +14,16 @@ const ProtectedRoute = ({ children, requireOnboarding = true }) => {
     );
   }
 
-  if (!token) return <Navigate to="/login" replace />;
+  if (!token) {
+    if (location.pathname.startsWith('/admin')) {
+      return <Navigate to="/admin-login" replace />;
+    }
+    return <Navigate to="/login" replace />;
+  }
 
-  if (requireOnboarding && onboardingCompleted === false) {
+  const isAdmin = user?.role === 'admin' || user?.role === 'super_admin' || user?.role === 'college_admin' || user?.role === 'company_admin';
+
+  if (requireOnboarding && onboardingCompleted === false && !isAdmin) {
     return <Navigate to="/onboarding" replace />;
   }
 

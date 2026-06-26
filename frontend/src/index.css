@@ -1,7 +1,14 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
+@tailwind utilities;
+
+@keyframes scroll-down {
+  0% { transform: translateY(-100%); }
+  50% { transform: translateY(100%); }
+  100% { transform: translateY(100%); }
+}
 @tailwind utilities;
 
 * {
@@ -14,15 +21,45 @@ body {
   background-color: #000000;
   color: #ffffff;
   font-family: 'Inter', sans-serif;
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Outfit', sans-serif;
 }
 
 ::-webkit-scrollbar {
-  width: 5px;
+  width: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #111;
+  background: #0a0a0a;
 }
 ::-webkit-scrollbar-thumb {
   background: #2015ff;
-  border-radius: 4px;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #4035ff;
+}
+
+/* Glassmorphism Utilities */
+@layer utilities {
+  .glass-panel {
+    @apply bg-white/5 backdrop-blur-lg border border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.1)];
+  }
+  .glass-card {
+    @apply bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl transition-all duration-300 hover:bg-white/10 hover:-translate-y-1 hover:border-primary/50 hover:shadow-[0_8px_32px_rgba(32,21,255,0.2)];
+  }
+  .btn-primary {
+    @apply bg-primary text-white font-medium px-6 py-2 rounded-full transition-all duration-300 hover:bg-primary-light hover:shadow-[0_0_20px_rgba(32,21,255,0.4)] active:scale-95;
+  }
+  .btn-secondary {
+    @apply bg-white/10 text-white font-medium px-6 py-2 rounded-full backdrop-blur-md border border-white/20 transition-all duration-300 hover:bg-white/20 hover:border-white/40 active:scale-95;
+  }
+  .input-glass {
+    @apply bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-300;
+  }
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary via-primary-light to-white;
+  }
 }

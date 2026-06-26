@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 import { useAuth } from './AuthContext';
 
-const SocketContext = createContext();
+const SocketContext = createContext({ socket: null, isConnected: false });
 
 export const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
@@ -21,23 +21,17 @@ export const SocketProvider = ({ children }) => {
 
     newSocket.on('connect', () => {
       setIsConnected(true);
-      console.log('⚡ Real-time connected');
-
-      // Join user room and global room
       if (user?.id) newSocket.emit('join', user.id);
+      if (user?.role && user.role.includes('admin') || user?.role === 'mentor') {
+        newSocket.emit('join_admin', { role: user.role, id: user.id });
+      }
       newSocket.emit('join_global');
     });
 
-    newSocket.on('disconnect', () => {
-      setIsConnected(false);
-      console.log('❌ Real-time disconnected');
-    });
+    newSocket.on('disconnect', () => setIsConnected(false));
 
     setSocket(newSocket);
-
-    return () => {
-      newSocket.disconnect();
-    };
+    return () => newSocket.disconnect();
   }, [token, user]);
 
   return (

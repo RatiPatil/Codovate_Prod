@@ -8,19 +8,43 @@ const Signup = () => {
   const [form, setForm] = useState({ name: '', email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
-  const cardRef = useRef(null);
+  
+  const formRef = useRef(null);
   const bgRef = useRef(null);
+  const infoRef = useRef(null);
+
+  const handleGoogleLogin = async () => {
+    setError('');
+    try {
+      await loginWithGoogle();
+      navigate('/onboarding');
+    } catch (err) {
+      setError(err.response?.data?.message || 'Google signup failed.');
+    }
+  };
 
   useEffect(() => {
-    gsap.fromTo(bgRef.current,
-      { opacity: 0, scale: 0.9 },
-      { opacity: 1, scale: 1, duration: 1, ease: 'power2.out' }
+    const tl = gsap.timeline();
+
+    tl.fromTo(bgRef.current,
+      { opacity: 0, scale: 1.1 },
+      { opacity: 1, scale: 1, duration: 1.2, ease: 'power2.out' }
     );
-    gsap.fromTo(cardRef.current,
-      { y: 40, opacity: 0 },
-      { y: 0, opacity: 1, duration: 0.8, ease: 'power3.out', delay: 0.2 }
+
+    if (infoRef.current) {
+      tl.fromTo(infoRef.current.children,
+        { y: 30, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.8, stagger: 0.15, ease: 'power3.out' },
+        '-=0.8'
+      );
+    }
+
+    tl.fromTo(formRef.current,
+      { x: 30, opacity: 0 },
+      { x: 0, opacity: 1, duration: 0.8, ease: 'power3.out' },
+      '-=0.6'
     );
   }, []);
 
@@ -35,7 +59,7 @@ const Signup = () => {
       navigate('/onboarding');
     } catch (err) {
       setError(err.response?.data?.message || 'Signup failed. Try again.');
-      gsap.fromTo(cardRef.current,
+      gsap.fromTo(formRef.current,
         { x: -8 },
         { x: 0, duration: 0.4, ease: 'elastic.out(1, 0.3)' }
       );
@@ -45,111 +69,158 @@ const Signup = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center px-4 relative overflow-hidden">
-
-      {/* Background glow */}
-      <div ref={bgRef} className="absolute inset-0 pointer-events-none"
-        style={{
-          background: 'radial-gradient(ellipse at 50% 40%, rgba(32,21,255,0.14) 0%, transparent 60%)',
-        }}
-      />
-
-      {/* Grid pattern */}
-      <div className="absolute inset-0 pointer-events-none opacity-20"
-        style={{
-          backgroundImage: `linear-gradient(rgba(32,21,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(32,21,255,0.1) 1px, transparent 1px)`,
-          backgroundSize: '50px 50px',
-        }}
-      />
-
-      <div ref={cardRef} className="w-full max-w-md relative z-10 py-8">
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <Link to="/" className="inline-flex items-center gap-2 mb-6">
-            <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-primary/30">C</div>
-            <span className="text-white font-bold text-xl">Codovate</span>
-          </Link>
-          <h1 className="text-2xl md:text-3xl font-bold text-white">Create your account</h1>
-          <p className="text-gray-400 text-sm mt-2">Join 10,000+ students growing their careers</p>
+    <div className="min-h-screen bg-black flex overflow-hidden">
+      
+      {/* Left Column: Branding / Info (Hidden on mobile) */}
+      <div className="hidden lg:flex w-1/2 relative flex-col justify-between p-12 border-r border-white/5">
+        
+        {/* Animated Background */}
+        <div ref={bgRef} className="absolute inset-0 z-0 overflow-hidden">
+          <div className="absolute inset-0 bg-black/40 z-10 backdrop-blur-[2px]" />
+          <div className="absolute top-0 left-0 w-full h-full opacity-20"
+            style={{
+              backgroundImage: 'url("https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=2070&auto=format&fit=crop")',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+            }}
+          />
+          <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-black to-transparent z-10" />
+          <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-primary/20 rounded-full blur-[120px] z-0" />
         </div>
 
-        {/* Card */}
-        <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-8 shadow-2xl"
-          style={{ boxShadow: '0 0 40px rgba(32,21,255,0.08)' }}>
+        <div className="relative z-20">
+          <Link to="/" className="inline-flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-primary/30">C</div>
+            <span className="text-white font-bold text-2xl tracking-tight">Codovate</span>
+          </Link>
+        </div>
 
-          {error && (
-            <div className="mb-5 p-3.5 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm flex items-center gap-2">
-              <span>⚠️</span> {error}
+        <div ref={infoRef} className="relative z-20 max-w-lg mb-12">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 mb-6 backdrop-blur-md">
+            <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
+            <span className="text-gray-300 text-xs font-semibold tracking-wide uppercase">Join the community</span>
+          </div>
+          <h1 className="text-5xl font-bold text-white leading-[1.1] mb-6">
+            Build your <br/>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-[#a78bfa]">future today</span>
+          </h1>
+          <p className="text-gray-400 text-lg leading-relaxed mb-8">
+            Stop waiting for opportunities to come to you. Create your free account and get access to top tier-1 internships, hackathons, and a community of builders.
+          </p>
+          <div className="flex items-center gap-4">
+            <div className="flex -space-x-3">
+              {[5,6,7,8].map(i => (
+                <div key={i} className="w-10 h-10 rounded-full border-2 border-black bg-gray-800 flex items-center justify-center overflow-hidden">
+                  <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${i+20}`} alt="student" className="w-full h-full object-cover" />
+                </div>
+              ))}
             </div>
-          )}
+            <p className="text-gray-400 text-sm font-medium">Join 10,000+ top students</p>
+          </div>
+        </div>
+      </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-xs text-gray-400 mb-2 font-medium">Full Name</label>
-              <input
-                type="text"
-                value={form.name}
-                onChange={e => setForm({ ...form, name: e.target.value })}
-                placeholder="John Doe"
-                required
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200"
-              />
-            </div>
+      {/* Right Column: Signup Form */}
+      <div className="w-full lg:w-1/2 flex flex-col justify-center items-center p-6 relative">
+        
+        {/* Mobile Logo */}
+        <div className="lg:hidden absolute top-8 left-8">
+          <Link to="/" className="inline-flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white font-bold text-sm">C</div>
+            <span className="text-white font-bold text-lg">Codovate</span>
+          </Link>
+        </div>
 
-            <div>
-              <label className="block text-xs text-gray-400 mb-2 font-medium">Email Address</label>
-              <input
-                type="email"
-                value={form.email}
-                onChange={e => setForm({ ...form, email: e.target.value })}
-                placeholder="you@example.com"
-                required
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs text-gray-400 mb-2 font-medium">Password</label>
-              <input
-                type="password"
-                value={form.password}
-                onChange={e => setForm({ ...form, password: e.target.value })}
-                placeholder="Min 6 characters"
-                required
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200"
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-primary hover:bg-primary-dark text-white font-semibold py-3.5 rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:scale-[1.02] active:scale-[0.98] mt-2"
-            >
-              {loading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Creating account...
-                </span>
-              ) : 'Create Free Account'}
-            </button>
-          </form>
-
-          {/* Divider */}
-          <div className="flex items-center gap-3 my-6">
-            <div className="flex-1 h-px bg-white/10" />
-            <span className="text-gray-600 text-xs">Already have an account?</span>
-            <div className="flex-1 h-px bg-white/10" />
+        <div ref={formRef} className="w-full max-w-md">
+          <div className="mb-8">
+            <h2 className="text-3xl font-bold text-white mb-2">Create an account</h2>
+            <p className="text-gray-400 text-sm">Start your career journey with Codovate</p>
           </div>
 
-          <Link to="/login"
-            className="block w-full text-center bg-white/5 hover:bg-white/10 border border-white/10 text-white font-medium py-3.5 rounded-xl transition-all duration-200 text-sm hover:border-white/20">
-            Sign In Instead
-          </Link>
-        </div>
+          <div className="glass-panel p-8 rounded-2xl relative overflow-hidden">
+            <div className="absolute top-[-50px] right-[-50px] w-32 h-32 bg-primary/20 blur-[50px] rounded-full pointer-events-none" />
+            
+            {error && (
+              <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm flex items-center gap-3 font-semibold">
+                <span>⚠️</span> {error}
+              </div>
+            )}
 
-        <p className="text-center text-gray-600 text-xs mt-6">
-          <Link to="/" className="hover:text-gray-400 transition-colors">← Back to home</Link>
-        </p>
+            <form onSubmit={handleSubmit} className="space-y-4 relative z-10">
+              <div>
+                <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Full Name</label>
+                <input
+                  type="text"
+                  value={form.name}
+                  onChange={e => setForm({ ...form, name: e.target.value })}
+                  placeholder="John Doe"
+                  required
+                  className="input-glass w-full py-4 px-4 text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Email Address</label>
+                <input
+                  type="email"
+                  value={form.email}
+                  onChange={e => setForm({ ...form, email: e.target.value })}
+                  placeholder="you@example.com"
+                  required
+                  className="input-glass w-full py-4 px-4 text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Password</label>
+                <input
+                  type="password"
+                  value={form.password}
+                  onChange={e => setForm({ ...form, password: e.target.value })}
+                  placeholder="Min 6 characters"
+                  required
+                  className="input-glass w-full py-4 px-4 text-sm"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="btn-primary w-full py-4 disabled:opacity-50 mt-2 text-sm font-bold tracking-wide shadow-lg shadow-primary/20"
+              >
+                {loading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Creating account...
+                  </span>
+                ) : 'Create Free Account'}
+              </button>
+            </form>
+
+            <div className="flex items-center gap-3 my-8 relative z-10">
+              <div className="flex-1 h-px bg-white/10" />
+              <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">Or sign up with</span>
+              <div className="flex-1 h-px bg-white/10" />
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 relative z-10">
+              <button type="button" onClick={handleGoogleLogin} className="flex items-center justify-center gap-2 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all text-sm font-semibold text-white">
+                <svg className="w-5 h-5" viewBox="0 0 24 24">
+                  <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                  <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                  <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                  <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                </svg>
+                Continue with Google
+              </button>
+            </div>
+          </div>
+
+          <p className="text-center text-gray-500 text-sm mt-8">
+            Already have an account?{' '}
+            <Link to="/login" className="text-white hover:text-primary font-bold transition-colors">Sign in</Link>
+          </p>
+        </div>
       </div>
     </div>
   );

@@ -5,11 +5,11 @@ import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 
 const STEPS = [
-  { id: 1, title: 'Personal Info', icon: '👤', desc: 'Tell us about yourself' },
-  { id: 2, title: 'Academic', icon: '🎓', desc: 'Your education details' },
-  { id: 3, title: 'Career Goal', icon: '🎯', desc: 'What you want to achieve' },
-  { id: 4, title: 'Skills', icon: '⚡', desc: 'What you are good at' },
-  { id: 5, title: 'Portfolio', icon: '🔗', desc: 'Show your work' },
+  { id: 1, title: 'Personal Info', icon: '👤', desc: 'Basic information about you' },
+  { id: 2, title: 'Academic Details', icon: '🎓', desc: 'Your college and education' },
+  { id: 3, title: 'Career Goal', icon: '🎯', desc: 'Where you want to go' },
+  { id: 4, title: 'Skills', icon: '⚡', desc: 'Your technical strengths' },
+  { id: 5, title: 'Portfolio', icon: '🔗', desc: 'Your work and presence' },
 ];
 
 const CAREER_GOALS = [
@@ -33,122 +33,233 @@ const ALL_SKILLS = [
   'JavaScript', 'Python', 'Java', 'C++', 'React', 'Node.js',
   'SQL', 'MongoDB', 'AWS', 'Docker', 'Git', 'TypeScript',
   'Flutter', 'Kotlin', 'Swift', 'Machine Learning', 'TensorFlow',
-  'Figma', 'Photoshop', 'Linux', 'GraphQL', 'Next.js',
+  'Figma', 'Photoshop', 'Linux', 'GraphQL', 'Next.js', 'Django',
 ];
 
 const EXPERIENCE_LEVELS = [
-  { value: 'beginner', label: 'Beginner', desc: 'Just starting out', icon: '🌱' },
-  { value: 'intermediate', label: 'Intermediate', desc: '1-2 years of learning', icon: '📈' },
-  { value: 'advanced', label: 'Advanced', desc: '3+ years experience', icon: '🏆' },
+  { value: 'beginner', label: 'Beginner', desc: 'Just starting out, learning basics', icon: '🌱' },
+  { value: 'intermediate', label: 'Intermediate', desc: '1-2 years, built some projects', icon: '📈' },
+  { value: 'advanced', label: 'Advanced', desc: '3+ years, production experience', icon: '🏆' },
 ];
 
+// Validation rules per step
+const validateStep = (step, data) => {
+  const errors = {};
+
+  if (step === 1) {
+    if (!data.full_name || data.full_name.trim().length < 2)
+      errors.full_name = 'Full name must be at least 2 characters';
+    if (data.phone && !/^[+]?[\d\s-]{10,15}$/.test(data.phone))
+      errors.phone = 'Enter a valid phone number';
+    if (!data.city || data.city.trim().length < 2)
+      errors.city = 'Please enter your city';
+  }
+
+  if (step === 2) {
+    if (!data.college || data.college.trim().length < 3)
+      errors.college = 'Please enter your college name';
+    if (!data.branch || data.branch.trim().length < 2)
+      errors.branch = 'Please enter your branch';
+    if (!data.year)
+      errors.year = 'Please select your year of study';
+  }
+
+  if (step === 3) {
+    if (!data.career_goal)
+      errors.career_goal = 'Please select your career goal';
+    if (data.career_interests.length === 0)
+      errors.career_interests = 'Select at least one area of interest';
+  }
+
+  if (step === 4) {
+    if (!data.experience_level)
+      errors.experience_level = 'Please select your experience level';
+    if (data.skills.length < 2)
+      errors.skills = 'Select at least 2 skills';
+  }
+
+  if (step === 5) {
+    if (!data.bio || data.bio.trim().length < 20)
+      errors.bio = 'Bio must be at least 20 characters';
+  }
+
+  return errors;
+};
+
+const InputField = ({ label, field, placeholder, type = 'text', required = false, data, update, touched, setTouched, errors }) => (
+  <div>
+    <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">
+      {label} {required && <span className="text-red-400">*</span>}
+    </label>
+    <input
+      type={type}
+      value={data[field]}
+      onChange={e => update(field, e.target.value)}
+      onBlur={() => setTouched(t => ({ ...t, [field]: true }))}
+      placeholder={placeholder}
+      className={`w-full bg-white/5 border rounded-xl px-4 py-3.5 text-white placeholder-gray-600 text-sm focus:outline-none focus:ring-2 transition-all duration-200 ${
+        errors[field] && touched[field]
+          ? 'border-red-500/60 focus:ring-red-500/20 focus:border-red-500'
+          : 'border-white/10 focus:ring-primary/20 focus:border-primary'
+      }`}
+    />
+    {errors[field] && touched[field] && (
+      <p className="text-red-400 text-xs mt-1.5 flex items-center gap-1">
+        <span>⚠</span> {errors[field]}
+      </p>
+    )}
+  </div>
+);
+
 export default function Onboarding() {
+  const { completeOnboarding } = useAuth();
   const [step, setStep] = useState(1);
-  const [saving, setSaving] = useState(false);
   const [data, setData] = useState({
     full_name: '', phone: '', city: '',
     college: '', branch: '', year: '',
-    career_goal: '', career_interests: [], experience_level: '',
-    skills: [],
-    portfolio_url: '', github_url: '', linkedin_url: '', bio: '',
+    career_goal: '', career_interests: [],
+    experience_level: '', skills: [],
+    bio: '', github_url: '', linkedin_url: '', portfolio_url: ''
   });
-
-  const { completeOnboarding, user } = useAuth();
+  const [touched, setTouched] = useState({});
+  const [errors, setErrors] = useState({});
+  const [saving, setSaving] = useState(false);
   const navigate = useNavigate();
   const cardRef = useRef(null);
+  const contentRef = useRef(null);
 
-  useEffect(() => {
-    if (user?.name) setData(d => ({ ...d, full_name: d.full_name || user.name }));
-  }, [user]);
-
-  useEffect(() => {
-    if (cardRef.current) {
-      gsap.fromTo(cardRef.current,
-        { opacity: 0, y: 24 },
-        { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' }
-      );
+  const update = (field, value) => {
+    setData(prev => ({ ...prev, [field]: value }));
+    if (touched[field]) {
+      setErrors(validateStep(step, { ...data, [field]: value }));
     }
-  }, [step]);
-
-  const toggleItem = (key, value) => {
-    setData(d => ({
-      ...d,
-      [key]: d[key].includes(value)
-        ? d[key].filter(i => i !== value)
-        : [...d[key], value]
-    }));
   };
 
-  const saveStep = async (isLast = false) => {
-    setSaving(true);
-    try {
-      const finalCompletion = isLast ? 100 : Math.round((step / STEPS.length) * 100);
-      await api.post('/onboarding/save', {
-        ...data,
-        skills: data.skills,
-        career_interests: data.career_interests,
-        profile_completion: finalCompletion,
-        onboarding_completed: isLast,
-      });
-      if (isLast) {
+  const toggleItem = (field, item) => {
+    setData(prev => {
+      const list = prev[field];
+      const updated = list.includes(item) ? list.filter(i => i !== item) : [...list, item];
+      return { ...prev, [field]: updated };
+    });
+  };
+
+  const handleNext = async () => {
+    const stepErrors = validateStep(step, data);
+    if (Object.keys(stepErrors).length > 0) {
+      setErrors(stepErrors);
+      const allTouched = {};
+      Object.keys(stepErrors).forEach(k => allTouched[k] = true);
+      setTouched(t => ({ ...t, ...allTouched }));
+      
+      gsap.fromTo(cardRef.current,
+        { x: -8 },
+        { x: 0, duration: 0.4, ease: 'elastic.out(1, 0.3)' }
+      );
+      return;
+    }
+
+    if (step < STEPS.length) {
+      const tl = gsap.timeline();
+      tl.to(contentRef.current, { x: -50, opacity: 0, duration: 0.25, ease: 'power2.in' })
+        .call(() => {
+          setStep(s => s + 1);
+          setTouched({});
+          setErrors({});
+        })
+        .fromTo(contentRef.current, { x: 50, opacity: 0 }, { x: 0, opacity: 1, duration: 0.35, ease: 'power2.out' });
+    } else {
+      setSaving(true);
+      try {
+        await api.post('/onboarding/save', { ...data, onboarding_completed: true });
         completeOnboarding();
         navigate('/dashboard');
-      } else {
-        setStep(s => s + 1);
+      } catch (err) {
+        console.error(err);
+        alert('Failed to save profile');
+      } finally {
+        setSaving(false);
       }
-    } catch (err) {
-      console.error('Onboarding save error:', err);
-    } finally {
-      setSaving(false);
     }
   };
+  
+  const handleBack = () => {
+    if (step > 1) {
+      const tl = gsap.timeline();
+      tl.to(contentRef.current, { x: 50, opacity: 0, duration: 0.25, ease: 'power2.in' })
+        .call(() => {
+          setStep(s => s - 1);
+          setTouched({});
+          setErrors({});
+        })
+        .fromTo(contentRef.current, { x: -50, opacity: 0 }, { x: 0, opacity: 1, duration: 0.35, ease: 'power2.out' });
+    }
+  };
+
+  useEffect(() => {
+    gsap.fromTo(cardRef.current,
+      { y: 40, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.8, ease: 'power3.out' }
+    );
+  }, []);
 
   return (
     <div className="min-h-screen bg-black flex flex-col relative overflow-hidden">
       {/* Background */}
       <div className="absolute inset-0 pointer-events-none"
-        style={{ background: 'radial-gradient(ellipse at 50% 0%, rgba(32,21,255,0.12) 0%, transparent 60%)' }} />
-      <div className="absolute inset-0 pointer-events-none opacity-10"
+        style={{ background: 'radial-gradient(ellipse at 50% 0%, rgba(32,21,255,0.10) 0%, transparent 60%)' }} />
+      <div className="absolute inset-0 pointer-events-none opacity-[0.07]"
         style={{
-          backgroundImage: `linear-gradient(rgba(32,21,255,0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(32,21,255,0.15) 1px, transparent 1px)`,
-          backgroundSize: '60px 60px',
+          backgroundImage: `linear-gradient(rgba(32,21,255,0.8) 1px, transparent 1px), linear-gradient(90deg, rgba(32,21,255,0.8) 1px, transparent 1px)`,
+          backgroundSize: '50px 50px',
         }} />
 
       {/* Top Bar */}
-      <div className="relative z-10 flex items-center justify-between px-6 py-5 border-b border-white/5">
+      <div className="relative z-10 flex items-center justify-between px-6 py-4 border-b border-white/5 bg-black/40 backdrop-blur-sm">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-primary/30">C</div>
           <span className="text-white font-bold text-lg">Codovate</span>
         </div>
-        <div className="text-gray-500 text-sm">
-          Step <span className="text-white font-semibold">{step}</span> of {STEPS.length}
+        <div className="flex items-center gap-3">
+          <span className="text-gray-500 text-sm hidden sm:block">Setting up your profile</span>
+          <div className="bg-white/5 border border-white/10 rounded-full px-3 py-1">
+            <span className="text-white text-xs font-bold">{step}</span>
+            <span className="text-gray-500 text-xs">/{STEPS.length}</span>
+          </div>
         </div>
       </div>
 
       {/* Progress Bar */}
-      <div className="relative z-10 h-1 bg-white/5">
+      <div className="relative z-10 h-0.5 bg-white/5">
         <div
-          className="h-full bg-primary transition-all duration-700 ease-out"
+          className="h-full bg-primary transition-all duration-700 ease-out shadow-lg shadow-primary/50"
           style={{ width: `${(step / STEPS.length) * 100}%` }}
         />
       </div>
 
       <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 py-8">
+
         {/* Step Indicators */}
-        <div className="flex items-center gap-2 mb-10">
+        <div className="flex items-center gap-1.5 mb-8">
           {STEPS.map((s, i) => (
-            <div key={s.id} className="flex items-center gap-2">
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 ${
+            <div key={s.id} className="flex items-center gap-1.5">
+              <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-300 ${
                 step > s.id
-                  ? 'bg-primary text-white shadow-md shadow-primary/30'
+                  ? 'bg-primary/20 text-primary border border-primary/30'
                   : step === s.id
-                  ? 'bg-primary text-white ring-4 ring-primary/20'
-                  : 'bg-white/5 text-gray-600 border border-white/10'
+                  ? 'bg-primary text-white shadow-lg shadow-primary/30'
+                  : 'bg-white/5 text-gray-600 border border-white/5'
               }`}>
-                {step > s.id ? '✓' : s.id}
+                {step > s.id ? (
+                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                ) : (
+                  <span>{s.id}</span>
+                )}
+                <span className="hidden sm:block">{s.title}</span>
               </div>
               {i < STEPS.length - 1 && (
-                <div className={`w-8 md:w-12 h-px transition-all duration-500 ${step > s.id ? 'bg-primary' : 'bg-white/10'}`} />
+                <div className={`w-4 h-px transition-all duration-500 ${step > s.id ? 'bg-primary/40' : 'bg-white/10'}`} />
               )}
             </div>
           ))}
@@ -156,278 +267,363 @@ export default function Onboarding() {
 
         {/* Card */}
         <div ref={cardRef} className="w-full max-w-lg">
-          <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-8"
-            style={{ boxShadow: '0 0 60px rgba(32,21,255,0.08)' }}>
+          <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl overflow-hidden"
+            style={{ boxShadow: '0 0 80px rgba(32,21,255,0.06), 0 25px 50px rgba(0,0,0,0.5)' }}>
 
-            {/* Step Header */}
-            <div className="mb-8">
-              <div className="w-12 h-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-2xl mb-4">
-                {STEPS[step - 1].icon}
+            {/* Card Header */}
+            <div className="px-8 pt-8 pb-6 border-b border-white/5">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-2xl shrink-0">
+                  {STEPS[step - 1].icon}
+                </div>
+                <div>
+                  <p className="text-primary text-xs font-semibold uppercase tracking-widest mb-0.5">
+                    Step {step} of {STEPS.length}
+                  </p>
+                  <h2 className="text-xl font-bold text-white">{STEPS[step - 1].title}</h2>
+                  <p className="text-gray-500 text-xs mt-0.5">{STEPS[step - 1].desc}</p>
+                </div>
               </div>
-              <h2 className="text-2xl font-bold text-white">{STEPS[step - 1].title}</h2>
-              <p className="text-gray-400 text-sm mt-1">{STEPS[step - 1].desc}</p>
             </div>
 
-            {/* Step 1: Personal Info */}
-            {step === 1 && (
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-xs text-gray-400 mb-2 font-medium">Full Name *</label>
-                  <input
-                    value={data.full_name}
-                    onChange={e => setData({ ...data, full_name: e.target.value })}
-                    placeholder="Your full name"
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs text-gray-400 mb-2 font-medium">Phone Number</label>
-                  <input
-                    value={data.phone}
-                    onChange={e => setData({ ...data, phone: e.target.value })}
-                    placeholder="+91 98765 43210"
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs text-gray-400 mb-2 font-medium">City</label>
-                  <input
-                    value={data.city}
-                    onChange={e => setData({ ...data, city: e.target.value })}
-                    placeholder="e.g. Mumbai, Pune, Delhi"
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
-                  />
-                </div>
-              </div>
-            )}
+            {/* Card Body */}
+            <div ref={contentRef} className="px-8 py-6">
 
-            {/* Step 2: Academic */}
-            {step === 2 && (
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-xs text-gray-400 mb-2 font-medium">College / University *</label>
-                  <input
-                    value={data.college}
-                    onChange={e => setData({ ...data, college: e.target.value })}
-                    placeholder="e.g. IIT Bombay, VIT, BITS Pilani"
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+              {/* Step 1: Personal Info */}
+              {step === 1 && (
+                <div className="space-y-4">
+                  <InputField
+                    label="Full Name" field="full_name"
+                    placeholder="e.g. Ratikant Patil" required
+                    data={data} update={update} touched={touched} setTouched={setTouched} errors={errors}
+                  />
+                  <InputField
+                    label="Phone Number" field="phone"
+                    placeholder="+91 98765 43210" type="tel"
+                    data={data} update={update} touched={touched} setTouched={setTouched} errors={errors}
+                  />
+                  <InputField
+                    label="City" field="city"
+                    placeholder="e.g. Solapur, Mumbai, Pune" required
+                    data={data} update={update} touched={touched} setTouched={setTouched} errors={errors}
                   />
                 </div>
-                <div>
-                  <label className="block text-xs text-gray-400 mb-2 font-medium">Branch / Major *</label>
-                  <input
-                    value={data.branch}
-                    onChange={e => setData({ ...data, branch: e.target.value })}
-                    placeholder="e.g. Computer Science, IT, ECE"
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+              )}
+
+              {/* Step 2: Academic */}
+              {step === 2 && (
+                <div className="space-y-4">
+                  <InputField
+                    label="College / University" field="college"
+                    placeholder="e.g. Walchand College of Engineering" required
+                    data={data} update={update} touched={touched} setTouched={setTouched} errors={errors}
                   />
-                </div>
-                <div>
-                  <label className="block text-xs text-gray-400 mb-2 font-medium">Year of Study *</label>
-                  <div className="grid grid-cols-4 gap-2">
-                    {[1, 2, 3, 4].map(y => (
-                      <button
-                        key={y}
-                        type="button"
-                        onClick={() => setData({ ...data, year: y })}
-                        className={`py-3 rounded-xl text-sm font-semibold border transition-all duration-200 ${
-                          data.year === y
-                            ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20'
-                            : 'bg-white/5 border-white/10 text-gray-400 hover:border-white/20 hover:text-white'
-                        }`}
-                      >
-                        Year {y}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Step 3: Career Goal */}
-            {step === 3 && (
-              <div className="space-y-5">
-                <div>
-                  <label className="block text-xs text-gray-400 mb-3 font-medium">What is your career goal? *</label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {CAREER_GOALS.map(goal => (
-                      <button
-                        key={goal.value}
-                        type="button"
-                        onClick={() => setData({ ...data, career_goal: goal.value })}
-                        className={`flex items-center gap-2.5 p-3 rounded-xl border text-left text-sm transition-all duration-200 ${
-                          data.career_goal === goal.value
-                            ? 'bg-primary/15 border-primary text-white shadow-md shadow-primary/10'
-                            : 'bg-white/5 border-white/10 text-gray-400 hover:border-white/20 hover:text-white'
-                        }`}
-                      >
-                        <span className="text-lg">{goal.icon}</span>
-                        <span className="font-medium text-xs leading-tight">{goal.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-xs text-gray-400 mb-3 font-medium">Areas of interest</label>
-                  <div className="flex flex-wrap gap-2">
-                    {INTERESTS.map(interest => (
-                      <button
-                        key={interest}
-                        type="button"
-                        onClick={() => toggleItem('career_interests', interest)}
-                        className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all duration-200 ${
-                          data.career_interests.includes(interest)
-                            ? 'bg-primary/20 border-primary text-primary'
-                            : 'bg-white/5 border-white/10 text-gray-400 hover:border-white/20 hover:text-white'
-                        }`}
-                      >
-                        {interest}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Step 4: Skills */}
-            {step === 4 && (
-              <div className="space-y-5">
-                <div>
-                  <label className="block text-xs text-gray-400 mb-3 font-medium">Experience Level *</label>
-                  <div className="space-y-2">
-                    {EXPERIENCE_LEVELS.map(level => (
-                      <button
-                        key={level.value}
-                        type="button"
-                        onClick={() => setData({ ...data, experience_level: level.value })}
-                        className={`w-full flex items-center gap-4 p-4 rounded-xl border text-left transition-all duration-200 ${
-                          data.experience_level === level.value
-                            ? 'bg-primary/15 border-primary shadow-md shadow-primary/10'
-                            : 'bg-white/5 border-white/10 hover:border-white/20'
-                        }`}
-                      >
-                        <span className="text-2xl">{level.icon}</span>
-                        <div>
-                          <p className={`text-sm font-semibold ${data.experience_level === level.value ? 'text-white' : 'text-gray-300'}`}>
-                            {level.label}
-                          </p>
-                          <p className="text-gray-500 text-xs">{level.desc}</p>
-                        </div>
-                        {data.experience_level === level.value && (
-                          <div className="ml-auto w-5 h-5 rounded-full bg-primary flex items-center justify-center text-white text-xs">✓</div>
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-xs text-gray-400 mb-3 font-medium">
-                    Your Skills <span className="text-gray-600">({data.skills.length} selected)</span>
-                  </label>
-                  <div className="flex flex-wrap gap-2 max-h-36 overflow-y-auto">
-                    {ALL_SKILLS.map(skill => (
-                      <button
-                        key={skill}
-                        type="button"
-                        onClick={() => toggleItem('skills', skill)}
-                        className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all duration-200 ${
-                          data.skills.includes(skill)
-                            ? 'bg-primary/20 border-primary text-primary'
-                            : 'bg-white/5 border-white/10 text-gray-400 hover:border-white/20 hover:text-white'
-                        }`}
-                      >
-                        {skill}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Step 5: Portfolio */}
-            {step === 5 && (
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-xs text-gray-400 mb-2 font-medium">Bio / About You</label>
-                  <textarea
-                    value={data.bio}
-                    onChange={e => setData({ ...data, bio: e.target.value })}
-                    placeholder="Tell recruiters about yourself in 2-3 lines..."
-                    rows={3}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all resize-none"
+                  <InputField
+                    label="Branch / Major" field="branch"
+                    placeholder="e.g. Computer Science & Engineering" required
+                    data={data} update={update} touched={touched} setTouched={setTouched} errors={errors}
                   />
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-400 mb-3 uppercase tracking-wider">
+                      Year of Study <span className="text-red-400">*</span>
+                    </label>
+                    <div className="grid grid-cols-4 gap-2">
+                      {[
+                        { y: 1, label: '1st Year' },
+                        { y: 2, label: '2nd Year' },
+                        { y: 3, label: '3rd Year' },
+                        { y: 4, label: '4th Year' },
+                      ].map(({ y, label }) => (
+                        <button
+                          key={y}
+                          type="button"
+                          onClick={() => update('year', y)}
+                          className={`py-3 rounded-xl text-xs font-bold border transition-all duration-200 ${
+                            data.year === y
+                              ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20'
+                              : 'bg-white/5 border-white/10 text-gray-400 hover:border-primary/40 hover:text-white'
+                          }`}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                    {errors.year && touched.year && (
+                      <p className="text-red-400 text-xs mt-1.5 flex items-center gap-1">
+                        <span>⚠</span> {errors.year}
+                      </p>
+                    )}
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-xs text-gray-400 mb-2 font-medium">GitHub Profile</label>
-                  <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-sm">github.com/</span>
+              )}
+
+              {/* Step 3: Career Goal */}
+              {step === 3 && (
+                <div className="space-y-5">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-400 mb-3 uppercase tracking-wider">
+                      Career Goal <span className="text-red-400">*</span>
+                    </label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {CAREER_GOALS.map(goal => (
+                        <button
+                          key={goal.value}
+                          type="button"
+                          onClick={() => update('career_goal', goal.value)}
+                          className={`flex items-center gap-2.5 p-3 rounded-xl border text-left transition-all duration-200 ${
+                            data.career_goal === goal.value
+                              ? 'bg-primary/15 border-primary text-white'
+                              : 'bg-white/5 border-white/8 text-gray-400 hover:border-white/20 hover:text-white'
+                          }`}
+                        >
+                          <span className="text-lg">{goal.icon}</span>
+                          <span className="font-semibold text-xs">{goal.label}</span>
+                          {data.career_goal === goal.value && (
+                            <div className="ml-auto w-4 h-4 rounded-full bg-primary flex items-center justify-center">
+                              <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                              </svg>
+                            </div>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                    {errors.career_goal && (
+                      <p className="text-red-400 text-xs mt-2 flex items-center gap-1">
+                        <span>⚠</span> {errors.career_goal}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-400 mb-3 uppercase tracking-wider">
+                      Areas of Interest <span className="text-red-400">*</span>
+                      <span className="text-gray-600 normal-case tracking-normal ml-1">({data.career_interests.length} selected)</span>
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {INTERESTS.map(interest => (
+                        <button
+                          key={interest}
+                          type="button"
+                          onClick={() => toggleItem('career_interests', interest)}
+                          className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all duration-200 ${
+                            data.career_interests.includes(interest)
+                              ? 'bg-primary/20 border-primary text-primary'
+                              : 'bg-white/5 border-white/10 text-gray-400 hover:border-white/20 hover:text-white'
+                          }`}
+                        >
+                          {interest}
+                        </button>
+                      ))}
+                    </div>
+                    {errors.career_interests && (
+                      <p className="text-red-400 text-xs mt-2 flex items-center gap-1">
+                        <span>⚠</span> {errors.career_interests}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Step 4: Skills */}
+              {step === 4 && (
+                <div className="space-y-5">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-400 mb-3 uppercase tracking-wider">
+                      Experience Level <span className="text-red-400">*</span>
+                    </label>
+                    <div className="space-y-2">
+                      {EXPERIENCE_LEVELS.map(level => (
+                        <button
+                          key={level.value}
+                          type="button"
+                          onClick={() => update('experience_level', level.value)}
+                          className={`w-full flex items-center gap-4 p-4 rounded-xl border text-left transition-all duration-200 ${
+                            data.experience_level === level.value
+                              ? 'bg-primary/10 border-primary'
+                              : 'bg-white/5 border-white/8 hover:border-white/20'
+                          }`}
+                        >
+                          <span className="text-2xl">{level.icon}</span>
+                          <div className="flex-1">
+                            <p className={`text-sm font-bold ${data.experience_level === level.value ? 'text-white' : 'text-gray-300'}`}>
+                              {level.label}
+                            </p>
+                            <p className="text-gray-500 text-xs mt-0.5">{level.desc}</p>
+                          </div>
+                          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
+                            data.experience_level === level.value
+                              ? 'border-primary bg-primary'
+                              : 'border-gray-600'
+                          }`}>
+                            {data.experience_level === level.value && (
+                              <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                              </svg>
+                            )}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                    {errors.experience_level && (
+                      <p className="text-red-400 text-xs mt-2 flex items-center gap-1">
+                        <span>⚠</span> {errors.experience_level}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-400 mb-3 uppercase tracking-wider">
+                      Your Skills <span className="text-red-400">*</span>
+                      <span className="text-gray-600 normal-case tracking-normal ml-1">
+                        (min 2, {data.skills.length} selected)
+                      </span>
+                    </label>
+                    <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto pr-1">
+                      {ALL_SKILLS.map(skill => (
+                        <button
+                          key={skill}
+                          type="button"
+                          onClick={() => toggleItem('skills', skill)}
+                          className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all duration-200 ${
+                            data.skills.includes(skill)
+                              ? 'bg-primary/20 border-primary text-primary'
+                              : 'bg-white/5 border-white/10 text-gray-400 hover:border-white/20 hover:text-white'
+                          }`}
+                        >
+                          {skill}
+                        </button>
+                      ))}
+                    </div>
+                    {errors.skills && (
+                      <p className="text-red-400 text-xs mt-2 flex items-center gap-1">
+                        <span>⚠</span> {errors.skills}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Step 5: Portfolio */}
+              {step === 5 && (
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">
+                      Bio / About You <span className="text-red-400">*</span>
+                    </label>
+                    <textarea
+                      value={data.bio}
+                      onChange={e => update('bio', e.target.value)}
+                      onBlur={() => setTouched(t => ({ ...t, bio: true }))}
+                      placeholder="Write a short professional bio. Tell recruiters who you are, what you build, and what you're looking for..."
+                      rows={4}
+                      className={`w-full bg-white/5 border rounded-xl px-4 py-3 text-white placeholder-gray-600 text-sm focus:outline-none focus:ring-2 transition-all resize-none ${
+                        errors.bio && touched.bio
+                          ? 'border-red-500/60 focus:ring-red-500/20'
+                          : 'border-white/10 focus:ring-primary/20 focus:border-primary'
+                      }`}
+                    />
+                    <div className="flex items-center justify-between mt-1">
+                      {errors.bio && touched.bio ? (
+                        <p className="text-red-400 text-xs flex items-center gap-1">
+                          <span>⚠</span> {errors.bio}
+                        </p>
+                      ) : <span />}
+                      <span className={`text-xs ${data.bio.length < 20 ? 'text-gray-600' : 'text-green-400'}`}>
+                        {data.bio.length}/20 min
+                      </span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">GitHub</label>
+                    <div className="flex items-center bg-white/5 border border-white/10 rounded-xl overflow-hidden focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all">
+                      <span className="px-3 py-3.5 text-gray-500 text-sm border-r border-white/10 bg-white/3 shrink-0">
+                        github.com/
+                      </span>
+                      <input
+                        value={data.github_url}
+                        onChange={e => update('github_url', e.target.value)}
+                        placeholder="yourusername"
+                        className="flex-1 bg-transparent px-3 py-3.5 text-white placeholder-gray-600 text-sm focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">LinkedIn</label>
+                    <div className="flex items-center bg-white/5 border border-white/10 rounded-xl overflow-hidden focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all">
+                      <span className="px-3 py-3.5 text-gray-500 text-sm border-r border-white/10 bg-white/3 shrink-0">
+                        linkedin.com/in/
+                      </span>
+                      <input
+                        value={data.linkedin_url}
+                        onChange={e => update('linkedin_url', e.target.value)}
+                        placeholder="yourusername"
+                        className="flex-1 bg-transparent px-3 py-3.5 text-white placeholder-gray-600 text-sm focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">Portfolio Website</label>
                     <input
-                      value={data.github_url}
-                      onChange={e => setData({ ...data, github_url: e.target.value })}
-                      placeholder="yourusername"
-                      className="w-full bg-white/5 border border-white/10 rounded-xl pl-24 pr-4 py-3 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                      value={data.portfolio_url}
+                      onChange={e => update('portfolio_url', e.target.value)}
+                      placeholder="https://yourportfolio.com"
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
                     />
                   </div>
                 </div>
-                <div>
-                  <label className="block text-xs text-gray-400 mb-2 font-medium">LinkedIn Profile</label>
-                  <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-sm">linkedin.com/in/</span>
-                    <input
-                      value={data.linkedin_url}
-                      onChange={e => setData({ ...data, linkedin_url: e.target.value })}
-                      placeholder="yourusername"
-                      className="w-full bg-white/5 border border-white/10 rounded-xl pl-36 pr-4 py-3 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-xs text-gray-400 mb-2 font-medium">Portfolio Website</label>
-                  <input
-                    value={data.portfolio_url}
-                    onChange={e => setData({ ...data, portfolio_url: e.target.value })}
-                    placeholder="https://yourportfolio.com"
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
-                  />
-                </div>
-              </div>
-            )}
+              )}
+            </div>
 
-            {/* Navigation */}
-            <div className="flex items-center justify-between mt-8 pt-6 border-t border-white/5">
+            {/* Card Footer */}
+            <div className="px-8 py-5 border-t border-white/5 flex items-center justify-between bg-white/[0.02]">
               <button
-                onClick={() => step > 1 && setStep(s => s - 1)}
+                onClick={handleBack}
                 disabled={step === 1}
-                className="px-5 py-2.5 rounded-xl text-sm font-medium text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-all disabled:opacity-20 disabled:cursor-not-allowed"
               >
                 ← Back
               </button>
 
-              <button
-                onClick={() => saveStep(step === STEPS.length)}
-                disabled={saving}
-                className="flex items-center gap-2 bg-primary hover:bg-primary-dark text-white font-semibold px-7 py-2.5 rounded-xl transition-all duration-300 shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 text-sm"
-              >
-                {saving ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Saving...
-                  </>
-                ) : step === STEPS.length ? '✨ Complete Setup' : 'Continue →'}
-              </button>
+              <div className="flex items-center gap-3">
+                {/* Step dots */}
+                <div className="hidden sm:flex items-center gap-1">
+                  {STEPS.map(s => (
+                    <div key={s.id} className={`rounded-full transition-all duration-300 ${
+                      s.id === step ? 'w-4 h-1.5 bg-primary' :
+                      s.id < step ? 'w-1.5 h-1.5 bg-primary/40' :
+                      'w-1.5 h-1.5 bg-white/10'
+                    }`} />
+                  ))}
+                </div>
+
+                <button
+                  onClick={handleNext}
+                  disabled={saving}
+                  className="flex items-center gap-2 bg-primary hover:bg-primary-dark text-white font-bold px-7 py-2.5 rounded-xl transition-all duration-200 shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 text-sm"
+                >
+                  {saving ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Saving...
+                    </>
+                  ) : step === STEPS.length ? (
+                    <>Complete Setup ✨</>
+                  ) : (
+                    <>Continue →</>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
 
-          {step < STEPS.length && (
-            <p className="text-center mt-4">
-              <button
-                onClick={() => setStep(s => s + 1)}
-                className="text-gray-600 hover:text-gray-400 text-xs transition-colors"
-              >
-                Skip this step →
-              </button>
-            </p>
-          )}
+          {/* Bottom note */}
+          <p className="text-center text-gray-600 text-xs mt-4">
+            Your data is secure and only used to match you with opportunities.
+          </p>
         </div>
       </div>
     </div>
