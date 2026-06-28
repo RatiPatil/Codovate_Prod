@@ -7,6 +7,7 @@ router.post("/save", auth, async (req, res) => {
   try {
     const {
       full_name, phone, city,
+      country, state, district, taluka,
       college, branch, year,
       career_goal, career_interests, experience_level,
       skills,
@@ -16,8 +17,39 @@ router.post("/save", auth, async (req, res) => {
 
     console.log("📥 Saving onboarding for user:", req.user.id);
 
-    if (full_name) {
-      await db.collection("users").doc(req.user.id).update({ name: full_name });
+    // ── Server-side Validation ──────────────────────────────────────────
+    const errors = {};
+    const trimmedName = (full_name || '').trim();
+    if (!trimmedName || trimmedName.length < 2) errors.full_name = 'Full name must be at least 2 characters';
+
+    if (phone) {
+      const digitsOnly = phone.replace(/[^0-9]/g, '');
+      if (digitsOnly.length < 10 || digitsOnly.length > 15) errors.phone = 'Phone must be 10-15 digits';
+      // Check duplicate phone
+      const phoneCheck = await db.collection("student_profiles")
+        .where("phone", "==", phone).get();
+      const isDuplicate = phoneCheck.docs.some(doc => doc.id !== req.user.id);
+      if (isDuplicate) errors.phone = 'This phone number is already registered';
+    }
+
+    if (!country) errors.country = 'Country is required';
+    if (!state) errors.state = 'State is required';
+    if (!district) errors.district = 'District is required';
+    if (!college || college.trim().length < 3) errors.college = 'College name is required (min 3 chars)';
+    if (!branch || branch.trim().length < 2) errors.branch = 'Branch is required';
+    if (!year) errors.year = 'Year of study is required';
+    if (!career_goal) errors.career_goal = 'Career goal is required';
+    if (!Array.isArray(career_interests) || career_interests.length === 0) errors.career_interests = 'Select at least one interest';
+    if (!experience_level) errors.experience_level = 'Experience level is required';
+    if (!Array.isArray(skills) || skills.length < 2) errors.skills = 'Select at least 2 skills';
+    if (!bio || bio.trim().length < 20) errors.bio = 'Bio must be at least 20 characters';
+
+    if (Object.keys(errors).length > 0) {
+      return res.status(400).json({ message: "Validation failed", errors });
+    }
+
+    if (trimmedName) {
+      await db.collection("users").doc(req.user.id).update({ name: trimmedName });
     }
 
     const cleanYear = year ? parseInt(year) : null;
@@ -28,12 +60,19 @@ router.post("/save", auth, async (req, res) => {
     const cleanSkills = Array.isArray(skills) && skills.length > 0
       ? skills : null;
 
+    // Derive city from taluka/district if not passed directly
+    const derivedCity = city || taluka || district || null;
+
     const updateData = {
-      full_name: full_name || null,
+      full_name: trimmedName || null,
       phone: phone || null,
-      city: city || null,
-      college: college || null,
-      branch: branch || null,
+      city: derivedCity,
+      country: country || null,
+      state: state || null,
+      district: district || null,
+      taluka: taluka || null,
+      college: college?.trim() || null,
+      branch: branch?.trim() || null,
       year: cleanYear,
       career_goal: career_goal || null,
       career_interests: cleanInterests,
@@ -42,13 +81,13 @@ router.post("/save", auth, async (req, res) => {
       portfolio_url: portfolio_url || null,
       github_url: github_url || null,
       linkedin_url: linkedin_url || null,
-      bio: bio || null,
+      bio: bio?.trim() || null,
       profile_completion: cleanCompletion,
       onboarding_completed: onboarding_completed !== undefined ? onboarding_completed : null,
       user_id: req.user.id
     };
 
-    // Remove undefined and null if you want clean docs, but keeping null to match previous coalesce logic
+    // Remove undefined and null
     Object.keys(updateData).forEach(k => {
       if (updateData[k] === undefined || updateData[k] === null) {
         delete updateData[k];
@@ -63,6 +102,28 @@ router.post("/save", auth, async (req, res) => {
   } catch (err) {
     console.error("❌ Onboarding save error:", err.message);
     res.status(500).json({ message: "Server error: " + err.message });
+  }
+});
+
+// ── Check phone duplicate ───────────────────────────────────────────────
+router.post("/check-phone", auth, async (req, res) => {
+  const { phone } = req.body;
+  if (!phone) return res.json({ available: true });
+
+  try {
+    const digitsOnly = phone.replace(/[^0-9]/g, '');
+    if (digitsOnly.length < 10 || digitsOnly.length > 15) {
+      return res.json({ available: false, reason: "Phone must be 10-15 digits" });
+    }
+
+    const snapshot = await db.collection("student_profiles")
+      .where("phone", "==", phone).get();
+
+    const isDuplicate = snapshot.docs.some(doc => doc.id !== req.user.id);
+    res.json({ available: !isDuplicate, reason: isDuplicate ? "This phone number is already registered" : null });
+  } catch (err) {
+    console.error("Phone check error:", err.message);
+    res.status(500).json({ available: true });
   }
 });
 

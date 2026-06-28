@@ -40,7 +40,8 @@ router.post("/:id/book", auth, async (req, res) => {
       student_id: req.user.id,
       scheduled_time,
       notes: notes || "",
-      created_at: new Date()
+      created_at: new Date(),
+      status: 'Scheduled'
     };
     
     await newBookingRef.set(booking);
@@ -100,6 +101,49 @@ router.put("/requests/:id", auth, async (req, res) => {
     res.json({ message: `Request ${status}` });
   } catch (err) {
     console.error("Update request error:", err.message);
+    res.status(500).json({ message: "Server error." });
+  }
+});
+
+// ── Get user's mentor sessions ──────────────────────────────────────────────
+router.get("/my-sessions", auth, async (req, res) => {
+  try {
+    const snap = await db.collection("mentor_bookings")
+      .where("student_id", "==", req.user.id)
+      .get();
+
+    const sessions = await Promise.all(snap.docs.map(async (doc) => {
+      const b = doc.data();
+      let mentorData = { name: "Unknown Mentor", expertise: [], hourly_rate: 0 };
+      
+      if (b.mentor_id) {
+        const mentorDoc = await db.collection("mentors").doc(b.mentor_id).get();
+        if (mentorDoc.exists) {
+          const md = mentorDoc.data();
+          const userDoc = await db.collection("users").doc(md.user_id).get();
+          mentorData = {
+            name: userDoc.exists ? userDoc.data().name : "Unknown",
+            expertise: md.expertise || [],
+            hourly_rate: md.hourly_rate || 0,
+            bio: md.bio || "",
+          };
+        }
+      }
+
+      return {
+        id: doc.id,
+        ...b,
+        mentor: mentorData,
+        scheduled_time: b.scheduled_time || b.created_at, // Fallback
+      };
+    }));
+
+    // Sort by scheduled time descending
+    sessions.sort((a, b) => new Date(b.scheduled_time) - new Date(a.scheduled_time));
+
+    res.json(sessions);
+  } catch (err) {
+    console.error("Get my sessions error:", err.message);
     res.status(500).json({ message: "Server error." });
   }
 });

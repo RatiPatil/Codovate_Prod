@@ -13,6 +13,7 @@ const SuperAdminCertificates = lazy(() => import('../pages/admin/SuperAdminCerti
 const SuperAdminAnalytics = lazy(() => import('../pages/admin/SuperAdminAnalytics'));
 const SuperAdminSystem = lazy(() => import('../pages/admin/SuperAdminSystem'));
 const SuperAdminSettings = lazy(() => import('../pages/admin/SuperAdminSettings'));
+const SuperAdminNotifications = lazy(() => import('../pages/admin/SuperAdminNotifications'));
 
 const Loader = () => (
   <div className="flex items-center justify-center h-full min-h-[50vh] bg-transparent">
@@ -34,7 +35,7 @@ const SuperAdminRouter = () => {
           <Route path="projects" element={<SuperAdminProjects />} />
           <Route path="certificates" element={<SuperAdminCertificates />} />
           <Route path="analytics" element={<SuperAdminAnalytics />} />
-          <Route path="notifications" element={<div className="p-8 text-white">Notifications Page placeholder</div>} />
+          <Route path="notifications" element={<SuperAdminNotifications />} />
           <Route path="system" element={<SuperAdminSystem />} />
           <Route path="settings" element={<SuperAdminSettings />} />
         </Routes>

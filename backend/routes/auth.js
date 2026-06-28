@@ -5,13 +5,15 @@ const jwt = require("jsonwebtoken");
 const { db, admin } = require("../config/firebase");
 require("dotenv").config();
 
+const { getAuth } = require("firebase-admin/auth");
+
 router.post("/google", async (req, res) => {
   const { idToken } = req.body;
   
   if (!idToken) return res.status(400).json({ message: "No ID token provided" });
 
   try {
-    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    const decodedToken = await getAuth().verifyIdToken(idToken);
     const { email, name, picture, uid } = decodedToken;
     
     const usersRef = db.collection('users');
@@ -166,6 +168,9 @@ router.post("/login", async (req, res) => {
 
     if (!user.is_active)
       return res.status(403).json({ message: "Account is deactivated." });
+
+    if (!user.password_hash)
+      return res.status(401).json({ message: "This account uses Google login. Please click 'Continue with Google'." });
 
     const match = await bcrypt.compare(password, user.password_hash);
     if (!match)

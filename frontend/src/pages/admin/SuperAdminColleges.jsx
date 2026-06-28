@@ -1,10 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import AdminDataTable from '../../components/common/AdminDataTable';
+import AdminCrudModal from '../../components/common/AdminCrudModal';
 import api from '../../api/axios';
+
+const collegeSchema = [
+  { name: 'name', label: 'Institution Name', type: 'text', required: true },
+  { name: 'domain', label: 'Email Domain (e.g., mit.edu)', type: 'text', required: true },
+  { name: 'admin_email', label: 'Admin Contact Email', type: 'email', required: true },
+  {
+    name: 'status',
+    label: 'Status',
+    type: 'select',
+    required: true,
+    options: [
+      { label: 'Active', value: 'active' },
+      { label: 'Pending', value: 'pending' },
+      { label: 'Suspended', value: 'suspended' }
+    ]
+  }
+];
 
 const SuperAdminColleges = () => {
   const [colleges, setColleges] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingCollege, setEditingCollege] = useState(null);
 
   useEffect(() => {
     fetchColleges();
@@ -12,8 +32,8 @@ const SuperAdminColleges = () => {
 
   const fetchColleges = async () => {
     try {
-      const response = await api.get('/admin/users');
-      setColleges(response.data.filter(u => u.role === 'college_admin'));
+      const response = await api.get('/admin/colleges');
+      setColleges(response.data);
     } catch (err) {
       console.error(err);
     } finally {
@@ -21,24 +41,45 @@ const SuperAdminColleges = () => {
     }
   };
 
-  const handleAction = async (id, status) => {
+  const handleAdd = () => {
+    setEditingCollege(null);
+    setModalOpen(true);
+  };
+
+  const handleEdit = (college) => {
+    setEditingCollege(college);
+    setModalOpen(true);
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to suspend this college?")) return;
     try {
-      await api.put(`/admin/users/${id}/status`, { status });
-      setColleges(colleges.map(c => c.id === id ? { ...c, status } : c));
+      await api.delete(`/admin/colleges/${id}`);
+      fetchColleges();
     } catch (err) {
-      alert("Failed to update college status");
+      alert("Failed to delete college");
     }
+  };
+
+  const handleSubmit = async (formData) => {
+    if (editingCollege) {
+      await api.put(`/admin/colleges/${editingCollege.id}`, formData);
+    } else {
+      await api.post('/admin/colleges', formData);
+    }
+    fetchColleges();
   };
 
   const columns = [
     { header: 'Institution Name', accessor: 'name' },
-    { header: 'Admin Email', accessor: 'email' },
+    { header: 'Domain', accessor: 'domain' },
+    { header: 'Admin Email', accessor: 'admin_email' },
     { 
       header: 'Status', 
       render: (row) => (
         <span className={`px-2 py-1 rounded-md text-xs font-bold uppercase ${
           row.status === 'pending' ? 'bg-yellow-500/20 text-yellow-500' :
-          row.status === 'rejected' ? 'bg-red-500/20 text-red-500' :
+          row.status === 'suspended' ? 'bg-red-500/20 text-red-500' :
           'bg-emerald-500/20 text-emerald-500'
         }`}>
           {row.status || 'active'}
@@ -49,36 +90,18 @@ const SuperAdminColleges = () => {
       header: 'Actions',
       render: (row) => (
         <div className="flex gap-2">
-          {row.status === 'pending' && (
-            <>
-              <button 
-                onClick={() => handleAction(row.id, 'active')}
-                className="px-3 py-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-500 rounded-lg text-xs font-bold transition-colors"
-              >
-                Approve
-              </button>
-              <button 
-                onClick={() => handleAction(row.id, 'rejected')}
-                className="px-3 py-1 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-lg text-xs font-bold transition-colors"
-              >
-                Reject
-              </button>
-            </>
-          )}
-          {row.status === 'active' && (
+          <button 
+            onClick={() => handleEdit(row)}
+            className="px-3 py-1 bg-blue-500/10 hover:bg-blue-500/20 text-blue-500 rounded-lg text-xs font-bold transition-colors"
+          >
+            Edit
+          </button>
+          {row.status !== 'suspended' && (
             <button 
-              onClick={() => handleAction(row.id, 'suspended')}
-              className="px-3 py-1 bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 rounded-lg text-xs font-bold transition-colors"
+              onClick={() => handleDelete(row.id)}
+              className="px-3 py-1 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-lg text-xs font-bold transition-colors"
             >
               Suspend
-            </button>
-          )}
-          {row.status === 'suspended' && (
-            <button 
-              onClick={() => handleAction(row.id, 'active')}
-              className="px-3 py-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-500 rounded-lg text-xs font-bold transition-colors"
-            >
-              Restore
             </button>
           )}
         </div>
@@ -87,13 +110,23 @@ const SuperAdminColleges = () => {
   ];
 
   return (
-    <div className="p-8">
+    <div className="p-8 h-[calc(100vh-80px)] overflow-y-auto">
       <AdminDataTable 
         title="Manage Colleges"
         data={colleges}
         columns={columns}
         loading={loading}
-        searchPlaceholder="Search colleges..."
+        onAdd={handleAdd}
+        searchPlaceholder="Search colleges by name or domain..."
+        searchableKeys={['name', 'domain', 'admin_email']}
+      />
+      <AdminCrudModal 
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onSubmit={handleSubmit}
+        title={editingCollege ? "Edit College" : "Add New College"}
+        schema={collegeSchema}
+        initialData={editingCollege}
       />
     </div>
   );

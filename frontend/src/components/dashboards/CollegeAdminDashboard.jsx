@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import CollegeAdminLayout from '../layouts/CollegeAdminLayout';
 import { useSocket } from '../../context/SocketContext';
 import { useAuth } from '../../context/AuthContext';
@@ -25,6 +26,7 @@ const StatCard = ({ title, value, icon, isLive }) => (
 );
 
 const CollegeAdminDashboard = () => {
+  const navigate = useNavigate();
   const { socket } = useSocket();
   const { user } = useAuth();
   
@@ -81,16 +83,14 @@ const CollegeAdminDashboard = () => {
 
   if (stats.loading) {
     return (
-      <CollegeAdminLayout>
-        <div className="flex-1 flex items-center justify-center">
-          <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
-        </div>
-      </CollegeAdminLayout>
+      <div className="flex-1 flex items-center justify-center min-h-[50vh]">
+        <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+      </div>
     );
   }
 
   return (
-    <CollegeAdminLayout>
+    <div className="w-full">
       <div className="p-4 md:p-8 max-w-7xl mx-auto">
         <header className="mb-10">
           <h1 className="text-4xl font-black text-white tracking-tight mb-2">Digital Campus</h1>
@@ -136,6 +136,7 @@ const CollegeAdminDashboard = () => {
                 <span className="opacity-0 group-hover:opacity-100 transition-opacity">→</span>
               </button>
               <button 
+                onClick={() => navigate('/admin/events')}
                 className="w-full bg-black/20 hover:bg-black/40 text-white font-bold py-3 px-4 rounded-xl text-sm transition-colors text-left flex items-center justify-between group"
               >
                 Publish Event
@@ -157,7 +158,7 @@ const CollegeAdminDashboard = () => {
         isOpen={noticeModalOpen} 
         onClose={() => setNoticeModalOpen(false)} 
       />
-    </CollegeAdminLayout>
+    </div>
   );
 };
 

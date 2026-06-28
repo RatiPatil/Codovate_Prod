@@ -4,45 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { gsap } from 'gsap';
 import api from '../api/axios';
 
-// Admin tier credentials (shown as quick-fill reference)
-const ADMIN_TIERS = [
-  {
-    role: 'super_admin',
-    label: 'Super Admin',
-    icon: '⚡',
-    email: 'superadmin@codovate.com',
-    password: 'Super@Admin#2026',
-    access: 'Full system access — all modules',
-    color: '#FF4444',
-    bg: 'bg-red-500/10',
-    border: 'border-red-500/20',
-    textColor: 'text-red-400',
-  },
-  {
-    role: 'college_admin',
-    label: 'College Admin',
-    icon: '🏛️',
-    email: 'college@codovate.com',
-    password: 'College@Admin#2026',
-    access: 'SVERI College — students, projects, certs',
-    color: '#2015FF',
-    bg: 'bg-[#2015FF]/10',
-    border: 'border-[#2015FF]/20',
-    textColor: 'text-[#6060FF]',
-  },
-  {
-    role: 'company_admin',
-    label: 'Company Admin',
-    icon: '🏢',
-    email: 'company@codovate.com',
-    password: 'Company@Admin#2026',
-    access: 'TCS — jobs, internships, applicants',
-    color: '#10B981',
-    bg: 'bg-green-500/10',
-    border: 'border-green-500/20',
-    textColor: 'text-green-400',
-  },
-];
+// Admin tiers for UI labels only (if needed later)
 
 const AdminLogin = () => {
   const [form, setForm] = useState({ email: '', password: '' });
@@ -60,12 +22,6 @@ const AdminLogin = () => {
     gsap.fromTo(bgRef.current, { opacity: 0 }, { opacity: 1, duration: 1.2 });
     gsap.fromTo(formRef.current, { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, ease: 'power3.out', delay: 0.2 });
   }, []);
-
-  const quickFill = (tier) => {
-    setSelectedTier(tier.role);
-    setForm({ email: tier.email, password: tier.password });
-    setError('');
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -108,29 +64,7 @@ const AdminLogin = () => {
           <p className="text-gray-500 text-xs font-bold uppercase tracking-[0.2em] mt-1">Restricted Access — Codovate HQ</p>
         </div>
 
-        {/* 3-Tier Quick Access */}
-        <div className="space-y-2">
-          <p className="text-[9px] font-black text-gray-600 uppercase tracking-[0.2em] text-center">Select Admin Tier to Quick Fill</p>
-          <div className="grid grid-cols-3 gap-2">
-            {ADMIN_TIERS.map(tier => (
-              <button
-                key={tier.role}
-                onClick={() => quickFill(tier)}
-                className={`p-3 rounded-xl border transition-all duration-200 text-left group hover:scale-[1.02] ${
-                  selectedTier === tier.role
-                    ? `${tier.bg} ${tier.border} shadow-lg`
-                    : 'bg-white/3 border-white/5 hover:border-white/10'
-                }`}
-              >
-                <span className="text-lg block mb-1">{tier.icon}</span>
-                <p className={`text-[10px] font-black ${selectedTier === tier.role ? tier.textColor : 'text-gray-400'}`}>
-                  {tier.label}
-                </p>
-                <p className="text-[9px] text-gray-600 mt-0.5 leading-tight line-clamp-2">{tier.access}</p>
-              </button>
-            ))}
-          </div>
-        </div>
+
 
         {/* Login Card */}
         <div className="bg-[#080812]/90 backdrop-blur-xl border border-white/8 rounded-2xl shadow-2xl relative overflow-hidden">
@@ -193,40 +127,7 @@ const AdminLogin = () => {
           </div>
         </div>
 
-        {/* Credentials Reference */}
-        <div className="bg-[#080812]/80 border border-white/5 rounded-2xl p-5">
-          <p className="text-[9px] font-black text-gray-600 uppercase tracking-[0.2em] mb-3">📋 All Admin Credentials (Dev Mode)</p>
-          <div className="space-y-3">
-            {ADMIN_TIERS.map(tier => (
-              <div key={tier.role} className={`p-3 rounded-xl ${tier.bg} border ${tier.border}`}>
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className={`text-[10px] font-black ${tier.textColor}`}>{tier.icon} {tier.label}</span>
-                  <button
-                    onClick={() => quickFill(tier)}
-                    className={`text-[9px] font-black px-2 py-0.5 rounded-full ${tier.bg} ${tier.textColor} border ${tier.border} hover:opacity-80 transition-all`}
-                  >
-                    Fill →
-                  </button>
-                </div>
-                <div className="font-mono text-[10px] space-y-0.5">
-                  <div className="flex gap-2">
-                    <span className="text-gray-600 w-14">Email</span>
-                    <span className="text-gray-300">{tier.email}</span>
-                  </div>
-                  <div className="flex gap-2">
-                    <span className="text-gray-600 w-14">Pass</span>
-                    <span className="text-gray-300">{tier.password}</span>
-                  </div>
-                  <div className="flex gap-2">
-                    <span className="text-gray-600 w-14">Access</span>
-                    <span className="text-gray-500 text-[9px]">{tier.access}</span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-          <p className="text-[9px] text-gray-700 mt-3 text-center">Run <code className="text-[#6060FF]">node seed-admins.js</code> in backend to create these accounts</p>
-        </div>
+
 
         <div className="text-center">
           <Link to="/login" className="text-gray-600 text-xs font-bold uppercase tracking-widest hover:text-white transition-colors">

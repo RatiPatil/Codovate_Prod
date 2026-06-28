@@ -1,26 +1,142 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import api from '../api/axios';
 
-const Mentors = () => {
-  const [mentors, setMentors] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [toast, setToast] = useState('');
+const BookingModal = ({ mentor, onClose, onConfirm }) => {
+  const [dateTime, setDateTime] = useState('');
+  const [notes, setNotes] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    api.get('/mentors').then(res => setMentors(res.data)).finally(() => setLoading(false));
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!dateTime) return;
+    setLoading(true);
+    await onConfirm(mentor.id, dateTime, notes);
+    setLoading(false);
+  };
+
+  const now = new Date();
+  now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+  const minDateTime = now.toISOString().slice(0, 16);
+
+  return (
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="absolute inset-0" onClick={onClose} />
+      <form onSubmit={handleSubmit} className="relative z-10 w-full max-w-md glass-panel rounded-2xl p-8 shadow-2xl">
+        <div className="flex items-center gap-4 mb-6">
+          <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center font-black text-xl border border-primary/20">
+            {mentor.name.charAt(0)}
+          </div>
+          <div>
+            <h3 className="text-white font-bold text-xl">Book a Session</h3>
+            <p className="text-primary text-sm font-semibold">{mentor.name}</p>
+          </div>
+        </div>
+
+        <div className="space-y-5">
+          <div>
+            <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+              Select Date & Time <span className="text-red-400">*</span>
+            </label>
+            <input
+              type="datetime-local"
+              value={dateTime}
+              min={minDateTime}
+              required
+              onChange={e => setDateTime(e.target.value)}
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all [color-scheme:dark]"
+            />
+          </div>
+          <div>
+            <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+              Notes / Topics to Discuss <span className="text-gray-500 font-normal normal-case">(Optional)</span>
+            </label>
+            <textarea
+              value={notes}
+              onChange={e => setNotes(e.target.value)}
+              placeholder="e.g. Career guidance, Resume review, React best practices..."
+              rows={3}
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all resize-none"
+            />
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-3 mt-8 pt-6 border-t border-white/10">
+          <button type="button" onClick={onClose} className="text-gray-400 hover:text-white px-5 py-2.5 font-semibold text-sm transition-colors rounded-xl hover:bg-white/5">
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={loading || !dateTime}
+            className="btn-primary flex items-center gap-2 disabled:opacity-50"
+          >
+            {loading ? (
+              <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Booking...</>
+            ) : 'Confirm Booking'}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+};
+
+const Mentors = () => {
+  const [activeTab, setActiveTab] = useState('discover'); // 'discover' | 'sessions'
+  const [mentors, setMentors] = useState([]);
+  const [sessions, setSessions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [toast, setToast] = useState({ msg: '', type: 'success' });
+  const [bookingMentor, setBookingMentor] = useState(null);
+  
+  // Search and Filters
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedExpertise, setSelectedExpertise] = useState('All');
+  
+  // Extract all unique expertise categories from mentors
+  const allExpertise = ['All', ...new Set(mentors.flatMap(m => m.expertise || []))];
+
+  const showToast = (msg, type = 'success') => {
+    setToast({ msg, type });
+    setTimeout(() => setToast({ msg: '', type: 'success' }), 4000);
+  };
+
+  const fetchMentorsAndSessions = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [mentorsRes, sessionsRes] = await Promise.all([
+        api.get('/mentors'),
+        api.get('/mentors/my-sessions').catch(() => ({ data: [] }))
+      ]);
+      setMentors(mentorsRes.data);
+      setSessions(sessionsRes.data || []);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  const handleBook = async (id) => {
-    const time = prompt("Enter a time (e.g. 2026-07-01 10:00 AM):", "2026-07-01 10:00:00");
-    if (!time) return;
+  useEffect(() => { fetchMentorsAndSessions(); }, [fetchMentorsAndSessions]);
+
+  const handleConfirmBooking = async (mentorId, scheduledTime, notes) => {
     try {
-      await api.post(`/mentors/${id}/book`, { scheduled_time: time, notes: "Need guidance on career and tech stack." });
-      setToast('Mentor booked successfully! They will reach out to you.');
-      setTimeout(() => setToast(''), 4000);
+      await api.post(`/mentors/${mentorId}/book`, {
+        scheduled_time: scheduledTime,
+        notes: notes || 'Need guidance.',
+      });
+      showToast('✨ Session booked! The mentor will reach out to you.', 'success');
+      setBookingMentor(null);
+      fetchMentorsAndSessions(); // Refresh sessions
+      setActiveTab('sessions'); // Switch to sessions tab instantly
     } catch (err) {
-      alert(err.response?.data?.message || "Error booking mentor.");
+      showToast(err.response?.data?.message || 'Error booking session.', 'error');
     }
   };
+
+  const filteredMentors = mentors.filter(m => {
+    const matchesSearch = !searchTerm || m.name?.toLowerCase().includes(searchTerm.toLowerCase()) || m.expertise?.some(s => s.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesExpertise = selectedExpertise === 'All' || (m.expertise && m.expertise.includes(selectedExpertise));
+    return matchesSearch && matchesExpertise;
+  });
 
   if (loading) return (
     <div className="flex items-center justify-center min-h-screen">
@@ -30,60 +146,226 @@ const Mentors = () => {
 
   return (
     <div className="p-6 md:p-8 max-w-7xl mx-auto text-white relative z-10">
-      {toast && (
-        <div className="fixed top-4 right-4 glass-panel px-4 py-3 rounded-xl shadow-2xl text-sm font-semibold z-50 animate-[fade-in-down_0.3s_ease-out]">
-          <span className="text-green-400">✨ {toast}</span>
+      {toast.msg && (
+        <div className={`fixed top-4 right-4 z-50 glass-panel px-4 py-3 rounded-xl shadow-2xl text-sm font-semibold ${
+          toast.type === 'success' ? 'text-green-400 border-green-500/30' : 'text-red-400 border-red-500/30'
+        }`}>
+          {toast.msg}
         </div>
       )}
-      
-      <div className="mb-10 text-center md:text-left relative z-10">
-        <h1 className="text-3xl md:text-4xl font-bold flex items-center justify-center md:justify-start gap-3">
-          <span className="text-4xl">👨‍🏫</span> <span className="text-gradient">Expert Mentors</span>
-        </h1>
-        <p className="text-gray-400 text-sm mt-2">Book a 1-on-1 session with industry veterans.</p>
-      </div>
-      
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 relative z-10">
-        {mentors.length === 0 ? (
-          <div className="col-span-full text-center py-24 glass-card border-dashed">
-            <p className="text-4xl mb-4">👥</p>
-            <p className="text-gray-400 text-sm mb-4">No mentors are available right now. Check back later!</p>
+
+      {bookingMentor && (
+        <BookingModal
+          mentor={bookingMentor}
+          onClose={() => setBookingMentor(null)}
+          onConfirm={handleConfirmBooking}
+        />
+      )}
+
+      {/* Stats Banner */}
+      <div className="grid grid-cols-3 gap-4 mb-8 relative z-10">
+        <div className="glass-panel p-5 rounded-2xl flex items-center gap-4 bg-gradient-to-r from-blue-500/10 to-transparent border-blue-500/20">
+          <div className="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center text-2xl">👨‍🏫</div>
+          <div>
+            <p className="text-gray-400 text-xs font-bold uppercase tracking-widest">Available Mentors</p>
+            <p className="text-2xl font-black text-white">{mentors.length}</p>
           </div>
-        ) : mentors.map(m => (
-          <div key={m.id} className="glass-card p-6 flex flex-col group relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-bl-[100px] pointer-events-none transition-transform duration-500 group-hover:scale-125 group-hover:bg-primary/20" />
-            
-            <div className="flex items-center gap-4 mb-4 relative z-10">
-              <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center font-black text-xl border border-primary/20 shadow-lg backdrop-blur-sm group-hover:scale-110 transition-transform">
-                {m.name.charAt(0)}
-              </div>
-              <div>
-                <h2 className="text-xl font-bold leading-tight group-hover:text-primary transition-colors">{m.name}</h2>
-                <p className="text-[10px] text-primary uppercase font-bold tracking-widest mt-1 bg-primary/10 inline-block px-2 py-0.5 rounded">
-                  {m.hourly_rate > 0 ? `$${m.hourly_rate}/hr` : 'Volunteer / Free'}
+        </div>
+        <div className="glass-panel p-5 rounded-2xl flex items-center gap-4 bg-gradient-to-r from-purple-500/10 to-transparent border-purple-500/20">
+          <div className="w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center text-2xl">📅</div>
+          <div>
+            <p className="text-gray-400 text-xs font-bold uppercase tracking-widest">My Sessions</p>
+            <p className="text-2xl font-black text-white">{sessions.length}</p>
+          </div>
+        </div>
+        <div className="glass-panel p-5 rounded-2xl flex items-center gap-4 bg-gradient-to-r from-green-500/10 to-transparent border-green-500/20">
+          <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center text-2xl">⚡</div>
+          <div>
+            <p className="text-gray-400 text-xs font-bold uppercase tracking-widest">Completed</p>
+            <p className="text-2xl font-black text-white">{sessions.filter(s => s.status === 'Completed').length}</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8 relative z-10">
+        <div>
+          <h1 className="text-3xl md:text-4xl font-bold flex items-center gap-3">
+             <span className="text-gradient">Mentorship Hub</span>
+          </h1>
+          <p className="text-gray-400 text-sm mt-2">Book 1-on-1 sessions and manage your learning journey.</p>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex items-center gap-2 border-b border-white/10 mb-8 overflow-x-auto no-scrollbar relative z-10">
+        <button
+          onClick={() => setActiveTab('discover')}
+          className={`px-6 py-4 font-semibold text-sm transition-all whitespace-nowrap flex items-center gap-2 border-b-2 ${
+            activeTab === 'discover' 
+              ? 'border-primary text-white bg-primary/5' 
+              : 'border-transparent text-gray-400 hover:text-white hover:bg-white/5'
+          }`}
+        >
+          <span>🔍</span> Discover Mentors
+        </button>
+        <button
+          onClick={() => setActiveTab('sessions')}
+          className={`px-6 py-4 font-semibold text-sm transition-all whitespace-nowrap flex items-center gap-2 border-b-2 ${
+            activeTab === 'sessions' 
+              ? 'border-primary text-white bg-primary/5' 
+              : 'border-transparent text-gray-400 hover:text-white hover:bg-white/5'
+          }`}
+        >
+          <span>📅</span> My Sessions ({sessions.length})
+        </button>
+      </div>
+
+      {activeTab === 'discover' && (
+        <div className="relative z-10">
+          <div className="flex flex-col md:flex-row gap-4 mb-8">
+            <div className="relative flex-1">
+              <svg className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+                placeholder="Search by name..."
+                className="w-full bg-white/5 border border-white/10 rounded-xl pl-11 pr-4 py-3 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+              />
+            </div>
+            <select
+              value={selectedExpertise}
+              onChange={e => setSelectedExpertise(e.target.value)}
+              className="w-full md:w-64 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary appearance-none [color-scheme:dark]"
+            >
+              {allExpertise.map(exp => (
+                <option key={exp} value={exp}>{exp}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredMentors.length === 0 ? (
+              <div className="col-span-full text-center py-24 glass-card border-dashed">
+                <p className="text-4xl mb-4">👥</p>
+                <p className="text-gray-400 text-sm mb-4">
+                  {mentors.length === 0 ? 'No mentors are available right now.' : 'No mentors match your search.'}
                 </p>
               </div>
-            </div>
-            
-            <p className="text-gray-400 text-sm mb-5 h-10 overflow-hidden line-clamp-2 relative z-10">{m.bio}</p>
-            
-            <div className="flex flex-wrap gap-2 mb-6 relative z-10">
-              {m.expertise.map(skill => (
-                <span key={skill} className="bg-white/5 border border-white/10 px-2 py-1 rounded text-[10px] uppercase font-bold tracking-widest text-gray-300">
-                  {skill}
-                </span>
-              ))}
-            </div>
-            
-            <button 
-              onClick={() => handleBook(m.id)} 
-              className="mt-auto btn-primary w-full shadow-lg group-hover:shadow-primary/30 relative z-10"
-            >
-              Book Session
-            </button>
+            ) : filteredMentors.map(m => (
+              <div key={m.id} className="glass-card p-6 flex flex-col group relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-bl-[100px] pointer-events-none transition-transform duration-500 group-hover:scale-125 group-hover:bg-primary/20" />
+
+                <div className="flex items-center gap-4 mb-4 relative z-10">
+                  <div className="w-14 h-14 rounded-full bg-primary/10 text-primary flex items-center justify-center font-black text-2xl border border-primary/20 shadow-lg backdrop-blur-sm group-hover:scale-110 transition-transform shrink-0">
+                    {m.name.charAt(0)}
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold leading-tight group-hover:text-primary transition-colors">{m.name}</h2>
+                    <p className="text-[10px] text-primary uppercase font-bold tracking-widest mt-1 bg-primary/10 inline-block px-2 py-0.5 rounded">
+                      {m.hourly_rate > 0 ? `₹${m.hourly_rate}/hr` : 'Volunteer / Free'}
+                    </p>
+                  </div>
+                </div>
+
+                <p className="text-gray-400 text-sm mb-5 line-clamp-2 relative z-10">{m.bio}</p>
+
+                <div className="flex flex-wrap gap-2 mb-6 relative z-10">
+                  {(m.expertise || []).map(skill => (
+                    <span key={skill} className="bg-white/5 border border-white/10 px-2 py-1 rounded text-[10px] uppercase font-bold tracking-widest text-gray-300">
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+
+                {(() => {
+                  const hasBooked = sessions.some(s => s.mentor_id === m.id && s.status !== 'Completed' && s.status !== 'Cancelled');
+                  return hasBooked ? (
+                    <button disabled className="mt-auto py-3 bg-white/10 text-white font-bold rounded-xl w-full relative z-10 flex items-center justify-center gap-2 opacity-50 cursor-not-allowed border border-white/5">
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                      Session Booked
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => setBookingMentor(m)}
+                      className="mt-auto btn-primary w-full shadow-lg group-hover:shadow-primary/30 relative z-10 flex items-center justify-center gap-2"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                      Book Session
+                    </button>
+                  );
+                })()}
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        </div>
+      )}
+
+      {activeTab === 'sessions' && (
+        <div className="relative z-10">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {sessions.length === 0 ? (
+              <div className="col-span-full text-center py-24 glass-card border-dashed">
+                <p className="text-4xl mb-4">📅</p>
+                <p className="text-gray-400 text-sm mb-4">You have no booked sessions.</p>
+                <button onClick={() => setActiveTab('discover')} className="btn-primary text-sm inline-block">
+                  Discover Mentors
+                </button>
+              </div>
+            ) : sessions.map(s => (
+              <div key={s.id} className="glass-card p-6 flex flex-col group relative overflow-hidden">
+                <div className={`absolute top-0 right-0 w-24 h-24 rounded-bl-full pointer-events-none transition-transform group-hover:scale-125 ${
+                  s.status === 'Scheduled' ? 'bg-blue-500/10' :
+                  s.status === 'Completed' ? 'bg-green-500/10' :
+                  s.status === 'Cancelled' ? 'bg-red-500/10' : 'bg-yellow-500/10'
+                }`} />
+
+                <div className="flex justify-between items-start mb-4 relative z-10">
+                  <div>
+                    <h2 className="text-lg font-bold leading-tight">{s.mentor?.name || 'Unknown'}</h2>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-lg whitespace-nowrap mt-2 inline-block ${
+                      s.status === 'Scheduled' ? 'text-blue-400 bg-blue-500/10 border border-blue-500/20' :
+                      s.status === 'Completed' ? 'text-green-400 bg-green-500/10 border border-green-500/20' :
+                      s.status === 'Cancelled' ? 'text-red-400 bg-red-500/10 border border-red-500/20' :
+                      'text-yellow-400 bg-yellow-500/10 border border-yellow-500/20'
+                    }`}>
+                      {s.status}
+                    </span>
+                  </div>
+                  <div className="w-10 h-10 rounded-full bg-white/5 text-gray-300 flex items-center justify-center font-bold text-lg border border-white/10 shrink-0">
+                    {s.mentor?.name ? s.mentor.name.charAt(0) : '?'}
+                  </div>
+                </div>
+
+                <div className="bg-black/20 rounded-xl p-4 mb-4 border border-white/5 relative z-10">
+                  <p className="text-xs text-gray-400 uppercase tracking-widest font-bold mb-1">Scheduled Time</p>
+                  <p className="text-white font-medium text-sm">
+                    {new Date(s.scheduled_time).toLocaleString(undefined, {
+                      weekday: 'short', month: 'short', day: 'numeric',
+                      hour: '2-digit', minute: '2-digit'
+                    })}
+                  </p>
+                </div>
+
+                {s.notes && (
+                  <div className="mb-4 relative z-10">
+                    <p className="text-xs text-gray-400 uppercase tracking-widest font-bold mb-1">Notes</p>
+                    <p className="text-sm text-gray-300 line-clamp-2">{s.notes}</p>
+                  </div>
+                )}
+                
+                {s.meeting_link && (
+                  <a href={s.meeting_link} target="_blank" rel="noreferrer" className="mt-auto w-full btn-secondary py-2 text-xs text-center border-primary/30 hover:border-primary">
+                    Join Meeting
+                  </a>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

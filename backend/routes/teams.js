@@ -142,4 +142,146 @@ router.get("/:id/members", auth, async (req, res) => {
   }
 });
 
+// Leave a team
+router.delete("/:id/leave", auth, async (req, res) => {
+  try {
+    const memberSnapshot = await db.collection("team_members")
+      .where("team_id", "==", req.params.id)
+      .where("user_id", "==", req.user.id)
+      .get();
+
+    if (memberSnapshot.empty)
+      return res.status(404).json({ message: "You are not a member of this team." });
+
+    await memberSnapshot.docs[0].ref.delete();
+
+    res.json({ message: "You have left the team successfully." });
+  } catch (err) {
+    console.error("Leave team error:", err.message);
+    res.status(500).json({ message: "Server error." });
+  }
+});
+
+// ── Discover teammates ────────────────────────────────────────────────────
+router.get("/discover", auth, async (req, res) => {
+  try {
+    const { skill, domain, experience, college } = req.query;
+
+    const usersSnap = await db.collection("users")
+      .where("role", "==", "student")
+      .where("is_active", "==", true)
+      .get();
+
+    let students = [];
+    for (const doc of usersSnap.docs) {
+      const u = doc.data();
+      if (u.id === req.user.id) continue; // Exclude self
+
+      const profileDoc = await db.collection("student_profiles").doc(u.id).get();
+      const sp = profileDoc.exists ? profileDoc.data() : {};
+
+      students.push({
+        id: u.id,
+        name: u.name,
+        email: u.email,
+        college: sp.college || null,
+        branch: sp.branch || null,
+        skills: sp.skills || [],
+        career_goal: sp.career_goal || null,
+        career_interests: sp.career_interests || [],
+        experience_level: sp.experience_level || null,
+        bio: sp.bio || null,
+        github_url: sp.github_url || null,
+        linkedin_url: sp.linkedin_url || null,
+        profile_completion: sp.profile_completion || 0,
+      });
+    }
+
+    // Apply filters
+    if (skill) {
+      const skillLower = skill.toLowerCase();
+      students = students.filter(s => s.skills.some(sk => sk.toLowerCase().includes(skillLower)));
+    }
+    if (domain) {
+      const domainLower = domain.toLowerCase();
+      students = students.filter(s =>
+        (s.career_interests || []).some(i => i.toLowerCase().includes(domainLower)) ||
+        (s.career_goal || '').toLowerCase().includes(domainLower)
+      );
+    }
+    if (experience) {
+      students = students.filter(s => s.experience_level === experience);
+    }
+    if (college) {
+      const collegeLower = college.toLowerCase();
+      students = students.filter(s => (s.college || '').toLowerCase().includes(collegeLower));
+    }
+
+    // Sort by profile completeness
+    students.sort((a, b) => b.profile_completion - a.profile_completion);
+
+    res.json(students.slice(0, 50));
+  } catch (err) {
+    console.error("Discover error:", err.message);
+    res.status(500).json({ message: "Server error." });
+  }
+});
+
+// ── Team discussions ──────────────────────────────────────────────────────
+router.post("/:id/discussions", auth, async (req, res) => {
+  const { message } = req.body;
+  if (!message || !message.trim()) return res.status(400).json({ message: "Message is required." });
+
+  try {
+    // Verify user is a member
+    const memberCheck = await db.collection("team_members")
+      .where("team_id", "==", req.params.id)
+      .where("user_id", "==", req.user.id)
+      .get();
+    if (memberCheck.empty) return res.status(403).json({ message: "You are not a member of this team." });
+
+    const userDoc = await db.collection("users").doc(req.user.id).get();
+    const userName = userDoc.exists ? userDoc.data().name : 'Unknown';
+
+    const msgRef = db.collection("team_discussions").doc();
+    const msg = {
+      id: msgRef.id,
+      team_id: req.params.id,
+      user_id: req.user.id,
+      user_name: userName,
+      message: message.trim(),
+      created_at: new Date(),
+    };
+    await msgRef.set(msg);
+
+    res.json(msg);
+  } catch (err) {
+    console.error("Discussion post error:", err.message);
+    res.status(500).json({ message: "Server error." });
+  }
+});
+
+router.get("/:id/discussions", auth, async (req, res) => {
+  try {
+    const snap = await db.collection("team_discussions")
+      .where("team_id", "==", req.params.id)
+      .get();
+
+    const messages = snap.docs.map(doc => {
+      const d = doc.data();
+      return {
+        ...d,
+        created_at: d.created_at?.toDate ? d.created_at.toDate() : d.created_at,
+      };
+    });
+
+    messages.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+
+    res.json(messages.slice(-50)); // Last 50 messages
+  } catch (err) {
+    console.error("Discussion get error:", err.message);
+    res.status(500).json({ message: "Server error." });
+  }
+});
+
 module.exports = router;

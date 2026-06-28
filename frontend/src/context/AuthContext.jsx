@@ -42,8 +42,10 @@ export const AuthProvider = ({ children }) => {
   const login = (token, user) => {
     localStorage.setItem('token', token);
     localStorage.setItem('user', JSON.stringify(user));
+    localStorage.removeItem('onboarding_completed'); // Force fresh check
     setToken(token);
     setUser(user);
+    setOnboardingCompleted(null); // Reset state to trigger Spinner
   };
 
   const loginWithGoogle = async () => {

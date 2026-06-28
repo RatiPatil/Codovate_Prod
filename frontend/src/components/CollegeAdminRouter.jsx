@@ -1,37 +1,29 @@
-import React, { Suspense, lazy } from 'react';
+import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import CollegeAdminLayout from './layouts/CollegeAdminLayout';
 
-const CollegeAdminDashboard = lazy(() => import('./dashboards/CollegeAdminDashboard'));
-const CollegeAdminStudents = lazy(() => import('../pages/admin/CollegeAdminStudents'));
-const CollegeAdminFaculty = lazy(() => import('../pages/admin/CollegeAdminFaculty'));
-const CollegeAdminProjects = lazy(() => import('../pages/admin/CollegeAdminProjects'));
-const CollegeAdminCertificates = lazy(() => import('../pages/admin/CollegeAdminCertificates'));
-const CollegeAdminEvents = lazy(() => import('../pages/admin/CollegeAdminEvents'));
-const CollegeAdminReports = lazy(() => import('../pages/admin/CollegeAdminReports'));
-const CollegeAdminNotifications = lazy(() => import('../pages/admin/CollegeAdminNotifications'));
-
-const Loader = () => (
-  <div className="flex items-center justify-center h-full min-h-[50vh] bg-transparent">
-    <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
-  </div>
-);
+import CollegeAdminDashboard from './dashboards/CollegeAdminDashboard';
+import CollegeAdminStudents from '../pages/admin/CollegeAdminStudents';
+import CollegeAdminFaculty from '../pages/admin/CollegeAdminFaculty';
+import CollegeAdminProjects from '../pages/admin/CollegeAdminProjects';
+import CollegeAdminCertificates from '../pages/admin/CollegeAdminCertificates';
+import CollegeAdminEvents from '../pages/admin/CollegeAdminEvents';
+import CollegeAdminReports from '../pages/admin/CollegeAdminReports';
+import CollegeAdminNotifications from '../pages/admin/CollegeAdminNotifications';
 
 const CollegeAdminRouter = () => {
   return (
     <CollegeAdminLayout>
-      <Suspense fallback={<Loader />}>
-        <Routes>
-          <Route path="/" element={<CollegeAdminDashboard />} />
-          <Route path="students" element={<CollegeAdminStudents />} />
-          <Route path="faculty" element={<CollegeAdminFaculty />} />
-          <Route path="projects" element={<CollegeAdminProjects />} />
-          <Route path="certificates" element={<CollegeAdminCertificates />} />
-          <Route path="events" element={<CollegeAdminEvents />} />
-          <Route path="reports" element={<CollegeAdminReports />} />
-          <Route path="notifications" element={<CollegeAdminNotifications />} />
-        </Routes>
-      </Suspense>
+      <Routes>
+        <Route path="/" element={<CollegeAdminDashboard />} />
+        <Route path="students" element={<CollegeAdminStudents />} />
+        <Route path="faculty" element={<CollegeAdminFaculty />} />
+        <Route path="projects" element={<CollegeAdminProjects />} />
+        <Route path="certificates" element={<CollegeAdminCertificates />} />
+        <Route path="events" element={<CollegeAdminEvents />} />
+        <Route path="reports" element={<CollegeAdminReports />} />
+        <Route path="notifications" element={<CollegeAdminNotifications />} />
+      </Routes>
     </CollegeAdminLayout>
   );
 };

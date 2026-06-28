@@ -3,24 +3,41 @@ import { Link } from 'react-router-dom';
 import api from '../api/axios';
 import { useSocket } from '../context/SocketContext';
 
+const calculateMatchScore = (opp, profileSkills) => {
+  if (!profileSkills || profileSkills.length === 0) return 60;
+  if (!opp.skills_required || opp.skills_required.length === 0) return 80;
+  
+  const oppSkills = opp.skills_required.map(s => s.toLowerCase());
+  const mySkills = profileSkills.map(s => s.toLowerCase());
+  
+  const matches = oppSkills.filter(s => mySkills.includes(s));
+  if (oppSkills.length === 0) return 80;
+  
+  const matchPercentage = (matches.length / oppSkills.length) * 100;
+  return Math.floor(50 + (matchPercentage / 2));
+};
+
 const Dashboard = () => {
   const [profile, setProfile] = useState(null);
   const [apps, setApps] = useState([]);
   const [opps, setOpps] = useState([]);
+  const [activity, setActivity] = useState([]);
   const [loading, setLoading] = useState(true);
   const [liveToast, setLiveToast] = useState('');
   const { socket } = useSocket();
 
   const fetchAll = useCallback(async () => {
     try {
-      const [profileRes, appsRes, oppsRes] = await Promise.all([
+      const [profileRes, appsRes, oppsRes, activityRes] = await Promise.all([
         api.get('/students/profile'),
         api.get('/applications/my'),
         api.get('/opportunities'),
+        api.get('/students/activity').catch(() => ({ data: [] }))
       ]);
       setProfile(profileRes.data);
       setApps(appsRes.data);
       setOpps(oppsRes.data);
+      setActivity(activityRes.data || []);
     } catch (err) {
       console.error(err);
     } finally {
@@ -38,6 +55,7 @@ const Dashboard = () => {
       if (data.type === 'new_application') {
         setApps(prev => [data.application, ...prev]);
         showLiveToast(`✅ Applied to ${data.application.title}`);
+        fetchAll(); // Refresh activity
       }
       if (data.type === 'status_change') {
         setApps(prev => prev.map(a =>
@@ -54,7 +72,7 @@ const Dashboard = () => {
       socket.off('application_update');
       socket.off('new_opportunity');
     };
-  }, [socket]);
+  }, [socket, fetchAll]);
 
   const showLiveToast = (msg) => {
     setLiveToast(msg);
@@ -89,6 +107,13 @@ const Dashboard = () => {
     return 'bg-primary';
   };
 
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good morning";
+    if (hour < 18) return "Good afternoon";
+    return "Good evening";
+  };
+
   return (
     <div className="p-6 md:p-8 max-w-7xl mx-auto relative z-10">
       {liveToast && (
@@ -99,17 +124,36 @@ const Dashboard = () => {
       )}
 
       {/* Header */}
-      <div className="mb-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div className="mb-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl md:text-4xl font-bold text-white tracking-tight">
-            Welcome back, <span className="text-gradient">{profile?.name?.split(' ')[0]}</span> 👋
+            {getGreeting()}, <span className="text-gradient">{profile?.name?.split(' ')[0] || 'Student'}</span> 👋
           </h1>
-          <p className="text-gray-400 text-sm mt-2">Your growth dashboard — live & real-time</p>
+          <p className="text-gray-400 text-sm mt-2">Here is what's happening with your profile today.</p>
         </div>
         <div className="flex items-center gap-2 glass-panel rounded-full px-4 py-2">
           <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse shadow-[0_0_8px_#4ade80]" />
-          <span className="text-green-400 text-xs font-bold uppercase tracking-wider">Live System</span>
+          <span className="text-green-400 text-xs font-bold uppercase tracking-wider">System Live</span>
         </div>
+      </div>
+
+      {/* Quick Access Shortcuts */}
+      <div className="flex flex-wrap gap-4 mb-10">
+        {[
+          { label: 'Find Opportunities', icon: '🔍', to: '/opportunities', color: 'from-blue-500/20 to-primary/20 hover:border-primary/50' },
+          { label: 'Build Resume', icon: '📄', to: '/resume', color: 'from-purple-500/20 to-pink-500/20 hover:border-purple-500/50' },
+          { label: 'Find Teammates', icon: '🤝', to: '/teams', color: 'from-green-500/20 to-emerald-500/20 hover:border-green-500/50' },
+          { label: 'Book Mentor', icon: '🎓', to: '/mentors', color: 'from-orange-500/20 to-amber-500/20 hover:border-orange-500/50' }
+        ].map((shortcut, idx) => (
+          <Link 
+            key={idx} 
+            to={shortcut.to}
+            className={`flex-1 min-w-[160px] glass-card p-4 flex items-center gap-3 border border-white/10 transition-all duration-300 hover:-translate-y-1 bg-gradient-to-br ${shortcut.color}`}
+          >
+            <span className="text-2xl">{shortcut.icon}</span>
+            <span className="text-white font-semibold text-sm whitespace-nowrap">{shortcut.label}</span>
+          </Link>
+        ))}
       </div>
 
       <div className="grid lg:grid-cols-3 gap-6">
@@ -132,58 +176,87 @@ const Dashboard = () => {
             ))}
           </div>
 
-          {/* Application Timeline */}
-          <div className="glass-panel rounded-2xl p-6 relative overflow-hidden">
-            {/* Decorative background glow */}
-            <div className="absolute -top-24 -left-24 w-48 h-48 bg-primary/10 rounded-full blur-[60px]" />
-            
-            <div className="flex items-center justify-between mb-6 relative z-10">
-              <h2 className="text-white font-bold text-xl flex items-center gap-2">
-                <span className="text-2xl">📍</span> Application Timeline
-              </h2>
-              <Link to="/applications" className="text-primary text-xs font-semibold hover:text-white transition-colors bg-white/5 hover:bg-white/10 border border-white/10 px-4 py-2 rounded-full">
-                View all
-              </Link>
-            </div>
-            
-            {apps.length === 0 ? (
-              <div className="text-center py-12 glass-card border-dashed">
-                <p className="text-gray-400 text-sm">No applications yet.</p>
-                <Link to="/opportunities" className="btn-primary inline-block mt-4 text-sm">
-                  Browse opportunities
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* Application Timeline */}
+            <div className="glass-panel rounded-2xl p-6 relative overflow-hidden">
+              <div className="absolute -top-24 -left-24 w-48 h-48 bg-primary/10 rounded-full blur-[60px]" />
+              
+              <div className="flex items-center justify-between mb-6 relative z-10">
+                <h2 className="text-white font-bold text-xl flex items-center gap-2">
+                  <span className="text-2xl">📍</span> Active Applications
+                </h2>
+                <Link to="/applications" className="text-primary text-xs font-semibold hover:text-white transition-colors bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-1.5 rounded-full">
+                  All
                 </Link>
               </div>
-            ) : (
-              <div className="relative border-l-2 border-white/10 ml-3 space-y-8 my-4">
-                {apps.slice(0, 4).map((app, idx) => (
-                  <div key={app.id} className="relative pl-6 group">
-                    {/* Timeline Dot */}
-                    <div className={`absolute -left-[9px] top-1 w-4 h-4 rounded-full border-4 border-[#0a0a0a] ${getStatusColor(app.status)} shadow-[0_0_10px_currentColor] transition-transform group-hover:scale-125`} />
-                    
-                    <div className="glass-card p-5">
-                      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-                        <div>
-                          <h3 className="text-white font-bold text-lg group-hover:text-primary transition-colors">{app.title}</h3>
-                          <p className="text-gray-300 text-xs font-medium mt-1">{app.company}</p>
-                          <p className="text-gray-500 text-[11px] mt-3 font-medium flex items-center gap-1">
-                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                            Applied on {new Date(app.applied_at).toLocaleDateString()}
-                          </p>
+              
+              {apps.length === 0 ? (
+                <div className="text-center py-12 glass-card border-dashed">
+                  <p className="text-gray-400 text-sm">No applications yet.</p>
+                  <Link to="/opportunities" className="btn-primary inline-block mt-4 text-sm">
+                    Browse opportunities
+                  </Link>
+                </div>
+              ) : (
+                <div className="relative border-l-2 border-white/10 ml-3 space-y-8 my-4">
+                  {apps.slice(0, 4).map((app, idx) => (
+                    <div key={app.id} className="relative pl-6 group">
+                      <div className={`absolute -left-[9px] top-1 w-4 h-4 rounded-full border-4 border-[#0a0a0a] ${getStatusColor(app.status)} shadow-[0_0_10px_currentColor] transition-transform group-hover:scale-125`} />
+                      
+                      <div className="glass-card p-4">
+                        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                          <div>
+                            <h3 className="text-white font-bold text-sm group-hover:text-primary transition-colors">{app.title}</h3>
+                            <p className="text-gray-400 text-xs mt-1">{app.company}</p>
+                          </div>
+                          <span className={`text-[10px] px-3 py-1 rounded-full font-bold shadow-sm whitespace-nowrap backdrop-blur-sm ${
+                            app.status === 'Selected' ? 'bg-green-500/10 text-green-400 border border-green-500/20' :
+                            app.status === 'Rejected' ? 'bg-red-500/10 text-red-400 border border-red-500/20' :
+                            app.status === 'Under Review' ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20' :
+                            'bg-primary/10 text-primary border border-primary/20'
+                          }`}>
+                            {app.status}
+                          </span>
                         </div>
-                        <span className={`text-xs px-4 py-1.5 rounded-full font-bold shadow-sm whitespace-nowrap backdrop-blur-sm ${
-                          app.status === 'Selected' ? 'bg-green-500/10 text-green-400 border border-green-500/20' :
-                          app.status === 'Rejected' ? 'bg-red-500/10 text-red-400 border border-red-500/20' :
-                          app.status === 'Under Review' ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20' :
-                          'bg-primary/10 text-primary border border-primary/20'
-                        }`}>
-                          {app.status}
-                        </span>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Recent Activity Feed */}
+            <div className="glass-panel rounded-2xl p-6 relative overflow-hidden">
+              <div className="flex items-center justify-between mb-6 relative z-10">
+                <h2 className="text-white font-bold text-xl flex items-center gap-2">
+                  <span className="text-2xl">⚡</span> Recent Activity
+                </h2>
               </div>
-            )}
+              
+              {activity.length === 0 ? (
+                <div className="text-center py-12 glass-card border-dashed">
+                  <p className="text-gray-400 text-sm">No recent activity.</p>
+                </div>
+              ) : (
+                <div className="space-y-4 relative z-10">
+                  {activity.map((act, idx) => (
+                    <div key={idx} className="flex items-start gap-3">
+                      <div className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center shrink-0 text-sm">
+                        {act.icon || '📌'}
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-300">
+                          {act.title}
+                        </p>
+                        <p className="text-[10px] text-gray-500 mt-1 uppercase tracking-wider">
+                          {new Date(act.time).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
         </div>
@@ -232,60 +305,32 @@ const Dashboard = () => {
             )}
           </div>
 
-          {/* Skill Badges */}
-          <div className="glass-panel rounded-2xl p-6 relative overflow-hidden">
-            <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-purple-500/10 rounded-full blur-[50px] pointer-events-none" />
-            
-            <div className="flex items-center justify-between mb-5 relative z-10">
-              <h2 className="text-white font-bold text-xl flex items-center gap-2">
-                <span className="text-2xl">⚡</span> Top Skills
-              </h2>
-              <Link to="/profile" className="text-gray-400 hover:text-white transition-colors bg-white/5 p-2 rounded-full border border-white/10 hover:bg-white/10">
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-              </Link>
-            </div>
-            
-            {(!profile?.skills || profile.skills.length === 0) ? (
-              <div className="text-center py-8 glass-card border-dashed">
-                <p className="text-gray-400 text-sm mb-3">No skills added yet.</p>
-                <Link to="/profile" className="btn-secondary text-sm inline-block">Add Skills</Link>
-              </div>
-            ) : (
-              <div className="flex flex-wrap gap-2.5 relative z-10">
-                {profile.skills.map((skill, idx) => (
-                  <span key={idx} className="px-3.5 py-1.5 bg-white/5 backdrop-blur-md border border-white/10 rounded-lg text-white text-sm font-medium hover:bg-white/10 transition-colors cursor-default">
-                    {skill}
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* AI Recommendations (Mock) */}
+          {/* AI Recommendations */}
           <div className="glass-panel rounded-2xl p-6 relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-bl-[100px] pointer-events-none" />
             <div className="flex items-center justify-between mb-5 relative z-10">
               <h2 className="text-white font-bold text-xl flex items-center gap-2">
-                <span className="text-2xl">🤖</span> AI Recommendations
+                <span className="text-2xl">🤖</span> AI Recommended
               </h2>
-              <div className="px-2 py-1 bg-primary/20 text-primary border border-primary/30 rounded-lg text-[10px] font-bold uppercase tracking-widest animate-pulse">
-                Beta
-              </div>
             </div>
 
             {opps.length === 0 ? (
               <div className="text-center py-8 glass-card border-dashed">
-                <p className="text-gray-400 text-sm">Not enough data to generate recommendations.</p>
+                <p className="text-gray-400 text-sm">No new opportunities available.</p>
               </div>
             ) : (
               <div className="space-y-4 relative z-10">
-                {opps.slice(0, 2).map((opp, idx) => {
-                  const matchScore = Math.floor(Math.random() * 20) + 75; // Random score between 75 and 94
+                {opps.slice(0, 3).map((opp, idx) => {
+                  const matchScore = calculateMatchScore(opp, profile?.skills || []);
                   return (
                     <div key={idx} className="glass-card p-4 hover:border-primary/50 transition-colors">
                       <div className="flex justify-between items-start mb-2">
                         <h3 className="text-white font-bold text-sm leading-tight">{opp.title}</h3>
-                        <span className="text-xs font-bold text-green-400 bg-green-500/10 border border-green-500/20 px-2 py-0.5 rounded-lg whitespace-nowrap">
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-lg whitespace-nowrap ${
+                          matchScore >= 80 ? 'text-green-400 bg-green-500/10 border border-green-500/20' :
+                          matchScore >= 60 ? 'text-yellow-400 bg-yellow-500/10 border border-yellow-500/20' :
+                          'text-gray-400 bg-gray-500/10 border border-gray-500/20'
+                        }`}>
                           {matchScore}% Match
                         </span>
                       </div>

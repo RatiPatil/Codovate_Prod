@@ -14,26 +14,38 @@ router.get("/", async (req, res) => {
       const profileDoc = await db.collection("student_profiles").doc(u.id).get();
       const sp = profileDoc.exists ? profileDoc.data() : {};
       
-      // Calculate Activity Points
-      // 1. Profile completion gives base points (up to 1000)
+      // Calculate Points
       const completionPoints = (sp.profile_completion || 0) * 10;
       
-      // 2. Active applications give points
-      const appsSnapshot = await db.collection("applications").where("student_id", "==", u.id).get();
-      const appPoints = appsSnapshot.size * 50;
+      const [appsSnap, teamsSnap, mentorsSnap] = await Promise.all([
+        db.collection("applications").where("student_id", "==", u.id).get(),
+        db.collection("team_members").where("user_id", "==", u.id).get(),
+        db.collection("mentor_bookings").where("student_id", "==", u.id).get(),
+      ]);
+
+      const appPoints = appsSnap.size * 50;
+      const teamPoints = teamsSnap.size * 100;
+      const mentorPoints = mentorsSnap.size * 25;
       
-      const totalPoints = completionPoints + appPoints + (sp.profile_score || 0);
+      const totalPoints = completionPoints + appPoints + teamPoints + mentorPoints + (sp.profile_score || 0);
       
-      // Generate some badges based on activity
+      // Activity Score calculation (more recent engagement = higher activity)
+      // For now, simpler derived score based on dynamic actions
+      const activityScore = appPoints + teamPoints + mentorPoints;
+
+      // Badges
       const badges = [];
-      if (appsSnapshot.size >= 3) badges.push('🔥 Top Applicant');
-      if (sp.profile_completion === 100) badges.push('⭐ Profile All-Star');
+      if (appsSnap.size >= 3) badges.push('🔥 Top Applicant');
+      if (teamsSnap.size >= 2) badges.push('🤝 Team Player');
+      if (sp.profile_completion === 100) badges.push('⭐ All-Star');
       
       return {
         id: u.id,
         name: u.name,
         college: sp.college || 'Unknown College',
+        skills: sp.skills || [],
         points: totalPoints,
+        activity_score: activityScore,
         badges: badges
       };
     }));
@@ -41,7 +53,7 @@ router.get("/", async (req, res) => {
     // Sort by highest points
     students.sort((a, b) => b.points - a.points);
     
-    res.json(students.slice(0, 50)); // Return top 50
+    res.json(students.slice(0, 100)); // Return top 100
   } catch (err) {
     console.error("Leaderboard error:", err.message);
     res.status(500).json({ message: "Server error." });

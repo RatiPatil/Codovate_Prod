@@ -4,8 +4,8 @@ import { useAuth } from '../context/AuthContext';
 
 // Lazy load all ecosystem dashboards to prevent downloading unnecessary code
 const SuperAdminRouter = lazy(() => import('./SuperAdminRouter'));
-const CollegeAdminDashboard = lazy(() => import('./dashboards/CollegeAdminDashboard'));
-const CompanyAdminDashboard = lazy(() => import('./dashboards/CompanyAdminDashboard'));
+const CollegeAdminRouter = lazy(() => import('./CollegeAdminRouter'));
+const CompanyAdminRouter = lazy(() => import('./CompanyAdminRouter'));
 const MentorDashboard = lazy(() => import('./dashboards/MentorDashboard'));
 
 const Loader = () => (
@@ -25,9 +25,9 @@ const DashboardRouter = () => {
       case 'admin':
         return <SuperAdminRouter />;
       case 'college_admin':
-        return <CollegeAdminDashboard />;
+        return <CollegeAdminRouter />;
       case 'company_admin':
-        return <CompanyAdminDashboard />;
+        return <CompanyAdminRouter />;
       case 'mentor':
         return <MentorDashboard />;
       default:

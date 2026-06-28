@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { gsap } from 'gsap';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
+import { locationData } from '../utils/locationData';
+import confetti from 'canvas-confetti';
 
 const STEPS = [
   { id: 1, title: 'Personal Info', icon: '👤', desc: 'Basic information about you' },
@@ -49,10 +51,12 @@ const validateStep = (step, data) => {
   if (step === 1) {
     if (!data.full_name || data.full_name.trim().length < 2)
       errors.full_name = 'Full name must be at least 2 characters';
-    if (data.phone && !/^[+]?[\d\s-]{10,15}$/.test(data.phone))
-      errors.phone = 'Enter a valid phone number';
-    if (!data.city || data.city.trim().length < 2)
-      errors.city = 'Please enter your city';
+    if (data.phone && data.phone.length < 10)
+      errors.phone = 'Phone must be at least 10 digits';
+    if (!data.country) errors.country = 'Please select a country';
+    if (!data.state) errors.state = 'Please select a state';
+    if (!data.district) errors.district = 'Please select a district';
+    if (!data.taluka) errors.taluka = 'Please select a taluka';
   }
 
   if (step === 2) {
@@ -86,16 +90,16 @@ const validateStep = (step, data) => {
   return errors;
 };
 
-const InputField = ({ label, field, placeholder, type = 'text', required = false, data, update, touched, setTouched, errors }) => (
+const InputField = ({ label, field, placeholder, type = 'text', required = false, optional = false, data, update, handleBlur, touched, errors }) => (
   <div>
     <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">
-      {label} {required && <span className="text-red-400">*</span>}
+      {label} {required && <span className="text-red-400">*</span>} {optional && <span className="text-gray-500 font-normal normal-case">(Optional)</span>}
     </label>
     <input
       type={type}
       value={data[field]}
       onChange={e => update(field, e.target.value)}
-      onBlur={() => setTouched(t => ({ ...t, [field]: true }))}
+      onBlur={() => handleBlur(field)}
       placeholder={placeholder}
       className={`w-full bg-white/5 border rounded-xl px-4 py-3.5 text-white placeholder-gray-600 text-sm focus:outline-none focus:ring-2 transition-all duration-200 ${
         errors[field] && touched[field]
@@ -115,7 +119,7 @@ export default function Onboarding() {
   const { completeOnboarding } = useAuth();
   const [step, setStep] = useState(1);
   const [data, setData] = useState({
-    full_name: '', phone: '', city: '',
+    full_name: '', phone: '', country: 'India', state: '', district: '', taluka: '',
     college: '', branch: '', year: '',
     career_goal: '', career_interests: [],
     experience_level: '', skills: [],
@@ -129,9 +133,40 @@ export default function Onboarding() {
   const contentRef = useRef(null);
 
   const update = (field, value) => {
-    setData(prev => ({ ...prev, [field]: value }));
+    let val = value;
+    if (field === 'phone') {
+      val = value.replace(/[^0-9]/g, '').slice(0, 15);
+    }
+    if (field === 'full_name') {
+      val = value.replace(/\s{2,}/g, ' '); // Auto-trim multiple spaces
+    }
+    setData(prev => ({ ...prev, [field]: val }));
     if (touched[field]) {
-      setErrors(validateStep(step, { ...data, [field]: value }));
+      setErrors(prev => ({ ...prev, ...validateStep(step, { ...data, [field]: val }) }));
+    }
+  };
+
+  const handleBlur = async (field) => {
+    setTouched(t => ({ ...t, [field]: true }));
+    let updatedData = { ...data };
+    if (field === 'full_name') {
+      const trimmed = data.full_name.trim();
+      updatedData.full_name = trimmed;
+      setData(prev => ({ ...prev, full_name: trimmed }));
+    }
+    
+    setErrors(validateStep(step, updatedData));
+
+    // Async duplicate phone check
+    if (field === 'phone' && updatedData.phone.length >= 10) {
+      try {
+        const res = await api.post('/onboarding/check-phone', { phone: updatedData.phone });
+        if (!res.data.available) {
+          setErrors(prev => ({ ...prev, phone: res.data.reason }));
+        }
+      } catch (err) {
+        console.error("Phone check error", err);
+      }
     }
   };
 
@@ -143,8 +178,47 @@ export default function Onboarding() {
     });
   };
 
+  const triggerSuccessAnimation = () => {
+    const duration = 3000;
+    const end = Date.now() + duration;
+
+    (function frame() {
+      confetti({
+        particleCount: 5,
+        angle: 60,
+        spread: 55,
+        origin: { x: 0 },
+        colors: ['#2015FF', '#4ade80', '#c084fc']
+      });
+      confetti({
+        particleCount: 5,
+        angle: 120,
+        spread: 55,
+        origin: { x: 1 },
+        colors: ['#2015FF', '#4ade80', '#c084fc']
+      });
+
+      if (Date.now() < end) {
+        requestAnimationFrame(frame);
+      }
+    }());
+  };
+
   const handleNext = async () => {
     const stepErrors = validateStep(step, data);
+    
+    // Explicit phone check on next for Step 1
+    if (step === 1 && !stepErrors.phone && data.phone) {
+      try {
+        const res = await api.post('/onboarding/check-phone', { phone: data.phone });
+        if (!res.data.available) {
+          stepErrors.phone = res.data.reason;
+        }
+      } catch (err) {
+        console.error("Phone check error", err);
+      }
+    }
+
     if (Object.keys(stepErrors).length > 0) {
       setErrors(stepErrors);
       const allTouched = {};
@@ -171,12 +245,16 @@ export default function Onboarding() {
       setSaving(true);
       try {
         await api.post('/onboarding/save', { ...data, onboarding_completed: true });
-        completeOnboarding();
-        navigate('/dashboard');
+        triggerSuccessAnimation();
+        
+        // Wait a little bit for the user to see the confetti
+        setTimeout(() => {
+          completeOnboarding();
+          navigate('/dashboard');
+        }, 1500);
       } catch (err) {
         console.error(err);
-        alert('Failed to save profile');
-      } finally {
+        alert(err.response?.data?.message || 'Failed to save profile');
         setSaving(false);
       }
     }
@@ -196,6 +274,7 @@ export default function Onboarding() {
   };
 
   useEffect(() => {
+    if (!cardRef.current) return;
     gsap.fromTo(cardRef.current,
       { y: 40, opacity: 0 },
       { y: 0, opacity: 1, duration: 0.8, ease: 'power3.out' }
@@ -295,18 +374,98 @@ export default function Onboarding() {
                   <InputField
                     label="Full Name" field="full_name"
                     placeholder="e.g. Ratikant Patil" required
-                    data={data} update={update} touched={touched} setTouched={setTouched} errors={errors}
+                    data={data} update={update} handleBlur={handleBlur} touched={touched} errors={errors}
                   />
                   <InputField
                     label="Phone Number" field="phone"
-                    placeholder="+91 98765 43210" type="tel"
-                    data={data} update={update} touched={touched} setTouched={setTouched} errors={errors}
+                    placeholder="9876543210" type="tel" required
+                    data={data} update={update} handleBlur={handleBlur} touched={touched} errors={errors}
                   />
-                  <InputField
-                    label="City" field="city"
-                    placeholder="e.g. Solapur, Mumbai, Pune" required
-                    data={data} update={update} touched={touched} setTouched={setTouched} errors={errors}
-                  />
+                  
+                  {/* Location Selectors */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">
+                        Country <span className="text-red-400">*</span>
+                      </label>
+                      <select
+                        value={data.country}
+                        onChange={(e) => {
+                          update('country', e.target.value);
+                          setData(prev => ({ ...prev, state: '', district: '', taluka: '' }));
+                        }}
+                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary appearance-none"
+                      >
+                        <option value="" className="bg-[#0a0a0a]">Select Country</option>
+                        {Object.keys(locationData).map(c => (
+                          <option key={c} value={c} className="bg-[#0a0a0a]">{c}</option>
+                        ))}
+                      </select>
+                      {errors.country && touched.country && <p className="text-red-400 text-xs mt-1">⚠ {errors.country}</p>}
+                    </div>
+                    
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">
+                        State <span className="text-red-400">*</span>
+                      </label>
+                      <select
+                        value={data.state}
+                        disabled={!data.country}
+                        onChange={(e) => {
+                          update('state', e.target.value);
+                          setData(prev => ({ ...prev, district: '', taluka: '' }));
+                        }}
+                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary disabled:opacity-50 appearance-none"
+                      >
+                        <option value="" className="bg-[#0a0a0a]">Select State</option>
+                        {data.country && locationData[data.country] && Object.keys(locationData[data.country]).map(s => (
+                          <option key={s} value={s} className="bg-[#0a0a0a]">{s}</option>
+                        ))}
+                      </select>
+                      {errors.state && touched.state && <p className="text-red-400 text-xs mt-1">⚠ {errors.state}</p>}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">
+                        District <span className="text-red-400">*</span>
+                      </label>
+                      <select
+                        value={data.district}
+                        disabled={!data.state}
+                        onChange={(e) => {
+                          update('district', e.target.value);
+                          setData(prev => ({ ...prev, taluka: '' }));
+                        }}
+                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary disabled:opacity-50 appearance-none"
+                      >
+                        <option value="" className="bg-[#0a0a0a]">Select District</option>
+                        {data.state && locationData[data.country]?.[data.state] && Object.keys(locationData[data.country][data.state]).map(d => (
+                          <option key={d} value={d} className="bg-[#0a0a0a]">{d}</option>
+                        ))}
+                      </select>
+                      {errors.district && touched.district && <p className="text-red-400 text-xs mt-1">⚠ {errors.district}</p>}
+                    </div>
+                    
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">
+                        Taluka <span className="text-red-400">*</span>
+                      </label>
+                      <select
+                        value={data.taluka}
+                        disabled={!data.district}
+                        onChange={(e) => update('taluka', e.target.value)}
+                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary disabled:opacity-50 appearance-none"
+                      >
+                        <option value="" className="bg-[#0a0a0a]">Select Taluka</option>
+                        {data.district && locationData[data.country]?.[data.state]?.[data.district] && locationData[data.country][data.state][data.district].map(t => (
+                          <option key={t} value={t} className="bg-[#0a0a0a]">{t}</option>
+                        ))}
+                      </select>
+                      {errors.taluka && touched.taluka && <p className="text-red-400 text-xs mt-1">⚠ {errors.taluka}</p>}
+                    </div>
+                  </div>
                 </div>
               )}
 
@@ -316,12 +475,12 @@ export default function Onboarding() {
                   <InputField
                     label="College / University" field="college"
                     placeholder="e.g. Walchand College of Engineering" required
-                    data={data} update={update} touched={touched} setTouched={setTouched} errors={errors}
+                    data={data} update={update} handleBlur={handleBlur} touched={touched} errors={errors}
                   />
                   <InputField
                     label="Branch / Major" field="branch"
                     placeholder="e.g. Computer Science & Engineering" required
-                    data={data} update={update} touched={touched} setTouched={setTouched} errors={errors}
+                    data={data} update={update} handleBlur={handleBlur} touched={touched} errors={errors}
                   />
                   <div>
                     <label className="block text-xs font-semibold text-gray-400 mb-3 uppercase tracking-wider">
@@ -514,7 +673,7 @@ export default function Onboarding() {
                     <textarea
                       value={data.bio}
                       onChange={e => update('bio', e.target.value)}
-                      onBlur={() => setTouched(t => ({ ...t, bio: true }))}
+                      onBlur={() => handleBlur('bio')}
                       placeholder="Write a short professional bio. Tell recruiters who you are, what you build, and what you're looking for..."
                       rows={4}
                       className={`w-full bg-white/5 border rounded-xl px-4 py-3 text-white placeholder-gray-600 text-sm focus:outline-none focus:ring-2 transition-all resize-none ${
@@ -536,7 +695,9 @@ export default function Onboarding() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">GitHub</label>
+                    <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">
+                      GitHub <span className="text-gray-500 font-normal normal-case">(Optional)</span>
+                    </label>
                     <div className="flex items-center bg-white/5 border border-white/10 rounded-xl overflow-hidden focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all">
                       <span className="px-3 py-3.5 text-gray-500 text-sm border-r border-white/10 bg-white/3 shrink-0">
                         github.com/
@@ -551,7 +712,9 @@ export default function Onboarding() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">LinkedIn</label>
+                    <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">
+                      LinkedIn <span className="text-gray-500 font-normal normal-case">(Optional)</span>
+                    </label>
                     <div className="flex items-center bg-white/5 border border-white/10 rounded-xl overflow-hidden focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all">
                       <span className="px-3 py-3.5 text-gray-500 text-sm border-r border-white/10 bg-white/3 shrink-0">
                         linkedin.com/in/
@@ -566,7 +729,9 @@ export default function Onboarding() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">Portfolio Website</label>
+                    <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">
+                      Portfolio Website <span className="text-gray-500 font-normal normal-case">(Optional)</span>
+                    </label>
                     <input
                       value={data.portfolio_url}
                       onChange={e => update('portfolio_url', e.target.value)}

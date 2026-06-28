@@ -33,13 +33,42 @@ app.use((req, res, next) => {
   next();
 });
 
+const protect = require("./middleware/auth");
+
 app.use("/api/auth",          require("./routes/auth"));
+
+app.use("/api/admin",         protect, require("./routes/admin"));
+app.use("/api/admin/users",   protect, require("./routes/adminUsers"));
+app.use("/api/admin/colleges",protect, require("./routes/adminColleges"));
+app.use("/api/admin/companies",protect, require("./routes/adminCompanies"));
+app.use("/api/admin/mentors", protect, require("./routes/adminMentors"));
+app.use("/api/admin/opportunities", protect, require("./routes/adminOpportunities"));
+app.use("/api/admin/projects", protect, require("./routes/adminProjects"));
+app.use("/api/admin/certificates", protect, require("./routes/adminCertificates"));
+app.use("/api/admin/notifications", protect, require("./routes/adminNotifications"));
+app.use("/api/admin/health", protect, require("./routes/adminHealth"));
+app.use("/api/admin/settings", protect, require("./routes/adminSettings"));
+
+// College Admin Scoped Routes
+app.use("/api/college-admin/students", protect, require("./routes/collegeAdminStudents"));
+app.use("/api/college-admin/faculty", protect, require("./routes/collegeAdminFaculty"));
+app.use("/api/college-admin/projects", protect, require("./routes/collegeAdminProjects"));
+app.use("/api/college-admin/certificates", protect, require("./routes/collegeAdminCertificates"));
+app.use("/api/college-admin/events", protect, require("./routes/collegeAdminEvents"));
+app.use("/api/college-admin/notifications", protect, require("./routes/collegeAdminNotifications"));
+app.use("/api/college-admin/reports", protect, require("./routes/collegeAdminReports"));
+
+// Company Admin Scoped Routes
+app.use("/api/company-admin/opportunities", protect, require("./routes/companyAdminOpportunities"));
+app.use("/api/company-admin/applications", protect, require("./routes/companyAdminApplications"));
+app.use("/api/company-admin/interviews", protect, require("./routes/companyAdminInterviews"));
+app.use("/api/company-admin/notifications", protect, require("./routes/companyAdminNotifications"));
 app.use("/api/students",      require("./routes/students"));
 app.use("/api/opportunities", require("./routes/opportunities"));
 app.use("/api/applications",  require("./routes/applications"));
 app.use("/api/onboarding",    require("./routes/onboarding"));
 app.use("/api/notifications", require("./routes/notifications"));
-app.use("/api/admin",         require("./routes/admin"));
+
 app.use("/api/teams",         require("./routes/teams"));
 app.use("/api/mentors",       require("./routes/mentors"));
 app.use("/api/leaderboard",   require("./routes/leaderboard"));

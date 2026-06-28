@@ -84,6 +84,7 @@ router.post("/", auth, async (req, res) => {
       id: newAppRef.id,
       user_id: req.user.id,
       opportunity_id: opportunity_id,
+      company_id: opp.company_id || '', // Link app to the company
       status: 'Applied',
       applied_at: new Date()
     };
@@ -246,6 +247,35 @@ router.put("/:id/status", auth, async (req, res) => {
     res.json({ ...app, status });
   } catch (err) {
     console.error("Update status error:", err.message);
+    res.status(500).json({ message: "Server error." });
+  }
+});
+
+// Withdraw application (student only, only if status is 'Applied')
+router.delete("/:id", auth, async (req, res) => {
+  try {
+    const appRef = db.collection("applications").doc(req.params.id);
+    const appDoc = await appRef.get();
+
+    if (!appDoc.exists)
+      return res.status(404).json({ message: "Application not found." });
+
+    const app = appDoc.data();
+
+    if (app.user_id !== req.user.id)
+      return res.status(403).json({ message: "Not authorized." });
+
+    if (app.status !== 'Applied')
+      return res.status(400).json({ message: "Cannot withdraw — application is already under review or decided." });
+
+    await appRef.delete();
+
+    req.io.to(`user_${req.user.id}`).emit("application_withdrawn", { application_id: req.params.id });
+
+    console.log(`✅ Application ${req.params.id} withdrawn.`);
+    res.json({ message: "Application withdrawn successfully." });
+  } catch (err) {
+    console.error("Withdraw error:", err.message);
     res.status(500).json({ message: "Server error." });
   }
 });

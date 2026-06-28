@@ -94,16 +94,14 @@ const CompanyAdminDashboard = () => {
 
   if (stats.loading) {
     return (
-      <CompanyAdminLayout>
-        <div className="flex-1 flex items-center justify-center">
-          <div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
-        </div>
-      </CompanyAdminLayout>
+      <div className="flex-1 flex items-center justify-center min-h-[50vh]">
+        <div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
+      </div>
     );
   }
 
   return (
-    <CompanyAdminLayout>
+    <div className="w-full">
       <div className="p-4 md:p-8 max-w-7xl mx-auto">
         <header className="mb-10">
           <h1 className="text-4xl font-black text-white tracking-tight mb-2">Recruitment Pipeline</h1>
@@ -187,7 +185,7 @@ const CompanyAdminDashboard = () => {
         onClose={() => setPostModalOpen(false)} 
         initialType={postType} 
       />
-    </CompanyAdminLayout>
+    </div>
   );
 };
 

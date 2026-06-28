@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 // ─── Print Styles ─────────────────────────────────────────────────────────────
 const PRINT_CSS = `
 @media print {
+  @page { margin: 0; }
   body * { visibility: hidden !important; }
   #a4-resume, #a4-resume * { visibility: visible !important; }
   #a4-resume {
@@ -66,10 +67,10 @@ const Label = ({ children, hint }) => (
   </label>
 );
 
-const Input = ({ value, onChange, placeholder, type = 'text', className = '' }) => (
+const Input = ({ value, onChange, placeholder, type = 'text', className = '', hasError = false }) => (
   <input
     type={type} value={value} onChange={onChange} placeholder={placeholder}
-    className={`w-full bg-[#0d0d1a] border border-white/8 rounded-xl py-2.5 px-3.5 text-white text-sm placeholder-gray-600 focus:border-[#2015FF]/60 focus:outline-none transition-all ${className}`}
+    className={`w-full bg-[#0d0d1a] border ${hasError ? 'border-red-500 focus:border-red-400 bg-red-500/5' : 'border-white/8 focus:border-[#2015FF]/60'} rounded-xl py-2.5 px-3.5 text-white text-sm placeholder-gray-600 focus:outline-none transition-all ${className}`}
   />
 );
 
@@ -630,6 +631,48 @@ const ResumeBuilder = () => {
   const [saveMsg, setSaveMsg] = useState('');
   const [showPreview, setShowPreview] = useState(false);
 
+  // Helper to fill dummy data for testing
+  const fillDummyData = () => {
+    setData({
+      personalInfo: {
+        name: user?.name || 'Ratikant Patil',
+        email: user?.email || 'ratikantpatil413@gmail.com',
+        phone: '+91 9876543210',
+        location: 'Pune, Maharashtra',
+        linkedin: 'linkedin.com/in/ratikant',
+        github: 'github.com/ratikant',
+        portfolio: 'ratikant.dev'
+      },
+      targetRole: 'Full Stack Developer',
+      targetSummary: 'Looking for a challenging role in building scalable web applications.',
+      education: [
+        { id: uid(), institution: 'SVERI College of Engineering', degree: 'B.Tech', field: 'Computer Science', gpa: '8.5', startYear: '2021', endYear: '2025', achievements: 'Department Topper in 2nd Year.' }
+      ],
+      experience: [
+        { id: uid(), company: 'Tech Startup Inc', role: 'Software Engineer Intern', startDate: 'May 2024', endDate: 'Aug 2024', current: false, location: 'Remote', description: 'Built REST APIs using Node.js and Express.\\nImproved database query performance by 30%.\\nDeveloped responsive UI components using React.' }
+      ],
+      projects: [
+        { id: uid(), title: 'AI Chatbot System', techStack: 'React, Node.js, Gemini API', link: 'github.com/ratikant/chatbot', description: 'Developed a real-time chatbot for student inquiries.\\nIntegrated Google Gemini API for smart responses.' }
+      ],
+      skills: {
+        technical: ['JavaScript', 'React', 'Node.js', 'MongoDB', 'Python'],
+        soft: ['Leadership', 'Problem Solving', 'Teamwork'],
+        languages: ['English', 'Hindi', 'Marathi']
+      },
+      certifications: [
+        { id: uid(), name: 'AWS Certified Cloud Practitioner', issuer: 'Amazon Web Services', date: 'Jan 2024', link: 'aws.amazon.com/verify' }
+      ],
+      achievements: 'Winner of Smart India Hackathon 2023.',
+      aiSummary: '',
+      enhancedExperience: [],
+      enhancedProjects: [],
+      suggestedSkills: [],
+      atsScore: null,
+      atsTips: [],
+      powered_by: '',
+    });
+  };
+
   // Load saved resume
   useEffect(() => {
     api.get('/resume').then(res => {
@@ -746,6 +789,10 @@ const ResumeBuilder = () => {
             </div>
             <div className="flex items-center gap-3">
               {saveMsg && <span className="text-xs font-bold text-green-400 animate-pulse">{saveMsg}</span>}
+              <button onClick={fillDummyData} type="button"
+                className="px-4 py-2 bg-yellow-500/10 border border-yellow-500/20 rounded-xl text-xs font-bold text-yellow-500 hover:bg-yellow-500 hover:text-white transition-all">
+                🧪 Fill Dummy Data
+              </button>
               <button onClick={handleSave} disabled={saving}
                 className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-xs font-bold text-gray-400 hover:text-white hover:bg-white/10 transition-all disabled:opacity-40">
                 {saving ? '💾 Saving...' : '💾 Save Progress'}
@@ -768,20 +815,36 @@ const ResumeBuilder = () => {
             {/* Step Progress */}
             <div className="mb-6">
               <div className="flex items-center gap-1 overflow-x-auto pb-2 scrollbar-hide">
-                {STEPS.map((s, i) => (
+                {STEPS.map((s, i) => {
+                  const checkStepComplete = (idx) => {
+                    switch(idx) {
+                      case 0: return !!(data.personalInfo.name && data.personalInfo.email && data.personalInfo.phone);
+                      case 1: return !!data.targetRole;
+                      case 2: return data.education.some(e => e.institution);
+                      case 3: return data.experience.some(e => e.company);
+                      case 4: return data.projects.some(p => p.title);
+                      case 5: return (data.skills.technical || []).length > 0;
+                      case 6: return data.certifications.some(c => c.name);
+                      case 7: return !!data.aiSummary;
+                      default: return false;
+                    }
+                  };
+                  const completed = checkStepComplete(i);
+                  return (
                   <button key={s.id} onClick={() => setStep(i)}
                     className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] font-black shrink-0 transition-all ${
                       i === step
                         ? 'bg-[#2015FF] text-white shadow-[0_4px_12px_rgba(32,21,255,0.4)]'
-                        : i < step
+                        : completed
                           ? 'bg-green-500/10 text-green-400 border border-green-500/20'
                           : 'bg-white/3 text-gray-500 border border-white/5 hover:border-white/10 hover:text-gray-300'
                     }`}>
-                    <span>{i < step ? '✓' : s.icon}</span>
+                    <span>{completed && i !== step ? '✓' : s.icon}</span>
                     <span className="hidden sm:block">{s.label}</span>
                     {i === 7 && data.aiSummary && <span className="ml-1 text-[8px] px-1 py-0.5 bg-purple-500/20 text-purple-400 rounded">AI ✓</span>}
                   </button>
-                ))}
+                  );
+                })}
               </div>
               <div className="mt-3 h-1 bg-white/5 rounded-full overflow-hidden">
                 <div className="h-full bg-[#2015FF] rounded-full transition-all duration-500" style={{ width: `${((step + 1) / STEPS.length) * 100}%` }} />
