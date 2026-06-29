@@ -1,11 +1,14 @@
 const admin = require('firebase-admin');
 const { getFirestore } = require('firebase-admin/firestore');
 require('dotenv').config();
+const fs = require('fs');
 
 let serviceAccount = null;
 
-// Support individual env vars for Render (most reliable)
-if (process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_CLIENT_EMAIL && process.env.FIREBASE_PRIVATE_KEY) {
+// Support Render Secret Files natively
+if (fs.existsSync('/etc/secrets/serviceAccountKey.json')) {
+  serviceAccount = require('/etc/secrets/serviceAccountKey.json');
+} else if (process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_CLIENT_EMAIL && process.env.FIREBASE_PRIVATE_KEY) {
   serviceAccount = {
     projectId: process.env.FIREBASE_PROJECT_ID,
     clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
