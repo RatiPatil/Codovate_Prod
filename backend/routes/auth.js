@@ -235,7 +235,7 @@ router.post("/admin-login", async (req, res) => {
     return res.status(400).json({ message: "Email and password are required." });
 
   // All valid admin roles
-  const ADMIN_ROLES = ['super_admin', 'admin', 'college_admin', 'company_admin'];
+  const ADMIN_ROLES = ['super_admin', 'admin', 'college_admin', 'company_admin', 'mentor'];
 
   try {
     const usersRef = db.collection('users');

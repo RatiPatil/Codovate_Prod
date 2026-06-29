@@ -167,9 +167,12 @@ const Home = () => {
         <span className="text-white font-bold text-lg md:text-xl tracking-tight">Codovate</span>
       </div>
 
-      <div className="absolute top-7 right-6 md:top-10 md:right-8 z-50">
-        <Link to="/admin-login" className="text-[10px] md:text-xs font-bold text-gray-500 hover:text-white transition-colors uppercase tracking-widest flex items-center gap-1.5 md:gap-2">
-          <span>🛡️</span> <span className="hidden sm:inline">Admin Portal</span><span className="sm:hidden">Admin</span>
+      <div className="absolute top-7 right-6 md:top-10 md:right-8 z-50 flex items-center gap-4 md:gap-6">
+        <Link to="/login" className="text-[10px] md:text-xs font-bold text-white hover:text-primary transition-colors uppercase tracking-widest">
+          Sign In
+        </Link>
+        <Link to="/signup" className="text-[10px] md:text-xs font-bold text-black bg-white hover:bg-gray-200 px-4 py-2 md:px-5 md:py-2.5 rounded-full transition-colors uppercase tracking-widest shadow-[0_0_15px_rgba(255,255,255,0.3)]">
+          Sign Up
         </Link>
       </div>
 

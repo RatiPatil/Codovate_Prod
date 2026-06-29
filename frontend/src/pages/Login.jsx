@@ -68,7 +68,7 @@ const Login = () => {
     setLoading(true);
     try {
       const res = await api.post('/auth/login', form);
-      const adminRoles = ['admin', 'super_admin', 'college_admin', 'company_admin'];
+      const adminRoles = ['admin', 'super_admin', 'college_admin', 'company_admin', 'mentor'];
       if (adminRoles.includes(res.data.user.role)) {
         setError('Admin accounts must use the dedicated Admin Portal.');
         // Remove the invalid session
@@ -234,13 +234,6 @@ const Login = () => {
             Don't have an account?{' '}
             <Link to="/signup" className="text-white hover:text-primary font-bold transition-colors">Create one</Link>
           </p>
-
-          <div className="mt-8 pt-6 border-t border-white/5 text-center">
-            <Link to="/admin-login" className="text-xs font-bold text-gray-500 hover:text-white transition-colors uppercase tracking-widest flex items-center justify-center gap-2">
-              <span>🛡️</span>
-              Access Admin Portal
-            </Link>
-          </div>
         </div>
       </div>
     </div>

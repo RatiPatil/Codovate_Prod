@@ -84,7 +84,7 @@ const AdminLogin = () => {
                   type="email"
                   value={form.email}
                   onChange={e => setForm({ ...form, email: e.target.value })}
-                  placeholder="admin@codovate.com"
+                  placeholder="admin@codovate.in"
                   required
                   className="w-full bg-black/40 border border-white/8 rounded-xl py-3.5 px-4 text-white text-sm placeholder-gray-600 focus:border-[#2015FF]/60 focus:outline-none transition-all"
                 />

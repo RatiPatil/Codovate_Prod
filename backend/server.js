@@ -12,6 +12,8 @@ const server = http.createServer(app);
 
 const allowedOrigins = [
   "http://localhost:5173",
+  "https://codovate.in",
+  "https://www.codovate.in",
   process.env.FRONTEND_URL
 ].filter(Boolean);
 

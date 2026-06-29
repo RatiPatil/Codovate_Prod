@@ -13,7 +13,7 @@ const ADMINS = [
   {
     id: 'super_admin_001',
     name: 'Ratikant Patil',
-    email: 'superadmin@codovate.com',
+    email: 'superadmin@codovate.in',
     password: 'Super@Admin#2026',
     role: 'super_admin',
     description: 'Full system access — all modules'
@@ -21,7 +21,7 @@ const ADMINS = [
   {
     id: 'college_admin_001',
     name: 'SVERI College Admin',
-    email: 'college@codovate.com',
+    email: 'college@codovate.in',
     password: 'College@Admin#2026',
     role: 'college_admin',
     college_id: 'sveri_pandharpur',
@@ -31,7 +31,7 @@ const ADMINS = [
   {
     id: 'company_admin_001',
     name: 'Company Recruiter Admin',
-    email: 'company@codovate.com',
+    email: 'company@codovate.in',
     password: 'Company@Admin#2026',
     role: 'company_admin',
     company_id: 'tcs_001',

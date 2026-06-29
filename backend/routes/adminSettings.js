@@ -23,7 +23,7 @@ router.get('/', superAdminOnly, async (req, res) => {
       const defaultSettings = {
         maintenance_mode: false,
         allow_registrations: true,
-        contact_email: 'support@codovate.com',
+        contact_email: 'support@codovate.in',
         default_theme: 'dark'
       };
       await docRef.set(defaultSettings);

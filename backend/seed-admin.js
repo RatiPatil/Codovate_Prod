@@ -2,7 +2,7 @@ const bcrypt = require('bcryptjs');
 const { db } = require('./config/firebase');
 
 async function seedAdmin() {
-  const email = 'admin@codovate.com';
+  const email = 'admin@codovate.in';
   const password = 'admin'; // simple for demo
   
   try {

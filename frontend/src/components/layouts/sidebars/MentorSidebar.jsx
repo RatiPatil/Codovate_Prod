@@ -12,12 +12,9 @@ const MentorSidebar = ({ mobileOpen, setMobileOpen }) => {
 
   const menuItems = [
     { label: 'Dashboard', path: '/admin', icon: '📊' },
-    { label: 'Students', path: '/admin/students', icon: '🎓' },
-    { label: 'Sessions', path: '/admin/sessions', icon: '🎥' },
+    { label: 'Student Queries', path: '/admin/queries', icon: '❓' },
     { label: 'Calendar', path: '/admin/calendar', icon: '📅' },
     { label: 'Availability', path: '/admin/availability', icon: '🕒' },
-    { label: 'Feedback', path: '/admin/feedback', icon: '⭐' },
-    { label: 'Notifications', path: '/admin/notifications', icon: '🔔' },
   ];
 
   return (
