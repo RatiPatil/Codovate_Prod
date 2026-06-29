@@ -2,15 +2,26 @@ const admin = require('firebase-admin');
 const { getFirestore } = require('firebase-admin/firestore');
 require('dotenv').config();
 
-let serviceAccount;
-try {
-  if (process.env.FIREBASE_SERVICE_ACCOUNT_JSON) {
-    serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);
-  } else {
-    serviceAccount = require('./serviceAccountKey.json');
+let serviceAccount = null;
+
+// Support individual env vars for Render (most reliable)
+if (process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_CLIENT_EMAIL && process.env.FIREBASE_PRIVATE_KEY) {
+  serviceAccount = {
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+    // Render sometimes escapes or strips newlines, this ensures the private key is formatted correctly
+    privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n')
+  };
+} else {
+  try {
+    if (process.env.FIREBASE_SERVICE_ACCOUNT_JSON) {
+      serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);
+    } else {
+      serviceAccount = require('./serviceAccountKey.json');
+    }
+  } catch (e) {
+    console.warn("⚠️ Warning: serviceAccountKey.json not found or FIREBASE_SERVICE_ACCOUNT_JSON is invalid.");
   }
-} catch (e) {
-  console.warn("⚠️ Warning: serviceAccountKey.json not found or FIREBASE_SERVICE_ACCOUNT_JSON is invalid.");
 }
 
 let db;
