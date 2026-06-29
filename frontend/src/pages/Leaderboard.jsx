@@ -59,10 +59,10 @@ const Leaderboard = () => {
 
       {/* Podium for Top 3 */}
       {top3.length > 0 && !search && collegeFilter === 'All' && (
-        <div className="flex flex-col md:flex-row items-end justify-center gap-4 mb-16 px-4">
+        <div className="flex flex-col items-center md:flex-row md:items-end justify-center gap-4 mb-16 px-4">
           {/* Rank 2 */}
           {top3[1] && (
-            <div className="flex-1 max-w-[200px] flex flex-col items-center group relative w-full">
+            <div className="flex-1 max-w-[180px] md:max-w-[200px] flex flex-col items-center group relative w-full">
               <div className="absolute inset-0 bg-blue-500/20 blur-[50px] pointer-events-none" />
               <div className="w-16 h-16 rounded-full bg-blue-500/10 border-2 border-blue-400/50 flex items-center justify-center text-2xl font-bold mb-3 z-10 shadow-[0_0_15px_rgba(59,130,246,0.3)] group-hover:scale-110 transition-transform">
                 {top3[1].name.charAt(0)}
@@ -78,7 +78,7 @@ const Leaderboard = () => {
 
           {/* Rank 1 */}
           {top3[0] && (
-            <div className="flex-1 max-w-[240px] flex flex-col items-center group relative w-full -mt-8 order-first md:order-none">
+            <div className="flex-1 max-w-[200px] md:max-w-[240px] flex flex-col items-center group relative w-full -mt-4 md:-mt-8 order-first md:order-none">
               <div className="absolute inset-0 bg-yellow-500/20 blur-[60px] pointer-events-none" />
               <div className="w-24 h-24 rounded-full bg-yellow-500/10 border-2 border-yellow-400/50 flex items-center justify-center text-4xl font-bold mb-3 z-10 shadow-[0_0_25px_rgba(234,179,8,0.4)] group-hover:scale-110 transition-transform">
                 {top3[0].name.charAt(0)}
@@ -94,7 +94,7 @@ const Leaderboard = () => {
 
           {/* Rank 3 */}
           {top3[2] && (
-            <div className="flex-1 max-w-[200px] flex flex-col items-center group relative w-full">
+            <div className="flex-1 max-w-[180px] md:max-w-[200px] flex flex-col items-center group relative w-full">
               <div className="absolute inset-0 bg-orange-500/20 blur-[50px] pointer-events-none" />
               <div className="w-16 h-16 rounded-full bg-orange-500/10 border-2 border-orange-400/50 flex items-center justify-center text-2xl font-bold mb-3 z-10 shadow-[0_0_15px_rgba(249,115,22,0.3)] group-hover:scale-110 transition-transform">
                 {top3[2].name.charAt(0)}
@@ -176,9 +176,9 @@ const Leaderboard = () => {
                 <tr>
                   <th className="px-6 py-5 whitespace-nowrap w-24">Rank</th>
                   <th className="px-6 py-5 whitespace-nowrap">Student Name</th>
-                  <th className="px-6 py-5 text-center whitespace-nowrap">College</th>
+                  <th className="px-6 py-5 text-center whitespace-nowrap hidden sm:table-cell">College</th>
                   <th className="px-6 py-5 text-center whitespace-nowrap hidden md:table-cell">Activity Score</th>
-                  <th className="px-6 py-5 text-center whitespace-nowrap">Skills</th>
+                  <th className="px-6 py-5 text-center whitespace-nowrap hidden lg:table-cell">Skills</th>
                   <th className="px-6 py-5 text-right whitespace-nowrap w-32">Points</th>
                 </tr>
               </thead>
@@ -215,7 +215,7 @@ const Leaderboard = () => {
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-5 text-center text-sm text-gray-400">
+                      <td className="px-6 py-5 text-center text-sm text-gray-400 hidden sm:table-cell">
                         {s.college || '—'}
                       </td>
                       <td className="px-6 py-5 text-center hidden md:table-cell">
@@ -223,7 +223,7 @@ const Leaderboard = () => {
                           ⚡ {s.activity_score || 0}
                         </span>
                       </td>
-                      <td className="px-6 py-5 text-center">
+                      <td className="px-6 py-5 text-center hidden lg:table-cell">
                         <div className="flex flex-wrap gap-1 justify-center">
                           {(s.skills || []).slice(0, 3).map(skill => (
                             <span key={skill} className="text-[9px] bg-white/5 border border-white/10 px-2 py-0.5 rounded text-gray-300 font-bold uppercase tracking-widest">{skill}</span>

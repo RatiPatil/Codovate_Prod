@@ -162,14 +162,14 @@ const Home = () => {
     <div ref={containerRef} className="min-h-screen bg-black text-white selection:bg-primary/30">
       
       {/* Absolute Logo (No Navbar) */}
-      <div className="absolute top-8 left-8 z-50 flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white font-bold text-lg shadow-[0_0_20px_rgba(32,21,255,0.4)]">C</div>
-        <span className="text-white font-bold text-xl tracking-tight">Codovate</span>
+      <div className="absolute top-6 left-6 md:top-8 md:left-8 z-50 flex items-center gap-2 md:gap-3">
+        <div className="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-primary flex items-center justify-center text-white font-bold text-sm md:text-lg shadow-[0_0_20px_rgba(32,21,255,0.4)]">C</div>
+        <span className="text-white font-bold text-lg md:text-xl tracking-tight">Codovate</span>
       </div>
 
-      <div className="absolute top-10 right-8 z-50">
-        <Link to="/admin-login" className="text-xs font-bold text-gray-500 hover:text-white transition-colors uppercase tracking-widest flex items-center gap-2">
-          <span>🛡️</span> Admin Portal
+      <div className="absolute top-7 right-6 md:top-10 md:right-8 z-50">
+        <Link to="/admin-login" className="text-[10px] md:text-xs font-bold text-gray-500 hover:text-white transition-colors uppercase tracking-widest flex items-center gap-1.5 md:gap-2">
+          <span>🛡️</span> <span className="hidden sm:inline">Admin Portal</span><span className="sm:hidden">Admin</span>
         </Link>
       </div>
 
@@ -197,14 +197,14 @@ const Home = () => {
             <span className="text-gray-300 text-xs font-semibold tracking-widest uppercase">The future of student growth</span>
           </div>
 
-          <h1 ref={titleRef} className="text-6xl md:text-8xl lg:text-[110px] font-bold text-center leading-[0.9] tracking-tighter mb-8 perspective-1000">
+          <h1 ref={titleRef} className="text-4xl sm:text-6xl md:text-8xl lg:text-[110px] font-bold text-center leading-[0.95] sm:leading-[0.9] tracking-tighter mb-6 sm:mb-8 perspective-1000">
             <div className="overflow-hidden inline-block"><span className="word inline-block origin-bottom">Redefine</span></div>{' '}
             <div className="overflow-hidden inline-block"><span className="word inline-block origin-bottom text-transparent bg-clip-text bg-gradient-to-r from-primary to-[#a78bfa]">Your</span></div>{' '}
             <br className="hidden md:block"/>
             <div className="overflow-hidden inline-block"><span className="word inline-block origin-bottom">Potential.</span></div>
           </h1>
 
-          <p className="hero-fade-up text-gray-400 text-lg md:text-2xl text-center max-w-2xl mb-12 leading-relaxed font-light">
+          <p className="hero-fade-up text-gray-400 text-base sm:text-lg md:text-2xl text-center max-w-2xl mb-8 sm:mb-12 leading-relaxed font-light px-4 sm:px-0">
             An ecosystem built specifically for ambitious students. Land internships, win hackathons, and build your profile in one unified platform.
           </p>
 
@@ -231,9 +231,9 @@ const Home = () => {
 
       {/* Narrative Section (Scroll Tied Text) */}
       <section className="py-32 md:py-48 px-6 max-w-5xl mx-auto relative z-10 flex items-center justify-center min-h-screen">
-        <h2 ref={scrollTextRef} className="text-3xl md:text-5xl lg:text-7xl font-bold text-white leading-tight md:leading-tight tracking-tight text-center">
+        <h2 ref={scrollTextRef} className="text-2xl sm:text-3xl md:text-5xl lg:text-7xl font-bold text-white leading-snug sm:leading-tight md:leading-tight tracking-tight text-center">
           {"We believe that talent is everywhere, but opportunities are not. Codovate bridges the gap for students outside tier-1 colleges, providing the roadmaps, mentorship, and access you need to stand out globally.".split(' ').map((word, i) => (
-            <span key={i} className="scroll-word inline-block mr-3 md:mr-4">{word}</span>
+            <span key={i} className="scroll-word inline-block mr-2 sm:mr-3 md:mr-4">{word}</span>
           ))}
         </h2>
       </section>
@@ -244,21 +244,21 @@ const Home = () => {
         {/* Background Accent */}
         <div className="absolute top-0 right-0 w-full h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
         
-        <div ref={cardsWrapperRef} className="flex items-center h-full relative z-10 flex-nowrap pl-6 md:pl-20">
+        <div ref={cardsWrapperRef} className="flex items-center h-full relative z-10 flex-nowrap pl-4 sm:pl-6 md:pl-20">
           
-          <div className="shrink-0 pr-12 md:pr-20 relative z-10 w-[300px] md:w-[450px]">
-            <h2 className="text-5xl md:text-7xl font-bold mb-4">The <span className="text-primary">Advantage</span></h2>
-            <p className="text-gray-400 text-xl max-w-sm">Everything you need to accelerate your growth, built right in.</p>
+          <div className="shrink-0 pr-8 sm:pr-12 md:pr-20 relative z-10 w-[250px] sm:w-[300px] md:w-[450px]">
+            <h2 className="text-3xl sm:text-5xl md:text-7xl font-bold mb-4">The <span className="text-primary">Advantage</span></h2>
+            <p className="text-gray-400 text-base sm:text-xl max-w-sm">Everything you need to accelerate your growth, built right in.</p>
           </div>
 
-          <div className="flex gap-8 px-8 pr-[10vw]">
+          <div className="flex gap-4 sm:gap-8 px-4 sm:px-8 pr-[10vw]">
             {features.map((f, i) => (
-              <div key={i} className="h-card w-[320px] md:w-[450px] shrink-0 bg-white/[0.03] border border-white/[0.08] p-10 rounded-[2rem] hover:bg-white/[0.05] transition-colors backdrop-blur-md">
-                <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center text-4xl mb-8">
+              <div key={i} className="h-card w-[260px] sm:w-[320px] md:w-[450px] shrink-0 bg-white/[0.03] border border-white/[0.08] p-6 sm:p-10 rounded-2xl sm:rounded-[2rem] hover:bg-white/[0.05] transition-colors backdrop-blur-md">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl bg-white/5 flex items-center justify-center text-2xl sm:text-4xl mb-4 sm:mb-8">
                   {f.icon}
                 </div>
-                <h3 className="text-3xl font-bold text-white mb-4">{f.title}</h3>
-                <p className="text-gray-400 text-lg leading-relaxed">{f.desc}</p>
+                <h3 className="text-xl sm:text-3xl font-bold text-white mb-3 sm:mb-4">{f.title}</h3>
+                <p className="text-gray-400 text-sm sm:text-lg leading-relaxed">{f.desc}</p>
               </div>
             ))}
           </div>
@@ -273,7 +273,7 @@ const Home = () => {
         </div>
 
         <div className="relative z-10 text-center max-w-3xl">
-          <h2 className="text-6xl md:text-8xl font-bold mb-8 tracking-tighter">Start Building.</h2>
+          <h2 className="text-4xl sm:text-6xl md:text-8xl font-bold mb-8 tracking-tighter">Start Building.</h2>
           <Link to="/signup"
             className="group relative inline-flex items-center justify-center gap-3 bg-primary hover:bg-primary-dark text-white font-bold px-12 py-6 rounded-full overflow-hidden transition-transform duration-300 hover:scale-105 shadow-[0_0_40px_rgba(32,21,255,0.4)]">
             <span className="relative z-10 text-xl tracking-wide">Create Free Account</span>

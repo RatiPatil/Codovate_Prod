@@ -102,7 +102,7 @@ const Applications = () => {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-10 relative z-10">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-10 relative z-10">
         {[
           { label: 'Total', value: counts.total, color: 'text-white' },
           { label: 'Pending', value: counts.applied, color: 'text-primary' },

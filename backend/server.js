@@ -71,6 +71,8 @@ app.use("/api/notifications", require("./routes/notifications"));
 
 app.use("/api/teams",         require("./routes/teams"));
 app.use("/api/mentors",       require("./routes/mentors"));
+app.use("/api/mentor-queries", require("./routes/mentorQueries"));
+app.use("/api/networking",    require("./routes/networking"));
 app.use("/api/leaderboard",   require("./routes/leaderboard"));
 app.use("/api/resume",        require("./routes/resume"));
 app.use("/api/colleges",      require("./routes/colleges"));

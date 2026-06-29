@@ -156,6 +156,226 @@ const DiscussionModal = ({ team, onClose, currentUser }) => {
     </div>
   );
 };
+const PrivateChatModal = ({ connection, currentUser, onClose }) => {
+  const [messages, setMessages] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [text, setText] = useState('');
+  const [expired, setExpired] = useState(false);
+  const messagesEndRef = useRef(null);
+
+  const fetchMessages = useCallback(async () => {
+    try {
+      const res = await api.get(`/networking/chats/${connection.id}`);
+      setMessages(res.data);
+    } catch (err) {
+      if (err.response?.data?.expired) {
+        setExpired(true);
+      }
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }, [connection.id]);
+
+  useEffect(() => {
+    fetchMessages();
+    const interval = setInterval(fetchMessages, 5000); // Poll
+    return () => clearInterval(interval);
+  }, [fetchMessages]);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  const handleSend = async (e) => {
+    e.preventDefault();
+    if (!text.trim() || expired) return;
+    try {
+      const res = await api.post(`/networking/chats/${connection.id}/messages`, { text });
+      setMessages(prev => [...prev, res.data]);
+      setText('');
+    } catch (err) {
+      if (err.response?.status === 403) setExpired(true);
+      console.error(err);
+      alert(err.response?.data?.message || 'Failed to send message');
+    }
+  };
+
+  const expiresDate = connection.chat_expires_at?._seconds 
+    ? new Date(connection.chat_expires_at._seconds * 1000)
+    : new Date(connection.chat_expires_at);
+
+  return (
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 p-4 lg:p-10">
+      <div className="absolute inset-0" onClick={onClose} />
+      <div className="relative z-10 w-full max-w-4xl h-[80vh] flex flex-col glass-panel rounded-2xl shadow-2xl overflow-hidden">
+        <div className="flex items-center justify-between p-6 border-b border-white/10 bg-black/40">
+          <div>
+            <h3 className="text-white font-bold text-xl flex items-center gap-2">
+              <span>💬</span> Chat with {connection.other_user?.name}
+            </h3>
+            <p className={`text-sm mt-1 font-bold ${expired ? 'text-red-400' : 'text-yellow-400'}`}>
+              {expired ? 'Chat has expired (24h limit reached).' : `Expires at: ${expiresDate.toLocaleString()}`}
+            </p>
+          </div>
+          <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors bg-white/5 hover:bg-white/10 p-2 rounded-full">
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-6 space-y-4">
+          {loading ? (
+             <div className="flex justify-center py-8">
+               <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+             </div>
+          ) : messages.length === 0 ? (
+            <div className="text-center py-12 text-gray-500">
+              No messages yet. Say hello before the 24 hours run out!
+            </div>
+          ) : (
+            messages.map((m, idx) => {
+              const isMe = m.sender_id === currentUser?.id;
+              return (
+                <div key={m.id || idx} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
+                  <div className={`px-4 py-2 rounded-2xl max-w-[80%] ${
+                    isMe ? 'bg-primary text-white rounded-br-sm' : 'bg-white/10 text-gray-200 rounded-bl-sm'
+                  }`}>
+                    <p className="text-sm whitespace-pre-wrap">{m.text}</p>
+                  </div>
+                  <span className="text-[10px] text-gray-500 mt-1 px-1">
+                    {new Date(m.created_at._seconds ? m.created_at._seconds*1000 : m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                </div>
+              );
+            })
+          )}
+          <div ref={messagesEndRef} />
+        </div>
+
+        <div className="p-4 border-t border-white/10 bg-black/40">
+          <form onSubmit={handleSend} className="flex gap-2">
+            <input
+              value={text}
+              onChange={e => setText(e.target.value)}
+              placeholder={expired ? "Chat expired." : "Type your message..."}
+              disabled={expired}
+              className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary disabled:opacity-50"
+            />
+            <button type="submit" disabled={!text.trim() || expired} className="bg-primary text-white px-6 py-3 rounded-xl font-bold disabled:opacity-50 hover:bg-primary/90 transition-colors">
+              Send
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const ConnectionsView = ({ currentUser }) => {
+  const [connections, setConnections] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [activeChat, setActiveChat] = useState(null);
+
+  const fetchConnections = useCallback(async () => {
+    try {
+      const res = await api.get('/networking/connections');
+      setConnections(res.data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetchConnections(); }, [fetchConnections]);
+
+  const handleAction = async (id, action) => {
+    try {
+      await api.put(`/networking/connect/${id}`, { action });
+      fetchConnections();
+    } catch (err) {
+      alert(err.response?.data?.message || 'Error processing request');
+    }
+  };
+
+  if (loading) return <div className="text-center py-12"><div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" /></div>;
+
+  return (
+    <div className="space-y-6">
+      {activeChat && <PrivateChatModal connection={activeChat} currentUser={currentUser} onClose={() => setActiveChat(null)} />}
+      
+      <div className="grid md:grid-cols-2 gap-6">
+        {/* Pending Requests */}
+        <div>
+          <h3 className="text-lg font-bold mb-4">Incoming Requests</h3>
+          <div className="space-y-3">
+            {connections.filter(c => c.status === 'pending' && c.receiver_id === currentUser.id).length === 0 ? (
+              <p className="text-sm text-gray-500">No incoming requests.</p>
+            ) : connections.filter(c => c.status === 'pending' && c.receiver_id === currentUser.id).map(c => (
+              <div key={c.id} className="glass-card p-4 flex justify-between items-center">
+                <div>
+                  <h4 className="font-bold">{c.other_user?.name}</h4>
+                  <p className="text-xs text-gray-400">{c.other_user?.college}</p>
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={() => handleAction(c.id, 'accept')} className="px-3 py-1 bg-green-500/20 text-green-400 rounded text-xs font-bold hover:bg-green-500/30">Accept</button>
+                  <button onClick={() => handleAction(c.id, 'reject')} className="px-3 py-1 bg-red-500/20 text-red-400 rounded text-xs font-bold hover:bg-red-500/30">Reject</button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <h3 className="text-lg font-bold mt-8 mb-4">Sent Requests</h3>
+          <div className="space-y-3">
+            {connections.filter(c => c.status === 'pending' && c.sender_id === currentUser.id).length === 0 ? (
+              <p className="text-sm text-gray-500">No sent requests.</p>
+            ) : connections.filter(c => c.status === 'pending' && c.sender_id === currentUser.id).map(c => (
+              <div key={c.id} className="glass-card p-4 flex justify-between items-center">
+                <div>
+                  <h4 className="font-bold">{c.other_user?.name}</h4>
+                  <p className="text-xs text-gray-400">Waiting for response...</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Active Chats */}
+        <div>
+          <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+            Active Chats <span className="text-xs font-normal text-yellow-500 bg-yellow-500/10 px-2 py-0.5 rounded">24h Limit</span>
+          </h3>
+          <div className="space-y-3">
+            {connections.filter(c => c.status === 'accepted').length === 0 ? (
+              <p className="text-sm text-gray-500">No active chats.</p>
+            ) : connections.filter(c => c.status === 'accepted').map(c => {
+              const expiresDate = c.chat_expires_at?._seconds ? new Date(c.chat_expires_at._seconds * 1000) : new Date(c.chat_expires_at);
+              const isExpired = new Date() > expiresDate;
+
+              return (
+                <div key={c.id} className="glass-card p-4 flex justify-between items-center">
+                  <div>
+                    <h4 className="font-bold">{c.other_user?.name}</h4>
+                    <p className={`text-[10px] uppercase font-bold tracking-widest mt-1 ${isExpired ? 'text-red-400' : 'text-primary'}`}>
+                      {isExpired ? 'Expired' : 'Active'}
+                    </p>
+                  </div>
+                  <button 
+                    onClick={() => setActiveChat(c)}
+                    disabled={isExpired}
+                    className="btn-primary py-1.5 px-4 text-xs shadow-none"
+                  >
+                    Open Chat
+                  </button>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const FindTeammates = () => {
   const [filters, setFilters] = useState({ skill: '', domain: '', experience: '' });
@@ -166,7 +386,7 @@ const FindTeammates = () => {
     setLoading(true);
     try {
       const params = new URLSearchParams(filters).toString();
-      const res = await api.get(`/teams/discover?${params}`);
+      const res = await api.get(`/networking/discover?${params}`);
       setResults(res.data);
     } catch (err) {
       console.error("Discover error", err);
@@ -178,6 +398,15 @@ const FindTeammates = () => {
   useEffect(() => {
     fetchDiscover();
   }, [fetchDiscover]);
+
+  const handleConnect = async (receiverId) => {
+    try {
+      await api.post('/networking/connect', { receiver_id: receiverId });
+      alert('Connection request sent!');
+    } catch (err) {
+      alert(err.response?.data?.message || 'Error sending request');
+    }
+  };
 
   return (
     <div className="flex flex-col lg:flex-row gap-6 h-full">
@@ -264,8 +493,8 @@ const FindTeammates = () => {
                     {user.skills.length > 4 && <span className="px-2 py-0.5 bg-white/5 border border-white/10 rounded text-[10px] text-gray-500">+{user.skills.length - 4}</span>}
                   </div>
                   
-                  <button className="w-full btn-secondary py-2 text-xs" onClick={() => alert('Connect feature coming soon!')}>
-                    Send Invite
+                  <button className="w-full btn-secondary py-2 text-xs" onClick={() => handleConnect(user.id)}>
+                    Connect (24h Chat)
                   </button>
                 </div>
               </div>
@@ -284,7 +513,7 @@ const SuggestedMates = ({ myProfile }) => {
   useEffect(() => {
     const fetchSuggested = async () => {
       try {
-        const res = await api.get('/teams/discover');
+        const res = await api.get('/networking/discover');
         let students = res.data;
         
         // Smart match score computation (Mock complex algorithm based on shared skills/goals)
@@ -312,6 +541,15 @@ const SuggestedMates = ({ myProfile }) => {
     };
     fetchSuggested();
   }, [myProfile]);
+
+  const handleConnect = async (receiverId) => {
+    try {
+      await api.post('/networking/connect', { receiver_id: receiverId });
+      alert('Connection request sent!');
+    } catch (err) {
+      alert(err.response?.data?.message || 'Error sending request');
+    }
+  };
 
   if (loading) return (
     <div className="flex justify-center py-12">
@@ -355,7 +593,7 @@ const SuggestedMates = ({ myProfile }) => {
               ))}
             </div>
 
-            <button className="mt-auto w-full btn-secondary py-2 text-xs" onClick={() => alert('Connect feature coming soon!')}>
+            <button className="mt-auto w-full btn-secondary py-2 text-xs" onClick={() => handleConnect(user.id)}>
               Connect
             </button>
           </div>
@@ -472,7 +710,7 @@ const Teams = () => {
           <h1 className="text-3xl md:text-4xl font-bold flex items-center gap-3">
             <span className="text-4xl">🤝</span> <span className="text-gradient">Teams & Networking</span>
           </h1>
-          <p className="text-gray-400 text-sm mt-2">Form squads, discover talent, and collaborate on projects.</p>
+          <p className="text-gray-400 text-sm mt-2">Form squads, discover talent, and network with peers (24h Ephemeral Chats).</p>
         </div>
         <div className="flex gap-3 w-full md:w-auto">
           <button onClick={() => setShowJoin(true)} className="btn-secondary flex-1 md:flex-none">
@@ -488,6 +726,7 @@ const Teams = () => {
       <div className="flex items-center gap-2 border-b border-white/10 mb-8 overflow-x-auto no-scrollbar relative z-10">
         {[
           { id: 'my_teams', label: 'My Teams', icon: '👥' },
+          { id: 'connections', label: 'Connections', icon: '💬' },
           { id: 'find', label: 'Find Teammates', icon: '🔍' },
           { id: 'suggested', label: 'Suggested for You', icon: '✨' },
         ].map(tab => (
@@ -574,8 +813,8 @@ const Teams = () => {
           </div>
         )}
 
+        {activeTab === 'connections' && <ConnectionsView currentUser={currentUser} />}
         {activeTab === 'find' && <FindTeammates />}
-        
         {activeTab === 'suggested' && <SuggestedMates myProfile={myProfile} />}
       </div>
 

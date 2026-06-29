@@ -78,9 +78,150 @@ const BookingModal = ({ mentor, onClose, onConfirm }) => {
     </div>
   );
 };
+const QueryModal = ({ onClose, onSubmit }) => {
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!title || !description) return;
+    setLoading(true);
+    await onSubmit({ title, description });
+    setLoading(false);
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="absolute inset-0" onClick={onClose} />
+      <form onSubmit={handleSubmit} className="relative z-10 w-full max-w-lg glass-panel rounded-2xl p-8 shadow-2xl">
+        <h3 className="text-white font-bold text-xl mb-6">Submit a Mentor Query</h3>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2">Topic / Title *</label>
+            <input required value={title} onChange={e => setTitle(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-primary focus:ring-1 focus:ring-primary" placeholder="e.g. Help with React useEffect" />
+          </div>
+          <div>
+            <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2">Description *</label>
+            <textarea required rows={4} value={description} onChange={e => setDescription(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white resize-none focus:border-primary focus:ring-1 focus:ring-primary" placeholder="Describe your problem or question in detail..." />
+          </div>
+        </div>
+        <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-white/10">
+          <button type="button" onClick={onClose} className="text-gray-400 hover:text-white px-5 py-2">Cancel</button>
+          <button type="submit" disabled={loading} className="btn-primary">{loading ? 'Submitting...' : 'Submit Query'}</button>
+        </div>
+      </form>
+    </div>
+  );
+};
+
+const QueriesView = ({ showToast }) => {
+  const [queries, setQueries] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+
+  const fetchQueries = useCallback(async () => {
+    try {
+      const res = await api.get('/mentor-queries');
+      setQueries(res.data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetchQueries(); }, [fetchQueries]);
+
+  const handleSubmitQuery = async (data) => {
+    try {
+      await api.post('/mentor-queries', data);
+      showToast('Query submitted successfully! A mentor has been assigned.', 'success');
+      setShowModal(false);
+      fetchQueries();
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Error submitting query', 'error');
+    }
+  };
+
+  const handleCloseQuery = async (id) => {
+    if (!window.confirm('Are you sure you want to close this query?')) return;
+    try {
+      await api.put(`/mentor-queries/${id}/status`, { status: 'Closed' });
+      showToast('Query closed.', 'success');
+      fetchQueries();
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Error closing query', 'error');
+    }
+  };
+
+  if (loading) return <div className="text-center py-12"><div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" /></div>;
+
+  return (
+    <div className="relative z-10">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-xl font-bold">My Queries</h2>
+        <button onClick={() => setShowModal(true)} className="btn-primary text-sm px-4 py-2">+ Ask Mentor</button>
+      </div>
+
+      {showModal && <QueryModal onClose={() => setShowModal(false)} onSubmit={handleSubmitQuery} />}
+
+      <div className="space-y-4">
+        {queries.length === 0 ? (
+          <div className="text-center py-12 glass-panel border-dashed rounded-2xl">
+            <p className="text-4xl mb-3">💬</p>
+            <p className="text-gray-400">You haven't asked any questions yet.</p>
+          </div>
+        ) : queries.map(q => (
+          <div key={q.id} className="glass-card p-5 relative overflow-hidden">
+            <div className={`absolute top-0 right-0 w-24 h-24 rounded-bl-full pointer-events-none ${
+              q.status === 'Closed' ? 'bg-gray-500/10' :
+              q.status === 'Escalated' ? 'bg-red-500/10' :
+              q.status === 'Answered' ? 'bg-green-500/10' : 'bg-primary/10'
+            }`} />
+            
+            <div className="flex justify-between items-start mb-3 relative z-10">
+              <h3 className="font-bold text-lg">{q.title}</h3>
+              <span className={`text-[10px] uppercase font-bold tracking-widest px-2 py-1 rounded border ${
+                q.status === 'Closed' ? 'text-gray-400 border-gray-500/30 bg-gray-500/10' :
+                q.status === 'Escalated' ? 'text-red-400 border-red-500/30 bg-red-500/10' :
+                q.status === 'Answered' ? 'text-green-400 border-green-500/30 bg-green-500/10' :
+                'text-primary border-primary/30 bg-primary/10'
+              }`}>{q.status}</span>
+            </div>
+            
+            <p className="text-sm text-gray-300 mb-4 whitespace-pre-wrap relative z-10">{q.description}</p>
+
+            {q.answer && (
+              <div className="bg-primary/5 border border-primary/20 p-4 rounded-xl mb-4 relative z-10">
+                <p className="text-[10px] text-primary uppercase font-bold tracking-widest mb-1">Mentor's Response</p>
+                <p className="text-sm text-gray-200 whitespace-pre-wrap">{q.answer}</p>
+              </div>
+            )}
+            
+            <div className="flex justify-between items-center pt-4 border-t border-white/10 relative z-10">
+              <div className="text-[10px] text-gray-500 font-mono">
+                Session: {q.session_id} • Assigned: {q.status !== 'Submitted' ? 'Yes' : 'No'}
+                {q.deadline_at && q.status !== 'Closed' && q.status !== 'Answered' && (
+                  <span className="ml-2 text-yellow-500 block sm:inline">
+                    (SLA: {new Date(q.deadline_at._seconds ? q.deadline_at._seconds * 1000 : q.deadline_at).toLocaleTimeString()})
+                  </span>
+                )}
+              </div>
+              {q.status !== 'Closed' && (
+                <button onClick={() => handleCloseQuery(q.id)} className="text-xs text-red-400 hover:text-red-300">Close Query</button>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 
 const Mentors = () => {
-  const [activeTab, setActiveTab] = useState('discover'); // 'discover' | 'sessions'
+  const [activeTab, setActiveTab] = useState('discover'); // 'discover' | 'sessions' | 'queries'
   const [mentors, setMentors] = useState([]);
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -163,7 +304,7 @@ const Mentors = () => {
       )}
 
       {/* Stats Banner */}
-      <div className="grid grid-cols-3 gap-4 mb-8 relative z-10">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8 relative z-10">
         <div className="glass-panel p-5 rounded-2xl flex items-center gap-4 bg-gradient-to-r from-blue-500/10 to-transparent border-blue-500/20">
           <div className="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center text-2xl">👨‍🏫</div>
           <div>
@@ -192,7 +333,7 @@ const Mentors = () => {
           <h1 className="text-3xl md:text-4xl font-bold flex items-center gap-3">
              <span className="text-gradient">Mentorship Hub</span>
           </h1>
-          <p className="text-gray-400 text-sm mt-2">Book 1-on-1 sessions and manage your learning journey.</p>
+          <p className="text-gray-400 text-sm mt-2">Book 1-on-1 sessions, raise queries, and manage your learning journey.</p>
         </div>
       </div>
 
@@ -217,6 +358,16 @@ const Mentors = () => {
           }`}
         >
           <span>📅</span> My Sessions ({sessions.length})
+        </button>
+        <button
+          onClick={() => setActiveTab('queries')}
+          className={`px-6 py-4 font-semibold text-sm transition-all whitespace-nowrap flex items-center gap-2 border-b-2 ${
+            activeTab === 'queries' 
+              ? 'border-primary text-white bg-primary/5' 
+              : 'border-transparent text-gray-400 hover:text-white hover:bg-white/5'
+          }`}
+        >
+          <span>💬</span> Queries & Support
         </button>
       </div>
 
@@ -366,6 +517,8 @@ const Mentors = () => {
           </div>
         </div>
       )}
+
+      {activeTab === 'queries' && <QueriesView showToast={showToast} />}
     </div>
   );
 };

@@ -138,7 +138,7 @@ const Dashboard = () => {
       </div>
 
       {/* Quick Access Shortcuts */}
-      <div className="flex flex-wrap gap-4 mb-10">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
         {[
           { label: 'Find Opportunities', icon: '🔍', to: '/opportunities', color: 'from-blue-500/20 to-primary/20 hover:border-primary/50' },
           { label: 'Build Resume', icon: '📄', to: '/resume', color: 'from-purple-500/20 to-pink-500/20 hover:border-purple-500/50' },
@@ -148,10 +148,10 @@ const Dashboard = () => {
           <Link 
             key={idx} 
             to={shortcut.to}
-            className={`flex-1 min-w-[160px] glass-card p-4 flex items-center gap-3 border border-white/10 transition-all duration-300 hover:-translate-y-1 bg-gradient-to-br ${shortcut.color}`}
+            className={`glass-card p-4 flex items-center gap-3 border border-white/10 transition-all duration-300 hover:-translate-y-1 bg-gradient-to-br ${shortcut.color}`}
           >
             <span className="text-2xl">{shortcut.icon}</span>
-            <span className="text-white font-semibold text-sm whitespace-nowrap">{shortcut.label}</span>
+            <span className="text-white font-semibold text-sm">{shortcut.label}</span>
           </Link>
         ))}
       </div>

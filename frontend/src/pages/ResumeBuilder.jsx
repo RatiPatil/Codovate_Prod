@@ -136,13 +136,13 @@ const PersonalStep = ({ data, onChange }) => {
   const set = (field, val) => onChange('personalInfo', { ...data.personalInfo, [field]: val });
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div><Label>Full Name *</Label><Input value={data.personalInfo.name} onChange={e => set('name', e.target.value)} placeholder="Ratikant Patil" /></div>
         <div><Label>Phone *</Label><Input value={data.personalInfo.phone} onChange={e => set('phone', e.target.value)} placeholder="+91 98765 43210" /></div>
       </div>
       <div><Label>Email *</Label><Input type="email" value={data.personalInfo.email} onChange={e => set('email', e.target.value)} placeholder="ratikant@email.com" /></div>
       <div><Label>Location</Label><Input value={data.personalInfo.location} onChange={e => set('location', e.target.value)} placeholder="Pandharpur, Maharashtra" /></div>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div><Label>LinkedIn URL</Label><Input value={data.personalInfo.linkedin} onChange={e => set('linkedin', e.target.value)} placeholder="linkedin.com/in/..." /></div>
         <div><Label>GitHub URL</Label><Input value={data.personalInfo.github} onChange={e => set('github', e.target.value)} placeholder="github.com/..." /></div>
       </div>
@@ -186,11 +186,11 @@ const EducationStep = ({ data, onChange }) => {
             {data.education.length > 1 && <RemoveBtn onClick={() => remove(edu.id)} />}
           </div>
           <div><Label>Institution / University *</Label><Input value={edu.institution} onChange={e => update(edu.id, 'institution', e.target.value)} placeholder="SVERI College of Engineering" /></div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div><Label>Degree *</Label><Input value={edu.degree} onChange={e => update(edu.id, 'degree', e.target.value)} placeholder="B.Tech / MCA / B.E." /></div>
             <div><Label>Field of Study</Label><Input value={edu.field} onChange={e => update(edu.id, 'field', e.target.value)} placeholder="Computer Science" /></div>
           </div>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             <div><Label>Start Year</Label><Input value={edu.startYear} onChange={e => update(edu.id, 'startYear', e.target.value)} placeholder="2021" /></div>
             <div><Label>End Year</Label><Input value={edu.endYear} onChange={e => update(edu.id, 'endYear', e.target.value)} placeholder="2025 / Present" /></div>
             <div><Label>GPA / %</Label><Input value={edu.gpa} onChange={e => update(edu.id, 'gpa', e.target.value)} placeholder="8.5 / 85%" /></div>
@@ -217,11 +217,11 @@ const ExperienceStep = ({ data, onChange }) => {
             <span className="text-white text-xs font-black">Experience #{i + 1}</span>
             {data.experience.length > 1 && <RemoveBtn onClick={() => remove(exp.id)} />}
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div><Label>Company / Organization *</Label><Input value={exp.company} onChange={e => update(exp.id, 'company', e.target.value)} placeholder="TCS, Google, Startup Name" /></div>
             <div><Label>Your Role / Title *</Label><Input value={exp.role} onChange={e => update(exp.id, 'role', e.target.value)} placeholder="SDE Intern, Backend Developer" /></div>
           </div>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             <div><Label>Start Date</Label><Input value={exp.startDate} onChange={e => update(exp.id, 'startDate', e.target.value)} placeholder="Jun 2024" /></div>
             <div><Label>End Date</Label><Input value={exp.endDate} onChange={e => update(exp.id, 'endDate', e.target.value)} placeholder="Aug 2024" disabled={exp.current} /></div>
             <div className="flex items-end pb-0.5">
@@ -349,7 +349,7 @@ const CertificationsStep = ({ data, onChange }) => {
             {data.certifications.length > 1 && <RemoveBtn onClick={() => remove(cert.id)} />}
           </div>
           <div><Label>Certificate Name *</Label><Input value={cert.name} onChange={e => update(cert.id, 'name', e.target.value)} placeholder="AWS Cloud Practitioner" /></div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div><Label>Issued By</Label><Input value={cert.issuer} onChange={e => update(cert.id, 'issuer', e.target.value)} placeholder="Amazon, Coursera, NPTEL" /></div>
             <div><Label>Date</Label><Input value={cert.date} onChange={e => update(cert.id, 'date', e.target.value)} placeholder="Mar 2024" /></div>
           </div>
@@ -778,37 +778,37 @@ const ResumeBuilder = () => {
 
       <div className="min-h-screen text-white relative z-10 print:hidden">
         {/* Top Bar */}
-        <div className="sticky top-0 z-30 bg-[#050510]/90 backdrop-blur-sm border-b border-white/5 px-6 py-4">
-          <div className="max-w-[1600px] mx-auto flex items-center justify-between gap-4">
+        <div className="sticky top-0 z-30 bg-[#050510]/90 backdrop-blur-sm border-b border-white/5 px-4 sm:px-6 py-3 sm:py-4">
+          <div className="max-w-[1600px] mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
             <div className="flex items-center gap-3">
               <span className="text-2xl">📄</span>
               <div>
-                <h1 className="text-lg font-black text-white tracking-tight leading-none">AI Resume Builder</h1>
+                <h1 className="text-base sm:text-lg font-black text-white tracking-tight leading-none">AI Resume Builder</h1>
                 <p className="text-gray-500 text-[10px] mt-0.5">Powered by Gemini AI • ATS Optimized</p>
               </div>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
               {saveMsg && <span className="text-xs font-bold text-green-400 animate-pulse">{saveMsg}</span>}
               <button onClick={fillDummyData} type="button"
-                className="px-4 py-2 bg-yellow-500/10 border border-yellow-500/20 rounded-xl text-xs font-bold text-yellow-500 hover:bg-yellow-500 hover:text-white transition-all">
-                🧪 Fill Dummy Data
+                className="px-3 sm:px-4 py-2 bg-yellow-500/10 border border-yellow-500/20 rounded-xl text-xs font-bold text-yellow-500 hover:bg-yellow-500 hover:text-white transition-all">
+                🧪 <span className="hidden sm:inline">Fill </span>Dummy
               </button>
               <button onClick={handleSave} disabled={saving}
-                className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-xs font-bold text-gray-400 hover:text-white hover:bg-white/10 transition-all disabled:opacity-40">
-                {saving ? '💾 Saving...' : '💾 Save Progress'}
+                className="px-3 sm:px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-xs font-bold text-gray-400 hover:text-white hover:bg-white/10 transition-all disabled:opacity-40">
+                {saving ? '💾 ...' : '💾 Save'}
               </button>
               <button onClick={() => setShowPreview(p => !p)}
-                className="px-4 py-2 bg-[#2015FF]/10 border border-[#2015FF]/20 rounded-xl text-xs font-bold text-[#6060FF] hover:bg-[#2015FF] hover:text-white transition-all">
-                {showPreview ? '← Hide Preview' : '👁️ Live Preview'}
+                className="px-3 sm:px-4 py-2 bg-[#2015FF]/10 border border-[#2015FF]/20 rounded-xl text-xs font-bold text-[#6060FF] hover:bg-[#2015FF] hover:text-white transition-all">
+                {showPreview ? '← Hide' : '👁️ Preview'}
               </button>
-              <GlowBtn onClick={handlePrint} color="green" className="text-xs px-4 py-2">
-                📥 Download PDF
+              <GlowBtn onClick={handlePrint} color="green" className="text-xs px-3 sm:px-4 py-2">
+                📥 PDF
               </GlowBtn>
             </div>
           </div>
         </div>
 
-        <div className={`max-w-[1600px] mx-auto p-6 ${showPreview ? 'grid grid-cols-1 xl:grid-cols-2 gap-6 items-start' : ''}`}>
+        <div className={`max-w-[1600px] mx-auto p-4 sm:p-6 ${showPreview ? 'grid grid-cols-1 xl:grid-cols-2 gap-6 items-start' : ''}`}>
 
           {/* Left: Form */}
           <div>
