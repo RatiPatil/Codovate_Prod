@@ -26,7 +26,7 @@ function App() {
   return (
     <AuthProvider>
       <SocketProvider>
-        <BrowserRouter>
+        <BrowserRouter basename="/Codovate_Prod">
           <Cursor />
           <Routes>
             <Route path="/" element={<Home />} />
