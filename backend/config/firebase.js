@@ -4,9 +4,13 @@ require('dotenv').config();
 
 let serviceAccount;
 try {
-  serviceAccount = require('./serviceAccountKey.json');
+  if (process.env.FIREBASE_SERVICE_ACCOUNT_JSON) {
+    serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);
+  } else {
+    serviceAccount = require('./serviceAccountKey.json');
+  }
 } catch (e) {
-  console.warn("⚠️ Warning: serviceAccountKey.json not found. Make sure to place it in backend/config/ for Firebase connection.");
+  console.warn("⚠️ Warning: serviceAccountKey.json not found or FIREBASE_SERVICE_ACCOUNT_JSON is invalid.");
 }
 
 let db;
