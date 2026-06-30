@@ -42,7 +42,7 @@ jobs:
         run: npm install
         
       - name: Build with Vite
-        run: npm run build
+        run: npm run build && cp ./dist/index.html ./dist/404.html
         env:
           VITE_FIREBASE_API_KEY: "AIzaSyCb1SUbOHd0iicYVPK_Y9Sfe33Ud0Tsg60"
           VITE_FIREBASE_AUTH_DOMAIN: "codovate-784ab.firebaseapp.com"
