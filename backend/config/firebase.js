@@ -34,6 +34,8 @@ if (serviceAccount) {
   });
   console.log("✅ Firebase Admin initialized successfully.");
   db = getFirestore();
+  // Force REST API instead of gRPC to fix Render timeout/retry issues
+  db.settings({ preferRest: true });
 } else {
   console.warn("⚠️ Firebase Admin could not be fully initialized due to missing credentials. Using MOCK Firestore.");
   // Initialize with a dummy or let it fail depending on environment
