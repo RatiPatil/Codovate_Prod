@@ -22,6 +22,9 @@ if (fs.existsSync('/etc/secrets/serviceAccountKey.json')) {
   try {
     if (process.env.FIREBASE_SERVICE_ACCOUNT_JSON) {
       serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);
+      if (serviceAccount.private_key) {
+        serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+      }
     } else {
       serviceAccount = require('./serviceAccountKey.json');
     }
