@@ -79,7 +79,7 @@ router.post("/google", async (req, res) => {
     });
   } catch (err) {
     console.error("Google Auth error:", err);
-    res.status(401).json({ message: "Invalid Google token or unauthorized" });
+    res.status(401).json({ message: "Auth Error: " + err.message });
   }
 });
 
