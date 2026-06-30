@@ -8,6 +8,9 @@ let serviceAccount = null;
 // Support Render Secret Files natively
 if (fs.existsSync('/etc/secrets/serviceAccountKey.json')) {
   serviceAccount = require('/etc/secrets/serviceAccountKey.json');
+  if (serviceAccount.private_key) {
+    serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+  }
 } else if (process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_CLIENT_EMAIL && process.env.FIREBASE_PRIVATE_KEY) {
   serviceAccount = {
     projectId: process.env.FIREBASE_PROJECT_ID,
