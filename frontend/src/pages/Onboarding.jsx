@@ -282,7 +282,7 @@ export default function Onboarding() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-black flex flex-col relative overflow-hidden">
+    <div className="min-h-screen bg-black flex flex-col relative overflow-x-hidden overflow-y-auto">
       {/* Background */}
       <div className="absolute inset-0 pointer-events-none"
         style={{ background: 'radial-gradient(ellipse at 50% 0%, rgba(32,21,255,0.10) 0%, transparent 60%)' }} />

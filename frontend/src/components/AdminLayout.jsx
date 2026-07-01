@@ -30,7 +30,7 @@ const AdminLayout = ({ children }) => {
         </div>
 
         {/* Children fill remaining space */}
-        <div className="flex-1 overflow-hidden flex flex-col">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden flex flex-col">
           {children}
         </div>
       </div>

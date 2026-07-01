@@ -13,7 +13,7 @@ const OppDetailModal = ({ opp, isApplied, isApplying, onApply, onClose }) => {
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="absolute inset-0" onClick={onClose} />
-      <div className="relative z-10 w-full max-w-2xl glass-panel rounded-2xl overflow-hidden shadow-2xl animate-[scale-in_0.2s_ease-out]">
+      <div className="relative z-10 w-full max-w-2xl glass-panel rounded-2xl overflow-y-auto max-h-[90vh] shadow-2xl animate-[scale-in_0.2s_ease-out] mx-4">
         <div className="p-8">
           <div className="flex items-start justify-between gap-4 mb-6">
             <div>

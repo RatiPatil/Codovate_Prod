@@ -83,7 +83,7 @@ const Signup = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black flex flex-col lg:flex-row overflow-hidden">
+    <div className="min-h-screen bg-black flex flex-col lg:flex-row overflow-x-hidden overflow-y-auto">
       
       {/* Left Column: Branding / Info (Hidden on mobile) */}
       <div className="hidden lg:flex w-1/2 relative flex-col justify-between p-12 border-r border-white/5">

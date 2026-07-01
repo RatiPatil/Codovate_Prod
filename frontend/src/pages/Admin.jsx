@@ -1531,7 +1531,7 @@ const Admin = () => {
   return (
     <div className="flex flex-col h-full">
       <TopBar toast={toast} />
-      <div className="flex-1 overflow-y-auto p-6">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden p-6">
         <Routes>
           <Route index element={<OverviewPage stats={stats} regData={regData} appData={appData} activity={activity} loading={statsLoading} />} />
           <Route path="analytics" element={<AnalyticsPage regData={regData} appData={appData} />} />

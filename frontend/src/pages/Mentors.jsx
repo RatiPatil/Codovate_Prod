@@ -21,7 +21,7 @@ const BookingModal = ({ mentor, onClose, onConfirm }) => {
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="absolute inset-0" onClick={onClose} />
-      <form onSubmit={handleSubmit} className="relative z-10 w-full max-w-md glass-panel rounded-2xl p-8 shadow-2xl">
+      <form onSubmit={handleSubmit} className="relative z-10 w-full max-w-md glass-panel rounded-2xl p-8 shadow-2xl max-h-[90vh] overflow-y-auto mx-4">
         <div className="flex items-center gap-4 mb-6">
           <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center font-black text-xl border border-primary/20">
             {mentor.name.charAt(0)}
@@ -94,7 +94,7 @@ const QueryModal = ({ onClose, onSubmit }) => {
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="absolute inset-0" onClick={onClose} />
-      <form onSubmit={handleSubmit} className="relative z-10 w-full max-w-lg glass-panel rounded-2xl p-8 shadow-2xl">
+      <form onSubmit={handleSubmit} className="relative z-10 w-full max-w-lg glass-panel rounded-2xl p-8 shadow-2xl max-h-[90vh] overflow-y-auto mx-4">
         <h3 className="text-white font-bold text-xl mb-6">Submit a Mentor Query</h3>
         <div className="space-y-4">
           <div>
