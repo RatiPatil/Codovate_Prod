@@ -51,8 +51,12 @@ const validateStep = (step, data) => {
   if (step === 1) {
     if (!data.full_name || data.full_name.trim().length < 2)
       errors.full_name = 'Full name must be at least 2 characters';
-    if (data.phone && data.phone.length < 10)
-      errors.phone = 'Phone must be at least 10 digits';
+    else if (!/^[A-Za-z\s]+$/.test(data.full_name.trim()))
+      errors.full_name = 'Full name must contain only alphabetic characters and spaces';
+    if (!data.phone)
+      errors.phone = 'Phone number is required';
+    else if (!/^\d{10}$/.test(data.phone))
+      errors.phone = 'Phone number must be exactly 10 digits';
     if (!data.country) errors.country = 'Please select a country';
     if (!data.state) errors.state = 'Please select a state';
     if (!data.district) errors.district = 'Please select a district';
@@ -62,8 +66,12 @@ const validateStep = (step, data) => {
   if (step === 2) {
     if (!data.college || data.college.trim().length < 3)
       errors.college = 'Please enter your college name';
+    else if (!/^[A-Za-z\s]+$/.test(data.college.trim()))
+      errors.college = 'College name must contain only alphabetic characters and spaces';
     if (!data.branch || data.branch.trim().length < 2)
       errors.branch = 'Please enter your branch';
+    else if (!/^[A-Za-z\s]+$/.test(data.branch.trim()))
+      errors.branch = 'Branch must contain only alphabetic characters and spaces';
     if (!data.year)
       errors.year = 'Please select your year of study';
   }

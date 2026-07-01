@@ -5,7 +5,7 @@ const Layout = ({ children }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <div className="flex h-screen bg-black overflow-hidden relative">
+    <div className="flex flex-row-reverse h-screen bg-black overflow-hidden relative">
       {/* Background Orbs for Glassmorphism Effect */}
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-primary/20 blur-[120px] pointer-events-none"></div>
       <div className="absolute bottom-[-10%] right-[-10%] w-[30%] h-[30%] rounded-full bg-primary-dark/20 blur-[100px] pointer-events-none"></div>

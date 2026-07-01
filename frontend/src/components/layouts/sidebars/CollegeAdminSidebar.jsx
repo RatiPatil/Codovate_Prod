@@ -27,7 +27,7 @@ const CollegeAdminSidebar = ({ mobileOpen, setMobileOpen }) => {
         <div className="md:hidden fixed inset-0 bg-black/80 z-40" onClick={() => setMobileOpen(false)} />
       )}
       
-      <aside className={`fixed md:relative top-0 left-0 h-screen w-64 bg-[#080812] border-r border-white/5 z-50 transition-transform duration-300 flex flex-col ${mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
+      <aside className={`fixed md:relative top-0 right-0 h-screen w-64 bg-[#080812] border-l border-white/5 z-50 transition-transform duration-300 flex flex-col ${mobileOpen ? 'translate-x-0' : 'translate-x-full md:translate-x-0'}`}>
         
         <div className="h-20 flex items-center gap-3 px-6 border-b border-white/5 shrink-0">
           <div className="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center text-white font-black text-lg shadow-[0_0_20px_rgba(16,185,129,0.4)]">C</div>

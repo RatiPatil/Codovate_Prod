@@ -9,7 +9,7 @@ const PRINT_CSS = `
   body * { visibility: hidden !important; }
   #a4-resume, #a4-resume * { visibility: visible !important; }
   #a4-resume {
-    position: fixed !important; inset: 0 !important;
+    position: absolute !important; left: 0 !important; top: 0 !important;
     width: 210mm !important; min-height: 297mm !important;
     margin: 0 !important; padding: 0 !important;
     box-shadow: none !important; border: none !important;
@@ -369,7 +369,7 @@ const GenerateStep = ({ data, onGenerate, aiLoading, aiResult }) => {
     return 'text-red-400';
   };
 
-  const isReady = data.personalInfo.name && data.personalInfo.email && data.targetRole;
+  const isReady = true;
 
   return (
     <div className="space-y-6">
@@ -403,10 +403,9 @@ const GenerateStep = ({ data, onGenerate, aiLoading, aiResult }) => {
         <p className="text-gray-400 text-sm mb-5">
           Our AI will craft a professional summary, enhance your bullet points with action verbs, calculate your ATS score, and suggest improvements.
         </p>
-        <GlowBtn onClick={onGenerate} disabled={!isReady || aiLoading} loading={aiLoading && 'Generating with AI...'} color="purple" className="text-base px-8 py-3">
+        <GlowBtn onClick={onGenerate} disabled={aiLoading} loading={aiLoading && 'Generating with AI...'} color="purple" className="text-base px-8 py-3">
           🤖 Generate My Resume
         </GlowBtn>
-        {!isReady && <p className="text-red-400 text-xs mt-3">⚠️ Please fill Name, Email, and Target Role first</p>}
       </div>
 
       {/* AI Results */}
@@ -631,47 +630,6 @@ const ResumeBuilder = () => {
   const [saveMsg, setSaveMsg] = useState('');
   const [showPreview, setShowPreview] = useState(false);
 
-  // Helper to fill dummy data for testing
-  const fillDummyData = () => {
-    setData({
-      personalInfo: {
-        name: user?.name || 'Ratikant Patil',
-        email: user?.email || 'ratikantpatil413@gmail.com',
-        phone: '+91 9876543210',
-        location: 'Pune, Maharashtra',
-        linkedin: 'linkedin.com/in/ratikant',
-        github: 'github.com/ratikant',
-        portfolio: 'ratikant.dev'
-      },
-      targetRole: 'Full Stack Developer',
-      targetSummary: 'Looking for a challenging role in building scalable web applications.',
-      education: [
-        { id: uid(), institution: 'SVERI College of Engineering', degree: 'B.Tech', field: 'Computer Science', gpa: '8.5', startYear: '2021', endYear: '2025', achievements: 'Department Topper in 2nd Year.' }
-      ],
-      experience: [
-        { id: uid(), company: 'Tech Startup Inc', role: 'Software Engineer Intern', startDate: 'May 2024', endDate: 'Aug 2024', current: false, location: 'Remote', description: 'Built REST APIs using Node.js and Express.\\nImproved database query performance by 30%.\\nDeveloped responsive UI components using React.' }
-      ],
-      projects: [
-        { id: uid(), title: 'AI Chatbot System', techStack: 'React, Node.js, Gemini API', link: 'github.com/ratikant/chatbot', description: 'Developed a real-time chatbot for student inquiries.\\nIntegrated Google Gemini API for smart responses.' }
-      ],
-      skills: {
-        technical: ['JavaScript', 'React', 'Node.js', 'MongoDB', 'Python'],
-        soft: ['Leadership', 'Problem Solving', 'Teamwork'],
-        languages: ['English', 'Hindi', 'Marathi']
-      },
-      certifications: [
-        { id: uid(), name: 'AWS Certified Cloud Practitioner', issuer: 'Amazon Web Services', date: 'Jan 2024', link: 'aws.amazon.com/verify' }
-      ],
-      achievements: 'Winner of Smart India Hackathon 2023.',
-      aiSummary: '',
-      enhancedExperience: [],
-      enhancedProjects: [],
-      suggestedSkills: [],
-      atsScore: null,
-      atsTips: [],
-      powered_by: '',
-    });
-  };
 
   // Load saved resume
   useEffect(() => {
@@ -789,10 +747,6 @@ const ResumeBuilder = () => {
             </div>
             <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
               {saveMsg && <span className="text-xs font-bold text-green-400 animate-pulse">{saveMsg}</span>}
-              <button onClick={fillDummyData} type="button"
-                className="px-3 sm:px-4 py-2 bg-yellow-500/10 border border-yellow-500/20 rounded-xl text-xs font-bold text-yellow-500 hover:bg-yellow-500 hover:text-white transition-all">
-                🧪 <span className="hidden sm:inline">Fill </span>Dummy
-              </button>
               <button onClick={handleSave} disabled={saving}
                 className="px-3 sm:px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-xs font-bold text-gray-400 hover:text-white hover:bg-white/10 transition-all disabled:opacity-40">
                 {saving ? '💾 ...' : '💾 Save'}

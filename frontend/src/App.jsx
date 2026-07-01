@@ -4,7 +4,6 @@ import { SocketProvider } from './context/SocketContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
 import DashboardRouter from './components/DashboardRouter';
-import Cursor from './components/Cursor';
 
 import Home from './pages/Home';
 import Login from './pages/Login';
@@ -27,7 +26,6 @@ function App() {
     <AuthProvider>
       <SocketProvider>
         <BrowserRouter>
-          <Cursor />
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />

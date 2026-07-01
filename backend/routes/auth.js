@@ -6,6 +6,28 @@ const { db, admin } = require("../config/firebase");
 require("dotenv").config();
 
 const { getAuth } = require("firebase-admin/auth");
+const nodemailer = require("nodemailer");
+const rateLimit = require("express-rate-limit");
+
+// Rate limiter for forgot password: max 3 requests per 15 minutes
+const forgotPasswordLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 3, // Limit each IP to 3 requests per windowMs
+  message: { message: "Too many password reset requests from this IP, please try again after 15 minutes." },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Configure Nodemailer
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST || "smtp.ethereal.email",
+  port: process.env.SMTP_PORT || 587,
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+});
+
 
 router.post("/google", async (req, res) => {
   const { idToken } = req.body;
@@ -311,7 +333,7 @@ router.post("/admin-login", async (req, res) => {
   }
 });
 
-router.post("/forgot-password", async (req, res) => {
+router.post("/forgot-password", forgotPasswordLimiter, async (req, res) => {
   const { email } = req.body;
   if (!email) return res.status(400).json({ message: "Email is required." });
 
@@ -337,13 +359,39 @@ router.post("/forgot-password", async (req, res) => {
       used: false
     });
 
-    console.log(`\n========================================`);
-    console.log(`🔑 PASSWORD RESET REQUEST`);
-    console.log(`Email: ${user.email}`);
-    console.log(`Code: ${code}`);
-    console.log(`========================================\n`);
+    // Send email using Nodemailer
+    try {
+      if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+        await transporter.sendMail({
+          from: `"Codovate Admin" <${process.env.SMTP_USER}>`,
+          to: user.email,
+          subject: "Your Password Reset Code",
+          text: `Your password reset code is: ${code}. It expires in 15 minutes.`,
+          html: `
+            <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
+              <h2 style="color: #2015FF;">Codovate Password Reset</h2>
+              <p>You requested a password reset for your Codovate account.</p>
+              <p>Your 6-digit reset code is: <strong style="font-size: 24px; letter-spacing: 2px;">${code}</strong></p>
+              <p>This code will expire in 15 minutes.</p>
+              <p>If you did not request this, you can safely ignore this email.</p>
+            </div>
+          `,
+        });
+        console.log(`📧 Reset email sent to ${user.email}`);
+      } else {
+        // Fallback for development if SMTP not configured
+        console.log(`\n⚠️ SMTP NOT CONFIGURED. To deliver emails, add SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS to .env`);
+        console.log(`\n========================================`);
+        console.log(`🔑 PASSWORD RESET REQUEST (DEVELOPMENT)`);
+        console.log(`Email: ${user.email}`);
+        console.log(`Code: ${code}`);
+        console.log(`========================================\n`);
+      }
+    } catch (emailErr) {
+      console.error("Failed to send reset email:", emailErr);
+    }
 
-    res.json({ message: "If this email exists, a reset code was generated." });
+    res.json({ message: "If this email exists, a reset code was sent." });
   } catch (err) {
     console.error("Forgot password error:", err);
     res.status(500).json({ message: "Server error" });

@@ -33,7 +33,7 @@ const SuperAdminSidebar = ({ mobileOpen, setMobileOpen }) => {
       )}
       
       {/* Sidebar */}
-      <aside className={`fixed md:relative top-0 left-0 h-screen w-64 bg-[#080812] border-r border-white/5 z-50 transition-transform duration-300 flex flex-col ${mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
+      <aside className={`fixed md:relative top-0 right-0 h-screen w-64 bg-[#080812] border-l border-white/5 z-50 transition-transform duration-300 flex flex-col ${mobileOpen ? 'translate-x-0' : 'translate-x-full md:translate-x-0'}`}>
         
         {/* Brand */}
         <div className="h-20 flex items-center gap-3 px-6 border-b border-white/5 shrink-0">

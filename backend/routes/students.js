@@ -78,7 +78,7 @@ router.get("/profile", auth, async (req, res) => {
 });
 
 router.put("/profile", auth, async (req, res) => {
-  const { name, college, branch, year, skills, bio, resume_url, github_url, linkedin_url } = req.body;
+  const { name, college, branch, year, skills, bio, resume_url, github_url, linkedin_url, avatar_url } = req.body;
 
   try {
     if (name) {
@@ -108,6 +108,7 @@ router.put("/profile", auth, async (req, res) => {
       resume_url,
       github_url,
       linkedin_url,
+      avatar_url,
       profile_completion
     };
 

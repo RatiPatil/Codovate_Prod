@@ -5,7 +5,7 @@ const MentorLayout = ({ children }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <div className="flex h-screen bg-[#050510] overflow-hidden">
+    <div className="flex flex-row-reverse h-screen bg-[#050510] overflow-hidden">
       {/* Mentor uses a cyan tint to distinguish it visually */}
       <div className="absolute top-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-cyan-500/10 blur-[150px] pointer-events-none" />
       <div className="absolute bottom-[-20%] left-[-10%] w-[40%] h-[40%] rounded-full bg-cyan-500/5 blur-[120px] pointer-events-none" />

@@ -119,7 +119,7 @@ const DiscussionModal = ({ team, onClose, currentUser }) => {
             </div>
           ) : (
             messages.map((m, idx) => {
-              const isMe = m.user_id === currentUser?.uid;
+              const isMe = m.user_id === currentUser?.id;
               return (
                 <div key={m.id || idx} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
                   <div className={`px-4 py-2 rounded-2xl max-w-[80%] ${
@@ -605,7 +605,7 @@ const SuggestedMates = ({ myProfile }) => {
 
 
 const Teams = () => {
-  const { currentUser } = useAuth();
+  const { user: currentUser } = useAuth();
   const [activeTab, setActiveTab] = useState('my_teams');
   const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);

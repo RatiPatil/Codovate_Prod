@@ -3,7 +3,7 @@ import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 
 const Leaderboard = () => {
-  const { currentUser } = useAuth();
+  const { user: currentUser } = useAuth();
   const [students, setStudents] = useState([]);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -42,7 +42,7 @@ const Leaderboard = () => {
   );
 
   const top3 = students.slice(0, 3);
-  const myRank = students.findIndex(s => s.email === currentUser?.email || (profile && s.name === profile.name));
+  const myRank = students.findIndex(s => profile && s.id === profile.id);
   const me = myRank !== -1 ? students[myRank] : null;
 
   return (
@@ -184,8 +184,8 @@ const Leaderboard = () => {
               </thead>
               <tbody>
                 {filtered.map((s, i) => {
-                  const originalRank = students.findIndex(st => st.name === s.name);
-                  const isMe = me && s.name === me.name;
+                  const originalRank = students.findIndex(st => st.id === s.id);
+                  const isMe = me && s.id === me.id;
                   return (
                     <tr key={i} className={`border-b border-white/5 transition-colors group/row ${isMe ? 'bg-primary/5 hover:bg-primary/10' : 'hover:bg-white/5'}`}>
                       <td className="px-6 py-5">

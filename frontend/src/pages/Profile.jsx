@@ -12,7 +12,7 @@ const Profile = () => {
   const [profileData, setProfileData] = useState(null);
   const [form, setForm] = useState({
     name: '', email: '', college: '', branch: '', year: '',
-    bio: '', resume_url: '', github_url: '', linkedin_url: ''
+    bio: '', resume_url: '', github_url: '', linkedin_url: '', avatar_url: ''
   });
   const [skills, setSkills] = useState([]);
   const [customSkill, setCustomSkill] = useState('');
@@ -38,7 +38,8 @@ const Profile = () => {
         bio: d.bio || '',
         resume_url: d.resume_url || '',
         github_url: d.github_url || '',
-        linkedin_url: d.linkedin_url || ''
+        linkedin_url: d.linkedin_url || '',
+        avatar_url: d.avatar_url || ''
       });
       setSkills(Array.isArray(d.skills) ? d.skills : []);
     }).catch(console.error).finally(() => setLoading(false));
@@ -125,8 +126,12 @@ const Profile = () => {
         <div className="space-y-6">
           <div className="glass-panel rounded-2xl p-8 text-center relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 rounded-full blur-[50px] -mr-10 -mt-10 pointer-events-none" />
-            <div className="w-24 h-24 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center mx-auto mb-5 shadow-[0_0_20px_rgba(32,21,255,0.2)] backdrop-blur-md relative z-10">
-              <span className="text-4xl font-bold text-primary">{form.name.charAt(0).toUpperCase()}</span>
+            <div className="w-24 h-24 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center mx-auto mb-5 shadow-[0_0_20px_rgba(32,21,255,0.2)] backdrop-blur-md relative z-10 overflow-hidden">
+              {form.avatar_url ? (
+                <img src={form.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-4xl font-bold text-primary">{form.name.charAt(0).toUpperCase()}</span>
+              )}
             </div>
             <h2 className="text-white font-bold text-2xl tracking-tight relative z-10">{form.name}</h2>
             <p className="text-gray-400 text-sm mt-1 relative z-10">{form.email}</p>
@@ -339,6 +344,10 @@ const Profile = () => {
                 <div>
                   <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2">Resume URL (Google Drive / Dropbox)</label>
                   <input type="url" value={form.resume_url} onChange={e => setForm({ ...form, resume_url: e.target.value })} placeholder="https://..." className="input-glass w-full" />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2">Profile Picture URL (e.g. Imgur, GitHub)</label>
+                  <input type="url" value={form.avatar_url} onChange={e => setForm({ ...form, avatar_url: e.target.value })} placeholder="https://..." className="input-glass w-full" />
                 </div>
                 <div className="grid sm:grid-cols-2 gap-6">
                   <div>

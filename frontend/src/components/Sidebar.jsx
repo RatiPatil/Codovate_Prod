@@ -82,7 +82,7 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white font-bold text-sm">C</div>
           <span className="text-white font-bold text-lg">Codovate</span>
-          <div className={`w-1.5 h-1.5 rounded-full ${isConnected ? 'bg-green-400' : 'bg-red-500'}`} title={isConnected ? 'Live' : 'Reconnecting...'} />
+
         </div>
       </div>
 
@@ -171,19 +171,19 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
   return (
     <>
       {/* Desktop */}
-      <aside className="hidden md:flex flex-col w-64 glass-panel border-r-0 border-white/10 h-screen sticky top-0 shrink-0 z-20">
+      <aside className="hidden md:flex flex-col w-64 glass-panel border-l border-white/10 h-screen sticky top-0 shrink-0 z-20">
         <Content />
       </aside>
 
-      {/* Mobile Drawer */}
+      {/* Mobile Overlay */}
       {mobileOpen && (
-        <div className="md:hidden fixed inset-0 z-50 flex">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
-          <aside className="relative w-64 glass-panel border-r-0 border-white/10 h-full z-10 shadow-[4px_0_24px_rgba(0,0,0,0.5)]">
-            <Content />
-          </aside>
-        </div>
+        <div className="md:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-40" onClick={() => setMobileOpen(false)} />
       )}
+      
+      {/* Mobile Drawer */}
+      <aside className={`md:hidden fixed top-0 right-0 h-screen w-64 glass-panel border-l border-white/10 z-50 shadow-[-4px_0_24px_rgba(0,0,0,0.5)] transition-transform duration-300 ${mobileOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+        <Content />
+      </aside>
     </>
   );
 };

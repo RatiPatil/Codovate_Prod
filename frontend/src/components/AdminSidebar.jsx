@@ -122,10 +122,7 @@ const SidebarContent = ({ setMobileOpen }) => {
               {meta.icon} {meta.label}
             </p>
           </div>
-          <div className="ml-auto flex items-center gap-1.5 shrink-0">
-            <div className={`w-1.5 h-1.5 rounded-full transition-all ${isConnected ? 'bg-green-400 shadow-[0_0_6px_rgba(74,222,128,0.8)]' : 'bg-red-500'}`} />
-            <span className="text-[9px] text-gray-500 font-bold">{isConnected ? 'LIVE' : 'OFF'}</span>
-          </div>
+
         </div>
       </div>
 
@@ -217,19 +214,19 @@ const SidebarContent = ({ setMobileOpen }) => {
 const AdminSidebar = ({ mobileOpen, setMobileOpen }) => (
   <>
     {/* Desktop */}
-    <aside className="hidden md:flex flex-col w-56 border-r border-white/5 h-screen sticky top-0 shrink-0 z-20">
+    <aside className="hidden md:flex flex-col w-56 border-l border-white/5 h-screen sticky top-0 shrink-0 z-20">
       <SidebarContent setMobileOpen={setMobileOpen} />
     </aside>
 
-    {/* Mobile Drawer */}
+    {/* Mobile Overlay */}
     {mobileOpen && (
-      <div className="md:hidden fixed inset-0 z-50 flex">
-        <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
-        <aside className="relative w-56 h-full z-10">
-          <SidebarContent setMobileOpen={setMobileOpen} />
-        </aside>
-      </div>
+      <div className="md:hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-40" onClick={() => setMobileOpen(false)} />
     )}
+    
+    {/* Mobile Drawer */}
+    <aside className={`md:hidden fixed top-0 right-0 h-screen w-56 z-50 transition-transform duration-300 ${mobileOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+      <SidebarContent setMobileOpen={setMobileOpen} />
+    </aside>
   </>
 );
 
