@@ -5,12 +5,10 @@ const CompanyAdminLayout = ({ children }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <div className="flex flex-row-reverse h-screen bg-[#050510] overflow-hidden">
+    <div className="flex h-screen bg-[#050510] overflow-hidden">
       {/* Company Admin uses an orange/amber tint to distinguish it visually */}
       <div className="absolute top-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-amber-500/10 blur-[150px] pointer-events-none" />
       <div className="absolute bottom-[-20%] left-[-10%] w-[40%] h-[40%] rounded-full bg-amber-500/5 blur-[120px] pointer-events-none" />
-
-      <CompanyAdminSidebar mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
 
       <div className="flex-1 flex flex-col overflow-hidden relative z-10">
         <div className="md:hidden flex items-center justify-between px-4 py-3.5 bg-[#050510] border-b border-white/5">
@@ -31,6 +29,7 @@ const CompanyAdminLayout = ({ children }) => {
           {children}
         </div>
       </div>
+      <CompanyAdminSidebar mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
     </div>
   );
 };

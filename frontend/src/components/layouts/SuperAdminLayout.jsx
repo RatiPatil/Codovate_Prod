@@ -5,12 +5,10 @@ const SuperAdminLayout = ({ children }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <div className="flex flex-row-reverse h-screen bg-[#050510] overflow-hidden">
+    <div className="flex h-screen bg-[#050510] overflow-hidden">
       {/* Deep space ambient glow - Super Admin uses primary color */}
       <div className="absolute top-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-[#2015FF]/10 blur-[150px] pointer-events-none" />
       <div className="absolute bottom-[-20%] left-[-10%] w-[40%] h-[40%] rounded-full bg-[#2015FF]/5 blur-[120px] pointer-events-none" />
-
-      <SuperAdminSidebar mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
 
       <div className="flex-1 flex flex-col overflow-hidden relative z-10">
         {/* Mobile Header */}
@@ -34,6 +32,7 @@ const SuperAdminLayout = ({ children }) => {
           {children}
         </div>
       </div>
+      <SuperAdminSidebar mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
     </div>
   );
 };

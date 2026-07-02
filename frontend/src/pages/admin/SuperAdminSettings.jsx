@@ -99,7 +99,7 @@ const SuperAdminSettings = () => {
                   <h4 className="text-white font-bold">Maintenance Mode</h4>
                   <p className="text-sm text-gray-400">Put the platform in maintenance mode (admins can still log in).</p>
                 </div>
-                <label className="relative inline-flex items-center cursor-pointer">
+                <label className="relative inline-flex items-center">
                   <input type="checkbox" name="maintenance_mode" checked={settings?.maintenance_mode || false} onChange={handleChange} className="sr-only peer" />
                   <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#2015FF]"></div>
                 </label>
@@ -110,7 +110,7 @@ const SuperAdminSettings = () => {
                   <h4 className="text-white font-bold">Allow New Registrations</h4>
                   <p className="text-sm text-gray-400">Allow new users to sign up.</p>
                 </div>
-                <label className="relative inline-flex items-center cursor-pointer">
+                <label className="relative inline-flex items-center">
                   <input type="checkbox" name="allow_registrations" checked={settings?.allow_registrations || false} onChange={handleChange} className="sr-only peer" />
                   <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#2015FF]"></div>
                 </label>

@@ -42,7 +42,7 @@ const Leaderboard = () => {
   );
 
   const top3 = students.slice(0, 3);
-  const myRank = students.findIndex(s => profile && s.id === profile.id);
+  const myRank = students.findIndex(s => currentUser && s.id === currentUser.id);
   const me = myRank !== -1 ? students[myRank] : null;
 
   return (

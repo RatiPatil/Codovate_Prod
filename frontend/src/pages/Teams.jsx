@@ -309,9 +309,9 @@ const ConnectionsView = ({ currentUser }) => {
         <div>
           <h3 className="text-lg font-bold mb-4">Incoming Requests</h3>
           <div className="space-y-3">
-            {connections.filter(c => c.status === 'pending' && c.receiver_id === currentUser.id).length === 0 ? (
+            {connections.filter(c => c.status === 'pending' && c.receiver_id === currentUser?.id).length === 0 ? (
               <p className="text-sm text-gray-500">No incoming requests.</p>
-            ) : connections.filter(c => c.status === 'pending' && c.receiver_id === currentUser.id).map(c => (
+            ) : connections.filter(c => c.status === 'pending' && c.receiver_id === currentUser?.id).map(c => (
               <div key={c.id} className="glass-card p-4 flex justify-between items-center">
                 <div>
                   <h4 className="font-bold">{c.other_user?.name}</h4>
@@ -327,9 +327,9 @@ const ConnectionsView = ({ currentUser }) => {
 
           <h3 className="text-lg font-bold mt-8 mb-4">Sent Requests</h3>
           <div className="space-y-3">
-            {connections.filter(c => c.status === 'pending' && c.sender_id === currentUser.id).length === 0 ? (
+            {connections.filter(c => c.status === 'pending' && c.sender_id === currentUser?.id).length === 0 ? (
               <p className="text-sm text-gray-500">No sent requests.</p>
-            ) : connections.filter(c => c.status === 'pending' && c.sender_id === currentUser.id).map(c => (
+            ) : connections.filter(c => c.status === 'pending' && c.sender_id === currentUser?.id).map(c => (
               <div key={c.id} className="glass-card p-4 flex justify-between items-center">
                 <div>
                   <h4 className="font-bold">{c.other_user?.name}</h4>
@@ -768,7 +768,7 @@ const Teams = () => {
 
                 <div className="mt-auto relative z-10">
                   <div
-                    className="p-4 bg-white/5 border border-white/5 rounded-xl flex items-center justify-between mb-4 shadow-inner cursor-pointer hover:bg-white/10 transition-all"
+                    className="p-4 bg-white/5 border border-white/5 rounded-xl flex items-center justify-between mb-4 shadow-inner hover:bg-white/10 transition-all"
                     onClick={() => copyJoinCode(t.join_code)}
                     title="Click to copy join code"
                   >

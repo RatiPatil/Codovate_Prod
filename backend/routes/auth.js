@@ -361,34 +361,30 @@ router.post("/forgot-password", forgotPasswordLimiter, async (req, res) => {
 
     // Send email using Nodemailer
     try {
-      if (process.env.SMTP_USER && process.env.SMTP_PASS) {
-        await transporter.sendMail({
-          from: `"Codovate Admin" <${process.env.SMTP_USER}>`,
-          to: user.email,
-          subject: "Your Password Reset Code",
-          text: `Your password reset code is: ${code}. It expires in 15 minutes.`,
-          html: `
-            <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
-              <h2 style="color: #2015FF;">Codovate Password Reset</h2>
-              <p>You requested a password reset for your Codovate account.</p>
-              <p>Your 6-digit reset code is: <strong style="font-size: 24px; letter-spacing: 2px;">${code}</strong></p>
-              <p>This code will expire in 15 minutes.</p>
-              <p>If you did not request this, you can safely ignore this email.</p>
-            </div>
-          `,
-        });
-        console.log(`📧 Reset email sent to ${user.email}`);
-      } else {
-        // Fallback for development if SMTP not configured
-        console.log(`\n⚠️ SMTP NOT CONFIGURED. To deliver emails, add SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS to .env`);
-        console.log(`\n========================================`);
-        console.log(`🔑 PASSWORD RESET REQUEST (DEVELOPMENT)`);
-        console.log(`Email: ${user.email}`);
-        console.log(`Code: ${code}`);
-        console.log(`========================================\n`);
+      if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+        console.warn(`⚠️ SMTP NOT CONFIGURED. Please set SMTP variables in .env`);
+        return res.status(500).json({ message: "Email service is temporarily misconfigured. Please contact support." });
       }
+
+      await transporter.sendMail({
+        from: `"Codovate Admin" <${process.env.SMTP_USER}>`,
+        to: user.email,
+        subject: "Your Password Reset Code",
+        text: `Your password reset code is: ${code}. It expires in 15 minutes.`,
+        html: `
+          <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
+            <h2 style="color: #2015FF;">Codovate Password Reset</h2>
+            <p>You requested a password reset for your Codovate account.</p>
+            <p>Your 6-digit reset code is: <strong style="font-size: 24px; letter-spacing: 2px;">${code}</strong></p>
+            <p>This code will expire in 15 minutes.</p>
+            <p>If you did not request this, you can safely ignore this email.</p>
+          </div>
+        `,
+      });
+      console.log(`📧 Reset email sent to ${user.email}`);
     } catch (emailErr) {
       console.error("Failed to send reset email:", emailErr);
+      return res.status(500).json({ message: "Failed to dispatch reset email. Please try again later." });
     }
 
     res.json({ message: "If this email exists, a reset code was sent." });

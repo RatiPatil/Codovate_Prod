@@ -285,7 +285,7 @@ const Opportunities = () => {
               <div
                 key={opp.id}
                 onClick={() => setSelectedOpp(opp)}
-                className="glass-card p-6 flex flex-col h-full group cursor-pointer relative overflow-hidden"
+                className="glass-card p-6 flex flex-col h-full group relative overflow-hidden"
               >
                 <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-bl-full pointer-events-none transition-transform group-hover:scale-110" />
 

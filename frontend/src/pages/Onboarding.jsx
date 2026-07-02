@@ -126,6 +126,7 @@ const InputField = ({ label, field, placeholder, type = 'text', required = false
 export default function Onboarding() {
   const { completeOnboarding } = useAuth();
   const [step, setStep] = useState(1);
+  const [isTransitioning, setIsTransitioning] = useState(false);
   const [data, setData] = useState({
     full_name: '', phone: '', country: 'India', state: '', district: '', taluka: '',
     college: '', branch: '', year: '',
@@ -143,10 +144,11 @@ export default function Onboarding() {
   const update = (field, value) => {
     let val = value;
     if (field === 'phone') {
-      val = value.replace(/[^0-9]/g, '').slice(0, 15);
+      val = value.replace(/[^0-9]/g, '').slice(0, 10);
     }
-    if (field === 'full_name') {
-      val = value.replace(/\s{2,}/g, ' '); // Auto-trim multiple spaces
+    if (['full_name', 'college', 'branch'].includes(field)) {
+      val = value.replace(/[^A-Za-z\s]/g, '');
+      val = val.replace(/\s{2,}/g, ' '); // Auto-trim multiple spaces
     }
     setData(prev => ({ ...prev, [field]: val }));
     if (touched[field]) {
@@ -213,6 +215,7 @@ export default function Onboarding() {
   };
 
   const handleNext = async () => {
+    if (isTransitioning) return;
     const stepErrors = validateStep(step, data);
     
     // Explicit phone check on next for Step 1
@@ -241,6 +244,7 @@ export default function Onboarding() {
     }
 
     if (step < STEPS.length) {
+      setIsTransitioning(true);
       const tl = gsap.timeline();
       tl.to(contentRef.current, { x: -50, opacity: 0, duration: 0.25, ease: 'power2.in' })
         .call(() => {
@@ -248,7 +252,7 @@ export default function Onboarding() {
           setTouched({});
           setErrors({});
         })
-        .fromTo(contentRef.current, { x: 50, opacity: 0 }, { x: 0, opacity: 1, duration: 0.35, ease: 'power2.out' });
+        .fromTo(contentRef.current, { x: 50, opacity: 0 }, { x: 0, opacity: 1, duration: 0.35, ease: 'power2.out', onComplete: () => setIsTransitioning(false) });
     } else {
       setSaving(true);
       try {
@@ -269,7 +273,9 @@ export default function Onboarding() {
   };
   
   const handleBack = () => {
+    if (isTransitioning) return;
     if (step > 1) {
+      setIsTransitioning(true);
       const tl = gsap.timeline();
       tl.to(contentRef.current, { x: 50, opacity: 0, duration: 0.25, ease: 'power2.in' })
         .call(() => {
@@ -277,7 +283,7 @@ export default function Onboarding() {
           setTouched({});
           setErrors({});
         })
-        .fromTo(contentRef.current, { x: -50, opacity: 0 }, { x: 0, opacity: 1, duration: 0.35, ease: 'power2.out' });
+        .fromTo(contentRef.current, { x: -50, opacity: 0 }, { x: 0, opacity: 1, duration: 0.35, ease: 'power2.out', onComplete: () => setIsTransitioning(false) });
     }
   };
 
@@ -755,7 +761,7 @@ export default function Onboarding() {
             <div className="px-8 py-5 border-t border-white/5 flex items-center justify-between bg-white/[0.02]">
               <button
                 onClick={handleBack}
-                disabled={step === 1}
+                disabled={step === 1 || isTransitioning}
                 className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-all disabled:opacity-20 disabled:cursor-not-allowed"
               >
                 ← Back
@@ -775,7 +781,7 @@ export default function Onboarding() {
 
                 <button
                   onClick={handleNext}
-                  disabled={saving}
+                  disabled={saving || isTransitioning}
                   className="flex items-center gap-2 bg-primary hover:bg-primary-dark text-white font-bold px-7 py-2.5 rounded-xl transition-all duration-200 shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 text-sm"
                 >
                   {saving ? (

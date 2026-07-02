@@ -8,6 +8,7 @@ const { initializeAdminRealtime } = require("./services/adminRealtime");
 require("dotenv").config();
 
 const app = express();
+app.set("trust proxy", 1);
 const server = http.createServer(app);
 
 const allowedOrigins = [

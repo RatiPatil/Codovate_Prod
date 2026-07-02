@@ -225,7 +225,7 @@ const ExperienceStep = ({ data, onChange }) => {
             <div><Label>Start Date</Label><Input value={exp.startDate} onChange={e => update(exp.id, 'startDate', e.target.value)} placeholder="Jun 2024" /></div>
             <div><Label>End Date</Label><Input value={exp.endDate} onChange={e => update(exp.id, 'endDate', e.target.value)} placeholder="Aug 2024" disabled={exp.current} /></div>
             <div className="flex items-end pb-0.5">
-              <label className="flex items-center gap-2 cursor-pointer">
+              <label className="flex items-center gap-2">
                 <input type="checkbox" checked={exp.current} onChange={e => update(exp.id, 'current', e.target.checked)} className="w-4 h-4 rounded accent-[#2015FF]" />
                 <span className="text-gray-400 text-xs">Current</span>
               </label>

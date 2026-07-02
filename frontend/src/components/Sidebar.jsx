@@ -104,7 +104,7 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
               setShowNotifs(!showNotifs);
               if (!showNotifs && unreadCount > 0) markAllAsRead();
             }}
-            className="relative p-2 rounded-lg hover:bg-white/5 text-gray-400 hover:text-white transition-colors cursor-pointer"
+            className="relative p-2 rounded-lg hover:bg-white/5 text-gray-400 hover:text-white transition-colors"
           >
             🔔
             {unreadCount > 0 && (

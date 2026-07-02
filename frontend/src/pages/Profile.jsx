@@ -126,12 +126,21 @@ const Profile = () => {
         <div className="space-y-6">
           <div className="glass-panel rounded-2xl p-8 text-center relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 rounded-full blur-[50px] -mr-10 -mt-10 pointer-events-none" />
-            <div className="w-24 h-24 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center mx-auto mb-5 shadow-[0_0_20px_rgba(32,21,255,0.2)] backdrop-blur-md relative z-10 overflow-hidden">
+            <div 
+              className="w-24 h-24 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center mx-auto mb-5 shadow-[0_0_20px_rgba(32,21,255,0.2)] backdrop-blur-md relative z-10 overflow-hidden cursor-pointer group"
+              onClick={() => {
+                const url = window.prompt("Enter new Profile Picture URL (e.g. Imgur, GitHub Link)", form.avatar_url);
+                if (url !== null) setForm({ ...form, avatar_url: url });
+              }}
+            >
               {form.avatar_url ? (
-                <img src={form.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                <img src={form.avatar_url} alt="Profile" className="w-full h-full object-cover group-hover:opacity-50 transition-all" />
               ) : (
-                <span className="text-4xl font-bold text-primary">{form.name.charAt(0).toUpperCase()}</span>
+                <span className="text-4xl font-bold text-primary group-hover:opacity-50 transition-all">{form.name.charAt(0).toUpperCase()}</span>
               )}
+              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40">
+                <span className="text-[10px] uppercase font-bold text-white tracking-widest text-center">Edit<br/>Picture</span>
+              </div>
             </div>
             <h2 className="text-white font-bold text-2xl tracking-tight relative z-10">{form.name}</h2>
             <p className="text-gray-400 text-sm mt-1 relative z-10">{form.email}</p>
