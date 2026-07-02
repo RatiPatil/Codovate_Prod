@@ -52,6 +52,7 @@ jobs:
           VITE_FIREBASE_APP_ID: "1:620492991139:web:56ba93f90ac7a955aaad16"
           VITE_FIREBASE_MEASUREMENT_ID: "G-1XL6G2MBL2"
           VITE_API_URL: "https://codovate-prod.onrender.com/api"
+          VITE_SOCKET_URL: "https://codovate-prod.onrender.com"
         
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
