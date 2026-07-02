@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { signInWithPopup } from 'firebase/auth';
+import { signInWithRedirect, getRedirectResult } from 'firebase/auth';
 import { auth, googleProvider } from '../lib/firebase';
 import api from '../api/axios';
 
@@ -27,6 +27,24 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
+  // Handle Google Login Redirect Result
+  useEffect(() => {
+    const checkRedirect = async () => {
+      try {
+        const result = await getRedirectResult(auth);
+        if (result) {
+          const idToken = await result.user.getIdToken();
+          const res = await api.post('/auth/google', { idToken });
+          const { token: jwtToken, user: userData } = res.data;
+          login(jwtToken, userData);
+        }
+      } catch (err) {
+        console.error("Firebase Redirect Auth Error:", err);
+      }
+    };
+    checkRedirect();
+  }, []);
+
   // Verify onboarding from DB when token is available
   useEffect(() => {
     if (!token) return;
@@ -50,16 +68,7 @@ export const AuthProvider = ({ children }) => {
 
   const loginWithGoogle = async () => {
     try {
-      const result = await signInWithPopup(auth, googleProvider);
-      const idToken = await result.user.getIdToken();
-      
-      // Send the Firebase ID token to our backend to get our own JWT and user data
-      const res = await api.post('/auth/google', { idToken });
-      
-      const { token: jwtToken, user: userData } = res.data;
-      login(jwtToken, userData);
-      
-      return res; // To allow caller to handle navigation
+      await signInWithRedirect(auth, googleProvider);
     } catch (err) {
       console.error("Google authentication error:", err);
       throw err;

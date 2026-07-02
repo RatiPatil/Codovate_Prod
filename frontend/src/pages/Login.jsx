@@ -8,8 +8,15 @@ const Login = () => {
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login, loginWithGoogle } = useAuth();
+  const { login, loginWithGoogle, user } = useAuth();
   const navigate = useNavigate();
+  
+  // Auto-redirect if context picks up user (e.g. from Google Redirect Return)
+  useEffect(() => {
+    if (user) {
+      navigate('/dashboard');
+    }
+  }, [user, navigate]);
   
   const formRef = useRef(null);
   const bgRef = useRef(null);
@@ -20,10 +27,8 @@ const Login = () => {
     setError('');
     try {
       await loginWithGoogle();
-      navigate('/dashboard');
     } catch (err) {
-      if (err.code === 'auth/popup-closed-by-user') return;
-      setError(err.response?.data?.message || 'Google login failed.');
+      setError(err.response?.data?.message || err.message || 'Google login failed.');
     }
   };
 
