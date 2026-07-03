@@ -9,7 +9,6 @@
   50% { transform: translateY(100%); }
   100% { transform: translateY(100%); }
 }
-@tailwind utilities;
 
 * {
   box-sizing: border-box;
