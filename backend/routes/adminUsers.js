@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const { db } = require('../config/firebase');
-const { body, validationResult } = require('express-validator');
+const { db, admin } = require('../config/firebase');
+const { body, validationResult, checkExact, matchedData } = require('express-validator');
 
 // Middleware to ensure super_admin
 const superAdminOnly = (req, res, next) => {
@@ -36,48 +36,53 @@ router.get('/', async (req, res) => {
 });
 
 // POST new user
-router.post('/', superAdminOnly, [
-  body('name').notEmpty().withMessage('Name is required'),
-  body('email').isEmail().withMessage('Valid email is required'),
+router.post('/', superAdminOnly, checkExact([
+  body('name').trim().notEmpty().withMessage('Name is required').escape(),
+  body('email').trim().isEmail().withMessage('Valid email is required').normalizeEmail(),
   body('role').isIn(['student', 'mentor', 'college_admin', 'company_admin', 'admin', 'super_admin']).withMessage('Invalid role'),
-  body('status').isIn(['active', 'pending', 'banned', 'suspended', 'inactive']).withMessage('Invalid status')
-], async (req, res) => {
+  body('status').isIn(['active', 'pending', 'banned', 'suspended', 'inactive']).withMessage('Invalid status'),
+  body('college_id').optional({ nullable: true }).trim().escape()
+]), async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
   try {
-    const { name, email, role, status, college_id } = req.body;
+    const data = matchedData(req, { includeOptionals: true });
+    const { name, email, role, status, college_id } = data;
     
     // Check if user already exists
-    const existing = await db.collection('users').where('email', '==', email.toLowerCase()).get();
+    const existing = await db.collection('users').where('email', '==', email).get();
     if (!existing.empty) return res.status(400).json({ message: 'Email already exists' });
 
     const newUserRef = db.collection('users').doc();
     const newUser = {
       id: newUserRef.id,
       name,
-      email: email.toLowerCase(),
+      email,
       role,
       status,
       is_active: status === 'active',
       college_id: college_id || null,
-      created_at: new Date()
+      created_at: admin.firestore.FieldValue.serverTimestamp(),
+      updated_at: admin.firestore.FieldValue.serverTimestamp()
     };
 
     await newUserRef.set(newUser);
     res.status(201).json(newUser);
   } catch (error) {
+    console.error("User POST error:", error);
     res.status(500).json({ message: 'Server error' });
   }
 });
 
 // PUT update user
-router.put('/:id', superAdminOnly, [
-  body('name').optional().notEmpty().withMessage('Name cannot be empty'),
-  body('email').optional().isEmail().withMessage('Valid email is required'),
+router.put('/:id', superAdminOnly, checkExact([
+  body('name').optional().trim().notEmpty().withMessage('Name cannot be empty').escape(),
+  body('email').optional().trim().isEmail().withMessage('Valid email is required').normalizeEmail(),
   body('role').optional().isIn(['student', 'mentor', 'college_admin', 'company_admin', 'admin', 'super_admin']).withMessage('Invalid role'),
-  body('status').optional().isIn(['active', 'pending', 'banned', 'suspended', 'inactive']).withMessage('Invalid status')
-], async (req, res) => {
+  body('status').optional().isIn(['active', 'pending', 'banned', 'suspended', 'inactive']).withMessage('Invalid status'),
+  body('college_id').optional({ nullable: true }).trim().escape()
+]), async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
@@ -86,15 +91,23 @@ router.put('/:id', superAdminOnly, [
     const doc = await userRef.get();
     if (!doc.exists) return res.status(404).json({ message: 'User not found' });
 
-    const updateData = { ...req.body };
+    const updateData = matchedData(req, { includeOptionals: true });
+    
+    if (Object.keys(updateData).length === 0) {
+      return res.status(400).json({ message: 'No valid fields provided for update' });
+    }
+
     if (updateData.status) {
       updateData.is_active = updateData.status === 'active';
     }
+
+    updateData.updated_at = admin.firestore.FieldValue.serverTimestamp();
 
     await userRef.update(updateData);
     const updated = await userRef.get();
     res.json(updated.data());
   } catch (error) {
+    console.error("User PUT error:", error);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -106,21 +119,37 @@ router.delete('/:id', superAdminOnly, async (req, res) => {
     const doc = await userRef.get();
     if (!doc.exists) return res.status(404).json({ message: 'User not found' });
 
-    await userRef.update({ status: 'inactive', is_active: false });
+    await userRef.update({ 
+      status: 'inactive', 
+      is_active: false,
+      updated_at: admin.firestore.FieldValue.serverTimestamp(),
+      deleted_at: admin.firestore.FieldValue.serverTimestamp()
+    });
     res.json({ message: 'User deactivated successfully' });
   } catch (error) {
+    console.error("User DELETE error:", error);
     res.status(500).json({ message: 'Server error' });
   }
 });
 
 // PUT status (used by the existing table)
-router.put('/:id/status', superAdminOnly, async (req, res) => {
+router.put('/:id/status', superAdminOnly, checkExact([
+  body('status').isIn(['active', 'pending', 'banned', 'suspended', 'inactive']).withMessage('Invalid status')
+]), async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+
   try {
     const userRef = db.collection('users').doc(req.params.id);
-    const { status } = req.body;
-    await userRef.update({ status, is_active: status === 'active' });
+    const { status } = matchedData(req);
+    await userRef.update({ 
+      status, 
+      is_active: status === 'active',
+      updated_at: admin.firestore.FieldValue.serverTimestamp()
+    });
     res.json({ message: 'Status updated' });
   } catch (error) {
+    console.error("User STATUS error:", error);
     res.status(500).json({ message: 'Server error' });
   }
 });
