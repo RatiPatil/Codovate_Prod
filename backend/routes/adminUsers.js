@@ -14,11 +14,12 @@ const superAdminOnly = (req, res, next) => {
 // GET all users
 router.get('/', async (req, res) => {
   try {
-    const snapshot = await db.collection('users').get();
+    const usersSnapshot = await db.collection('users').get();
+    const studentsSnapshot = await db.collection('students').get();
     const users = [];
-    snapshot.forEach(doc => {
+    
+    usersSnapshot.forEach(doc => {
       const u = doc.data();
-      // Only return necessary fields
       users.push({
         id: doc.id,
         name: u.name,
@@ -29,6 +30,21 @@ router.get('/', async (req, res) => {
         created_at: u.created_at
       });
     });
+
+    studentsSnapshot.forEach(doc => {
+      const s = doc.data();
+      const sp = s.profile_data || {};
+      users.push({
+        id: doc.id,
+        name: sp.name || s.name || 'Anonymous',
+        email: s.email,
+        role: s.role || 'student',
+        status: s.status || (s.is_active ? 'active' : 'inactive'),
+        college_id: s.college_id,
+        created_at: s.created_at
+      });
+    });
+
     res.json(users);
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
@@ -50,14 +66,15 @@ router.post('/', superAdminOnly, checkExact([
     const data = matchedData(req, { includeOptionals: true });
     const { name, email, role, status, college_id } = data;
     
+    const targetCollection = role === 'student' ? 'students' : 'users';
+    
     // Check if user already exists
-    const existing = await db.collection('users').where('email', '==', email).get();
+    const existing = await db.collection(targetCollection).where('email', '==', email).get();
     if (!existing.empty) return res.status(400).json({ message: 'Email already exists' });
 
-    const newUserRef = db.collection('users').doc();
-    const newUser = {
+    const newUserRef = db.collection(targetCollection).doc();
+    let newUser = {
       id: newUserRef.id,
-      name,
       email,
       role,
       status,
@@ -66,6 +83,12 @@ router.post('/', superAdminOnly, checkExact([
       created_at: admin.firestore.FieldValue.serverTimestamp(),
       updated_at: admin.firestore.FieldValue.serverTimestamp()
     };
+    
+    if (role === 'student') {
+      newUser.profile_data = { name };
+    } else {
+      newUser.name = name;
+    }
 
     await newUserRef.set(newUser);
     res.status(201).json(newUser);
@@ -87,9 +110,13 @@ router.put('/:id', superAdminOnly, checkExact([
   if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
   try {
-    const userRef = db.collection('users').doc(req.params.id);
-    const doc = await userRef.get();
-    if (!doc.exists) return res.status(404).json({ message: 'User not found' });
+    let userRef = db.collection('users').doc(req.params.id);
+    let doc = await userRef.get();
+    if (!doc.exists) {
+      userRef = db.collection('students').doc(req.params.id);
+      doc = await userRef.get();
+      if (!doc.exists) return res.status(404).json({ message: 'User not found' });
+    }
 
     const updateData = matchedData(req, { includeOptionals: true });
     
@@ -115,9 +142,13 @@ router.put('/:id', superAdminOnly, checkExact([
 // DELETE (Soft delete) user
 router.delete('/:id', superAdminOnly, async (req, res) => {
   try {
-    const userRef = db.collection('users').doc(req.params.id);
-    const doc = await userRef.get();
-    if (!doc.exists) return res.status(404).json({ message: 'User not found' });
+    let userRef = db.collection('users').doc(req.params.id);
+    let doc = await userRef.get();
+    if (!doc.exists) {
+      userRef = db.collection('students').doc(req.params.id);
+      doc = await userRef.get();
+      if (!doc.exists) return res.status(404).json({ message: 'User not found' });
+    }
 
     await userRef.update({ 
       status: 'inactive', 
@@ -140,7 +171,13 @@ router.put('/:id/status', superAdminOnly, checkExact([
   if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
   try {
-    const userRef = db.collection('users').doc(req.params.id);
+    let userRef = db.collection('users').doc(req.params.id);
+    let doc = await userRef.get();
+    if (!doc.exists) {
+      userRef = db.collection('students').doc(req.params.id);
+      doc = await userRef.get();
+      if (!doc.exists) return res.status(404).json({ message: 'User not found' });
+    }
     const { status } = matchedData(req);
     await userRef.update({ 
       status, 

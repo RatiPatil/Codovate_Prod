@@ -157,14 +157,14 @@ router.post(
     // 🔴 REAL-TIME: Emit to all connected users
     req.io.to("global").emit("new_opportunity", opp);
 
-    // Send notification to all users
-    const usersSnapshot = await db.collection("users").where("is_active", "==", true).get();
-    for (const userDoc of usersSnapshot.docs) {
-      const u = userDoc.data();
+    // Send notification to all students
+    const studentsSnapshot = await db.collection("students").where("is_active", "==", true).get();
+    for (const studentDoc of studentsSnapshot.docs) {
+      const s = studentDoc.data();
       const notifRef = db.collection("notifications").doc();
       await notifRef.set({
         id: notifRef.id,
-        user_id: u.id,
+        user_id: studentDoc.id,
         title: `New ${type}: ${title}`,
         body: `${company} has posted a new opportunity`,
         type: 'new_opportunity',
@@ -173,7 +173,7 @@ router.post(
         created_at: new Date()
       });
       
-      req.io.to(`user_${u.id}`).emit("new_notification", {
+      req.io.to(`user_${studentDoc.id}`).emit("new_notification", {
         title: `New ${type}: ${title}`,
         body: `${company} posted a new opportunity`,
       });

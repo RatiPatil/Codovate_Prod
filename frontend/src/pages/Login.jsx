@@ -3,12 +3,16 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { gsap } from 'gsap';
 import api from '../api/axios';
+import { RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
+import { auth } from '../lib/firebase';
+import OtpInput from 'react-otp-input';
 
 const Login = () => {
-  const [form, setForm] = useState({ email: '', password: '' });
+  const [form, setForm] = useState({ phone: '', otp: '' });
+  const [confirmationResult, setConfirmationResult] = useState(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login, loginWithGoogle, user } = useAuth();
+  const { login, loginWithGoogle, loginWithPhone, user } = useAuth();
   const navigate = useNavigate();
   
   // Auto-redirect if context picks up user (e.g. from Google Redirect Return)
@@ -67,29 +71,47 @@ const Login = () => {
     }
   }, []);
 
-  const handleSubmit = async (e) => {
+  useEffect(() => {
+    // Setup recaptcha on mount
+    if (!window.recaptchaVerifier) {
+      window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+        size: 'invisible'
+      });
+    }
+  }, []);
+
+
+
+  const handleSendOTP = async (e) => {
     e.preventDefault();
+    if (!form.phone) return setError('Please enter a phone number');
     setError('');
     setLoading(true);
     try {
-      const res = await api.post('/auth/login', form);
-      const adminRoles = ['admin', 'super_admin', 'college_admin', 'company_admin', 'mentor'];
-      if (adminRoles.includes(res.data.user.role)) {
-        setError('Admin accounts must use the dedicated Admin Portal.');
-        // Remove the invalid session
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        return;
-      }
-      
-      login(res.data.token, res.data.user);
+      const appVerifier = window.recaptchaVerifier;
+      const formattedPhone = form.phone.startsWith('+') ? form.phone : `+91${form.phone}`;
+      const result = await signInWithPhoneNumber(auth, formattedPhone, appVerifier);
+      setConfirmationResult(result);
+    } catch (err) {
+      setError(err.message || 'Failed to send OTP');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyOTP = async (e) => {
+    e.preventDefault();
+    if (!form.otp || !confirmationResult) return;
+    setError('');
+    setLoading(true);
+    try {
+      const result = await confirmationResult.confirm(form.otp);
+      const idToken = await result.user.getIdToken();
+      await loginWithPhone(idToken);
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed. Try again.');
-      gsap.fromTo(formRef.current,
-        { x: -8 },
-        { x: 0, duration: 0.4, ease: 'elastic.out(1, 0.3)' }
-      );
+      setError(err.response?.data?.message || err.message || 'Invalid OTP');
     } finally {
       setLoading(false);
     }
@@ -173,45 +195,34 @@ const Login = () => {
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-5 relative z-10">
-              <div>
-                <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Email Address</label>
-                <input
-                  type="email"
-                  value={form.email}
-                  onChange={e => setForm({ ...form, email: e.target.value })}
-                  placeholder="you@example.com"
-                  required
-                  className="input-glass w-full py-4 px-4 text-sm focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all"
-                />
-              </div>
-
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest">Password</label>
-                  <Link to="/forgot-password" className="text-xs text-primary hover:text-white transition-colors">Forgot?</Link>
+            <form onSubmit={confirmationResult ? handleVerifyOTP : handleSendOTP} className="space-y-5 relative z-10">
+              {!confirmationResult ? (
+                <div>
+                  <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Mobile Number</label>
+                  <input type="tel" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} placeholder="+91 9876543210" required className="input-glass w-full py-4 px-4 text-sm focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all" />
                 </div>
-                <input
-                  type="password"
-                  value={form.password}
-                  onChange={e => setForm({ ...form, password: e.target.value })}
-                  placeholder="Enter your password"
-                  required
-                  className="input-glass w-full py-4 px-4 text-sm focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all"
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="btn-primary w-full py-4 disabled:opacity-50 mt-2 text-sm font-bold tracking-wide shadow-lg shadow-primary/20"
-              >
-                {loading ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Authenticating...
-                  </span>
-                ) : 'Sign In'}
+              ) : (
+                <div>
+                  <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 text-center">Enter OTP</label>
+                  <OtpInput
+                    value={form.otp}
+                    onChange={(otp) => setForm({ ...form, otp })}
+                    numInputs={6}
+                    renderInput={(props) => (
+                      <input 
+                        {...props} 
+                        className="w-12 h-14 text-center text-xl font-bold rounded-xl bg-white/5 border border-white/10 text-white focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all outline-none"
+                      />
+                    )}
+                    containerStyle="flex justify-center gap-2"
+                    inputType="tel"
+                    shouldAutoFocus
+                  />
+                </div>
+              )}
+              <div id="recaptcha-container"></div>
+              <button type="submit" disabled={loading} className="btn-primary w-full py-4 disabled:opacity-50 mt-2 text-sm font-bold tracking-wide shadow-lg shadow-primary/20">
+                {loading ? <span className="flex items-center justify-center gap-2"><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Processing...</span> : (!confirmationResult ? 'Send OTP' : 'Verify & Sign In')}
               </button>
             </form>
 

@@ -42,7 +42,8 @@ const Leaderboard = () => {
   );
 
   const top3 = students.slice(0, 3);
-  const myRank = students.findIndex(s => currentUser && s.id === currentUser.id);
+  const currentId = profile?.id || currentUser?.id;
+  const myRank = students.findIndex(s => currentId && s.id === currentId);
   const me = myRank !== -1 ? students[myRank] : null;
 
   return (
@@ -69,7 +70,7 @@ const Leaderboard = () => {
               </div>
               <p className="font-bold text-sm text-center mb-1 line-clamp-1 flex flex-col items-center gap-1">
                 {top3[1].name}
-                {currentUser && top3[1].id === currentUser.id && <span className="bg-primary text-white text-[9px] px-1.5 py-0.5 rounded-sm uppercase tracking-wider">You</span>}
+                {currentId && top3[1].id === currentId && <span className="bg-primary text-white text-[9px] px-1.5 py-0.5 rounded-sm uppercase tracking-wider">You</span>}
               </p>
               <p className="text-blue-400 text-xs font-black tracking-widest bg-blue-500/10 px-2 py-0.5 rounded-full mb-3">{top3[1].points} PTS</p>
               <div className="w-full h-24 bg-gradient-to-t from-blue-900/40 to-blue-500/10 border-t-2 border-blue-500/50 rounded-t-xl flex items-center justify-center relative">
@@ -88,7 +89,7 @@ const Leaderboard = () => {
               </div>
               <p className="font-bold text-lg text-center mb-1 line-clamp-1 text-yellow-100 flex flex-col items-center gap-1">
                 {top3[0].name}
-                {currentUser && top3[0].id === currentUser.id && <span className="bg-primary text-white text-[9px] px-1.5 py-0.5 rounded-sm uppercase tracking-wider">You</span>}
+                {currentId && top3[0].id === currentId && <span className="bg-primary text-white text-[9px] px-1.5 py-0.5 rounded-sm uppercase tracking-wider">You</span>}
               </p>
               <p className="text-yellow-400 text-sm font-black tracking-widest bg-yellow-500/10 px-3 py-1 rounded-full mb-4 shadow-inner border border-yellow-500/20">{top3[0].points} PTS</p>
               <div className="w-full h-32 bg-gradient-to-t from-yellow-900/40 to-yellow-500/10 border-t-2 border-yellow-500/50 rounded-t-xl flex items-center justify-center relative">
@@ -107,7 +108,7 @@ const Leaderboard = () => {
               </div>
               <p className="font-bold text-sm text-center mb-1 line-clamp-1 flex flex-col items-center gap-1">
                 {top3[2].name}
-                {currentUser && top3[2].id === currentUser.id && <span className="bg-primary text-white text-[9px] px-1.5 py-0.5 rounded-sm uppercase tracking-wider">You</span>}
+                {currentId && top3[2].id === currentId && <span className="bg-primary text-white text-[9px] px-1.5 py-0.5 rounded-sm uppercase tracking-wider">You</span>}
               </p>
               <p className="text-orange-400 text-xs font-black tracking-widest bg-orange-500/10 px-2 py-0.5 rounded-full mb-3">{top3[2].points} PTS</p>
               <div className="w-full h-20 bg-gradient-to-t from-orange-900/40 to-orange-500/10 border-t-2 border-orange-500/50 rounded-t-xl flex items-center justify-center relative">

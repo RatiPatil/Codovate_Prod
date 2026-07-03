@@ -26,7 +26,7 @@ router.post("/save", auth, async (req, res) => {
       const digitsOnly = phone.replace(/[^0-9]/g, '');
       if (digitsOnly.length < 10 || digitsOnly.length > 15) errors.phone = 'Phone must be 10-15 digits';
       // Check duplicate phone
-      const phoneCheck = await db.collection("student_profiles")
+      const phoneCheck = await db.collection("students")
         .where("phone", "==", phone).get();
       const isDuplicate = phoneCheck.docs.some(doc => doc.id !== req.user.id);
       if (isDuplicate) errors.phone = 'This phone number is already registered';
@@ -48,10 +48,6 @@ router.post("/save", auth, async (req, res) => {
       return res.status(400).json({ message: "Validation failed", errors });
     }
 
-    if (trimmedName) {
-      await db.collection("users").doc(req.user.id).update({ name: trimmedName });
-    }
-
     const cleanYear = year ? parseInt(year) : null;
     const cleanCompletion = profile_completion !== undefined && profile_completion !== ""
       ? parseInt(profile_completion) : null;
@@ -64,6 +60,7 @@ router.post("/save", auth, async (req, res) => {
     const derivedCity = city || taluka || district || null;
 
     const updateData = {
+      name: trimmedName || null,
       full_name: trimmedName || null,
       phone: phone || null,
       city: derivedCity,
@@ -84,7 +81,6 @@ router.post("/save", auth, async (req, res) => {
       bio: bio?.trim() || null,
       profile_completion: cleanCompletion,
       onboarding_completed: onboarding_completed !== undefined ? onboarding_completed : null,
-      user_id: req.user.id
     };
 
     // Remove undefined and null
@@ -94,7 +90,17 @@ router.post("/save", auth, async (req, res) => {
       }
     });
 
-    await db.collection("student_profiles").doc(req.user.id).set(updateData, { merge: true });
+    const studentRef = db.collection("students").doc(req.user.id);
+    
+    // Set top level phone and name if needed, but primarily put in profile_data
+    const topLevelUpdates = {};
+    if (phone) topLevelUpdates.phone = phone;
+    if (trimmedName) topLevelUpdates.name = trimmedName;
+
+    await studentRef.set({
+      ...topLevelUpdates,
+      profile_data: updateData 
+    }, { merge: true });
 
     console.log("✅ Onboarding saved successfully");
     res.json({ message: "Saved.", profile_completion: cleanCompletion });
@@ -116,7 +122,7 @@ router.post("/check-phone", auth, async (req, res) => {
       return res.json({ available: false, reason: "Phone must be 10-15 digits" });
     }
 
-    const snapshot = await db.collection("student_profiles")
+    const snapshot = await db.collection("students")
       .where("phone", "==", phone).get();
 
     const isDuplicate = snapshot.docs.some(doc => doc.id !== req.user.id);
@@ -129,21 +135,20 @@ router.post("/check-phone", auth, async (req, res) => {
 
 router.get("/status", auth, async (req, res) => {
   try {
-    const profileDoc = await db.collection("student_profiles").doc(req.user.id).get();
-    const userDoc = await db.collection("users").doc(req.user.id).get();
+    const studentDoc = await db.collection("students").doc(req.user.id).get();
 
-    if (!profileDoc.exists) {
+    if (!studentDoc.exists) {
       return res.json({ onboarding_completed: false, profile_completion: 0 });
     }
 
-    const sp = profileDoc.data();
-    const u = userDoc.exists ? userDoc.data() : {};
+    const s = studentDoc.data();
+    const sp = s.profile_data || {};
 
     res.json({
       onboarding_completed: sp.onboarding_completed || false,
       profile_completion: sp.profile_completion || 0,
-      name: u.name,
-      email: u.email
+      name: sp.name || s.name,
+      email: s.email
     });
   } catch (err) {
     console.error("❌ Status error:", err.message);

@@ -245,7 +245,7 @@ const PrivateChatModal = ({ connection, currentUser, onClose }) => {
                     <p className="text-sm whitespace-pre-wrap">{m.text}</p>
                   </div>
                   <span className="text-[10px] text-gray-500 mt-1 px-1">
-                    {new Date(m.created_at._seconds ? m.created_at._seconds*1000 : m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    {new Date(m.created_at ? (m.created_at._seconds ? m.created_at._seconds*1000 : m.created_at) : Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </span>
                 </div>
               );

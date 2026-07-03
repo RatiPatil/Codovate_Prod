@@ -81,6 +81,39 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const loginWithPhone = async (idToken) => {
+    try {
+      const res = await api.post('/auth/phone', { idToken });
+      const { token: jwtToken, user: userData } = res.data;
+      login(jwtToken, userData);
+    } catch (err) {
+      console.error("Phone authentication error:", err);
+      throw err;
+    }
+  };
+
+  const linkGoogleAccount = async () => {
+    try {
+      if (!auth.currentUser) throw new Error("No active Firebase session.");
+      // Dynamically import linkWithPopup
+      const { linkWithPopup } = await import('firebase/auth');
+      const result = await linkWithPopup(auth.currentUser, googleProvider);
+      
+      // Update backend to record the new provider (optional sync step)
+      try {
+        await api.post('/auth/sync-providers', { 
+          providers: result.user.providerData.map(p => p.providerId.replace('.com', '')) 
+        });
+      } catch (e) {
+        console.warn("Could not sync providers to backend", e);
+      }
+      return result;
+    } catch (err) {
+      console.error("Link account error:", err);
+      throw err;
+    }
+  };
+
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -97,7 +130,7 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider value={{
-      user, token, login, loginWithGoogle, logout, loading,
+      user, token, login, loginWithGoogle, loginWithPhone, linkGoogleAccount, logout, loading,
       onboardingCompleted, completeOnboarding
     }}>
       {children}

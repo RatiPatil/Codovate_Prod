@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import api from '../api/axios';
+import { useAuth } from '../context/AuthContext';
 
 const ALL_SKILLS = [
   'JavaScript', 'Python', 'Java', 'C++', 'React', 'Node.js',
@@ -19,6 +20,8 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState({ msg: '', type: '' });
+  const { linkGoogleAccount } = useAuth();
+  const [linking, setLinking] = useState(false);
 
   const showToast = (msg, type = 'success') => {
     setToast({ msg, type });
@@ -75,6 +78,24 @@ const Profile = () => {
       showToast(err.response?.data?.message || 'Failed to save.', 'error');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleLinkGoogle = async () => {
+    setLinking(true);
+    try {
+      await linkGoogleAccount();
+      showToast('Google Account linked successfully! ✅', 'success');
+      fetchProfile(); // refresh providers
+    } catch (err) {
+      // Check if it's because already linked to another account
+      if (err.code === 'auth/credential-already-in-use') {
+        showToast('This Google account is already linked to another Codovate profile.', 'error');
+      } else {
+        showToast(err.message || 'Failed to link account.', 'error');
+      }
+    } finally {
+      setLinking(false);
     }
   };
 
@@ -235,6 +256,42 @@ const Profile = () => {
               </div>
             </div>
           )}
+
+          {/* Linked Accounts */}
+          <div className="glass-panel rounded-2xl p-6 relative overflow-hidden">
+            <h3 className="text-white font-bold mb-4 flex items-center gap-2 relative z-10"><span className="text-xl">🔗</span> Linked Accounts</h3>
+            <div className="space-y-3 relative z-10">
+              {profileData?.providers?.includes('google') ? (
+                <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
+                  <div className="flex items-center gap-3">
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5" />
+                    <span className="text-gray-200 text-sm font-medium">Google Connected</span>
+                  </div>
+                  <span className="text-green-400 text-xs font-bold bg-green-500/10 px-2 py-1 rounded">Linked</span>
+                </div>
+              ) : (
+                <button 
+                  onClick={handleLinkGoogle}
+                  disabled={linking}
+                  className="w-full flex items-center justify-center gap-3 p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5" />
+                  <span className="text-gray-200 text-sm font-medium">{linking ? 'Linking...' : 'Link Google Account'}</span>
+                </button>
+              )}
+              
+              {profileData?.providers?.includes('phone') && (
+                <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
+                  <div className="flex items-center gap-3">
+                    <span className="text-xl">📱</span>
+                    <span className="text-gray-200 text-sm font-medium">Phone Connected</span>
+                  </div>
+                  <span className="text-green-400 text-xs font-bold bg-green-500/10 px-2 py-1 rounded">Linked</span>
+                </div>
+              )}
+            </div>
+          </div>
+
         </div>
 
         {/* Right Form */}

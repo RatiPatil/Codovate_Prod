@@ -3,12 +3,16 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { gsap } from 'gsap';
 import api from '../api/axios';
+import { RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
+import { auth } from '../lib/firebase';
+import OtpInput from 'react-otp-input';
 
 const Signup = () => {
-  const [form, setForm] = useState({ name: '', email: '', password: '' });
+  const [form, setForm] = useState({ phone: '', otp: '' });
+  const [confirmationResult, setConfirmationResult] = useState(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login, loginWithGoogle, user } = useAuth();
+  const { loginWithGoogle, loginWithPhone, user } = useAuth();
   const navigate = useNavigate();
   
   // Auto-redirect if context picks up user (e.g. from Google Redirect Return)
@@ -23,12 +27,56 @@ const Signup = () => {
   const infoRef = useRef(null);
   const headingRef = useRef(null);
 
+  useEffect(() => {
+    // Setup recaptcha on mount
+    if (!window.recaptchaVerifier) {
+      window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+        size: 'invisible'
+      });
+    }
+  }, []);
+
   const handleGoogleLogin = async () => {
     setError('');
     try {
       await loginWithGoogle();
     } catch (err) {
       setError(err.response?.data?.message || err.message || 'Google signup failed.');
+    }
+  };
+
+  const handleSendOTP = async (e) => {
+    e.preventDefault();
+    if (!form.phone) return setError('Please enter a phone number');
+    setError('');
+    setLoading(true);
+    try {
+      const appVerifier = window.recaptchaVerifier;
+      const formattedPhone = form.phone.startsWith('+') ? form.phone : `+91${form.phone}`;
+      const result = await signInWithPhoneNumber(auth, formattedPhone, appVerifier);
+      setConfirmationResult(result);
+    } catch (err) {
+      setError(err.message || 'Failed to send OTP');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyOTP = async (e) => {
+    e.preventDefault();
+    if (!form.otp || !confirmationResult) return;
+    setError('');
+    setLoading(true);
+    try {
+      const result = await confirmationResult.confirm(form.otp);
+      const idToken = await result.user.getIdToken();
+      await loginWithPhone(idToken);
+      navigate('/dashboard');
+    } catch (err) {
+      setError(err.response?.data?.message || err.message || 'Invalid OTP');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -67,26 +115,6 @@ const Signup = () => {
     }
   }, []);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    if (form.password.length < 6) return setError('Password must be at least 6 characters.');
-    setLoading(true);
-    try {
-      const res = await api.post('/auth/signup', form);
-      login(res.data.token, res.data.user);
-      navigate('/dashboard');
-    } catch (err) {
-      setError(err.response?.data?.message || 'Signup failed. Try again.');
-      gsap.fromTo(formRef.current,
-        { x: -8 },
-        { x: 0, duration: 0.4, ease: 'elastic.out(1, 0.3)' }
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-black flex flex-col lg:flex-row overflow-x-hidden overflow-y-auto">
       
@@ -124,7 +152,7 @@ const Signup = () => {
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-[#a78bfa]">future today</span>
           </h1>
           <p className="text-gray-400 text-lg leading-relaxed mb-8">
-            Stop waiting for opportunities to come to you. Create your free account and get access to top tier-1 internships, hackathons, and a community of builders.
+            Stop waiting for opportunities to come to you. Claim your account and get access to top tier-1 internships, hackathons, and a community of builders.
           </p>
           <div className="flex items-center gap-4">
             <div className="flex -space-x-3">
@@ -152,7 +180,7 @@ const Signup = () => {
 
         <div ref={formRef} className="w-full max-w-md">
           <div ref={headingRef} className="mb-10 text-center lg:text-left">
-            <h2 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 mb-3 drop-shadow-md">Create an account</h2>
+            <h2 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 mb-3 drop-shadow-md">Claim your account</h2>
             <p className="text-gray-400 text-base font-medium tracking-wide">Start your career journey with <span className="text-primary font-bold">Codovate</span></p>
           </div>
 
@@ -165,60 +193,40 @@ const Signup = () => {
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-4 relative z-10">
-              <div>
-                <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Full Name</label>
-                <input
-                  type="text"
-                  value={form.name}
-                  onChange={e => setForm({ ...form, name: e.target.value })}
-                  placeholder="John Doe"
-                  required
-                  className="input-glass w-full py-4 px-4 text-sm focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Email Address</label>
-                <input
-                  type="email"
-                  value={form.email}
-                  onChange={e => setForm({ ...form, email: e.target.value })}
-                  placeholder="you@example.com"
-                  required
-                  className="input-glass w-full py-4 px-4 text-sm focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Password</label>
-                <input
-                  type="password"
-                  value={form.password}
-                  onChange={e => setForm({ ...form, password: e.target.value })}
-                  placeholder="Min 6 characters"
-                  required
-                  className="input-glass w-full py-4 px-4 text-sm focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all"
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="btn-primary w-full py-4 disabled:opacity-50 mt-2 text-sm font-bold tracking-wide shadow-lg shadow-primary/20"
-              >
-                {loading ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Creating account...
-                  </span>
-                ) : 'Create Free Account'}
+            <form onSubmit={confirmationResult ? handleVerifyOTP : handleSendOTP} className="space-y-5 relative z-10">
+              {!confirmationResult ? (
+                <div>
+                  <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Mobile Number</label>
+                  <input type="tel" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} placeholder="+91 9876543210" required className="input-glass w-full py-4 px-4 text-sm focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all" />
+                </div>
+              ) : (
+                <div>
+                  <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 text-center">Enter OTP</label>
+                  <OtpInput
+                    value={form.otp}
+                    onChange={(otp) => setForm({ ...form, otp })}
+                    numInputs={6}
+                    renderInput={(props) => (
+                      <input 
+                        {...props} 
+                        className="w-12 h-14 text-center text-xl font-bold rounded-xl bg-white/5 border border-white/10 text-white focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all outline-none"
+                      />
+                    )}
+                    containerStyle="flex justify-center gap-2"
+                    inputType="tel"
+                    shouldAutoFocus
+                  />
+                </div>
+              )}
+              <div id="recaptcha-container"></div>
+              <button type="submit" disabled={loading} className="btn-primary w-full py-4 disabled:opacity-50 mt-2 text-sm font-bold tracking-wide shadow-lg shadow-primary/20">
+                {loading ? <span className="flex items-center justify-center gap-2"><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Processing...</span> : (!confirmationResult ? 'Send OTP' : 'Verify & Claim')}
               </button>
             </form>
 
             <div className="flex items-center gap-3 my-8 relative z-10">
               <div className="flex-1 h-px bg-white/10" />
-              <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">Or sign up with</span>
+              <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">Or claim with</span>
               <div className="flex-1 h-px bg-white/10" />
             </div>
 
@@ -231,7 +239,7 @@ const Signup = () => {
                   <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
                   <path fill="none" d="M0 0h48v48H0z"/>
                 </svg>
-                Sign up with Google
+                Continue with Google
               </button>
             </div>
           </div>

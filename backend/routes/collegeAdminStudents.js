@@ -22,14 +22,22 @@ router.get('/', collegeAdminOnly, async (req, res) => {
       return res.status(400).json({ message: 'College ID is required.' });
     }
 
-    const snapshot = await db.collection('users')
-                             .where('role', '==', 'student')
+    const snapshot = await db.collection('students')
                              .where('college_id', '==', targetCollegeId)
                              .get();
     
     const students = [];
     snapshot.forEach(doc => {
-      students.push({ id: doc.id, ...doc.data() });
+      const data = doc.data();
+      students.push({ 
+        id: doc.id, 
+        email: data.email,
+        name: data.profile_data?.name || 'Unknown',
+        status: data.status,
+        is_active: data.is_active,
+        college_id: data.college_id,
+        created_at: data.created_at
+      });
     });
     
     res.json(students);
@@ -47,19 +55,21 @@ router.post('/', collegeAdminOnly, async (req, res) => {
     if (!name || !email) return res.status(400).json({ message: 'Name and Email are required' });
 
     // Check if user already exists
-    const existing = await db.collection('users').where('email', '==', email.toLowerCase()).get();
+    const existing = await db.collection('students').where('email', '==', email.toLowerCase()).get();
     if (!existing.empty) return res.status(400).json({ message: 'Email already exists' });
 
-    const newDocRef = db.collection('users').doc();
+    const newDocRef = db.collection('students').doc();
     const newStudent = {
       id: newDocRef.id,
-      name,
       email: email.toLowerCase(),
       role: 'student',
       status: status || 'active',
       is_active: status !== 'suspended' && status !== 'banned',
       college_id: targetCollegeId,
-      created_at: new Date()
+      created_at: new Date(),
+      profile_data: {
+        name: name
+      }
     };
     await newDocRef.set(newStudent);
     res.status(201).json(newStudent);
@@ -78,7 +88,7 @@ router.put('/:id/status', collegeAdminOnly, async (req, res) => {
       return res.status(400).json({ message: 'Invalid status' });
     }
 
-    const docRef = db.collection('users').doc(req.params.id);
+    const docRef = db.collection('students').doc(req.params.id);
     const doc = await docRef.get();
     
     if (!doc.exists) return res.status(404).json({ message: 'Student not found' });

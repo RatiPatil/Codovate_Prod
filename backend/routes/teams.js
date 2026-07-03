@@ -118,12 +118,14 @@ router.get("/:id/members", auth, async (req, res) => {
     let members = [];
     for (const doc of tmSnapshot.docs) {
       const tm = doc.data();
-      const userDoc = await db.collection("users").doc(tm.user_id).get();
-      if (userDoc.exists) {
+      const studentDoc = await db.collection("students").doc(tm.user_id).get();
+      if (studentDoc.exists) {
+        const s = studentDoc.data();
+        const sp = s.profile_data || {};
         members.push({
-          id: userDoc.id,
-          name: userDoc.data().name,
-          email: userDoc.data().email,
+          id: studentDoc.id,
+          name: sp.name || 'Anonymous Student',
+          email: s.email,
           joined_at: tm.joined_at
         });
       }
@@ -167,23 +169,21 @@ router.get("/discover", auth, async (req, res) => {
   try {
     const { skill, domain, experience, college } = req.query;
 
-    const usersSnap = await db.collection("users")
-      .where("role", "==", "student")
+    const studentsSnap = await db.collection("students")
       .where("is_active", "==", true)
       .get();
 
     let students = [];
-    for (const doc of usersSnap.docs) {
-      const u = doc.data();
-      if (u.id === req.user.id) continue; // Exclude self
+    for (const doc of studentsSnap.docs) {
+      const s = doc.data();
+      if (doc.id === req.user.id) continue; // Exclude self
 
-      const profileDoc = await db.collection("student_profiles").doc(u.id).get();
-      const sp = profileDoc.exists ? profileDoc.data() : {};
+      const sp = s.profile_data || {};
 
       students.push({
-        id: u.id,
-        name: u.name,
-        email: u.email,
+        id: doc.id,
+        name: sp.name || 'Anonymous Student',
+        email: s.email,
         college: sp.college || null,
         branch: sp.branch || null,
         skills: sp.skills || [],
@@ -240,8 +240,10 @@ router.post("/:id/discussions", auth, async (req, res) => {
       .get();
     if (memberCheck.empty) return res.status(403).json({ message: "You are not a member of this team." });
 
-    const userDoc = await db.collection("users").doc(req.user.id).get();
-    const userName = userDoc.exists ? userDoc.data().name : 'Unknown';
+    const studentDoc = await db.collection("students").doc(req.user.id).get();
+    const s = studentDoc.exists ? studentDoc.data() : {};
+    const sp = s.profile_data || {};
+    const userName = sp.name || 'Anonymous';
 
     const msgRef = db.collection("team_discussions").doc();
     const msg = {

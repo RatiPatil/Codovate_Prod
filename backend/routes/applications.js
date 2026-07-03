@@ -14,16 +14,17 @@ router.get("/", auth, async (req, res) => {
       const app = doc.data();
       app.id = doc.id;
       
-      const userDoc = await db.collection("users").doc(app.user_id).get();
-      const u = userDoc.exists ? userDoc.data() : {};
+      const studentDoc = await db.collection("students").doc(app.user_id).get();
+      const s = studentDoc.exists ? studentDoc.data() : {};
+      const sp = s.profile_data || {};
       
       const oppDoc = await db.collection("opportunities").doc(app.opportunity_id).get();
       const o = oppDoc.exists ? oppDoc.data() : {};
       
       applications.push({
         ...app,
-        student_name: u.name || "Unknown",
-        student_email: u.email || "Unknown",
+        student_name: sp.name || "Unknown",
+        student_email: s.email || "Unknown",
         opportunity_title: o.title || "Unknown",
         company: o.company || "Unknown"
       });
@@ -74,9 +75,10 @@ router.post("/", auth, async (req, res) => {
     if (!existingApps.empty)
       return res.status(409).json({ message: "You already applied to this opportunity." });
 
-    // Get user details
-    const userDoc = await db.collection("users").doc(req.user.id).get();
-    const user = userDoc.data();
+    // Get student details
+    const studentDoc = await db.collection("students").doc(req.user.id).get();
+    const student = studentDoc.exists ? studentDoc.data() : {};
+    const sp = student.profile_data || {};
 
     // Create application
     const newAppRef = db.collection("applications").doc();
@@ -129,20 +131,20 @@ router.post("/", auth, async (req, res) => {
     // 🔴 REAL-TIME: Emit stats to global
     req.io.to("global").emit("stats_update", {
       type: "new_application",
-      user: user.name,
+      user: sp.name || 'Anonymous',
       opportunity: opp.title,
     });
 
     // 🔴 REAL-TIME: Emit full application to Admin Room
     req.io.to("admin_room").emit("admin_new_application", {
       ...application,
-      student_name: user.name || "Unknown",
-      student_email: user.email || "Unknown",
+      student_name: sp.name || "Unknown",
+      student_email: student.email || "Unknown",
       opportunity_title: opp.title || "Unknown",
       company: opp.company || "Unknown"
     });
 
-    console.log(`✅ ${user.name} applied to ${opp.title}`);
+    console.log(`✅ ${sp.name || 'Student'} applied to ${opp.title}`);
     res.status(201).json(application);
 
   } catch (err) {

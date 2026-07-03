@@ -5,14 +5,14 @@ const Layout = ({ children }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <div className="flex h-screen bg-black overflow-hidden relative">
+    <div className="flex h-screen bg-black overflow-hidden relative print:block print:h-auto print:overflow-visible">
       {/* Background Orbs for Glassmorphism Effect */}
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-primary/20 blur-[120px] pointer-events-none"></div>
       <div className="absolute bottom-[-10%] right-[-10%] w-[30%] h-[30%] rounded-full bg-primary-dark/20 blur-[100px] pointer-events-none"></div>
 
       <div className="flex-1 flex flex-col overflow-hidden relative z-10">
         {/* Mobile Header */}
-        <div className="md:hidden flex items-center justify-between px-4 py-3 glass-panel border-b-0 border-white/10">
+        <div className="md:hidden flex items-center justify-between px-4 py-3 glass-panel border-b-0 border-white/10 print:hidden">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white font-bold text-xs shadow-[0_0_15px_rgba(32,21,255,0.5)]">C</div>
             <span className="text-white font-bold tracking-wide">Codovate</span>
@@ -24,7 +24,7 @@ const Layout = ({ children }) => {
           </button>
         </div>
 
-        <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-8">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-8 print:p-0 print:overflow-visible">
           {children}
         </main>
       </div>

@@ -171,7 +171,7 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
   return (
     <>
       {/* Desktop */}
-      <aside className="hidden md:flex flex-col w-64 glass-panel border-l border-white/10 h-screen sticky top-0 shrink-0 z-20">
+      <aside className="hidden md:flex flex-col w-64 glass-panel border-l border-white/10 h-screen sticky top-0 shrink-0 z-20 print:hidden">
         <Content />
       </aside>
 
@@ -181,7 +181,7 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
       )}
       
       {/* Mobile Drawer */}
-      <aside className={`md:hidden fixed top-0 right-0 h-screen w-64 glass-panel border-l border-white/10 z-50 shadow-[-4px_0_24px_rgba(0,0,0,0.5)] transition-transform duration-300 ${mobileOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+      <aside className={`md:hidden fixed top-0 right-0 h-screen w-64 glass-panel border-l border-white/10 z-50 shadow-[-4px_0_24px_rgba(0,0,0,0.5)] transition-transform duration-300 print:hidden ${mobileOpen ? 'translate-x-0' : 'translate-x-full'}`}>
         <Content />
       </aside>
     </>

@@ -4,23 +4,21 @@ const { db } = require("../config/firebase");
 
 router.get("/", async (req, res) => {
   try {
-    const usersSnapshot = await db.collection("users")
-      .where("role", "==", "student")
+    const studentsSnapshot = await db.collection("students")
       .where("is_active", "==", true)
       .get();
     
-    const students = await Promise.all(usersSnapshot.docs.map(async (doc) => {
-      const u = doc.data();
-      const profileDoc = await db.collection("student_profiles").doc(u.id).get();
-      const sp = profileDoc.exists ? profileDoc.data() : {};
+    const students = await Promise.all(studentsSnapshot.docs.map(async (doc) => {
+      const s = doc.data();
+      const sp = s.profile_data || {};
       
       // Calculate Points
       const completionPoints = (sp.profile_completion || 0) * 10;
       
       const [appsSnap, teamsSnap, mentorsSnap] = await Promise.all([
-        db.collection("applications").where("student_id", "==", u.id).get(),
-        db.collection("team_members").where("user_id", "==", u.id).get(),
-        db.collection("mentor_bookings").where("student_id", "==", u.id).get(),
+        db.collection("applications").where("student_id", "==", doc.id).get(),
+        db.collection("team_members").where("user_id", "==", doc.id).get(),
+        db.collection("mentor_bookings").where("student_id", "==", doc.id).get(),
       ]);
 
       const appPoints = appsSnap.size * 50;
@@ -40,8 +38,8 @@ router.get("/", async (req, res) => {
       if (sp.profile_completion === 100) badges.push('⭐ All-Star');
       
       return {
-        id: u.id,
-        name: u.name,
+        id: doc.id,
+        name: sp.name || 'Anonymous Student',
         college: sp.college || 'Unknown College',
         skills: sp.skills || [],
         points: totalPoints,

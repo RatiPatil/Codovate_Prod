@@ -38,58 +38,46 @@ router.post("/google", async (req, res) => {
     const decodedToken = await getAuth().verifyIdToken(idToken);
     const { email, name, picture, uid } = decodedToken;
     
-    const usersRef = db.collection('users');
-    const snapshot = await usersRef.where('email', '==', email.toLowerCase()).get();
+    const studentsRef = db.collection('students');
+    const snapshot = await studentsRef.where('email', '==', email.toLowerCase()).get();
     
     let user;
     if (snapshot.empty) {
-      // Create new user using Firebase UID as doc ID
-      const newUserRef = usersRef.doc(uid); 
-      user = {
-        id: uid,
-        name: name || '',
-        email: email.toLowerCase(),
-        avatar: picture || '',
-        role: 'student',
-        is_verified: true, // Google auth implies verified email
-        is_active: true,
-        created_at: new Date(),
-        auth_provider: 'google'
-      };
+      // Rule 5: If email does not exist, show contact admin error.
+      // Note: Firebase Auth has already created a UID for this Google account.
+      // We could optionally delete the Firebase user here using Firebase Admin, 
+      // but throwing an error satisfies the requirement.
+      return res.status(403).json({ message: "Student record not found. Contact administrator." });
+    } else {
+      const userDoc = snapshot.docs[0];
+      user = userDoc.data();
       
+      if (user.is_active === false) return res.status(403).json({ message: "Account is deactivated." });
+      
+      // Update authUid, providers, claimed, and last_login_at
+      const providers = user.providers || [];
+      if (!providers.includes('google')) providers.push('google');
+
       const batch = db.batch();
-      batch.set(newUserRef, user);
-      
-      // Create student profile
-      batch.set(db.collection('student_profiles').doc(uid), {
-        user_id: uid,
-        profile_completion: 0,
-        onboarding_completed: false
+      batch.update(userDoc.ref, { 
+        authUid: uid,
+        providers: providers,
+        claimed: true,
+        last_login_at: new Date() 
       });
-      
+
       // Log event
       batch.set(db.collection('platform_events').doc(), {
-        actor_id: uid,
-        event_type: 'user_signup',
-        entity_type: 'user',
-        entity_id: uid,
-        metadata: { email: user.email, provider: 'google' },
+        actor_id: userDoc.id,
+        event_type: 'user_login',
+        entity_type: 'student',
+        entity_id: userDoc.id,
+        metadata: { provider: 'google', email },
         created_at: new Date()
       });
-      
+
       await batch.commit();
-
-      // 🔴 REAL-TIME: Notify Admin
-      req.io.to("admin_room").emit("admin_new_student", user);
-
-      console.log("✅ New user registered via Google:", email);
-    } else {
-      user = snapshot.docs[0].data();
-      if (!user.is_active) return res.status(403).json({ message: "Account is deactivated." });
-      
-      // Update last login
-      await usersRef.doc(user.id).update({ last_login_at: new Date() });
-      console.log("✅ User logged in via Google:", email);
+      console.log("✅ User logged in via Google and linked:", email);
     }
 
     const token = jwt.sign(
@@ -105,6 +93,91 @@ router.post("/google", async (req, res) => {
   } catch (err) {
     console.error("Google Auth error:", err);
     res.status(401).json({ message: "Auth Error: " + err.message });
+  }
+});
+
+router.post("/phone", async (req, res) => {
+  const { idToken } = req.body;
+  
+  if (!idToken) return res.status(400).json({ message: "No ID token provided" });
+
+  try {
+    const decodedToken = await getAuth().verifyIdToken(idToken);
+    const { phone_number, uid } = decodedToken;
+    
+    if (!phone_number) return res.status(400).json({ message: "Invalid Phone Auth token" });
+
+    const studentsRef = db.collection('students');
+    const snapshot = await studentsRef.where('phone', '==', phone_number).get();
+    
+    let user;
+    if (snapshot.empty) {
+      return res.status(403).json({ message: "Student record not found. Contact administrator." });
+    } else {
+      const userDoc = snapshot.docs[0];
+      user = userDoc.data();
+      
+      if (user.is_active === false) return res.status(403).json({ message: "Account is deactivated." });
+      
+      const providers = user.providers || [];
+      if (!providers.includes('phone')) providers.push('phone');
+
+      const batch = db.batch();
+      batch.update(userDoc.ref, { 
+        authUid: uid,
+        providers: providers,
+        claimed: true,
+        last_login_at: new Date() 
+      });
+
+      batch.set(db.collection('platform_events').doc(), {
+        actor_id: userDoc.id,
+        event_type: 'user_login',
+        entity_type: 'student',
+        entity_id: userDoc.id,
+        metadata: { provider: 'phone', phone: phone_number },
+        created_at: new Date()
+      });
+
+      await batch.commit();
+      console.log("✅ User logged in via Phone and linked:", phone_number);
+    }
+
+    const token = jwt.sign(
+      { id: user.id, role: user.role },
+      process.env.JWT_SECRET || 'codovate_secret',
+      { expiresIn: "7d" }
+    );
+
+    res.json({
+      token,
+      user: { id: user.id, name: user.name, phone: user.phone, email: user.email, role: user.role, avatar: user.avatar }
+    });
+  } catch (err) {
+    console.error("Phone Auth error:", err);
+    res.status(401).json({ message: "Auth Error: " + err.message });
+  }
+});
+
+const authMiddleware = require("../middleware/auth");
+
+router.post("/sync-providers", authMiddleware, async (req, res) => {
+  try {
+    const { providers } = req.body;
+    if (!providers || !Array.isArray(providers)) return res.status(400).json({ message: "Invalid providers array." });
+
+    const studentRef = db.collection('students').doc(req.user.id);
+    const doc = await studentRef.get();
+    
+    if (doc.exists) {
+      await studentRef.update({ providers, updated_at: new Date() });
+      return res.json({ message: "Providers synced successfully." });
+    }
+    
+    res.status(404).json({ message: "User not found." });
+  } catch (err) {
+    console.error("Sync providers error:", err);
+    res.status(500).json({ message: "Server error." });
   }
 });
 
