@@ -1,6 +1,5 @@
 import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
@@ -30,7 +29,6 @@ const features = [
 ];
 
 const Home = () => {
-  const { user } = useAuth();
   const containerRef = useRef(null);
   const heroRef = useRef(null);
   const titleRef = useRef(null);
@@ -170,20 +168,12 @@ const Home = () => {
       </div>
 
       <div className="absolute top-7 right-6 md:top-10 md:right-8 z-50 flex items-center gap-4 md:gap-6">
-        {user ? (
-          <Link to="/dashboard" className="text-[10px] md:text-xs font-bold text-black bg-white hover:bg-gray-200 px-4 py-2 md:px-5 md:py-2.5 rounded-full transition-colors uppercase tracking-widest shadow-[0_0_15px_rgba(255,255,255,0.3)]">
-            Dashboard
-          </Link>
-        ) : (
-          <>
-            <Link to="/login" className="text-[10px] md:text-xs font-bold text-white hover:text-primary transition-colors uppercase tracking-widest">
-              Sign In
-            </Link>
-            <Link to="/signup" className="text-[10px] md:text-xs font-bold text-black bg-white hover:bg-gray-200 px-4 py-2 md:px-5 md:py-2.5 rounded-full transition-colors uppercase tracking-widest shadow-[0_0_15px_rgba(255,255,255,0.3)]">
-              Sign Up
-            </Link>
-          </>
-        )}
+        <Link to="/login" className="text-[10px] md:text-xs font-bold text-white hover:text-primary transition-colors uppercase tracking-widest">
+          Sign In
+        </Link>
+        <Link to="/signup" className="text-[10px] md:text-xs font-bold text-black bg-white hover:bg-gray-200 px-4 py-2 md:px-5 md:py-2.5 rounded-full transition-colors uppercase tracking-widest shadow-[0_0_15px_rgba(255,255,255,0.3)]">
+          Sign Up
+        </Link>
       </div>
 
       {/* Hero Section */}
