@@ -38,16 +38,48 @@ router.post("/google", async (req, res) => {
     const decodedToken = await getAuth().verifyIdToken(idToken);
     const { email, name, picture, uid } = decodedToken;
     
-    const studentsRef = db.collection('students');
-    const snapshot = await studentsRef.where('email', '==', email.toLowerCase()).get();
+    const usersRef = db.collection('users');
+    const snapshot = await usersRef.where('email', '==', email.toLowerCase()).get();
     
     let user;
     if (snapshot.empty) {
-      // Rule 5: If email does not exist, show contact admin error.
-      // Note: Firebase Auth has already created a UID for this Google account.
-      // We could optionally delete the Firebase user here using Firebase Admin, 
-      // but throwing an error satisfies the requirement.
-      return res.status(403).json({ message: "Student record not found. Contact administrator." });
+      // Auto-Registration Flow for Google
+      const newUserRef = usersRef.doc();
+      user = {
+        id: newUserRef.id,
+        name: name || 'Google User',
+        email: email.toLowerCase(),
+        avatar: picture || '',
+        role: 'student',
+        is_active: true,
+        is_verified: true,
+        authUid: uid,
+        providers: ['google'],
+        claimed: true,
+        created_at: new Date(),
+        last_login_at: new Date()
+      };
+      
+      const batch = db.batch();
+      batch.set(newUserRef, user);
+      
+      batch.set(db.collection('student_profiles').doc(newUserRef.id), {
+        user_id: newUserRef.id,
+        profile_completion: 0,
+        onboarding_completed: false
+      });
+      
+      batch.set(db.collection('platform_events').doc(), {
+        actor_id: newUserRef.id,
+        event_type: 'user_signup',
+        entity_type: 'student',
+        entity_id: newUserRef.id,
+        metadata: { provider: 'google', email },
+        created_at: new Date()
+      });
+      
+      await batch.commit();
+      console.log("✅ Auto-registered new user via Google:", email);
     } else {
       const userDoc = snapshot.docs[0];
       user = userDoc.data();
@@ -107,12 +139,47 @@ router.post("/phone", async (req, res) => {
     
     if (!phone_number) return res.status(400).json({ message: "Invalid Phone Auth token" });
 
-    const studentsRef = db.collection('students');
-    const snapshot = await studentsRef.where('phone', '==', phone_number).get();
+    const usersRef = db.collection('users');
+    const snapshot = await usersRef.where('phone', '==', phone_number).get();
     
     let user;
     if (snapshot.empty) {
-      return res.status(403).json({ message: "Student record not found. Contact administrator." });
+      // Auto-Registration Flow for Phone
+      const newUserRef = usersRef.doc();
+      user = {
+        id: newUserRef.id,
+        name: 'Student', // Default name, they can change it in profile
+        phone: phone_number,
+        role: 'student',
+        is_active: true,
+        is_verified: true,
+        authUid: uid,
+        providers: ['phone'],
+        claimed: true,
+        created_at: new Date(),
+        last_login_at: new Date()
+      };
+      
+      const batch = db.batch();
+      batch.set(newUserRef, user);
+      
+      batch.set(db.collection('student_profiles').doc(newUserRef.id), {
+        user_id: newUserRef.id,
+        profile_completion: 0,
+        onboarding_completed: false
+      });
+      
+      batch.set(db.collection('platform_events').doc(), {
+        actor_id: newUserRef.id,
+        event_type: 'user_signup',
+        entity_type: 'student',
+        entity_id: newUserRef.id,
+        metadata: { provider: 'phone', phone: phone_number },
+        created_at: new Date()
+      });
+      
+      await batch.commit();
+      console.log("✅ Auto-registered new user via Phone:", phone_number);
     } else {
       const userDoc = snapshot.docs[0];
       user = userDoc.data();
