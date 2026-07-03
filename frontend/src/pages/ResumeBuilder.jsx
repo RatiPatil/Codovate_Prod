@@ -5,16 +5,13 @@ import { useAuth } from '../context/AuthContext';
 // ─── Print Styles ─────────────────────────────────────────────────────────────
 const PRINT_CSS = `
 @media print {
-  @page { margin: 0; }
-  body * { visibility: hidden !important; }
-  #a4-resume, #a4-resume * { visibility: visible !important; }
-  #a4-resume {
-    position: absolute !important; left: 0 !important; top: 0 !important;
-    width: 210mm !important; min-height: 297mm !important;
-    margin: 0 !important; padding: 0 !important;
-    box-shadow: none !important; border: none !important;
+  @page { margin: 0; size: A4 portrait; }
+  html, body {
+    width: 210mm;
+    height: 297mm;
+    margin: 0 !important;
+    padding: 0 !important;
     background: white !important;
-    font-size: 11pt !important;
   }
 }
 `;
@@ -137,10 +134,10 @@ const PersonalStep = ({ data, onChange }) => {
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div><Label>Full Name *</Label><Input value={data.personalInfo.name} onChange={e => set('name', e.target.value)} placeholder="Ratikant Patil" /></div>
-        <div><Label>Phone *</Label><Input value={data.personalInfo.phone} onChange={e => set('phone', e.target.value)} placeholder="+91 98765 43210" /></div>
+        <div><Label>Full Name</Label><Input value={data.personalInfo.name} onChange={e => set('name', e.target.value)} placeholder="Ratikant Patil" /></div>
+        <div><Label>Phone</Label><Input value={data.personalInfo.phone} onChange={e => set('phone', e.target.value)} placeholder="+91 98765 43210" /></div>
       </div>
-      <div><Label>Email *</Label><Input type="email" value={data.personalInfo.email} onChange={e => set('email', e.target.value)} placeholder="ratikant@email.com" /></div>
+      <div><Label>Email</Label><Input type="email" value={data.personalInfo.email} onChange={e => set('email', e.target.value)} placeholder="ratikant@email.com" /></div>
       <div><Label>Location</Label><Input value={data.personalInfo.location} onChange={e => set('location', e.target.value)} placeholder="Pandharpur, Maharashtra" /></div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div><Label>LinkedIn URL</Label><Input value={data.personalInfo.linkedin} onChange={e => set('linkedin', e.target.value)} placeholder="linkedin.com/in/..." /></div>
@@ -155,7 +152,7 @@ const PersonalStep = ({ data, onChange }) => {
 const ObjectiveStep = ({ data, onChange }) => (
   <div className="space-y-4">
     <div>
-      <Label hint="e.g. Software Engineer, Full Stack Developer, Data Scientist">Target Job Role *</Label>
+      <Label hint="e.g. Software Engineer, Full Stack Developer, Data Scientist">Target Job Role</Label>
       <Input value={data.targetRole} onChange={e => onChange('targetRole', e.target.value)} placeholder="Full Stack Developer" />
     </div>
     <div>
@@ -185,9 +182,9 @@ const EducationStep = ({ data, onChange }) => {
             <span className="text-white text-xs font-black">Education #{i + 1}</span>
             {data.education.length > 1 && <RemoveBtn onClick={() => remove(edu.id)} />}
           </div>
-          <div><Label>Institution / University *</Label><Input value={edu.institution} onChange={e => update(edu.id, 'institution', e.target.value)} placeholder="SVERI College of Engineering" /></div>
+          <div><Label>Institution / University</Label><Input value={edu.institution} onChange={e => update(edu.id, 'institution', e.target.value)} placeholder="SVERI College of Engineering" /></div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div><Label>Degree *</Label><Input value={edu.degree} onChange={e => update(edu.id, 'degree', e.target.value)} placeholder="B.Tech / MCA / B.E." /></div>
+            <div><Label>Degree</Label><Input value={edu.degree} onChange={e => update(edu.id, 'degree', e.target.value)} placeholder="B.Tech / MCA / B.E." /></div>
             <div><Label>Field of Study</Label><Input value={edu.field} onChange={e => update(edu.id, 'field', e.target.value)} placeholder="Computer Science" /></div>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
@@ -218,8 +215,8 @@ const ExperienceStep = ({ data, onChange }) => {
             {data.experience.length > 1 && <RemoveBtn onClick={() => remove(exp.id)} />}
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div><Label>Company / Organization *</Label><Input value={exp.company} onChange={e => update(exp.id, 'company', e.target.value)} placeholder="TCS, Google, Startup Name" /></div>
-            <div><Label>Your Role / Title *</Label><Input value={exp.role} onChange={e => update(exp.id, 'role', e.target.value)} placeholder="SDE Intern, Backend Developer" /></div>
+            <div><Label>Company / Organization</Label><Input value={exp.company} onChange={e => update(exp.id, 'company', e.target.value)} placeholder="TCS, Google, Startup Name" /></div>
+            <div><Label>Your Role / Title</Label><Input value={exp.role} onChange={e => update(exp.id, 'role', e.target.value)} placeholder="SDE Intern, Backend Developer" /></div>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             <div><Label>Start Date</Label><Input value={exp.startDate} onChange={e => update(exp.id, 'startDate', e.target.value)} placeholder="Jun 2024" /></div>
@@ -258,7 +255,7 @@ const ProjectsStep = ({ data, onChange }) => {
             <span className="text-white text-xs font-black">Project #{i + 1}</span>
             {data.projects.length > 1 && <RemoveBtn onClick={() => remove(proj.id)} />}
           </div>
-          <div><Label>Project Title *</Label><Input value={proj.title} onChange={e => update(proj.id, 'title', e.target.value)} placeholder="AI Chatbot, E-Commerce Platform" /></div>
+          <div><Label>Project Title</Label><Input value={proj.title} onChange={e => update(proj.id, 'title', e.target.value)} placeholder="AI Chatbot, E-Commerce Platform" /></div>
           <div><Label hint="e.g. React, Node.js, Python, MongoDB">Tech Stack Used</Label><Input value={proj.techStack} onChange={e => update(proj.id, 'techStack', e.target.value)} placeholder="React, Node.js, Firebase, TailwindCSS" /></div>
           <div><Label>GitHub / Live Link</Label><Input value={proj.link} onChange={e => update(proj.id, 'link', e.target.value)} placeholder="github.com/user/project" /></div>
           <div>
@@ -348,7 +345,7 @@ const CertificationsStep = ({ data, onChange }) => {
             <span className="text-white text-xs font-black">Certificate #{i + 1}</span>
             {data.certifications.length > 1 && <RemoveBtn onClick={() => remove(cert.id)} />}
           </div>
-          <div><Label>Certificate Name *</Label><Input value={cert.name} onChange={e => update(cert.id, 'name', e.target.value)} placeholder="AWS Cloud Practitioner" /></div>
+          <div><Label>Certificate Name</Label><Input value={cert.name} onChange={e => update(cert.id, 'name', e.target.value)} placeholder="AWS Cloud Practitioner" /></div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div><Label>Issued By</Label><Input value={cert.issuer} onChange={e => update(cert.id, 'issuer', e.target.value)} placeholder="Amazon, Coursera, NPTEL" /></div>
             <div><Label>Date</Label><Input value={cert.date} onChange={e => update(cert.id, 'date', e.target.value)} placeholder="Mar 2024" /></div>
@@ -495,7 +492,7 @@ const ResumePreview = ({ data }) => {
   );
 
   return (
-    <div id="a4-resume" className="bg-white text-black w-full h-full p-8 font-sans text-[9.5px] leading-snug overflow-hidden">
+    <div className="bg-white text-black w-full h-full p-8 font-sans text-[9.5px] leading-snug overflow-hidden box-border">
 
       {/* Header */}
       <div className="text-center border-b-2 border-gray-900 pb-3 mb-4">

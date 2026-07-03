@@ -6,15 +6,11 @@ import { useAuth } from '../../context/AuthContext';
 import api from '../../api/axios';
 import SendNoticeModal from '../modals/SendNoticeModal';
 
-const StatCard = ({ title, value, icon, isLive }) => (
+const StatCard = ({ title, value, icon }) => (
   <div className="bg-[#080812] border border-white/5 rounded-2xl p-6 relative overflow-hidden group">
-    {isLive && (
-      <div className="absolute top-4 right-4 flex items-center gap-2">
-        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_#10B981]"></span>
-        <span className="text-[9px] font-bold text-emerald-500 uppercase tracking-widest">Live</span>
-      </div>
-    )}
-    <div className="text-3xl mb-4 opacity-50 group-hover:opacity-100 transition-opacity">{icon}</div>
+    <div className="flex justify-between items-start mb-4">
+      <div className="text-3xl opacity-50 group-hover:opacity-100 transition-opacity">{icon}</div>
+    </div>
     <div className="text-4xl font-black text-white tracking-tighter mb-1">
       {value.toLocaleString()}
     </div>
@@ -133,21 +129,18 @@ const CollegeAdminDashboard = () => {
                 className="w-full bg-black/20 hover:bg-black/40 text-white font-bold py-3 px-4 rounded-xl text-sm transition-colors text-left flex items-center justify-between group"
               >
                 Send Notice
-                <span className="opacity-0 group-hover:opacity-100 transition-opacity">→</span>
               </button>
               <button 
                 onClick={() => navigate('/admin/events')}
                 className="w-full bg-black/20 hover:bg-black/40 text-white font-bold py-3 px-4 rounded-xl text-sm transition-colors text-left flex items-center justify-between group"
               >
                 Publish Event
-                <span className="opacity-0 group-hover:opacity-100 transition-opacity">→</span>
               </button>
               <button 
                 onClick={handleGenerateReports}
                 className="w-full bg-black/20 hover:bg-black/40 text-white font-bold py-3 px-4 rounded-xl text-sm transition-colors text-left flex items-center justify-between group"
               >
                 Generate Reports
-                <span className="opacity-0 group-hover:opacity-100 transition-opacity">↓</span>
               </button>
             </div>
           </div>

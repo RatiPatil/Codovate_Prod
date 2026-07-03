@@ -203,7 +203,6 @@ const SidebarContent = ({ setMobileOpen }) => {
         >
           <span className="text-sm w-5 text-center">🚪</span>
           <span>Secure Logout</span>
-          <span className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity text-[9px]">→</span>
         </button>
       </div>
     </div>

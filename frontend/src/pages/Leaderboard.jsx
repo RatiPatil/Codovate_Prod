@@ -67,7 +67,10 @@ const Leaderboard = () => {
               <div className="w-16 h-16 rounded-full bg-blue-500/10 border-2 border-blue-400/50 flex items-center justify-center text-2xl font-bold mb-3 z-10 shadow-[0_0_15px_rgba(59,130,246,0.3)] group-hover:scale-110 transition-transform">
                 {top3[1].name.charAt(0)}
               </div>
-              <p className="font-bold text-sm text-center mb-1 line-clamp-1">{top3[1].name}</p>
+              <p className="font-bold text-sm text-center mb-1 line-clamp-1 flex flex-col items-center gap-1">
+                {top3[1].name}
+                {currentUser && top3[1].id === currentUser.id && <span className="bg-primary text-white text-[9px] px-1.5 py-0.5 rounded-sm uppercase tracking-wider">You</span>}
+              </p>
               <p className="text-blue-400 text-xs font-black tracking-widest bg-blue-500/10 px-2 py-0.5 rounded-full mb-3">{top3[1].points} PTS</p>
               <div className="w-full h-24 bg-gradient-to-t from-blue-900/40 to-blue-500/10 border-t-2 border-blue-500/50 rounded-t-xl flex items-center justify-center relative">
                 <span className="text-4xl absolute -top-5 drop-shadow-md">🥈</span>
@@ -83,7 +86,10 @@ const Leaderboard = () => {
               <div className="w-24 h-24 rounded-full bg-yellow-500/10 border-2 border-yellow-400/50 flex items-center justify-center text-4xl font-bold mb-3 z-10 shadow-[0_0_25px_rgba(234,179,8,0.4)] group-hover:scale-110 transition-transform">
                 {top3[0].name.charAt(0)}
               </div>
-              <p className="font-bold text-lg text-center mb-1 line-clamp-1 text-yellow-100">{top3[0].name}</p>
+              <p className="font-bold text-lg text-center mb-1 line-clamp-1 text-yellow-100 flex flex-col items-center gap-1">
+                {top3[0].name}
+                {currentUser && top3[0].id === currentUser.id && <span className="bg-primary text-white text-[9px] px-1.5 py-0.5 rounded-sm uppercase tracking-wider">You</span>}
+              </p>
               <p className="text-yellow-400 text-sm font-black tracking-widest bg-yellow-500/10 px-3 py-1 rounded-full mb-4 shadow-inner border border-yellow-500/20">{top3[0].points} PTS</p>
               <div className="w-full h-32 bg-gradient-to-t from-yellow-900/40 to-yellow-500/10 border-t-2 border-yellow-500/50 rounded-t-xl flex items-center justify-center relative">
                 <span className="text-5xl absolute -top-6 drop-shadow-lg">🥇</span>
@@ -99,7 +105,10 @@ const Leaderboard = () => {
               <div className="w-16 h-16 rounded-full bg-orange-500/10 border-2 border-orange-400/50 flex items-center justify-center text-2xl font-bold mb-3 z-10 shadow-[0_0_15px_rgba(249,115,22,0.3)] group-hover:scale-110 transition-transform">
                 {top3[2].name.charAt(0)}
               </div>
-              <p className="font-bold text-sm text-center mb-1 line-clamp-1">{top3[2].name}</p>
+              <p className="font-bold text-sm text-center mb-1 line-clamp-1 flex flex-col items-center gap-1">
+                {top3[2].name}
+                {currentUser && top3[2].id === currentUser.id && <span className="bg-primary text-white text-[9px] px-1.5 py-0.5 rounded-sm uppercase tracking-wider">You</span>}
+              </p>
               <p className="text-orange-400 text-xs font-black tracking-widest bg-orange-500/10 px-2 py-0.5 rounded-full mb-3">{top3[2].points} PTS</p>
               <div className="w-full h-20 bg-gradient-to-t from-orange-900/40 to-orange-500/10 border-t-2 border-orange-500/50 rounded-t-xl flex items-center justify-center relative">
                 <span className="text-4xl absolute -top-5 drop-shadow-md">🥉</span>

@@ -29,7 +29,7 @@ const io = new Server(server, {
 initializeAdminRealtime(io);
 
 app.use(cors({ origin: allowedOrigins, credentials: true }));
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 
 app.use((req, res, next) => {
   req.io = io;

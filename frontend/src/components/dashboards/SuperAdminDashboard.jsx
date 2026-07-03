@@ -3,14 +3,8 @@ import { useSocket } from '../../context/SocketContext';
 import api from '../../api/axios';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, BarChart, Bar } from 'recharts';
 
-const StatCard = ({ title, value, icon, isLive, trend }) => (
+const StatCard = ({ title, value, icon, trend }) => (
   <div className="bg-[#080812] border border-white/5 rounded-2xl p-6 relative overflow-hidden group">
-    {isLive && (
-      <div className="absolute top-4 right-4 flex items-center gap-2">
-        <span className="w-1.5 h-1.5 rounded-full bg-[#2015FF] animate-pulse shadow-[0_0_8px_#2015FF]"></span>
-        <span className="text-[9px] font-bold text-[#2015FF] uppercase tracking-widest">Live</span>
-      </div>
-    )}
     <div className="flex justify-between items-start mb-4">
       <div className="text-3xl opacity-50 group-hover:opacity-100 transition-opacity">{icon}</div>
       {trend && (

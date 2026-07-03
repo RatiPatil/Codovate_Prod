@@ -5,20 +5,17 @@ import { useAuth } from '../../context/AuthContext';
 import api from '../../api/axios';
 import PendingRequestsModal from '../modals/PendingRequestsModal';
 
-const StatCard = ({ title, value, icon, isLive }) => (
-  <div className="bg-[#080812] border border-white/5 rounded-2xl p-6 relative overflow-hidden group">
-    {isLive && (
-      <div className="absolute top-4 right-4 flex items-center gap-2">
-        <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse shadow-[0_0_8px_#06B6D4]"></span>
-        <span className="text-[9px] font-bold text-cyan-500 uppercase tracking-widest">Live</span>
+const StatCard = ({ title, value, icon }) => (
+  <div className="glass-card p-5 relative overflow-hidden group">
+    <div className="flex items-start justify-between relative z-10">
+      <div>
+        <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest mb-1">{title}</p>
+        <p className="text-3xl font-black text-white">{value}</p>
       </div>
-    )}
-    <div className="text-3xl mb-4 opacity-50 group-hover:opacity-100 transition-opacity">{icon}</div>
-    <div className="text-4xl font-black text-white tracking-tighter mb-1">
-      {value.toLocaleString()}
+      <div className="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center text-xl shadow-inner group-hover:scale-110 transition-transform">
+        {icon}
+      </div>
     </div>
-    <div className="text-sm font-semibold text-gray-500 uppercase tracking-wider">{title}</div>
-    
     <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-cyan-500/5 rounded-full blur-2xl group-hover:bg-cyan-500/10 transition-colors" />
   </div>
 );
@@ -123,7 +120,6 @@ const MentorDashboard = () => {
                 className="w-full bg-black/20 hover:bg-black/40 text-white font-bold py-3 px-4 rounded-xl text-sm transition-colors text-left flex items-center justify-between group"
               >
                 Open Availability
-                <span className="opacity-0 group-hover:opacity-100 transition-opacity">→</span>
               </button>
               <button 
                 onClick={() => setRequestsModalOpen(true)}
@@ -136,7 +132,6 @@ const MentorDashboard = () => {
                 className="w-full bg-black/20 hover:bg-black/40 text-white font-bold py-3 px-4 rounded-xl text-sm transition-colors text-left flex items-center justify-between group"
               >
                 Review Feedback
-                <span className="opacity-0 group-hover:opacity-100 transition-opacity">→</span>
               </button>
             </div>
           </div>
