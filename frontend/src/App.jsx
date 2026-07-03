@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { SocketProvider } from './context/SocketContext';
+import { ToastProvider } from './components/ui/ToastProvider';
 import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
 import DashboardRouter from './components/DashboardRouter';
@@ -23,75 +24,77 @@ import Leaderboard from './pages/Leaderboard';
 import ResumeBuilder from './pages/ResumeBuilder';
 function App() {
   return (
-    <AuthProvider>
-      <SocketProvider>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/admin-login" element={<AdminLogin />} />
-            <Route path="/signup" element={<Signup />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
+    <ToastProvider>
+      <AuthProvider>
+        <SocketProvider>
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/admin-login" element={<AdminLogin />} />
+              <Route path="/signup" element={<Signup />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
 
-            <Route path="/onboarding" element={
-              <ProtectedRoute requireOnboarding={false}>
-                <Onboarding />
-              </ProtectedRoute>
-            } />
+              <Route path="/onboarding" element={
+                <ProtectedRoute requireOnboarding={false}>
+                  <Onboarding />
+                </ProtectedRoute>
+              } />
 
-            <Route path="/dashboard" element={
-              <ProtectedRoute>
-                <Layout><Dashboard /></Layout>
-              </ProtectedRoute>
-            } />
-            <Route path="/opportunities" element={
-              <ProtectedRoute>
-                <Layout><Opportunities /></Layout>
-              </ProtectedRoute>
-            } />
-            <Route path="/applications" element={
-              <ProtectedRoute>
-                <Layout><Applications /></Layout>
-              </ProtectedRoute>
-            } />
-            <Route path="/profile" element={
-              <ProtectedRoute>
-                <Layout><Profile /></Layout>
-              </ProtectedRoute>
-            } />
-            <Route path="/teams" element={
-              <ProtectedRoute>
-                <Layout><Teams /></Layout>
-              </ProtectedRoute>
-            } />
-            <Route path="/mentors" element={
-              <ProtectedRoute>
-                <Layout><Mentors /></Layout>
-              </ProtectedRoute>
-            } />
-            <Route path="/leaderboard" element={
-              <ProtectedRoute>
-                <Layout><Leaderboard /></Layout>
-              </ProtectedRoute>
-            } />
-            <Route path="/resume" element={
-              <ProtectedRoute>
-                <Layout><ResumeBuilder /></Layout>
-              </ProtectedRoute>
-            } />
+              <Route path="/dashboard" element={
+                <ProtectedRoute>
+                  <Layout><Dashboard /></Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/opportunities" element={
+                <ProtectedRoute>
+                  <Layout><Opportunities /></Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/applications" element={
+                <ProtectedRoute>
+                  <Layout><Applications /></Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/profile" element={
+                <ProtectedRoute>
+                  <Layout><Profile /></Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/teams" element={
+                <ProtectedRoute>
+                  <Layout><Teams /></Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/mentors" element={
+                <ProtectedRoute>
+                  <Layout><Mentors /></Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/leaderboard" element={
+                <ProtectedRoute>
+                  <Layout><Leaderboard /></Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/resume" element={
+                <ProtectedRoute>
+                  <Layout><ResumeBuilder /></Layout>
+                </ProtectedRoute>
+              } />
 
-            <Route path="/admin/*" element={
-              <ProtectedRoute requireOnboarding={false}>
-                <DashboardRouter />
-              </ProtectedRoute>
-            } />
+              <Route path="/admin/*" element={
+                <ProtectedRoute requireOnboarding={false}>
+                  <DashboardRouter />
+                </ProtectedRoute>
+              } />
 
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </BrowserRouter>
-      </SocketProvider>
-    </AuthProvider>
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </BrowserRouter>
+        </SocketProvider>
+      </AuthProvider>
+    </ToastProvider>
   );
 }
 

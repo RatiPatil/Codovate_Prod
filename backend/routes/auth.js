@@ -299,8 +299,24 @@ router.post("/sync-providers", authMiddleware, async (req, res) => {
   }
 });
 
+// ─── Check Username Availability ─────────────────────────
+router.get("/check-username/:username", async (req, res) => {
+  try {
+    const username = (req.params.username || '').trim().toLowerCase();
+    if (!username || username.length < 4 || !/^[a-zA-Z0-9_]+$/.test(username)) {
+      return res.status(400).json({ available: false, message: "Invalid username format." });
+    }
+
+    const snapshot = await db.collection('users').where('username', '==', username).get();
+    res.json({ available: snapshot.empty });
+  } catch (err) {
+    console.error("Check username error:", err);
+    res.status(500).json({ available: false, message: "Server error." });
+  }
+});
+
 router.post("/signup", async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, username, email, password } = req.body;
 
   if (!name || !email || !password)
     return res.status(400).json({ message: "All fields are required." });
@@ -308,8 +324,19 @@ router.post("/signup", async (req, res) => {
     return res.status(400).json({ message: "Name must be at least 2 characters." });
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
     return res.status(400).json({ message: "Invalid email format." });
-  if (password.length < 6)
-    return res.status(400).json({ message: "Password must be at least 6 characters." });
+  if (password.length < 8)
+    return res.status(400).json({ message: "Password must be at least 8 characters." });
+  if (!/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password) || !/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]/.test(password))
+    return res.status(400).json({ message: "Password must contain uppercase, lowercase, number, and special character." });
+
+  // Username validation (optional field for backward compat, but enforced if present)
+  const cleanUsername = (username || name || '').trim().toLowerCase();
+  if (username) {
+    if (cleanUsername.length < 4 || cleanUsername.length > 25)
+      return res.status(400).json({ message: "Username must be 4-25 characters." });
+    if (!/^[a-zA-Z0-9_]+$/.test(cleanUsername))
+      return res.status(400).json({ message: "Username can only contain letters, numbers, and underscores." });
+  }
 
   try {
     const usersRef = db.collection('users');
@@ -318,11 +345,19 @@ router.post("/signup", async (req, res) => {
     if (!snapshot.empty)
       return res.status(409).json({ message: "Email already registered." });
 
+    // Check username uniqueness
+    if (cleanUsername) {
+      const usernameSnapshot = await usersRef.where('username', '==', cleanUsername).get();
+      if (!usernameSnapshot.empty)
+        return res.status(409).json({ message: "Username is already taken." });
+    }
+
     const hash = await bcrypt.hash(password, 12);
     const newUserRef = usersRef.doc();
     const userData = {
       id: newUserRef.id,
       name: name.trim(),
+      username: cleanUsername || null,
       email: email.toLowerCase(),
       password_hash: hash,
       role: 'student',
@@ -371,14 +406,26 @@ router.post("/signup", async (req, res) => {
 });
 
 router.post("/login", async (req, res) => {
-  const { email, password } = req.body;
+  const { email, username, password } = req.body;
 
-  if (!email || !password)
-    return res.status(400).json({ message: "Email and password are required." });
+  if ((!email && !username) || !password)
+    return res.status(400).json({ message: "Email/username and password are required." });
 
   try {
     const usersRef = db.collection('users');
-    const snapshot = await usersRef.where('email', '==', email.toLowerCase()).get();
+    let snapshot;
+
+    // Determine if login is by email or username
+    if (email && email.includes('@')) {
+      snapshot = await usersRef.where('email', '==', email.toLowerCase()).get();
+    } else {
+      const loginValue = (username || email || '').trim().toLowerCase();
+      snapshot = await usersRef.where('username', '==', loginValue).get();
+      // Fallback: if not found by username, try as email
+      if (snapshot.empty) {
+        snapshot = await usersRef.where('email', '==', loginValue).get();
+      }
+    }
     
     if (snapshot.empty)
       return res.status(401).json({ message: "Invalid email or password." });

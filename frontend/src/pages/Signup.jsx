@@ -1,88 +1,178 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../components/ui/ToastProvider';
 import { gsap } from 'gsap';
+import { validateUsername, validateEmail, validatePassword, validateConfirmPassword } from '../utils/validators';
+import { getFirebaseErrorMessage } from '../utils/firebaseErrors';
+import AuthInput from '../components/auth/AuthInput';
+import PasswordStrengthMeter from '../components/auth/PasswordStrengthMeter';
+import GoogleButton from '../components/auth/GoogleButton';
 
 const Signup = () => {
-  const [form, setForm] = useState({ name: '', email: '', password: '' });
-  const [error, setError] = useState('');
+  const [form, setForm] = useState({ username: '', email: '', password: '', confirmPassword: '' });
+  const [errors, setErrors] = useState({});
+  const [touched, setTouched] = useState({});
   const [loading, setLoading] = useState(false);
-  const { loginWithGoogle, login, user } = useAuth();
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [formShake, setFormShake] = useState(false);
+  const [usernameChecking, setUsernameChecking] = useState(false);
+  const [usernameAvailable, setUsernameAvailable] = useState(null); // null | true | false
+
+  const { login, loginWithGoogle, user } = useAuth();
+  const { addToast } = useToast();
   const navigate = useNavigate();
-  
-  // Auto-redirect if context picks up user (e.g. from Google Redirect Return)
-  useEffect(() => {
-    if (user) {
-      navigate('/dashboard');
-    }
-  }, [user, navigate]);
-  
+  const usernameTimerRef = useRef(null);
+
   const formRef = useRef(null);
   const bgRef = useRef(null);
   const infoRef = useRef(null);
   const headingRef = useRef(null);
 
+  // Auto-redirect if already authenticated
+  useEffect(() => {
+    if (user) navigate('/dashboard');
+  }, [user, navigate]);
+
+  // GSAP entrance animations
+  useEffect(() => {
+    const tl = gsap.timeline();
+    if (bgRef.current) tl.fromTo(bgRef.current, { opacity: 0, scale: 1.1 }, { opacity: 1, scale: 1, duration: 1.2, ease: 'power2.out' });
+    if (infoRef.current) tl.fromTo(infoRef.current.children, { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, stagger: 0.15, ease: 'power3.out' }, '-=0.8');
+    if (headingRef.current) tl.fromTo(headingRef.current, { y: -20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, ease: 'power3.out' }, '-=0.8');
+    if (formRef.current) tl.fromTo(formRef.current, { x: 30, opacity: 0 }, { x: 0, opacity: 1, duration: 0.8, ease: 'power3.out' }, '-=0.6');
+  }, []);
+
+  // ─── Real-time validation ──────────────────────────────
+  const validate = useCallback(() => {
+    const newErrors = {};
+    const usernameErr = validateUsername(form.username);
+    if (usernameErr) newErrors.username = usernameErr;
+    else if (usernameAvailable === false) newErrors.username = 'This username is already taken.';
+
+    const emailErr = validateEmail(form.email);
+    if (emailErr) newErrors.email = emailErr;
+
+    const { error: pwErr } = validatePassword(form.password);
+    if (pwErr) newErrors.password = pwErr;
+
+    const confirmErr = validateConfirmPassword(form.password, form.confirmPassword);
+    if (confirmErr) newErrors.confirmPassword = confirmErr;
+
+    return newErrors;
+  }, [form, usernameAvailable]);
+
+  useEffect(() => {
+    if (Object.keys(touched).length > 0) {
+      setErrors(validate());
+    }
+  }, [form, touched, validate, usernameAvailable]);
+
+  // ─── Debounced username uniqueness check ───────────────
+  useEffect(() => {
+    if (!form.username || validateUsername(form.username)) {
+      setUsernameAvailable(null);
+      return;
+    }
+    if (usernameTimerRef.current) clearTimeout(usernameTimerRef.current);
+
+    setUsernameChecking(true);
+    usernameTimerRef.current = setTimeout(async () => {
+      try {
+        const { default: api } = await import('../api/axios');
+        const res = await api.get(`/auth/check-username/${encodeURIComponent(form.username.trim().toLowerCase())}`);
+        setUsernameAvailable(res.data.available);
+      } catch {
+        setUsernameAvailable(null); // Fail silently — server-side will catch on submit
+      } finally {
+        setUsernameChecking(false);
+      }
+    }, 500);
+
+    return () => clearTimeout(usernameTimerRef.current);
+  }, [form.username]);
+
+  const handleBlur = (field) => {
+    setTouched(prev => ({ ...prev, [field]: true }));
+  };
+
+  const handleChange = (field, value) => {
+    setForm(prev => ({ ...prev, [field]: value }));
+    if (field === 'username') setUsernameAvailable(null);
+  };
+
+  // ─── Signup Submit ─────────────────────────────────────
   const handleSignup = async (e) => {
     e.preventDefault();
-    if (!form.name || !form.email || !form.password) return setError('Please fill in all fields');
-    if (form.password.length < 6) return setError('Password must be at least 6 characters');
-    setError('');
+    setTouched({ username: true, email: true, password: true, confirmPassword: true });
+    const validationErrors = validate();
+    setErrors(validationErrors);
+
+    if (Object.keys(validationErrors).length > 0) {
+      setFormShake(true);
+      setTimeout(() => setFormShake(false), 400);
+      return;
+    }
+
     setLoading(true);
     try {
       const { default: api } = await import('../api/axios');
-      const res = await api.post('/auth/signup', form);
+      const res = await api.post('/auth/signup', {
+        username: form.username.trim().toLowerCase(),
+        name: form.username.trim(), // Use username as display name
+        email: form.email.trim().toLowerCase(),
+        password: form.password,
+      });
       const { token, user: userData } = res.data;
-      login(token, userData);
+      login(token, userData, true);
+      addToast({ type: 'success', title: 'Account Created!', message: 'Welcome to Codovate. Let\'s get started!' });
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || err.message || 'Signup failed');
+      const msg = getFirebaseErrorMessage(err);
+      setErrors({ form: msg });
+      setFormShake(true);
+      setTimeout(() => setFormShake(false), 400);
+      addToast({ type: 'error', title: 'Signup Failed', message: msg });
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    const tl = gsap.timeline();
-
-    if (bgRef.current) {
-      tl.fromTo(bgRef.current,
-        { opacity: 0, scale: 1.1 },
-        { opacity: 1, scale: 1, duration: 1.2, ease: 'power2.out' }
-      );
+  // ─── Google Signup ─────────────────────────────────────
+  const handleGoogleSignup = async () => {
+    setGoogleLoading(true);
+    setErrors({});
+    try {
+      await loginWithGoogle();
+      addToast({ type: 'success', title: 'Welcome!', message: 'Account created with Google successfully.' });
+    } catch (err) {
+      const msg = getFirebaseErrorMessage(err);
+      if (!msg.includes('cancelled')) {
+        setErrors({ form: msg });
+        addToast({ type: 'error', title: 'Google Sign-Up Failed', message: msg });
+      }
+    } finally {
+      setGoogleLoading(false);
     }
+  };
 
-    if (infoRef.current) {
-      tl.fromTo(infoRef.current.children,
-        { y: 30, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.8, stagger: 0.15, ease: 'power3.out' },
-        '-=0.8'
-      );
-    }
+  const { strength } = validatePassword(form.password);
+  const isFormValid = !validateUsername(form.username) && !validateEmail(form.email) && !validatePassword(form.password).error && !validateConfirmPassword(form.password, form.confirmPassword) && usernameAvailable !== false;
 
-    if (headingRef.current) {
-      tl.fromTo(headingRef.current,
-        { y: -20, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.8, ease: 'power3.out' },
-        '-=0.8'
-      );
-    }
-
-    if (formRef.current) {
-      tl.fromTo(formRef.current,
-        { x: 30, opacity: 0 },
-        { x: 0, opacity: 1, duration: 0.8, ease: 'power3.out' },
-        '-=0.6'
-      );
-    }
-  }, []);
+  // Username status label
+  const getUsernameStatus = () => {
+    if (!touched.username || !form.username) return null;
+    if (usernameChecking) return { text: 'Checking...', color: 'text-gray-400' };
+    if (usernameAvailable === true && !errors.username) return { text: 'Available ✓', color: 'text-green-400' };
+    return null;
+  };
+  const usernameStatus = getUsernameStatus();
 
   return (
     <div className="min-h-screen bg-black flex flex-col lg:flex-row overflow-x-hidden overflow-y-auto">
       
-      {/* Left Column: Branding / Info (Hidden on mobile) */}
+      {/* Left Column: Branding (Hidden on mobile) */}
       <div className="hidden lg:flex w-1/2 relative flex-col justify-between p-12 border-r border-white/5">
-        
-        {/* Animated Background */}
         <div ref={bgRef} className="absolute inset-0 z-0 overflow-hidden">
           <div className="absolute inset-0 bg-black/40 z-10 backdrop-blur-[2px]" />
           <div className="absolute top-0 left-0 w-full h-full opacity-20"
@@ -113,7 +203,7 @@ const Signup = () => {
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-[#a78bfa]">future today</span>
           </h1>
           <p className="text-gray-400 text-lg leading-relaxed mb-8">
-            Stop waiting for opportunities to come to you. Claim your account and get access to top tier-1 internships, hackathons, and a community of builders.
+            Stop waiting for opportunities to come to you. Create your account and get access to top tier-1 internships, hackathons, and a community of builders.
           </p>
           <div className="flex items-center gap-4">
             <div className="flex -space-x-3">
@@ -129,90 +219,125 @@ const Signup = () => {
       </div>
 
       {/* Right Column: Signup Form */}
-      <div className="w-full lg:w-1/2 flex flex-col justify-center items-center p-6 relative">
+      <div className="w-full lg:w-1/2 flex flex-col justify-center items-center p-6 sm:p-8 relative min-h-screen lg:min-h-0">
         
         {/* Mobile Logo */}
-        <div className="lg:hidden absolute top-8 left-8">
+        <div className="lg:hidden absolute top-8 left-6">
           <Link to="/" className="inline-flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white font-bold text-sm">C</div>
             <span className="text-white font-bold text-lg">Codovate</span>
           </Link>
         </div>
 
-        <div ref={formRef} className="w-full max-w-md">
-          <div ref={headingRef} className="mb-10 text-center lg:text-left">
-            <h2 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 mb-3 drop-shadow-md">Claim your account</h2>
+        <div ref={formRef} className="w-full max-w-md mt-16 lg:mt-0">
+          <div ref={headingRef} className="mb-8 text-center lg:text-left">
+            <h2 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 mb-3 drop-shadow-md">Create Account</h2>
             <p className="text-gray-400 text-base font-medium tracking-wide">Start your career journey with <span className="text-primary font-bold">Codovate</span></p>
           </div>
 
-          <div className="glass-panel p-8 rounded-2xl relative overflow-hidden">
+          <div className={`glass-panel p-6 sm:p-8 rounded-2xl relative overflow-hidden ${formShake ? 'auth-shake' : ''}`}>
             <div className="absolute top-[-50px] right-[-50px] w-32 h-32 bg-primary/20 blur-[50px] rounded-full pointer-events-none" />
             
-            {error && (
-              <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm flex items-center gap-3 font-semibold">
-                <span>⚠️</span> {error}
+            {/* Global form error */}
+            {errors.form && (
+              <div className="mb-5 p-3.5 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm flex items-center gap-3 font-semibold auth-fade-in" role="alert">
+                <span>⚠️</span> {errors.form}
               </div>
             )}
 
-            <form onSubmit={handleSignup} className="space-y-4 relative z-10">
-              <div>
-                <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5">Full Name</label>
-                <input 
-                  type="text" 
-                  value={form.name} 
-                  onChange={e => setForm({ ...form, name: e.target.value })} 
-                  placeholder="John Doe" 
-                  required 
-                  className="input-glass w-full py-3 px-4 text-sm focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all text-white" 
+            <form onSubmit={handleSignup} className="space-y-4 relative z-10" noValidate>
+              <div className="relative">
+                <AuthInput
+                  id="signup-username"
+                  label="Username"
+                  type="text"
+                  value={form.username}
+                  onChange={e => handleChange('username', e.target.value)}
+                  onBlur={() => handleBlur('username')}
+                  placeholder="john_doe"
+                  error={touched.username ? errors.username : null}
+                  success={touched.username && !errors.username && usernameAvailable === true}
+                  autoComplete="username"
+                  maxLength={25}
+                  disabled={loading}
                 />
-              </div>
-              
-              <div>
-                <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5">Email Address</label>
-                <input 
-                  type="email" 
-                  value={form.email} 
-                  onChange={e => setForm({ ...form, email: e.target.value })} 
-                  placeholder="hello@example.com" 
-                  required 
-                  className="input-glass w-full py-3 px-4 text-sm focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all text-white" 
-                />
-              </div>
-              
-              <div>
-                <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5">Password</label>
-                <input 
-                  type="password" 
-                  value={form.password} 
-                  onChange={e => setForm({ ...form, password: e.target.value })} 
-                  placeholder="••••••••" 
-                  required 
-                  className="input-glass w-full py-3 px-4 text-sm focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all text-white" 
-                />
+                {usernameStatus && (
+                  <p className={`mt-1 text-[10px] font-bold uppercase tracking-wider ${usernameStatus.color}`}>
+                    {usernameStatus.text}
+                  </p>
+                )}
               </div>
 
-              <button type="submit" disabled={loading} className="btn-primary w-full py-3.5 disabled:opacity-50 mt-4 text-sm font-bold tracking-wide shadow-lg shadow-primary/20">
-                {loading ? <span className="flex items-center justify-center gap-2"><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Creating account...</span> : 'Create Account'}
+              <AuthInput
+                id="signup-email"
+                label="Email Address"
+                type="email"
+                value={form.email}
+                onChange={e => handleChange('email', e.target.value)}
+                onBlur={() => handleBlur('email')}
+                placeholder="hello@example.com"
+                error={touched.email ? errors.email : null}
+                success={touched.email && !errors.email && !!form.email}
+                autoComplete="email"
+                disabled={loading}
+              />
+
+              <AuthInput
+                id="signup-password"
+                label="Password"
+                type="password"
+                value={form.password}
+                onChange={e => handleChange('password', e.target.value)}
+                onBlur={() => handleBlur('password')}
+                placeholder="Min 8 characters"
+                error={touched.password ? errors.password : null}
+                autoComplete="new-password"
+                disabled={loading}
+              >
+                <PasswordStrengthMeter password={form.password} show={!!form.password} />
+              </AuthInput>
+
+              <AuthInput
+                id="signup-confirm-password"
+                label="Confirm Password"
+                type="password"
+                value={form.confirmPassword}
+                onChange={e => handleChange('confirmPassword', e.target.value)}
+                onBlur={() => handleBlur('confirmPassword')}
+                placeholder="Re-enter password"
+                error={touched.confirmPassword ? errors.confirmPassword : null}
+                success={touched.confirmPassword && !errors.confirmPassword && !!form.confirmPassword}
+                autoComplete="new-password"
+                disabled={loading}
+              />
+
+              <button
+                type="submit"
+                disabled={loading || !isFormValid}
+                className="btn-primary w-full py-3.5 disabled:opacity-50 mt-4 text-sm font-bold tracking-wide shadow-lg shadow-primary/20 disabled:cursor-not-allowed"
+              >
+                {loading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Creating account...
+                  </span>
+                ) : 'Create Account'}
               </button>
             </form>
 
-            <div className="flex items-center gap-3 my-8 relative z-10">
+            <div className="flex items-center gap-3 my-6 relative z-10">
               <div className="flex-1 h-px bg-white/10" />
-              <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">Or claim with</span>
+              <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">Or sign up with</span>
               <div className="flex-1 h-px bg-white/10" />
             </div>
 
-            <div className="grid grid-cols-1 gap-4 relative z-10">
-              <button type="button" onClick={handleGoogleLogin} className="flex items-center justify-center gap-3 py-3.5 bg-white hover:bg-gray-100 rounded-xl transition-all text-sm font-bold text-gray-900 shadow-xl">
-                <svg className="w-5 h-5" viewBox="0 0 48 48">
-                  <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.73 17.74 9.5 24 9.5z"/>
-                  <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-                  <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-                  <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-                  <path fill="none" d="M0 0h48v48H0z"/>
-                </svg>
-                Continue with Google
-              </button>
+            <div className="relative z-10">
+              <GoogleButton
+                onClick={handleGoogleSignup}
+                loading={googleLoading}
+                disabled={loading}
+                label="Continue with Google"
+              />
             </div>
           </div>
 

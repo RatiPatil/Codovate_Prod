@@ -1,6 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { gsap } from 'gsap';
+import { useToast } from '../components/ui/ToastProvider';
+import { validateEmail } from '../utils/validators';
+import AuthInput from '../components/auth/AuthInput';
 import api from '../api/axios';
 
 const ForgotPassword = () => {
@@ -8,7 +11,9 @@ const ForgotPassword = () => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
+  const [touched, setTouched] = useState(false);
   const formRef = useRef(null);
+  const { addToast } = useToast();
 
   useEffect(() => {
     gsap.fromTo(formRef.current,
@@ -17,16 +22,25 @@ const ForgotPassword = () => {
     );
   }, []);
 
+  const emailError = touched ? validateEmail(email) : null;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setTouched(true);
+    const err = validateEmail(email);
+    if (err) return;
+    
     setError('');
     setLoading(true);
     
     try {
-      await api.post('/auth/forgot-password', { email });
+      await api.post('/auth/forgot-password', { email: email.trim().toLowerCase() });
       setSuccess(true);
+      addToast({ type: 'success', title: 'Email Sent', message: 'Check your inbox for the reset code.' });
     } catch (err) {
-      setError(err.response?.data?.message || 'Something went wrong.');
+      const msg = err.response?.data?.message || 'Something went wrong. Please try again.';
+      setError(msg);
+      addToast({ type: 'error', title: 'Error', message: msg });
     } finally {
       setLoading(false);
     }
@@ -48,13 +62,13 @@ const ForgotPassword = () => {
 
         <div className="glass-panel p-8 rounded-2xl relative">
           {error && (
-            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm font-semibold">
+            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm font-semibold auth-fade-in" role="alert">
               ⚠️ {error}
             </div>
           )}
 
           {success ? (
-            <div className="text-center">
+            <div className="text-center auth-fade-in">
               <div className="w-16 h-16 bg-green-500/20 text-green-400 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
                 ✓
               </div>
@@ -67,25 +81,32 @@ const ForgotPassword = () => {
               </Link>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <div>
-                <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Email Address</label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  placeholder="you@example.com"
-                  required
-                  className="input-glass w-full py-4 px-4 text-sm"
-                />
-              </div>
+            <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+              <AuthInput
+                id="forgot-email"
+                label="Email Address"
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                onBlur={() => setTouched(true)}
+                placeholder="you@example.com"
+                error={emailError}
+                success={touched && !emailError && !!email}
+                autoComplete="email"
+                disabled={loading}
+              />
 
               <button
                 type="submit"
-                disabled={loading}
-                className="btn-primary w-full py-4 mt-2 text-sm font-bold tracking-wide shadow-lg shadow-primary/20 disabled:opacity-50"
+                disabled={loading || (touched && !!emailError)}
+                className="btn-primary w-full py-4 mt-2 text-sm font-bold tracking-wide shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? 'Sending...' : 'Send Reset Code'}
+                {loading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Sending...
+                  </span>
+                ) : 'Send Reset Code'}
               </button>
             </form>
           )}
