@@ -77,6 +77,8 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (err) {
       console.error("Google authentication error:", err);
+      // Ensure we clear the Firebase session if our backend rejects the login
+      try { await auth.signOut(); } catch(e) {}
       throw err;
     }
   };
@@ -94,6 +96,7 @@ export const AuthProvider = ({ children }) => {
       login(jwtToken, userData);
     } catch (err) {
       console.error("Phone authentication error:", err);
+      try { await auth.signOut(); } catch(e) {}
       throw err;
     }
   };
