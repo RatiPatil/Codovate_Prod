@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { signInWithPopup, getRedirectResult } from 'firebase/auth';
+import { signInWithPopup, getRedirectResult, signInWithCustomToken } from 'firebase/auth';
 import { auth, googleProvider } from '../lib/firebase';
 import api from '../api/axios';
 
@@ -84,6 +84,12 @@ export const AuthProvider = ({ children }) => {
   const loginWithPhone = async (idToken) => {
     try {
       const res = await api.post('/auth/phone', { idToken });
+      
+      if (res.data.action === "MERGED") {
+        await auth.signOut();
+        await signInWithCustomToken(auth, res.data.customToken);
+      }
+
       const { token: jwtToken, user: userData } = res.data;
       login(jwtToken, userData);
     } catch (err) {

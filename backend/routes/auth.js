@@ -122,6 +122,57 @@ router.post("/phone", async (req, res) => {
       const providers = user.providers || [];
       if (!providers.includes('phone')) providers.push('phone');
 
+      if (user.authUid && user.authUid !== uid) {
+        // Backend Merge Flow to enforce Single UID
+        console.log(`[MERGE] Linking phone to existing UID: ${user.authUid}`);
+        
+        try {
+          await getAuth().deleteUser(uid);
+        } catch (e) {
+          console.warn("Could not delete temporary phone auth user:", e.message);
+        }
+
+        try {
+          await getAuth().updateUser(user.authUid, { phoneNumber: phone_number });
+        } catch (e) {
+          console.warn("Could not link phone to existing user in Firebase:", e.message);
+        }
+
+        const customToken = await getAuth().createCustomToken(user.authUid);
+
+        const batch = db.batch();
+        batch.update(userDoc.ref, { 
+          providers: providers,
+          claimed: true,
+          last_login_at: new Date() 
+        });
+
+        batch.set(db.collection('platform_events').doc(), {
+          actor_id: userDoc.id,
+          event_type: 'user_login',
+          entity_type: 'student',
+          entity_id: userDoc.id,
+          metadata: { provider: 'phone', phone: phone_number, merged_into: user.authUid },
+          created_at: new Date()
+        });
+        
+        await batch.commit();
+
+        const token = jwt.sign(
+          { id: user.id, role: user.role },
+          process.env.JWT_SECRET || 'codovate_secret',
+          { expiresIn: "7d" }
+        );
+
+        return res.json({
+          action: "MERGED",
+          customToken,
+          token,
+          user: { id: user.id, name: user.name, phone: user.phone, email: user.email, role: user.role, avatar: user.avatar }
+        });
+      }
+
+      // Standard Flow
       const batch = db.batch();
       batch.update(userDoc.ref, { 
         authUid: uid,
