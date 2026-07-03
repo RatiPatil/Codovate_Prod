@@ -201,9 +201,11 @@ const PrivateChatModal = ({ connection, currentUser, onClose }) => {
     }
   };
 
-  const expiresDate = connection.chat_expires_at?._seconds 
-    ? new Date(connection.chat_expires_at._seconds * 1000)
-    : new Date(connection.chat_expires_at);
+  const expiresDate = connection.chat_expires_at 
+    ? (connection.chat_expires_at._seconds 
+        ? new Date(connection.chat_expires_at._seconds * 1000)
+        : new Date(connection.chat_expires_at))
+    : new Date();
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 p-4 lg:p-10">
@@ -349,7 +351,11 @@ const ConnectionsView = ({ currentUser }) => {
             {connections.filter(c => c.status === 'accepted').length === 0 ? (
               <p className="text-sm text-gray-500">No active chats.</p>
             ) : connections.filter(c => c.status === 'accepted').map(c => {
-              const expiresDate = c.chat_expires_at?._seconds ? new Date(c.chat_expires_at._seconds * 1000) : new Date(c.chat_expires_at);
+              const expiresDate = c.chat_expires_at 
+                ? (c.chat_expires_at._seconds 
+                    ? new Date(c.chat_expires_at._seconds * 1000) 
+                    : new Date(c.chat_expires_at)) 
+                : new Date();
               const isExpired = new Date() > expiresDate;
 
               return (
@@ -470,7 +476,7 @@ const FindTeammates = () => {
               <div key={user.id} className="glass-card p-5 hover:border-primary/50 transition-all flex flex-col h-full">
                 <div className="flex items-start gap-4 mb-4">
                   <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center text-white font-bold text-xl shrink-0 shadow-lg">
-                    {user.name.charAt(0).toUpperCase()}
+                    {user.name?.charAt(0).toUpperCase() || '?'}
                   </div>
                   <div>
                     <h4 className="text-white font-bold text-lg leading-tight">{user.name}</h4>
@@ -575,7 +581,7 @@ const SuggestedMates = ({ myProfile }) => {
 
             <div className="flex items-center gap-3 mb-4 mt-2">
               <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white font-bold border border-white/20">
-                {user.name.charAt(0).toUpperCase()}
+                {user.name?.charAt(0).toUpperCase() || '?'}
               </div>
               <div>
                 <h4 className="text-white font-bold text-sm leading-tight">{user.name}</h4>

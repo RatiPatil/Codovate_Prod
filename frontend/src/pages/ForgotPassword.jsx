@@ -58,9 +58,9 @@ const ForgotPassword = () => {
               <div className="w-16 h-16 bg-green-500/20 text-green-400 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
                 ✓
               </div>
-              <h3 className="text-white font-bold text-lg mb-2">Check your terminal</h3>
+              <h3 className="text-white font-bold text-lg mb-2">Check your email</h3>
               <p className="text-gray-400 text-sm mb-6">
-                A 6-digit reset code has been generated. Check your backend terminal to view it.
+                A 6-digit reset code has been sent to your email address. Please check your inbox (and spam folder).
               </p>
               <Link to={`/reset-password?email=${encodeURIComponent(email)}`} className="btn-primary w-full py-4 block text-center text-sm font-bold">
                 Enter Reset Code

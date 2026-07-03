@@ -12,7 +12,13 @@ export const SocketProvider = ({ children }) => {
   useEffect(() => {
     if (!token) return;
 
-    const socketUrl = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000';
+    const getSocketUrl = () => {
+      if (import.meta.env.VITE_SOCKET_URL) return import.meta.env.VITE_SOCKET_URL;
+      if (import.meta.env.VITE_API_URL) return import.meta.env.VITE_API_URL.replace('/api', '');
+      return 'http://localhost:5000';
+    };
+    
+    const socketUrl = getSocketUrl();
     const newSocket = io(socketUrl, {
       transports: ['websocket'],
       reconnection: true,
