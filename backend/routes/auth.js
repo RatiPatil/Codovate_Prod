@@ -57,17 +57,18 @@ router.post("/google", async (req, res) => {
         auth_provider: 'google'
       };
       
-      await newUserRef.set(user);
+      const batch = db.batch();
+      batch.set(newUserRef, user);
       
       // Create student profile
-      await db.collection('student_profiles').doc(uid).set({
+      batch.set(db.collection('student_profiles').doc(uid), {
         user_id: uid,
         profile_completion: 0,
         onboarding_completed: false
       });
       
       // Log event
-      await db.collection('platform_events').add({
+      batch.set(db.collection('platform_events').doc(), {
         actor_id: uid,
         event_type: 'user_signup',
         entity_type: 'user',
@@ -75,6 +76,8 @@ router.post("/google", async (req, res) => {
         metadata: { email: user.email, provider: 'google' },
         created_at: new Date()
       });
+      
+      await batch.commit();
 
       // 🔴 REAL-TIME: Notify Admin
       req.io.to("admin_room").emit("admin_new_student", user);
@@ -137,17 +140,18 @@ router.post("/signup", async (req, res) => {
       created_at: new Date()
     };
     
-    await newUserRef.set(userData);
+    const batch = db.batch();
+    batch.set(newUserRef, userData);
 
     // Create student profile
-    await db.collection('student_profiles').doc(newUserRef.id).set({
+    batch.set(db.collection('student_profiles').doc(newUserRef.id), {
       user_id: newUserRef.id,
       profile_completion: 0,
       onboarding_completed: false
     });
 
     // Log platform event
-    await db.collection('platform_events').add({
+    batch.set(db.collection('platform_events').doc(), {
       actor_id: newUserRef.id,
       event_type: 'user_signup',
       entity_type: 'user',
@@ -155,6 +159,8 @@ router.post("/signup", async (req, res) => {
       metadata: { email: userData.email },
       created_at: new Date()
     });
+    
+    await batch.commit();
 
     // 🔴 REAL-TIME: Notify Admin
     req.io.to("admin_room").emit("admin_new_student", userData);
@@ -198,19 +204,19 @@ router.post("/login", async (req, res) => {
     if (!match)
       return res.status(401).json({ message: "Invalid email or password." });
 
-    // Update last login
-    await usersRef.doc(user.id).update({
-      last_login_at: new Date()
-    });
-
-    // Log platform event
-    await db.collection('platform_events').add({
+    // Use batch for fast login updates
+    const batch = db.batch();
+    batch.update(usersRef.doc(user.id), { last_login_at: new Date() });
+    
+    batch.set(db.collection('platform_events').doc(), {
       actor_id: user.id,
       event_type: 'user_login',
       entity_type: 'user',
       entity_id: user.id,
       created_at: new Date()
     });
+    
+    await batch.commit();
 
     // Role-based JWT payload for admins
     const tokenPayload = {

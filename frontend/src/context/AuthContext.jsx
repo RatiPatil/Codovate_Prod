@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { signInWithRedirect, getRedirectResult } from 'firebase/auth';
+import { signInWithPopup, getRedirectResult } from 'firebase/auth';
 import { auth, googleProvider } from '../lib/firebase';
 import api from '../api/axios';
 
@@ -68,7 +68,13 @@ export const AuthProvider = ({ children }) => {
 
   const loginWithGoogle = async () => {
     try {
-      await signInWithRedirect(auth, googleProvider);
+      const result = await signInWithPopup(auth, googleProvider);
+      if (result) {
+        const idToken = await result.user.getIdToken();
+        const res = await api.post('/auth/google', { idToken });
+        const { token: jwtToken, user: userData } = res.data;
+        login(jwtToken, userData);
+      }
     } catch (err) {
       console.error("Google authentication error:", err);
       throw err;
