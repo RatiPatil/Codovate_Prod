@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { db, admin } = require('../config/firebase');
+const { db, admin, FieldValue } = require('../config/firebase');
 const { body, validationResult, checkExact, matchedData } = require('express-validator');
 
 // Middleware to ensure super_admin
@@ -80,8 +80,8 @@ router.post('/', superAdminOnly, checkExact([
       status,
       is_active: status === 'active',
       college_id: college_id || null,
-      created_at: admin.firestore.FieldValue.serverTimestamp(),
-      updated_at: admin.firestore.FieldValue.serverTimestamp()
+      created_at: FieldValue.serverTimestamp(),
+      updated_at: FieldValue.serverTimestamp()
     };
     
     if (role === 'student') {
@@ -128,7 +128,7 @@ router.put('/:id', superAdminOnly, checkExact([
       updateData.is_active = updateData.status === 'active';
     }
 
-    updateData.updated_at = admin.firestore.FieldValue.serverTimestamp();
+    updateData.updated_at = FieldValue.serverTimestamp();
 
     await userRef.update(updateData);
     const updated = await userRef.get();
@@ -153,8 +153,8 @@ router.delete('/:id', superAdminOnly, async (req, res) => {
     await userRef.update({ 
       status: 'inactive', 
       is_active: false,
-      updated_at: admin.firestore.FieldValue.serverTimestamp(),
-      deleted_at: admin.firestore.FieldValue.serverTimestamp()
+      updated_at: FieldValue.serverTimestamp(),
+      deleted_at: FieldValue.serverTimestamp()
     });
     res.json({ message: 'User deactivated successfully' });
   } catch (error) {
@@ -182,7 +182,7 @@ router.put('/:id/status', superAdminOnly, checkExact([
     await userRef.update({ 
       status, 
       is_active: status === 'active',
-      updated_at: admin.firestore.FieldValue.serverTimestamp()
+      updated_at: FieldValue.serverTimestamp()
     });
     res.json({ message: 'Status updated' });
   } catch (error) {

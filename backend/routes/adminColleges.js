@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { db, admin } = require('../config/firebase');
+const { db, admin, FieldValue } = require('../config/firebase');
 const { body, validationResult, checkExact, matchedData } = require('express-validator');
 
 // Middleware to ensure super_admin
@@ -45,8 +45,8 @@ router.post('/', superAdminOnly, checkExact([
       domain,
       status,
       admin_email: admin_email || '',
-      created_at: admin.firestore.FieldValue.serverTimestamp(),
-      updated_at: admin.firestore.FieldValue.serverTimestamp()
+      created_at: FieldValue.serverTimestamp(),
+      updated_at: FieldValue.serverTimestamp()
     };
     await newDocRef.set(newCollege);
     res.status(201).json(newCollege);
@@ -78,7 +78,7 @@ router.put('/:id', superAdminOnly, checkExact([
       return res.status(400).json({ message: 'No valid fields provided for update' });
     }
 
-    updateData.updated_at = admin.firestore.FieldValue.serverTimestamp();
+    updateData.updated_at = FieldValue.serverTimestamp();
     await docRef.update(updateData);
     
     const updated = await docRef.get();
@@ -98,8 +98,8 @@ router.delete('/:id', superAdminOnly, async (req, res) => {
 
     await docRef.update({ 
       status: 'suspended',
-      updated_at: admin.firestore.FieldValue.serverTimestamp(),
-      deleted_at: admin.firestore.FieldValue.serverTimestamp() 
+      updated_at: FieldValue.serverTimestamp(),
+      deleted_at: FieldValue.serverTimestamp() 
     });
     res.json({ message: 'College deactivated successfully' });
   } catch (error) {
