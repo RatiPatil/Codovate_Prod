@@ -117,7 +117,7 @@ const Profile = () => {
   );
 
   return (
-    <div className="p-6 md:p-8 max-w-7xl mx-auto relative z-10">
+    <div className="w-full max-w-7xl mx-auto relative z-10">
       {toast.msg && (
         <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-xl text-sm font-semibold shadow-2xl glass-panel ${
           toast.type === 'success'
@@ -145,7 +145,7 @@ const Profile = () => {
       <div className="grid lg:grid-cols-3 gap-8">
         {/* Left Panel */}
         <div className="space-y-6">
-          <div className="glass-panel rounded-2xl p-8 text-center relative overflow-hidden group">
+          <div className="glass-panel rounded-2xl p-5 md:p-8 text-center relative overflow-hidden group w-full">
             <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 rounded-full blur-[50px] -mr-10 -mt-10 pointer-events-none" />
             <input 
               type="file" 
@@ -213,18 +213,18 @@ const Profile = () => {
 
           {/* Stats Dashboard */}
           <div className="grid grid-cols-2 gap-4">
-            <div className="glass-panel p-5 rounded-2xl flex flex-col items-center justify-center text-center">
+            <div className="glass-panel p-4 md:p-5 rounded-2xl flex flex-col items-center justify-center text-center w-full">
               <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest mb-1">Activity Score</p>
               <p className="text-3xl font-black text-white">{profileData?.activity_score || 0}</p>
             </div>
-            <div className="glass-panel p-5 rounded-2xl flex flex-col items-center justify-center text-center">
+            <div className="glass-panel p-4 md:p-5 rounded-2xl flex flex-col items-center justify-center text-center w-full">
               <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest mb-1">Total Points</p>
               <p className="text-3xl font-black text-primary">{profileData?.points || 0}</p>
             </div>
           </div>
 
           {/* Badges Section */}
-          <div className="glass-panel rounded-2xl p-6 relative overflow-hidden">
+          <div className="glass-panel rounded-2xl p-5 md:p-6 relative overflow-hidden w-full">
             <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/10 rounded-bl-[100px] pointer-events-none" />
             <h3 className="text-white font-bold mb-4 flex items-center gap-2 relative z-10"><span className="text-xl">🏅</span> Achievements</h3>
             {(!profileData?.badges || profileData.badges.length === 0) ? (
@@ -244,7 +244,7 @@ const Profile = () => {
           </div>
 
           {skills.length > 0 && (
-            <div className="glass-panel rounded-2xl p-6 relative overflow-hidden">
+            <div className="glass-panel rounded-2xl p-5 md:p-6 relative overflow-hidden w-full">
               <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-purple-500/10 rounded-full blur-[40px] pointer-events-none" />
               <h3 className="text-white font-bold mb-5 flex items-center gap-2 relative z-10"><span className="text-xl">⚡</span> Top Skills</h3>
               <div className="flex flex-wrap gap-2.5 relative z-10">
@@ -258,7 +258,7 @@ const Profile = () => {
           )}
 
           {/* Linked Accounts */}
-          <div className="glass-panel rounded-2xl p-6 relative overflow-hidden">
+          <div className="glass-panel rounded-2xl p-5 md:p-6 relative overflow-hidden w-full">
             <h3 className="text-white font-bold mb-4 flex items-center gap-2 relative z-10"><span className="text-xl">🔗</span> Linked Accounts</h3>
             <div className="space-y-3 relative z-10">
               {profileData?.providers?.includes('google') ? (
@@ -296,7 +296,7 @@ const Profile = () => {
 
         {/* Right Form */}
         <div className="lg:col-span-2">
-          <div className="glass-panel rounded-2xl p-6 md:p-8">
+          <div className="glass-panel rounded-2xl p-5 md:p-8 w-full">
             <h3 className="text-white font-bold text-2xl mb-8 flex items-center gap-3">
               <span className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary text-sm">✏️</span>
               Edit Information
