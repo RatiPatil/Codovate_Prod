@@ -138,14 +138,33 @@ router.get("/status", auth, async (req, res) => {
     const studentDoc = await db.collection("students").doc(req.user.id).get();
 
     if (!studentDoc.exists) {
+      // Graceful fallback for legacy users who completed onboarding under the old architecture
+      const legacyProfile = await db.collection("student_profiles").doc(req.user.id).get();
+      if (legacyProfile.exists && (legacyProfile.data().onboarding_completed === true || legacyProfile.data().onboarding_completed === "true")) {
+        return res.json({ 
+          onboarding_completed: true, 
+          profile_completion: legacyProfile.data().profile_completion || 100 
+        });
+      }
       return res.json({ onboarding_completed: false, profile_completion: 0 });
     }
 
     const s = studentDoc.data();
     const sp = s.profile_data || {};
 
+    // In case the merged sp.onboarding_completed wasn't synced well
+    let isCompleted = sp.onboarding_completed === true || sp.onboarding_completed === "true";
+    
+    // Double fallback to legacy just in case
+    if (!isCompleted) {
+      const legacyProfile = await db.collection("student_profiles").doc(req.user.id).get();
+      if (legacyProfile.exists && (legacyProfile.data().onboarding_completed === true || legacyProfile.data().onboarding_completed === "true")) {
+        isCompleted = true;
+      }
+    }
+
     res.json({
-      onboarding_completed: sp.onboarding_completed || false,
+      onboarding_completed: isCompleted,
       profile_completion: sp.profile_completion || 0,
       name: sp.name || s.name,
       email: s.email

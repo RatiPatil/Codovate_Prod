@@ -63,10 +63,22 @@ router.post("/google", async (req, res) => {
       const batch = db.batch();
       batch.set(newUserRef, user);
       
-      batch.set(db.collection('student_profiles').doc(newUserRef.id), {
-        user_id: newUserRef.id,
-        profile_completion: 0,
-        onboarding_completed: false
+      // Create unified students record immediately preventing orphaned data
+      batch.set(db.collection('students').doc(newUserRef.id), {
+        id: newUserRef.id,
+        email: email.toLowerCase(),
+        authUid: uid,
+        providers: ['google'],
+        claimed: true,
+        is_active: true,
+        role: 'student',
+        created_at: new Date(),
+        profile_data: {
+          name: name || 'Google User',
+          avatar: picture || '',
+          profile_completion: 0,
+          onboarding_completed: false
+        }
       });
       
       batch.set(db.collection('platform_events').doc(), {
@@ -163,10 +175,20 @@ router.post("/phone", async (req, res) => {
       const batch = db.batch();
       batch.set(newUserRef, user);
       
-      batch.set(db.collection('student_profiles').doc(newUserRef.id), {
-        user_id: newUserRef.id,
-        profile_completion: 0,
-        onboarding_completed: false
+      batch.set(db.collection('students').doc(newUserRef.id), {
+        id: newUserRef.id,
+        phone: phone_number,
+        authUid: uid,
+        providers: ['phone'],
+        claimed: true,
+        is_active: true,
+        role: 'student',
+        created_at: new Date(),
+        profile_data: {
+          name: 'Student',
+          profile_completion: 0,
+          onboarding_completed: false
+        }
       });
       
       batch.set(db.collection('platform_events').doc(), {
@@ -369,11 +391,21 @@ router.post("/signup", async (req, res) => {
     const batch = db.batch();
     batch.set(newUserRef, userData);
 
-    // Create student profile
-    batch.set(db.collection('student_profiles').doc(newUserRef.id), {
-      user_id: newUserRef.id,
-      profile_completion: 0,
-      onboarding_completed: false
+    // Create unified students record
+    batch.set(db.collection('students').doc(newUserRef.id), {
+      id: newUserRef.id,
+      email: email.toLowerCase(),
+      authUid: null,
+      providers: ['local'],
+      claimed: true,
+      is_active: true,
+      role: 'student',
+      created_at: new Date(),
+      profile_data: {
+        name: name.trim(),
+        profile_completion: 0,
+        onboarding_completed: false
+      }
     });
 
     // Log platform event

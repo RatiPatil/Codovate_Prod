@@ -91,7 +91,7 @@ export const AuthProvider = ({ children }) => {
     if (!token) return;
     api.get('/onboarding/status')
       .then(res => {
-        const completed = res.data.onboarding_completed === true;
+        const completed = res.data.onboarding_completed === true || res.data.onboarding_completed === "true";
         setOnboardingCompleted(completed);
         getStorage().setItem('onboarding_completed', completed);
       })
