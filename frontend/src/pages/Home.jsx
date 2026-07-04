@@ -126,31 +126,28 @@ const Home = () => {
       );
     }
 
-    // 5. Horizontal Pinned Scroll Section
-    let mm = gsap.matchMedia();
-    mm.add("(min-width: 768px)", () => {
-      let scrollTween;
-      if (horizontalSectionRef.current && cardsWrapperRef.current) {
-        const getScrollAmount = () => {
-          let wrapperWidth = cardsWrapperRef.current.scrollWidth;
-          return -(wrapperWidth - window.innerWidth);
-        };
-
-        scrollTween = gsap.to(cardsWrapperRef.current, {
-          x: getScrollAmount,
-          ease: 'none',
+    // 5. 3D Card Reveal Animation
+    if (cardsWrapperRef.current && horizontalSectionRef.current) {
+      const cards = cardsWrapperRef.current.querySelectorAll('.h-card');
+      gsap.fromTo(cards,
+        { y: 100, opacity: 0, rotationX: -40, rotationY: 10, z: -200 },
+        {
+          y: 0,
+          opacity: 1,
+          rotationX: 0,
+          rotationY: 0,
+          z: 0,
+          duration: 1.2,
+          stagger: 0.2,
+          ease: 'power3.out',
           scrollTrigger: {
             trigger: horizontalSectionRef.current,
-            start: 'top top',
-            end: () => `+=${cardsWrapperRef.current.scrollWidth - window.innerWidth}`,
-            pin: true,
-            scrub: 1,
-            invalidateOnRefresh: true,
+            start: 'top 70%',
+            toggleActions: 'play none none reverse'
           }
-        });
-      }
-      return () => {};
-    });
+        }
+      );
+    }
 
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
@@ -158,7 +155,6 @@ const Home = () => {
         magneticBtn.removeEventListener('mousemove', handleMagneticMove);
         magneticBtn.removeEventListener('mouseleave', handleMagneticLeave);
       }
-      mm.revert();
       ScrollTrigger.getAll().forEach(t => t.kill());
     };
   }, []);
@@ -246,27 +242,27 @@ const Home = () => {
         </h2>
       </section>
 
-      {/* Horizontal Scroll Features Section */}
-      <section ref={horizontalSectionRef} className="md:h-screen bg-[#050505] relative flex flex-col md:flex-row md:items-center py-20 md:py-0 overflow-hidden w-full">
+      {/* 3D Grid Features Section */}
+      <section ref={horizontalSectionRef} className="py-24 md:py-32 bg-[#050505] relative overflow-hidden w-full">
         
         {/* Background Accent */}
         <div className="absolute top-0 right-0 w-full h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
         
-        <div ref={cardsWrapperRef} className="flex flex-col md:flex-row items-start md:items-center md:h-full relative z-10 flex-nowrap pl-4 sm:pl-6 md:pl-20 w-full gap-8 md:gap-0">
+        <div className="max-w-7xl mx-auto px-6 relative z-10 flex flex-col lg:flex-row items-start gap-12 lg:gap-16">
           
-          <div className="shrink-0 pr-4 sm:pr-12 md:pr-20 relative z-10 w-full md:w-[450px]">
-            <h2 className="text-3xl sm:text-5xl md:text-7xl font-bold mb-4">The <span className="text-primary">Advantage</span></h2>
+          <div className="lg:sticky lg:top-32 lg:w-1/3 shrink-0">
+            <h2 className="text-3xl sm:text-5xl md:text-6xl font-bold mb-6">The <span className="text-primary">Advantage</span></h2>
             <p className="text-gray-400 text-base sm:text-xl max-w-sm">Everything you need to accelerate your growth, built right in.</p>
           </div>
 
-          <div className="flex flex-col md:flex-row gap-4 sm:gap-8 px-4 sm:px-8 pr-4 sm:pr-8 md:pr-[10vw] w-full md:w-auto">
+          <div ref={cardsWrapperRef} className="grid sm:grid-cols-2 gap-6 lg:w-2/3" style={{ perspective: '1200px' }}>
             {features.map((f, i) => (
-              <div key={i} className="h-card w-full md:w-[450px] shrink-0 bg-white/[0.03] border border-white/[0.08] p-6 sm:p-10 rounded-2xl sm:rounded-[2rem] hover:bg-white/[0.05] transition-colors backdrop-blur-md">
-                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl bg-white/5 flex items-center justify-center text-2xl sm:text-4xl mb-4 sm:mb-8">
+              <div key={i} className="h-card bg-white/[0.03] border border-white/[0.08] p-8 sm:p-10 rounded-2xl hover:bg-white/[0.05] transition-colors backdrop-blur-md hover:-translate-y-2 duration-300" style={{ transformStyle: 'preserve-3d' }}>
+                <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center text-4xl mb-8">
                   {f.icon}
                 </div>
-                <h3 className="text-xl sm:text-3xl font-bold text-white mb-3 sm:mb-4">{f.title}</h3>
-                <p className="text-gray-400 text-sm sm:text-lg leading-relaxed">{f.desc}</p>
+                <h3 className="text-2xl font-bold text-white mb-4">{f.title}</h3>
+                <p className="text-gray-400 text-lg leading-relaxed">{f.desc}</p>
               </div>
             ))}
           </div>
