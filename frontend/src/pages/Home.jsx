@@ -127,26 +127,30 @@ const Home = () => {
     }
 
     // 5. Horizontal Pinned Scroll Section
-    let scrollTween;
-    if (horizontalSectionRef.current && cardsWrapperRef.current) {
-      const getScrollAmount = () => {
-        let wrapperWidth = cardsWrapperRef.current.scrollWidth;
-        return -(wrapperWidth - window.innerWidth);
-      };
+    let mm = gsap.matchMedia();
+    mm.add("(min-width: 768px)", () => {
+      let scrollTween;
+      if (horizontalSectionRef.current && cardsWrapperRef.current) {
+        const getScrollAmount = () => {
+          let wrapperWidth = cardsWrapperRef.current.scrollWidth;
+          return -(wrapperWidth - window.innerWidth);
+        };
 
-      scrollTween = gsap.to(cardsWrapperRef.current, {
-        x: getScrollAmount,
-        ease: 'none',
-        scrollTrigger: {
-          trigger: horizontalSectionRef.current,
-          start: 'top top',
-          end: () => `+=${cardsWrapperRef.current.scrollWidth - window.innerWidth}`,
-          pin: true,
-          scrub: 1,
-          invalidateOnRefresh: true,
-        }
-      });
-    }
+        scrollTween = gsap.to(cardsWrapperRef.current, {
+          x: getScrollAmount,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: horizontalSectionRef.current,
+            start: 'top top',
+            end: () => `+=${cardsWrapperRef.current.scrollWidth - window.innerWidth}`,
+            pin: true,
+            scrub: 1,
+            invalidateOnRefresh: true,
+          }
+        });
+      }
+      return () => {};
+    });
 
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
@@ -154,6 +158,7 @@ const Home = () => {
         magneticBtn.removeEventListener('mousemove', handleMagneticMove);
         magneticBtn.removeEventListener('mouseleave', handleMagneticLeave);
       }
+      mm.revert();
       ScrollTrigger.getAll().forEach(t => t.kill());
     };
   }, []);
@@ -180,9 +185,9 @@ const Home = () => {
       <section ref={heroRef} className="relative h-screen flex flex-col items-center justify-center px-4 overflow-hidden">
         
         {/* Cinematic Background Glow */}
-        <div ref={bgRef} className="absolute inset-0 pointer-events-none flex items-center justify-center z-0">
-          <div className="w-[800px] h-[800px] bg-primary/20 rounded-full blur-[150px] mix-blend-screen" />
-          <div className="absolute w-[400px] h-[400px] bg-[#a78bfa]/20 rounded-full blur-[100px] translate-x-1/2 translate-y-1/2 mix-blend-screen" />
+        <div ref={bgRef} className="absolute inset-0 pointer-events-none flex items-center justify-center z-0 overflow-hidden">
+          <div className="w-[150vw] h-[150vw] md:w-[800px] md:h-[800px] bg-primary/20 rounded-full blur-[100px] md:blur-[150px] mix-blend-screen" />
+          <div className="absolute w-[100vw] h-[100vw] md:w-[400px] md:h-[400px] bg-[#a78bfa]/20 rounded-full blur-[80px] md:blur-[100px] translate-x-1/2 translate-y-1/2 mix-blend-screen" />
         </div>
 
         {/* Grid pattern */}
@@ -242,21 +247,21 @@ const Home = () => {
       </section>
 
       {/* Horizontal Scroll Features Section */}
-      <section ref={horizontalSectionRef} className="h-screen bg-[#050505] relative overflow-hidden flex items-center">
+      <section ref={horizontalSectionRef} className="md:h-screen bg-[#050505] relative flex flex-col md:flex-row md:items-center py-20 md:py-0 overflow-hidden w-full">
         
         {/* Background Accent */}
         <div className="absolute top-0 right-0 w-full h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
         
-        <div ref={cardsWrapperRef} className="flex items-center h-full relative z-10 flex-nowrap pl-4 sm:pl-6 md:pl-20">
+        <div ref={cardsWrapperRef} className="flex flex-col md:flex-row items-start md:items-center md:h-full relative z-10 flex-nowrap pl-4 sm:pl-6 md:pl-20 w-full gap-8 md:gap-0">
           
-          <div className="shrink-0 pr-8 sm:pr-12 md:pr-20 relative z-10 w-[250px] sm:w-[300px] md:w-[450px]">
+          <div className="shrink-0 pr-4 sm:pr-12 md:pr-20 relative z-10 w-full md:w-[450px]">
             <h2 className="text-3xl sm:text-5xl md:text-7xl font-bold mb-4">The <span className="text-primary">Advantage</span></h2>
             <p className="text-gray-400 text-base sm:text-xl max-w-sm">Everything you need to accelerate your growth, built right in.</p>
           </div>
 
-          <div className="flex gap-4 sm:gap-8 px-4 sm:px-8 pr-[10vw]">
+          <div className="flex flex-col md:flex-row gap-4 sm:gap-8 px-4 sm:px-8 pr-4 sm:pr-8 md:pr-[10vw] w-full md:w-auto">
             {features.map((f, i) => (
-              <div key={i} className="h-card w-[260px] sm:w-[320px] md:w-[450px] shrink-0 bg-white/[0.03] border border-white/[0.08] p-6 sm:p-10 rounded-2xl sm:rounded-[2rem] hover:bg-white/[0.05] transition-colors backdrop-blur-md">
+              <div key={i} className="h-card w-full md:w-[450px] shrink-0 bg-white/[0.03] border border-white/[0.08] p-6 sm:p-10 rounded-2xl sm:rounded-[2rem] hover:bg-white/[0.05] transition-colors backdrop-blur-md">
                 <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl bg-white/5 flex items-center justify-center text-2xl sm:text-4xl mb-4 sm:mb-8">
                   {f.icon}
                 </div>
@@ -270,9 +275,9 @@ const Home = () => {
 
       {/* Final CTA Section */}
       <section className="min-h-screen flex items-center justify-center relative overflow-hidden px-4">
-        <div className="absolute inset-0 z-0">
+        <div className="absolute inset-0 z-0 overflow-hidden">
           <div className="absolute inset-0 bg-black" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/20 blur-[150px] rounded-full" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150vw] h-[150vw] md:w-[800px] md:h-[800px] bg-primary/20 blur-[100px] md:blur-[150px] rounded-full pointer-events-none" />
         </div>
 
         <div className="relative z-10 text-center max-w-3xl">

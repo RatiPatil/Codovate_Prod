@@ -143,7 +143,7 @@ const Login = () => {
   const isFormValid = form.emailOrUsername.trim() && form.password;
 
   return (
-    <div className="min-h-screen bg-black flex flex-col lg:flex-row overflow-x-hidden overflow-y-auto">
+    <div className="min-h-screen bg-black flex flex-col lg:flex-row overflow-x-hidden overflow-y-auto w-full">
       
       {/* Left Column: Branding (Hidden on mobile) */}
       <div className="hidden lg:flex w-1/2 relative flex-col justify-between p-12 border-r border-white/5">

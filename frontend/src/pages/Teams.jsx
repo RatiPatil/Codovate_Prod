@@ -16,7 +16,7 @@ const MembersModal = ({ team, onClose }) => {
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="absolute inset-0" onClick={onClose} />
-      <div className="relative z-10 w-full max-w-md glass-panel rounded-2xl p-8 shadow-2xl max-h-[90vh] overflow-y-auto mx-4">
+      <div className="relative z-10 w-[90vw] md:w-full max-w-md glass-panel rounded-2xl p-8 shadow-2xl max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h3 className="text-white font-bold text-xl">{team.name}</h3>
@@ -93,7 +93,7 @@ const DiscussionModal = ({ team, onClose, currentUser }) => {
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 p-4 lg:p-10">
       <div className="absolute inset-0" onClick={onClose} />
-      <div className="relative z-10 w-full max-w-4xl h-[80vh] flex flex-col glass-panel rounded-2xl shadow-2xl overflow-hidden">
+      <div className="relative z-10 w-[95vw] md:w-full max-w-4xl h-[80vh] flex flex-col glass-panel rounded-2xl shadow-2xl overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-white/10 bg-black/40">
           <div>
@@ -210,7 +210,7 @@ const PrivateChatModal = ({ connection, currentUser, onClose }) => {
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 p-4 lg:p-10">
       <div className="absolute inset-0" onClick={onClose} />
-      <div className="relative z-10 w-full max-w-4xl h-[80vh] flex flex-col glass-panel rounded-2xl shadow-2xl overflow-hidden">
+      <div className="relative z-10 w-[95vw] md:w-full max-w-4xl h-[80vh] flex flex-col glass-panel rounded-2xl shadow-2xl overflow-hidden">
         <div className="flex items-center justify-between p-6 border-b border-white/10 bg-black/40">
           <div>
             <h3 className="text-white font-bold text-xl flex items-center gap-2">
