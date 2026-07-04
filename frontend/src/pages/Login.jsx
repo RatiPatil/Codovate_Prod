@@ -28,7 +28,14 @@ const Login = () => {
 
   // Auto-redirect if already authenticated
   useEffect(() => {
-    if (user) navigate('/dashboard');
+    if (user) {
+      const adminRoles = ['super_admin', 'admin', 'college_admin', 'company_admin', 'mentor'];
+      if (adminRoles.includes(user.role)) {
+        navigate('/admin');
+      } else {
+        navigate('/dashboard');
+      }
+    }
   }, [user, navigate]);
 
   // GSAP entrance animations
@@ -96,7 +103,14 @@ const Login = () => {
       const { token, user: userData } = res.data;
       login(token, userData, rememberMe);
       addToast({ type: 'success', title: 'Welcome back!', message: `Signed in as ${userData.name || userData.email}` });
-      navigate('/dashboard');
+      
+      // Route based on role
+      const adminRoles = ['super_admin', 'admin', 'college_admin', 'company_admin', 'mentor'];
+      if (adminRoles.includes(userData.role)) {
+        navigate('/admin');
+      } else {
+        navigate('/dashboard');
+      }
     } catch (err) {
       const msg = getFirebaseErrorMessage(err);
       setErrors({ form: msg });
