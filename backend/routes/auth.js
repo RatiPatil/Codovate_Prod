@@ -39,16 +39,13 @@ router.get("/seed-admins-now", async (req, res) => {
     ];
     let created = [];
     for (const admin of ADMINS) {
-      const existing = await db.collection('users').doc(admin.id).get();
-      if (!existing.exists) {
-        const hash = await bcrypt.hash(admin.password, 12);
-        await db.collection('users').doc(admin.id).set({
-          id: admin.id, name: admin.name, email: admin.email.toLowerCase(),
-          password_hash: hash, role: admin.role, is_active: true, is_verified: true,
-          created_at: new Date()
-        });
-        created.push(admin.email);
-      }
+      const hash = await bcrypt.hash(admin.password, 12);
+      await db.collection('users').doc(admin.id).set({
+        id: admin.id, name: admin.name, email: admin.email.toLowerCase(),
+        password_hash: hash, role: admin.role, is_active: true, is_verified: true,
+        created_at: new Date()
+      }, { merge: true });
+      created.push(admin.email);
     }
     res.json({ message: "Seeding complete!", newlyCreated: created, allAdmins: ADMINS.map(a => a.email) });
   } catch (err) {
