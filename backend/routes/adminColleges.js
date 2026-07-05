@@ -26,12 +26,12 @@ router.get('/', async (req, res) => {
 });
 
 // POST new college
-router.post('/', superAdminOnly, checkExact([
+router.post('/', superAdminOnly, [
   body('name').trim().notEmpty().withMessage('Name is required').escape(),
   body('domain').trim().notEmpty().withMessage('Domain is required'),
   body('admin_email').optional().trim().isEmail().withMessage('Invalid admin email').normalizeEmail(),
   body('status').isIn(['active', 'pending', 'suspended']).withMessage('Invalid status')
-]), async (req, res) => {
+], async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
@@ -57,12 +57,12 @@ router.post('/', superAdminOnly, checkExact([
 });
 
 // PUT update college
-router.put('/:id', superAdminOnly, checkExact([
+router.put('/:id', superAdminOnly, [
   body('name').optional().trim().notEmpty().withMessage('Name cannot be empty').escape(),
   body('domain').optional().trim().notEmpty().withMessage('Domain cannot be empty'),
   body('admin_email').optional().trim().isEmail().withMessage('Invalid admin email').normalizeEmail(),
   body('status').optional().isIn(['active', 'pending', 'suspended']).withMessage('Invalid status')
-]), async (req, res) => {
+], async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 

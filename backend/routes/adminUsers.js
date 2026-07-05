@@ -52,13 +52,13 @@ router.get('/', async (req, res) => {
 });
 
 // POST new user
-router.post('/', superAdminOnly, checkExact([
+router.post('/', superAdminOnly, [
   body('name').trim().notEmpty().withMessage('Name is required').escape(),
   body('email').trim().isEmail().withMessage('Valid email is required').normalizeEmail(),
   body('role').isIn(['student', 'mentor', 'college_admin', 'company_admin', 'admin', 'super_admin']).withMessage('Invalid role'),
   body('status').isIn(['active', 'pending', 'banned', 'suspended', 'inactive']).withMessage('Invalid status'),
   body('college_id').optional({ nullable: true }).trim().escape()
-]), async (req, res) => {
+], async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
@@ -99,13 +99,13 @@ router.post('/', superAdminOnly, checkExact([
 });
 
 // PUT update user
-router.put('/:id', superAdminOnly, checkExact([
+router.put('/:id', superAdminOnly, [
   body('name').optional().trim().notEmpty().withMessage('Name cannot be empty').escape(),
   body('email').optional().trim().isEmail().withMessage('Valid email is required').normalizeEmail(),
   body('role').optional().isIn(['student', 'mentor', 'college_admin', 'company_admin', 'admin', 'super_admin']).withMessage('Invalid role'),
   body('status').optional().isIn(['active', 'pending', 'banned', 'suspended', 'inactive']).withMessage('Invalid status'),
   body('college_id').optional({ nullable: true }).trim().escape()
-]), async (req, res) => {
+], async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
@@ -164,9 +164,9 @@ router.delete('/:id', superAdminOnly, async (req, res) => {
 });
 
 // PUT status (used by the existing table)
-router.put('/:id/status', superAdminOnly, checkExact([
+router.put('/:id/status', superAdminOnly, [
   body('status').isIn(['active', 'pending', 'banned', 'suspended', 'inactive']).withMessage('Invalid status')
-]), async (req, res) => {
+], async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
