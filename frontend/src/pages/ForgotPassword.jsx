@@ -4,7 +4,8 @@ import { gsap } from 'gsap';
 import { useToast } from '../components/ui/ToastProvider';
 import { validateEmail } from '../utils/validators';
 import AuthInput from '../components/auth/AuthInput';
-import api from '../api/axios';
+import { sendPasswordResetEmail, fetchSignInMethodsForEmail } from 'firebase/auth';
+import { auth } from '../lib/firebase';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
@@ -34,11 +35,39 @@ const ForgotPassword = () => {
     setLoading(true);
     
     try {
-      await api.post('/auth/forgot-password', { email: email.trim().toLowerCase() });
+      const normalizedEmail = email.trim().toLowerCase();
+      
+      const methods = await fetchSignInMethodsForEmail(auth, normalizedEmail);
+      
+      if (methods.includes('google.com')) {
+        setError("This account uses Google Sign-In. Please continue with Google Login.");
+        setLoading(false);
+        return;
+      }
+      
+      if (methods.includes('phone')) {
+        setError("This account uses Phone Authentication. Please login using your mobile number.");
+        setLoading(false);
+        return;
+      }
+
+      const actionCodeSettings = {
+        url: 'https://codovate.in/login',
+        handleCodeInApp: false,
+      };
+      
+      await sendPasswordResetEmail(auth, normalizedEmail, actionCodeSettings);
       setSuccess(true);
-      addToast({ type: 'success', title: 'Email Sent', message: 'Check your inbox for the reset code.' });
+      addToast({ type: 'success', title: 'Email Sent', message: 'Password reset link has been sent to your email.' });
     } catch (err) {
-      const msg = err.response?.data?.message || 'Something went wrong. Please try again.';
+      console.error(err);
+      let msg = 'Something went wrong. Please try again.';
+      if (err.code === 'auth/user-not-found') msg = 'No account found with this email address.';
+      else if (err.code === 'auth/invalid-email') msg = 'Invalid email address format.';
+      else if (err.code === 'auth/network-request-failed') msg = 'Network error. Please check your internet connection.';
+      else if (err.code === 'auth/too-many-requests') msg = 'Too many requests. Please try again later.';
+      else if (err.code === 'auth/operation-not-allowed') msg = 'Password reset is not enabled. Please contact support.';
+      
       setError(msg);
       addToast({ type: 'error', title: 'Error', message: msg });
     } finally {
@@ -57,7 +86,7 @@ const ForgotPassword = () => {
             <span className="text-white font-bold text-lg">Codovate</span>
           </Link>
           <h2 className="text-3xl font-bold text-white mb-2">Reset Password</h2>
-          <p className="text-gray-400 text-sm">Enter your email and we'll send you a reset code.</p>
+          <p className="text-gray-400 text-sm">Enter your email and we'll send you a reset link.</p>
         </div>
 
         <div className="glass-panel p-8 rounded-2xl relative">
@@ -74,10 +103,10 @@ const ForgotPassword = () => {
               </div>
               <h3 className="text-white font-bold text-lg mb-2">Check your email</h3>
               <p className="text-gray-400 text-sm mb-6">
-                A 6-digit reset code has been sent to your email address. Please check your inbox (and spam folder).
+                Password reset link has been sent to your email. Please check your inbox (and spam folder).
               </p>
-              <Link to={`/reset-password?email=${encodeURIComponent(email)}`} className="btn-primary w-full py-4 block text-center text-sm font-bold">
-                Enter Reset Code
+              <Link to="/login" className="btn-primary w-full py-4 block text-center text-sm font-bold">
+                Return to Login
               </Link>
             </div>
           ) : (
@@ -106,7 +135,7 @@ const ForgotPassword = () => {
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                     Sending...
                   </span>
-                ) : 'Send Reset Code'}
+                ) : 'Send Reset Link'}
               </button>
             </form>
           )}
