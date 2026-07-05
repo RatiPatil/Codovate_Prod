@@ -122,7 +122,10 @@ router.post('/connect', auth, async (req, res) => {
         body: 'Someone wants to connect with you!'
       });
       // Emit the raw connection request for real-time UI updates
-      req.io.to(`user_${receiver_id}`).emit('connection_request', newConn);
+      req.io.to(`user_${receiver_id}`).emit('connection_request', {
+        ...newConn,
+        sender_name: req.user.name || 'A student'
+      });
     }
 
     res.status(201).json(newConn);

@@ -1,3 +1,4 @@
+import { formatDate, formatTime, formatDateTime, parseDate, getISODate } from '../../utils/dateUtils';
 import React, { useState, useEffect } from 'react';
 import MentorLayout from '../../components/layouts/MentorLayout';
 import api from '../../api/axios';
@@ -103,7 +104,7 @@ const MentorQueries = () => {
                     </div>
                     <p className="text-gray-400 text-sm">{q.description}</p>
                     <p className="text-xs text-gray-600 mt-2">
-                      From: <span className="text-gray-400">{q.student_name || 'Student'}</span> • {new Date(q.created_at).toLocaleString()}
+                      From: <span className="text-gray-400">{q.student_name || 'Student'}</span> • {formatDateTime(q.created_at)}
                     </p>
                   </div>
                   

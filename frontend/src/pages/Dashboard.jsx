@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
+import { formatDate } from '../utils/dateUtils';
 import api from '../api/axios';
 import { useSocket } from '../context/SocketContext';
 
@@ -245,7 +246,7 @@ const Dashboard = () => {
                           {act.title}
                         </p>
                         <p className="text-[10px] text-gray-500 mt-1 uppercase tracking-wider">
-                          {new Date(act.time).toLocaleDateString()}
+                          {formatDate(act.time)}
                         </p>
                       </div>
                     </div>

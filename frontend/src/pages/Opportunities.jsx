@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import api from '../api/axios';
 import { useSocket } from '../context/SocketContext';
+import { formatDate } from '../utils/dateUtils';
 
 const typeColors = {
   Internship: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
@@ -37,7 +38,7 @@ const OppDetailModal = ({ opp, isApplied, isApplying, onApply, onClose }) => {
 
           <div className="grid sm:grid-cols-3 gap-4 mb-6">
             {[
-              { label: 'Deadline', value: opp.deadline ? new Date(opp.deadline).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Open' },
+              { label: 'Deadline', value: opp.deadline ? formatDate(opp.deadline, { day: 'numeric', month: 'short', year: 'numeric' }) : 'Open' },
               { label: 'Mode', value: opp.mode || 'Not specified' },
               { label: 'Location', value: opp.location || 'Remote / Anywhere' },
             ].map(item => (
@@ -320,7 +321,7 @@ const Opportunities = () => {
                   <div>
                     <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Deadline</p>
                     <p className="text-gray-300 text-xs font-semibold">
-                      {opp.deadline ? new Date(opp.deadline).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Open'}
+                      {opp.deadline ? formatDate(opp.deadline, { day: 'numeric', month: 'short', year: 'numeric' }) : 'Open'}
                     </p>
                   </div>
                   <button

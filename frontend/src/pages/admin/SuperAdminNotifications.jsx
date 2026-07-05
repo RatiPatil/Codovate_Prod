@@ -1,3 +1,4 @@
+import { formatDate, formatTime, formatDateTime, parseDate, getISODate } from '../../utils/dateUtils';
 import React, { useState, useEffect } from 'react';
 import AdminDataTable from '../../components/common/AdminDataTable';
 import AdminCrudModal from '../../components/common/AdminCrudModal';
@@ -108,7 +109,7 @@ const SuperAdminNotifications = () => {
     },
     { 
       header: 'Date', 
-      render: (row) => new Date(row.created_at?._seconds * 1000 || row.created_at).toLocaleDateString()
+      render: (row) => formatDate(row.created_at)
     },
     {
       header: 'Actions',

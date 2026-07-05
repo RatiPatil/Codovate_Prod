@@ -1,4 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
+import { Link } from 'react-router-dom';
+import { formatTime, formatDateTime } from '../utils/dateUtils';
 import api from '../api/axios';
 
 const BookingModal = ({ mentor, onClose, onConfirm }) => {
@@ -204,7 +206,7 @@ const QueriesView = ({ showToast }) => {
                 Session: {q.session_id} • Assigned: {q.status !== 'Submitted' ? 'Yes' : 'No'}
                 {q.deadline_at && q.status !== 'Closed' && q.status !== 'Answered' && (
                   <span className="ml-2 text-yellow-500 block sm:inline">
-                    (SLA: {new Date(q.deadline_at._seconds ? q.deadline_at._seconds * 1000 : q.deadline_at).toLocaleTimeString()})
+                    (SLA: {formatTime(q.deadline_at)})
                   </span>
                 )}
               </div>
@@ -493,7 +495,7 @@ const Mentors = () => {
                 <div className="bg-black/20 rounded-xl p-4 mb-4 border border-white/5 relative z-10">
                   <p className="text-xs text-gray-400 uppercase tracking-widest font-bold mb-1">Scheduled Time</p>
                   <p className="text-white font-medium text-sm">
-                    {new Date(s.scheduled_time).toLocaleString(undefined, {
+                    {formatDateTime(s.scheduled_time, {
                       weekday: 'short', month: 'short', day: 'numeric',
                       hour: '2-digit', minute: '2-digit'
                     })}

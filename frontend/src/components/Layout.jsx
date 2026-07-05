@@ -1,8 +1,26 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
+import { useToast } from '../context/ToastContext';
+import { useSocket } from '../context/SocketContext';
 
 const Layout = ({ children }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { show } = useToast();
+  const { socket } = useSocket();
+
+  useEffect(() => {
+    if (!socket) return;
+    
+    const handleConnectionRequest = (conn) => {
+      show(`🔔 New connection request from ${conn.sender_name || 'a student'}!`, 'success');
+    };
+
+    socket.on('connection_request', handleConnectionRequest);
+
+    return () => {
+      socket.off('connection_request', handleConnectionRequest);
+    };
+  }, [socket, show]);
 
   return (
     <div className="flex h-screen bg-black overflow-hidden relative print:block print:h-auto print:overflow-visible">

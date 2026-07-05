@@ -1,3 +1,4 @@
+import { formatDate, formatTime, formatDateTime, parseDate, getISODate } from '../../utils/dateUtils';
 import React, { useState, useEffect } from 'react';
 import AdminDataTable from '../../components/common/AdminDataTable';
 import AdminCrudModal from '../../components/common/AdminCrudModal';
@@ -63,7 +64,7 @@ const CollegeAdminCertificates = () => {
   const columns = [
     { header: 'Title', accessor: 'title' },
     { header: 'Student ID', accessor: 'student_id' },
-    { header: 'Date', render: (row) => new Date(row.issue_date).toLocaleDateString() },
+    { header: 'Date', render: (row) => formatDate(row.issue_date) },
     { 
       header: 'Status', 
       render: (row) => (

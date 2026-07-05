@@ -1,3 +1,4 @@
+import { formatDate, formatTime, formatDateTime, parseDate, getISODate } from '../../utils/dateUtils';
 import React, { useState, useEffect } from 'react';
 import AdminDataTable from '../../components/common/AdminDataTable';
 import AdminCrudModal from '../../components/common/AdminCrudModal';
@@ -74,7 +75,7 @@ const CollegeAdminEvents = () => {
   const columns = [
     { header: 'Event Title', accessor: 'title' },
     { header: 'Type', accessor: 'type', render: (row) => <span className="capitalize">{row.type}</span> },
-    { header: 'Date', render: (row) => new Date(row.date).toLocaleDateString() },
+    { header: 'Date', render: (row) => formatDate(row.date) },
     {
       header: 'Actions',
       render: (row) => (

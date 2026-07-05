@@ -7,16 +7,12 @@ import {
 import api from '../api/axios';
 import { useSocket } from '../context/SocketContext';
 
+import { formatDate, formatDateTime, parseDate } from '../utils/dateUtils';
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const fmt = (n) => n >= 1000 ? `${(n / 1000).toFixed(1)}k` : (n ?? 0);
-const fmtDate = (iso) => {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
-};
-const fmtTime = (iso) => {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
-};
+const fmtDate = (iso) => formatDate(iso, { day: '2-digit', month: 'short', year: 'numeric' });
+const fmtTime = (iso) => formatDateTime(iso, { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
 
 // ─── Toast ────────────────────────────────────────────────────────────────────
 const useToast = () => {
@@ -667,7 +663,7 @@ const ApplicationsPage = ({ showToast }) => {
                 <div className="bg-white/5 border border-white/5 rounded-xl p-4">
                   <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1">Applied Date</p>
                   <p className="text-white text-sm font-bold">
-                    {new Date(selectedApp.applied_at?._seconds ? selectedApp.applied_at._seconds * 1000 : (selectedApp.applied_at || selectedApp.created_at || new Date())).toLocaleDateString('en-IN', {
+                    {formatDate(selectedApp.applied_at || selectedApp.created_at, {
                       day: 'numeric', month: 'short', year: 'numeric'
                     })}
                   </p>
@@ -1472,7 +1468,7 @@ const TopBar = ({ toast }) => {
             <span>{toast.type === 'error' ? '⚠️' : '✅'}</span>{toast.msg}
           </div>
         )}
-        <div className="text-[10px] text-gray-600 font-mono hidden sm:block">{new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</div>
+        <div className="text-[10px] text-gray-600 font-mono hidden sm:block">{formatDate(new Date(), { day: '2-digit', month: 'short', year: 'numeric' })}</div>
       </div>
     </div>
   );

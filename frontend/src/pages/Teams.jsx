@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import api from '../api/axios';
+import { parseDate, formatTime } from '../utils/dateUtils';
 import { useAuth } from '../context/AuthContext';
 
 const MembersModal = ({ team, onClose }) => {
@@ -129,7 +130,7 @@ const DiscussionModal = ({ team, onClose, currentUser }) => {
                     <p className="text-sm whitespace-pre-wrap">{m.message}</p>
                   </div>
                   <span className="text-[10px] text-gray-500 mt-1 px-1">
-                    {new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    {formatTime(m.created_at)}
                   </span>
                 </div>
               );
@@ -201,11 +202,7 @@ const PrivateChatModal = ({ connection, currentUser, onClose }) => {
     }
   };
 
-  const expiresDate = connection.chat_expires_at 
-    ? (connection.chat_expires_at._seconds 
-        ? new Date(connection.chat_expires_at._seconds * 1000)
-        : new Date(connection.chat_expires_at))
-    : new Date();
+  const expiresDate = parseDate(connection.chat_expires_at);
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 p-4 lg:p-10">
@@ -245,7 +242,7 @@ const PrivateChatModal = ({ connection, currentUser, onClose }) => {
                     <p className="text-sm whitespace-pre-wrap">{m.text}</p>
                   </div>
                   <span className="text-[10px] text-gray-500 mt-1 px-1">
-                    {new Date(m.created_at ? (m.created_at._seconds ? m.created_at._seconds*1000 : m.created_at) : Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    {formatTime(m.created_at || Date.now())}
                   </span>
                 </div>
               );
@@ -351,11 +348,7 @@ const ConnectionsView = ({ currentUser }) => {
             {connections.filter(c => c.status === 'accepted').length === 0 ? (
               <p className="text-sm text-gray-500">No active chats.</p>
             ) : connections.filter(c => c.status === 'accepted').map(c => {
-              const expiresDate = c.chat_expires_at 
-                ? (c.chat_expires_at._seconds 
-                    ? new Date(c.chat_expires_at._seconds * 1000) 
-                    : new Date(c.chat_expires_at)) 
-                : new Date();
+              const expiresDate = parseDate(c.chat_expires_at);
               const isExpired = new Date() > expiresDate;
 
               return (
@@ -379,6 +372,109 @@ const ConnectionsView = ({ currentUser }) => {
           </div>
         </div>
       </div>
+    </div>
+  );
+};
+
+const MatchFinder = ({ results, onConnect }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const cardRefs = useRef([]);
+
+  const handleAction = (direction, userId, idx) => {
+    const card = cardRefs.current[idx];
+    if (!card) return;
+
+    import('gsap').then(({ gsap }) => {
+      gsap.to(card, {
+        x: direction === 'right' ? 300 : -300,
+        y: 50,
+        rotation: direction === 'right' ? 15 : -15,
+        opacity: 0,
+        duration: 0.4,
+        ease: "power2.in",
+        onComplete: () => {
+          if (direction === 'right') onConnect(userId);
+          setCurrentIndex(prev => prev + 1);
+        }
+      });
+    });
+  };
+
+  if (currentIndex >= results.length) {
+    return (
+      <div className="text-center py-24 glass-panel rounded-2xl border-dashed h-[500px] flex flex-col items-center justify-center">
+        <p className="text-5xl mb-4">🌟</p>
+        <p className="text-gray-300 text-lg font-bold">You've seen all potential teammates!</p>
+        <p className="text-gray-500 text-sm mt-2">Adjust filters to find more.</p>
+        <button onClick={() => setCurrentIndex(0)} className="mt-6 btn-secondary text-xs px-6 py-2">Start Over</button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative h-[500px] w-full max-w-md mx-auto" style={{ perspective: '1000px' }}>
+      {results.map((user, idx) => {
+        if (idx < currentIndex) return null;
+        if (idx > currentIndex + 2) return null; // Only render top 3 for performance
+
+        const isTop = idx === currentIndex;
+        const offset = idx - currentIndex;
+        const scale = 1 - offset * 0.05;
+        const translateY = offset * 20;
+        const opacity = 1 - offset * 0.3;
+
+        return (
+          <div
+            key={user.id}
+            ref={el => cardRefs.current[idx] = el}
+            className={`absolute top-0 left-0 w-full h-full glass-card p-6 flex flex-col transition-all duration-300 ease-out`}
+            style={{
+              transform: `translateY(${translateY}px) scale(${scale})`,
+              opacity,
+              zIndex: 10 - offset,
+              boxShadow: isTop ? '0 25px 50px -12px rgba(32,21,255,0.25)' : 'none'
+            }}
+          >
+            <div className="flex-1 flex flex-col items-center text-center mt-4">
+              <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center text-white font-bold text-4xl shadow-xl mb-4 border-4 border-white/10">
+                {user.name?.charAt(0).toUpperCase() || '?'}
+              </div>
+              <h2 className="text-2xl font-bold text-white mb-1">{user.name}</h2>
+              <p className="text-primary text-xs font-bold uppercase tracking-widest mb-2">
+                {user.career_goal ? user.career_goal.replace('_', ' ') : 'Open to roles'}
+              </p>
+              <p className="text-gray-400 text-sm mb-4">{user.college || 'College not specified'}</p>
+              
+              {user.bio && <p className="text-sm text-gray-300 mb-6 italic">"{user.bio}"</p>}
+
+              <div className="flex flex-wrap justify-center gap-2 mb-6">
+                {user.skills?.slice(0, 5).map(s => (
+                  <span key={s} className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-xs text-gray-200">
+                    {s}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {isTop && (
+              <div className="flex justify-center gap-6 mt-auto pb-4">
+                <button
+                  onClick={() => handleAction('left', user.id, idx)}
+                  className="w-14 h-14 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-red-400 hover:bg-red-500/20 hover:text-red-300 hover:border-red-500/50 transition-all shadow-lg"
+                >
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+                <button
+                  onClick={() => handleAction('right', user.id, idx)}
+                  className="w-14 h-14 rounded-full bg-primary/20 border border-primary/50 flex items-center justify-center text-primary hover:bg-primary/40 hover:text-white transition-all shadow-[0_0_15px_rgba(32,21,255,0.5)]"
+                >
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                </button>
+              </div>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 };
@@ -471,41 +567,7 @@ const FindTeammates = () => {
             <p className="text-gray-400 text-sm">No teammates found matching your criteria.</p>
           </div>
         ) : (
-          <div className="grid md:grid-cols-2 gap-4">
-            {results.map(user => (
-              <div key={user.id} className="glass-card p-5 hover:border-primary/50 transition-all flex flex-col h-full">
-                <div className="flex items-start gap-4 mb-4">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center text-white font-bold text-xl shrink-0 shadow-lg">
-                    {user.name?.charAt(0).toUpperCase() || '?'}
-                  </div>
-                  <div>
-                    <h4 className="text-white font-bold text-lg leading-tight">{user.name}</h4>
-                    <p className="text-gray-400 text-xs font-medium mt-1">{user.college || 'College not specified'}</p>
-                    <p className="text-primary text-[10px] font-bold uppercase tracking-widest mt-1">
-                      {user.career_goal ? user.career_goal.replace('_', ' ') : 'Open to roles'}
-                    </p>
-                  </div>
-                </div>
-
-                {user.bio && <p className="text-sm text-gray-300 mb-4 line-clamp-2">{user.bio}</p>}
-
-                <div className="mt-auto pt-4 border-t border-white/10">
-                  <div className="flex flex-wrap gap-1.5 mb-3">
-                    {user.skills.slice(0, 4).map(s => (
-                      <span key={s} className="px-2 py-0.5 bg-white/5 border border-white/10 rounded text-[10px] text-gray-300 whitespace-nowrap">
-                        {s}
-                      </span>
-                    ))}
-                    {user.skills.length > 4 && <span className="px-2 py-0.5 bg-white/5 border border-white/10 rounded text-[10px] text-gray-500">+{user.skills.length - 4}</span>}
-                  </div>
-                  
-                  <button className="w-full btn-secondary py-2 text-xs" onClick={() => handleConnect(user.id)}>
-                    Connect (24h Chat)
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
+          <MatchFinder results={results} onConnect={handleConnect} />
         )}
       </div>
     </div>
@@ -575,8 +637,24 @@ const SuggestedMates = ({ myProfile }) => {
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
         {results.slice(0, 9).map(user => (
           <div key={user.id} className="glass-card p-5 relative overflow-hidden flex flex-col">
-            <div className="absolute top-0 right-0 bg-green-500/10 text-green-400 text-[10px] font-bold px-3 py-1 rounded-bl-xl border-l border-b border-green-500/20">
-              {user.matchScore || 85}% MATCH
+            <div className="absolute top-2 right-2 flex flex-col items-center">
+              <div className="relative w-12 h-12 flex items-center justify-center">
+                <svg className="absolute inset-0 w-full h-full transform -rotate-90">
+                  <circle cx="24" cy="24" r="20" stroke="rgba(32,21,255,0.2)" strokeWidth="3" fill="none" />
+                  <circle 
+                    cx="24" 
+                    cy="24" 
+                    r="20" 
+                    stroke="currentColor" 
+                    strokeWidth="3" 
+                    fill="none" 
+                    strokeDasharray="125.6" 
+                    strokeDashoffset={125.6 - (125.6 * (user.matchScore || 85)) / 100} 
+                    className="text-primary drop-shadow-[0_0_5px_rgba(32,21,255,0.8)] transition-all duration-1000"
+                  />
+                </svg>
+                <span className="text-[10px] font-bold text-white z-10">{user.matchScore || 85}%</span>
+              </div>
             </div>
 
             <div className="flex items-center gap-3 mb-4 mt-2">

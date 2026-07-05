@@ -1,3 +1,4 @@
+import { formatDate, formatTime, formatDateTime, parseDate, getISODate } from '../../utils/dateUtils';
 import React, { useState, useEffect } from 'react';
 import AdminDataTable from '../../components/common/AdminDataTable';
 import api from '../../api/axios';
@@ -57,8 +58,7 @@ const CompanyAdminApplications = () => {
       render: (row) => {
         const d = row.applied_at || row.created_at;
         if (!d) return '—';
-        if (d._seconds) return new Date(d._seconds * 1000).toLocaleDateString();
-        return new Date(d).toLocaleDateString();
+        return formatDate(d);
       }
     },
     { 

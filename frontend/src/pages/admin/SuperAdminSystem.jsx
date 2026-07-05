@@ -1,3 +1,4 @@
+import { formatDate, formatTime, formatDateTime, parseDate, getISODate } from '../../utils/dateUtils';
 import React, { useState, useEffect } from 'react';
 import api from '../../api/axios';
 
@@ -71,7 +72,7 @@ const SuperAdminSystem = () => {
               <h3 className="text-xl font-bold text-white">All Systems Operational</h3>
             </div>
             <p className="text-gray-500 text-sm font-medium">
-              Last updated: {new Date(health.timestamp).toLocaleTimeString()}
+              Last updated: {formatTime(health.timestamp)}
             </p>
           </div>
 

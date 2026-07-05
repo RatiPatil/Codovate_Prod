@@ -1,3 +1,4 @@
+import { formatDate, formatTime, formatDateTime, parseDate, getISODate } from '../../utils/dateUtils';
 import React, { useState, useEffect } from 'react';
 import AdminDataTable from '../../components/common/AdminDataTable';
 import api from '../../api/axios';
@@ -27,7 +28,7 @@ const CompanyAdminHiring = () => {
     { header: 'Opportunity ID', accessor: 'opportunity_id' },
     { 
       header: 'Hired On', 
-      render: (row) => new Date(row.updated_at || row.created_at).toLocaleDateString() 
+      render: (row) => formatDate(row.updated_at || row.created_at) 
     },
     { 
       header: 'Status', 

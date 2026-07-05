@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api/axios';
 import { useSocket } from '../context/SocketContext';
+import { formatDate } from '../utils/dateUtils';
 
 const statusStyles = {
   Applied: 'bg-primary/10 text-primary border-primary/20',
@@ -146,7 +147,7 @@ const Applications = () => {
                   <p className="text-primary text-sm font-semibold">{app.company}</p>
                   <p className="text-gray-500 text-xs mt-2 flex items-center gap-1">
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                    Applied on {new Date(app.applied_at?.toDate ? app.applied_at.toDate() : app.applied_at).toLocaleDateString('en-IN', {
+                    Applied on {formatDate(app.applied_at, {
                       day: 'numeric', month: 'short', year: 'numeric'
                     })}
                   </p>
@@ -156,7 +157,7 @@ const Applications = () => {
                   <div className="text-right hidden sm:block">
                     <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Deadline</p>
                     <p className="text-gray-300 text-xs font-semibold">
-                      {app.deadline ? new Date(app.deadline).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : '—'}
+                      {app.deadline ? formatDate(app.deadline, { day: 'numeric', month: 'short' }) : '—'}
                     </p>
                   </div>
                   <span className={`text-xs px-4 py-1.5 rounded-full border font-bold shadow-sm backdrop-blur-sm ${statusStyles[app.status] || 'bg-gray-500/10 text-gray-400 border-gray-500/20'}`}>

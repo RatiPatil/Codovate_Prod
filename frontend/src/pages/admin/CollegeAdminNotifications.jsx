@@ -1,3 +1,4 @@
+import { formatDate, formatTime, formatDateTime, parseDate, getISODate } from '../../utils/dateUtils';
 import React, { useState, useEffect } from 'react';
 import AdminDataTable from '../../components/common/AdminDataTable';
 import AdminCrudModal from '../../components/common/AdminCrudModal';
@@ -67,10 +68,10 @@ const CollegeAdminNotifications = () => {
     const editData = { ...notification };
     if (editData.expires_at) {
       if (editData.expires_at._seconds) {
-        editData.expires_at = new Date(editData.expires_at._seconds * 1000).toISOString().split('T')[0];
+        editData.expires_at = getISODate(editData.expires_at);
       } else {
         try {
-          editData.expires_at = new Date(editData.expires_at).toISOString().split('T')[0];
+          editData.expires_at = getISODate(editData.expires_at);
         } catch(e) {}
       }
     }
@@ -120,9 +121,7 @@ const CollegeAdminNotifications = () => {
       header: 'Date', 
       render: (row) => {
         const dateVal = row.created_at;
-        if (!dateVal) return new Date().toLocaleDateString();
-        if (dateVal._seconds) return new Date(dateVal._seconds * 1000).toLocaleDateString();
-        return new Date(dateVal).toLocaleDateString();
+        return formatDate(dateVal);
       }
     },
     {
