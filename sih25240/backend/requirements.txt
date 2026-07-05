@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+pydantic
+python-multipart
+# Add machine learning dependencies here later
+# paddleocr
+# easyocr
+# transformers
+# torch
+# onnxruntime

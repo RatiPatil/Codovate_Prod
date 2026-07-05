@@ -28,7 +28,7 @@ const MentorDashboard = () => {
     totalSessions: 0,
     pendingRequests: 0,
     completedSessions: 0,
-    averageRating: "4.8", // Mocked until feedback DB is structured
+    averageRating: "0.0",
     loading: true
   });
   
@@ -94,19 +94,8 @@ const MentorDashboard = () => {
           <div className="lg:col-span-2 bg-[#080812] border border-white/5 rounded-3xl p-8">
             <h2 className="text-xl font-bold text-white mb-6">Recent Feedback Summary</h2>
             <div className="space-y-4">
-              <div className="bg-white/5 p-4 rounded-xl border border-white/5 flex items-start gap-4">
-                <div className="text-2xl">⭐</div>
-                <div>
-                  <p className="text-gray-300 font-medium italic">"Amazing session! The mentor really helped me structure my resume for off-campus placements."</p>
-                  <p className="text-xs text-gray-500 mt-2 font-bold uppercase tracking-widest">- Student from SVERI</p>
-                </div>
-              </div>
-              <div className="bg-white/5 p-4 rounded-xl border border-white/5 flex items-start gap-4">
-                <div className="text-2xl">⭐</div>
-                <div>
-                  <p className="text-gray-300 font-medium italic">"Very clear explanations of system design concepts."</p>
-                  <p className="text-xs text-gray-500 mt-2 font-bold uppercase tracking-widest">- Student from VIT</p>
-                </div>
+              <div className="bg-white/5 p-4 rounded-xl border border-white/5 flex items-center justify-center text-gray-500 italic py-8">
+                No feedback received yet.
               </div>
             </div>
           </div>

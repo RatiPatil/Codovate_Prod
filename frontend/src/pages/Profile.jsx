@@ -22,6 +22,22 @@ const Profile = () => {
   const [toast, setToast] = useState({ msg: '', type: '' });
   const { linkGoogleAccount } = useAuth();
   const [linking, setLinking] = useState(false);
+  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark');
+
+  useEffect(() => {
+    if (theme === 'light') {
+      document.documentElement.classList.remove('dark');
+      document.documentElement.classList.add('light');
+    } else {
+      document.documentElement.classList.add('dark');
+      document.documentElement.classList.remove('light');
+    }
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+  };
 
   const showToast = (msg, type = 'success') => {
     setToast({ msg, type });
@@ -289,6 +305,25 @@ const Profile = () => {
                   <span className="text-green-400 text-xs font-bold bg-green-500/10 px-2 py-1 rounded">Linked</span>
                 </div>
               )}
+            </div>
+          </div>
+
+          {/* Settings / Preferences */}
+          <div className="glass-panel rounded-2xl p-5 md:p-6 relative overflow-hidden w-full">
+            <h3 className="text-white font-bold mb-4 flex items-center gap-2 relative z-10"><span className="text-xl">⚙️</span> Settings & Preferences</h3>
+            <div className="space-y-3 relative z-10">
+              <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
+                <div className="flex items-center gap-3">
+                  <span className="text-xl">{theme === 'dark' ? '🌙' : '☀️'}</span>
+                  <span className="text-gray-200 text-sm font-medium">App Theme</span>
+                </div>
+                <button 
+                  onClick={toggleTheme}
+                  className="px-4 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 bg-primary border-primary text-white hover:bg-primary-light"
+                >
+                  Switch to {theme === 'dark' ? 'Light' : 'Dark'} Mode
+                </button>
+              </div>
             </div>
           </div>
 

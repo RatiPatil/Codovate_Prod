@@ -25,18 +25,18 @@ router.get('/stats', async (req, res) => {
       stats[key] = results[index].data().count;
     });
 
-    // We can mock some data that doesn't exist explicitly as a collection yet
+    // Real stats
     stats.users = stats.students + stats.mentors + stats.colleges + stats.companies;
-    stats.projects = stats.students * 3; // Approx 3 projects per student
-    stats.certificates = stats.students * 2; // Approx 2 certs per student
+    stats.projects = 0;
+    stats.certificates = 0;
 
-    // Generate some fake trend data for the charts
+    // Initialize charts with 0 values
     const generateChartData = (labelBase, valuesCount) => {
       return Array.from({ length: valuesCount }).map((_, i) => ({
         name: `${labelBase} ${i + 1}`,
-        uv: Math.floor(Math.random() * 5000) + 1000,
-        pv: Math.floor(Math.random() * 5000) + 1000,
-        amt: Math.floor(Math.random() * 5000) + 1000,
+        uv: 0,
+        pv: 0,
+        amt: 0,
       }));
     };
 
