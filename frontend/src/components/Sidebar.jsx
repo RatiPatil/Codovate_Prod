@@ -12,6 +12,7 @@ const navItems = [
   { path: '/mentors', label: 'Mentors', icon: '👨‍🏫' },
   { path: '/leaderboard', label: 'Leaderboard', icon: '🏆' },
   { path: '/resume', label: 'Resume Builder', icon: '📄' },
+  { path: '/notifications', label: 'Notifications', icon: '🔔' },
   { path: '/profile', label: 'Profile', icon: '👤' },
 ];
 
@@ -19,10 +20,7 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const { isConnected, socket } = useSocket();
-  const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [showNotifs, setShowNotifs] = useState(false);
-  const notifRef = useRef();
 
   useEffect(() => {
     fetchNotifications();
@@ -30,43 +28,24 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
 
   useEffect(() => {
     if (!socket) return;
-    socket.on('new_notification', (notif) => {
-      setNotifications(prev => [notif, ...prev]);
+    socket.on('new_notification', () => {
       setUnreadCount(prev => prev + 1);
     });
     return () => socket.off('new_notification');
   }, [socket]);
 
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (notifRef.current && !notifRef.current.contains(event.target)) {
-        setShowNotifs(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    const handler = () => setUnreadCount(0);
+    window.addEventListener('notifications_read', handler);
+    return () => window.removeEventListener('notifications_read', handler);
   }, []);
 
   const fetchNotifications = async () => {
     try {
-      const [notifsRes, countRes] = await Promise.all([
-        api.get('/notifications'),
-        api.get('/notifications/unread/count')
-      ]);
-      setNotifications(notifsRes.data);
+      const countRes = await api.get('/notifications/unread/count');
       setUnreadCount(countRes.data.count);
     } catch (err) {
-      console.error("Failed to load notifications", err);
-    }
-  };
-
-  const markAllAsRead = async () => {
-    try {
-      await api.put('/notifications/read/all');
-      setUnreadCount(0);
-      setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
-    } catch (err) {
-      console.error("Failed to mark read", err);
+      console.error("Failed to load notifications count", err);
     }
   };
 
@@ -87,7 +66,7 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
       </div>
 
       {/* User */}
-      <div className="px-6 py-4 border-b border-white/10 relative" ref={notifRef}>
+      <div className="px-6 py-4 border-b border-white/10">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center text-primary font-bold text-sm shrink-0">
@@ -98,60 +77,31 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
               <p className="text-gray-500 text-xs truncate">{user?.email}</p>
             </div>
           </div>
-          
-          <button 
-            onClick={() => {
-              setShowNotifs(!showNotifs);
-              if (!showNotifs && unreadCount > 0) markAllAsRead();
-            }}
-            className="relative p-2 rounded-lg hover:bg-white/5 text-gray-400 hover:text-white transition-colors"
-          >
-            🔔
-            {unreadCount > 0 && (
-              <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 border-2 border-[#080808] rounded-full animate-pulse"></span>
-            )}
-          </button>
         </div>
-
-        {/* Notifications Dropdown */}
-        {showNotifs && (
-          <div className="absolute top-full left-4 right-4 mt-2 bg-[#111] border border-white/10 rounded-xl shadow-2xl z-50 max-h-80 overflow-y-auto scrollbar-hide">
-            <div className="p-3 border-b border-white/10 flex justify-between items-center sticky top-0 bg-[#111] z-10">
-              <span className="text-white text-sm font-semibold">Notifications</span>
-            </div>
-            <div className="p-2 space-y-1">
-              {notifications.length === 0 ? (
-                <div className="text-gray-500 text-xs text-center py-4">No notifications yet.</div>
-              ) : (
-                notifications.map(n => (
-                  <div key={n.id} className={`p-3 rounded-lg text-sm ${!n.is_read ? 'bg-primary/10' : 'hover:bg-white/5'} transition-colors`}>
-                    <p className="text-white font-medium text-xs">{n.title}</p>
-                    <p className="text-gray-400 text-[11px] mt-1">{n.body}</p>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Nav Links */}
-      <nav className="flex-1 px-3 py-4 space-y-1">
+      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto custom-scrollbar">
         {navItems.map((item) => (
           <NavLink
             key={item.path}
             to={item.path}
             onClick={() => setMobileOpen && setMobileOpen(false)}
             className={({ isActive }) =>
-              `flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 ${
+              `flex items-center justify-between px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 ${
                 isActive
                   ? 'bg-primary/90 text-white shadow-[0_4px_20px_rgba(32,21,255,0.4)] backdrop-blur-md'
                   : 'text-gray-400 hover:text-white hover:bg-white/10 hover:translate-x-1'
               }`
             }
           >
-            <span>{item.icon}</span>
-            {item.label}
+            <div className="flex items-center gap-3">
+              <span>{item.icon}</span>
+              <span>{item.label}</span>
+            </div>
+            {item.path === '/notifications' && unreadCount > 0 && (
+              <span className="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse shrink-0"></span>
+            )}
           </NavLink>
         ))}
       </nav>

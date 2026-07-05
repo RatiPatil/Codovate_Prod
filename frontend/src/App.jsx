@@ -21,6 +21,7 @@ import Teams from './pages/Teams';
 import Mentors from './pages/Mentors';
 import Leaderboard from './pages/Leaderboard';
 import ResumeBuilder from './pages/ResumeBuilder';
+import Notifications from './pages/Notifications';
 import { useEffect } from 'react';
 
 function App() {
@@ -92,6 +93,11 @@ function App() {
               <Route path="/resume" element={
                 <ProtectedRoute>
                   <Layout><ResumeBuilder /></Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/notifications" element={
+                <ProtectedRoute>
+                  <Layout><Notifications /></Layout>
                 </ProtectedRoute>
               } />
 
