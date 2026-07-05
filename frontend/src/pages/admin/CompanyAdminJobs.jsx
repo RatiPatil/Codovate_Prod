@@ -32,8 +32,8 @@ const CompanyAdminJobs = () => {
   const fetchJobs = async () => {
     try {
       const response = await api.get('/company-admin/opportunities?type=job');
-      // Filter only jobs
-      setJobs(response.data.filter(op => op.type === 'job'));
+      // Backend already filters by type in the query
+      setJobs(response.data);
     } catch (err) {
       console.error(err);
     } finally {

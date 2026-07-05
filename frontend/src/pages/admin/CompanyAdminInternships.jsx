@@ -32,8 +32,8 @@ const CompanyAdminInternships = () => {
   const fetchInternships = async () => {
     try {
       const response = await api.get('/company-admin/opportunities?type=internship');
-      // Filter only internships
-      setInternships(response.data.filter(op => op.type === 'internship'));
+      // Backend already filters by type in the query
+      setInternships(response.data);
     } catch (err) {
       console.error(err);
     } finally {
