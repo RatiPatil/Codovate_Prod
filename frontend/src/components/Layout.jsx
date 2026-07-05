@@ -23,7 +23,7 @@ const Layout = ({ children }) => {
     return () => {
       socket.off('connection_request', handleConnectionRequest);
     };
-  }, [socket, show]);
+  }, [socket, addToast]);
 
   return (
     <div className="flex h-screen bg-black overflow-hidden relative print:block print:h-auto print:overflow-visible">
