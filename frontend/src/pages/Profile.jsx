@@ -459,6 +459,27 @@ const Profile = () => {
 
               <div className="pt-6 mt-6 border-t border-white/10 space-y-6 relative">
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 -mt-[1px] w-1/3 h-[1px] bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+                <h4 className="text-white font-bold text-lg">App Settings</h4>
+                
+                <div className="flex items-center justify-between p-4 bg-white/5 border border-white/10 rounded-xl">
+                  <div>
+                    <h5 className="text-white font-bold text-sm">Application Theme</h5>
+                    <p className="text-gray-400 text-xs mt-1">Choose your preferred appearance</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={toggleTheme}
+                    className={`relative w-16 h-8 rounded-full transition-colors duration-300 ${theme === 'light' ? 'bg-primary' : 'bg-gray-700'}`}
+                  >
+                    <div className={`absolute top-1 left-1 w-6 h-6 rounded-full bg-white flex items-center justify-center transition-transform duration-300 ${theme === 'light' ? 'translate-x-8' : 'translate-x-0'}`}>
+                      {theme === 'light' ? '☀️' : '🌙'}
+                    </div>
+                  </button>
+                </div>
+              </div>
+
+              <div className="pt-6 mt-6 border-t border-white/10 space-y-6 relative">
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 -mt-[1px] w-1/3 h-[1px] bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
                 <h4 className="text-white font-bold text-lg">External Links</h4>
                 <div>
                   <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2">Resume URL (Google Drive / Dropbox)</label>

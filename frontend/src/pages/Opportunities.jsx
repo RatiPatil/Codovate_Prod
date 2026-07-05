@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import api from '../api/axios';
 import { useSocket } from '../context/SocketContext';
 import { formatDate } from '../utils/dateUtils';
@@ -90,19 +91,24 @@ const OppDetailModal = ({ opp, isApplied, isApplying, onApply, onClose }) => {
             )}
             <div className="flex gap-3 ml-auto">
               <button onClick={onClose} className="btn-secondary text-sm px-5 py-2 rounded-xl">Close</button>
-              <button
-                onClick={() => onApply(opp.id)}
-                disabled={isApplied || isApplying}
-                className={`text-sm px-5 py-2 rounded-xl font-bold transition-all ${
-                  isApplied
-                    ? 'bg-green-500/10 text-green-400 border border-green-500/20 cursor-default'
-                    : 'btn-primary'
-                }`}
-              >
-                {isApplying ? (
-                  <span className="flex items-center gap-2"><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Applying...</span>
-                ) : isApplied ? '✓ Applied' : 'Apply Now'}
-              </button>
+              {isApplied ? (
+                <Link
+                  to="/applications"
+                  className="bg-green-500/10 text-green-400 border border-green-500/20 text-sm px-5 py-2 rounded-xl font-bold flex items-center gap-2 hover:bg-green-500/20 transition-colors"
+                >
+                  ✓ View App
+                </Link>
+              ) : (
+                <button
+                  onClick={() => onApply(opp.id)}
+                  disabled={isApplying}
+                  className="btn-primary text-sm px-5 py-2 rounded-xl font-bold transition-all"
+                >
+                  {isApplying ? (
+                    <span className="flex items-center gap-2"><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Applying...</span>
+                  ) : 'Apply Now'}
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -324,23 +330,27 @@ const Opportunities = () => {
                       {opp.deadline ? formatDate(opp.deadline, { day: 'numeric', month: 'short', year: 'numeric' }) : 'Open'}
                     </p>
                   </div>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); if (!isApplied) handleApply(opp.id); }}
-                    disabled={isApplied || isApplying}
-                    className={`${
-                      isApplied
-                        ? 'bg-green-500/10 text-green-400 border border-green-500/20 px-4 py-2 rounded-xl text-sm font-bold cursor-default flex items-center gap-1.5'
-                        : 'btn-primary text-sm px-5 py-2 rounded-xl flex items-center gap-2'
-                    }`}
-                  >
-                    {isApplying ? (
-                      <><div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Applying...</>
-                    ) : isApplied ? (
-                      <><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg> Applied</>
-                    ) : (
-                      <>Apply Now <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg></>
-                    )}
-                  </button>
+                  {isApplied ? (
+                    <Link
+                      to="/applications"
+                      className="bg-green-500/10 text-green-400 border border-green-500/20 px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-1.5 hover:bg-green-500/20 transition-colors"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                      View App
+                    </Link>
+                  ) : (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleApply(opp.id); }}
+                      disabled={isApplying}
+                      className="btn-primary text-sm px-5 py-2 rounded-xl flex items-center gap-2"
+                    >
+                      {isApplying ? (
+                        <><div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Applying...</>
+                      ) : (
+                        <>Apply Now <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg></>
+                      )}
+                    </button>
+                  )}
                 </div>
               </div>
             );

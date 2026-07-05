@@ -21,7 +21,20 @@ import Teams from './pages/Teams';
 import Mentors from './pages/Mentors';
 import Leaderboard from './pages/Leaderboard';
 import ResumeBuilder from './pages/ResumeBuilder';
+import { useEffect } from 'react';
+
 function App() {
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    if (savedTheme === 'light') {
+      document.documentElement.classList.remove('dark');
+      document.documentElement.classList.add('light');
+    } else {
+      document.documentElement.classList.remove('light');
+      document.documentElement.classList.add('dark');
+    }
+  }, []);
+
   return (
     <ToastProvider>
       <AuthProvider>
