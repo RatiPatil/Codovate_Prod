@@ -20,7 +20,8 @@ router.get('/', companyAdminOnly, async (req, res) => {
     
     let query = db.collection('opportunities').where('company_id', '==', targetCompanyId);
     if (req.query.type) {
-      query = query.where('type', '==', req.query.type); // 'job' or 'internship'
+      const formattedType = req.query.type === 'job' ? 'Job' : 'Internship';
+      query = query.where('type', '==', formattedType);
     }
 
     const snapshot = await query.get();
