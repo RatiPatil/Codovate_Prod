@@ -6,14 +6,23 @@ const auth = require("../middleware/auth");
 // Get all notifications
 router.get("/", auth, async (req, res) => {
   try {
-    const snapshot = await db.collection("notifications")
-      .where("user_id", "==", req.user.id)
-      .get();
+    const [userSnapshot, globalSnapshot] = await Promise.all([
+      db.collection("notifications").where("user_id", "==", req.user.id).get(),
+      db.collection("notifications").where("is_global", "==", true).where("target_role", "in", ["all", req.user.role || 'student']).get()
+    ]);
       
     let notifications = [];
-    snapshot.forEach(doc => {
+    
+    userSnapshot.forEach(doc => {
       const data = doc.data();
       data.id = doc.id;
+      notifications.push(data);
+    });
+    
+    globalSnapshot.forEach(doc => {
+      const data = doc.data();
+      data.id = doc.id;
+      data.is_read = true; // For MVP, treat global announcements as read so they don't clutter
       notifications.push(data);
     });
     
