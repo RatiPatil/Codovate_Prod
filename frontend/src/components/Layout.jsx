@@ -1,18 +1,21 @@
 import { useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
-import { useToast } from '../context/ToastContext';
+import { useToast } from './ui/ToastProvider';
 import { useSocket } from '../context/SocketContext';
 
 const Layout = ({ children }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { show } = useToast();
+  const { addToast } = useToast();
   const { socket } = useSocket();
 
   useEffect(() => {
     if (!socket) return;
     
     const handleConnectionRequest = (conn) => {
-      show(`🔔 New connection request from ${conn.sender_name || 'a student'}!`, 'success');
+      addToast({
+        title: `🔔 New connection request from ${conn.sender_name || 'a student'}!`,
+        type: 'success'
+      });
     };
 
     socket.on('connection_request', handleConnectionRequest);
