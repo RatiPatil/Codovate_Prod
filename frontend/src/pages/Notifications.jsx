@@ -42,9 +42,24 @@ const Notifications = () => {
       ) : (
         <div className="space-y-4">
           {notifications.map(n => {
-            const dateStr = n.created_at?.seconds 
-              ? new Date(n.created_at.seconds * 1000).toLocaleDateString()
-              : new Date(n.created_at).toLocaleDateString();
+            // Robustly parse the date regardless of whether it's a Firestore Timestamp from Admin SDK (_seconds), 
+            // Client SDK (seconds), or a standard JS date string
+            let dateObj = new Date();
+            if (n.created_at) {
+              if (n.created_at._seconds) {
+                dateObj = new Date(n.created_at._seconds * 1000);
+              } else if (n.created_at.seconds) {
+                dateObj = new Date(n.created_at.seconds * 1000);
+              } else {
+                dateObj = new Date(n.created_at);
+              }
+            }
+            
+            const dateStr = !isNaN(dateObj) ? dateObj.toLocaleDateString() : 'Unknown Date';
+            
+            // Ensure we handle both 'message' (used by global) and 'body' (used by user-specific)
+            const titleStr = n.title || 'Notification';
+            const bodyStr = n.message || n.body || '';
 
             return (
               <div 
@@ -57,13 +72,13 @@ const Notifications = () => {
               >
                 <div className="flex justify-between items-start gap-4 mb-2">
                   <h3 className={`font-bold text-lg ${n.is_read ? 'text-gray-200' : 'text-white'}`}>
-                    {n.title}
+                    {titleStr}
                   </h3>
                   <span className="text-xs font-medium text-gray-500 whitespace-nowrap bg-[#0f0f1a] px-2 py-1 rounded-md border border-white/5">
                     {dateStr}
                   </span>
                 </div>
-                <p className="text-sm text-gray-300 leading-relaxed">{n.message || n.body}</p>
+                <p className="text-sm text-gray-300 leading-relaxed">{bodyStr}</p>
               </div>
             );
           })}
