@@ -72,7 +72,9 @@ const CompanyAdminInternships = () => {
       setEditData(null);
       fetchInternships();
     } catch (err) {
-      alert("Failed to save internship");
+      const msg = err.response?.data?.message || "Failed to save internship";
+      alert(msg);
+      throw err;
     }
   };
 

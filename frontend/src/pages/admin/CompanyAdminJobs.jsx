@@ -72,7 +72,9 @@ const CompanyAdminJobs = () => {
       setEditData(null);
       fetchJobs();
     } catch (err) {
-      alert("Failed to save job");
+      const msg = err.response?.data?.message || "Failed to save job";
+      alert(msg);
+      throw err;
     }
   };
 
