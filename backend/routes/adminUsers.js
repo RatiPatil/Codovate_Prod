@@ -27,6 +27,7 @@ router.get('/', async (req, res) => {
         role: u.role,
         status: u.status || (u.is_active ? 'active' : 'inactive'),
         college_id: u.college_id,
+        company_id: u.company_id,
         created_at: u.created_at
       });
     });
@@ -41,6 +42,7 @@ router.get('/', async (req, res) => {
         role: s.role || 'student',
         status: s.status || (s.is_active ? 'active' : 'inactive'),
         college_id: s.college_id,
+        company_id: s.company_id,
         created_at: s.created_at
       });
     });
