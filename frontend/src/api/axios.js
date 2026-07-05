@@ -16,7 +16,7 @@ api.interceptors.response.use(
     // Only redirect if we are not already on an auth page, and the endpoint wasn't an auth endpoint
     const isAuthRoute = err.config?.url?.includes('/auth/');
     
-    if ((err.response?.status === 401 || err.response?.status === 403) && !isAuthRoute) {
+    if (err.response?.status === 401 && !isAuthRoute) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       if (window.location.pathname !== '/login' && window.location.pathname !== '/admin-login') {
