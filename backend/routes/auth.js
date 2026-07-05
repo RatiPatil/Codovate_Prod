@@ -126,8 +126,12 @@ router.post("/google", async (req, res) => {
       console.log("✅ User logged in via Google and linked:", email);
     }
 
+    const tokenPayload = { id: user.id, role: user.role, name: user.name, email: user.email };
+    if (user.college_id) tokenPayload.college_id = user.college_id;
+    if (user.company_id) tokenPayload.company_id = user.company_id;
+
     const token = jwt.sign(
-      { id: user.id, role: user.role },
+      tokenPayload,
       process.env.JWT_SECRET || 'codovate_secret',
       { expiresIn: "7d" }
     );
@@ -249,8 +253,12 @@ router.post("/phone", async (req, res) => {
         
         await batch.commit();
 
+        const tokenPayload = { id: user.id, role: user.role, name: user.name, email: user.email };
+        if (user.college_id) tokenPayload.college_id = user.college_id;
+        if (user.company_id) tokenPayload.company_id = user.company_id;
+
         const token = jwt.sign(
-          { id: user.id, role: user.role },
+          tokenPayload,
           process.env.JWT_SECRET || 'codovate_secret',
           { expiresIn: "7d" }
         );
@@ -285,8 +293,12 @@ router.post("/phone", async (req, res) => {
       console.log("✅ User logged in via Phone and linked:", phone_number);
     }
 
+    const tokenPayload = { id: user.id, role: user.role, name: user.name, email: user.email };
+    if (user.college_id) tokenPayload.college_id = user.college_id;
+    if (user.company_id) tokenPayload.company_id = user.company_id;
+
     const token = jwt.sign(
-      { id: user.id, role: user.role },
+      tokenPayload,
       process.env.JWT_SECRET || 'codovate_secret',
       { expiresIn: "7d" }
     );
@@ -425,8 +437,12 @@ router.post("/signup", async (req, res) => {
     // 🔴 REAL-TIME: Notify Admin
     req.io.to("admin_room").emit("admin_new_student", userData);
 
+    const tokenPayload = { id: userData.id, role: userData.role, name: userData.name, email: userData.email };
+    if (userData.college_id) tokenPayload.college_id = userData.college_id;
+    if (userData.company_id) tokenPayload.company_id = userData.company_id;
+
     const token = jwt.sign(
-      { id: userData.id, role: userData.role },
+      tokenPayload,
       process.env.JWT_SECRET || 'codovate_secret',
       { expiresIn: "7d" }
     );
