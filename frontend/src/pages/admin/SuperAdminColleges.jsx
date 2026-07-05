@@ -71,7 +71,17 @@ const SuperAdminColleges = () => {
   };
 
   const columns = [
-    { header: 'Institution Name', accessor: 'name' },
+    { 
+      header: 'College Name', 
+      render: (row) => (
+        <div>
+          <p className="font-bold text-white">{row.name}</p>
+          <p className="text-[10px] text-gray-500 font-mono mt-0.5" title="Copy this ID to assign to a user">
+            ID: {row.id}
+          </p>
+        </div>
+      )
+    },
     { header: 'Domain', accessor: 'domain' },
     { header: 'Admin Email', accessor: 'admin_email' },
     { 
