@@ -15,12 +15,19 @@ router.get('/', superAdminOnly, async (req, res) => {
   try {
     const snapshot = await db.collection('notifications')
                              .where('is_global', '==', true)
-                             .orderBy('created_at', 'desc')
                              .get();
     const notifications = [];
     snapshot.forEach(doc => {
       notifications.push({ id: doc.id, ...doc.data() });
     });
+    
+    // Sort in memory to avoid needing composite indexes for MVP
+    notifications.sort((a, b) => {
+      const timeA = a.created_at?.toMillis ? a.created_at.toMillis() : new Date(a.created_at).getTime();
+      const timeB = b.created_at?.toMillis ? b.created_at.toMillis() : new Date(b.created_at).getTime();
+      return timeB - timeA;
+    });
+    
     res.json(notifications);
   } catch (error) {
     res.status(500).json({ message: 'Server error fetching notifications' });
