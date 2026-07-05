@@ -57,14 +57,15 @@ router.post('/', superAdminOnly, [
   body('email').trim().isEmail().withMessage('Valid email is required').normalizeEmail(),
   body('role').isIn(['student', 'mentor', 'college_admin', 'company_admin', 'admin', 'super_admin']).withMessage('Invalid role'),
   body('status').isIn(['active', 'pending', 'banned', 'suspended', 'inactive']).withMessage('Invalid status'),
-  body('college_id').optional({ nullable: true }).trim().escape()
+  body('college_id').optional({ nullable: true }).trim().escape(),
+  body('company_id').optional({ nullable: true }).trim().escape()
 ], async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
   try {
     const data = matchedData(req, { includeOptionals: true });
-    const { name, email, role, status, college_id } = data;
+    const { name, email, role, status, college_id, company_id } = data;
     
     const targetCollection = role === 'student' ? 'students' : 'users';
     
@@ -80,6 +81,7 @@ router.post('/', superAdminOnly, [
       status,
       is_active: status === 'active',
       college_id: college_id || null,
+      company_id: company_id || null,
       created_at: FieldValue.serverTimestamp(),
       updated_at: FieldValue.serverTimestamp()
     };
@@ -104,7 +106,8 @@ router.put('/:id', superAdminOnly, [
   body('email').optional().trim().isEmail().withMessage('Valid email is required').normalizeEmail(),
   body('role').optional().isIn(['student', 'mentor', 'college_admin', 'company_admin', 'admin', 'super_admin']).withMessage('Invalid role'),
   body('status').optional().isIn(['active', 'pending', 'banned', 'suspended', 'inactive']).withMessage('Invalid status'),
-  body('college_id').optional({ nullable: true }).trim().escape()
+  body('college_id').optional({ nullable: true }).trim().escape(),
+  body('company_id').optional({ nullable: true }).trim().escape()
 ], async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });

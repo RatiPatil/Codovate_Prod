@@ -31,7 +31,8 @@ const userSchema = [
       { label: 'Inactive', value: 'inactive' }
     ]
   },
-  { name: 'college_id', label: 'College ID (Optional)', type: 'text', required: false }
+  { name: 'college_id', label: 'College ID (Optional)', type: 'text', required: false },
+  { name: 'company_id', label: 'Company ID (Optional)', type: 'text', required: false }
 ];
 
 const SuperAdminUsers = () => {
