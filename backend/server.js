@@ -98,6 +98,13 @@ io.on("connection", (socket) => {
     socket.join("global");
   });
 
+  socket.on("join_team", (teamId) => {
+    if (teamId) {
+      socket.join(`team_${teamId}`);
+      console.log(`👥 Client joined team_${teamId} room`);
+    }
+  });
+
   socket.on("join_admin", ({ role, id }) => {
     if (role === "super_admin") {
       socket.join("admin_super");

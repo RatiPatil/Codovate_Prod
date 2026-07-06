@@ -273,8 +273,11 @@ router.post("/:id/discussions", auth, async (req, res) => {
       user_name: userName,
       message: message.trim(),
       created_at: new Date(),
-    };
     await msgRef.set(msg);
+
+    if (req.io) {
+      req.io.to(`team_${req.params.id}`).emit('new_team_message', msg);
+    }
 
     res.json(msg);
   } catch (err) {

@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import api from '../api/axios';
 import { parseDate, formatTime } from '../utils/dateUtils';
 import { useAuth } from '../context/AuthContext';
+import { useSocket } from '../context/SocketContext';
 
 const MembersModal = ({ team, currentUser, onClose }) => {
   const [members, setMembers] = useState([]);
@@ -111,6 +112,7 @@ const DiscussionModal = ({ team, onClose, currentUser }) => {
   const [loading, setLoading] = useState(true);
   const [text, setText] = useState('');
   const messagesEndRef = useRef(null);
+  const { socket, isConnected } = useSocket();
 
   const fetchMessages = useCallback(() => {
     api.get(`/teams/${team.id}/discussions`)
@@ -121,9 +123,27 @@ const DiscussionModal = ({ team, onClose, currentUser }) => {
 
   useEffect(() => {
     fetchMessages();
-    const interval = setInterval(fetchMessages, 5000); // Polling every 5s
-    return () => clearInterval(interval);
   }, [fetchMessages]);
+
+  useEffect(() => {
+    if (!socket || !isConnected) return;
+    
+    // Join team room for real-time events
+    socket.emit('join_team', team.id);
+
+    const handleNewMessage = (msg) => {
+      if (msg.team_id === team.id) {
+        setMessages(prev => {
+          // Avoid duplicate messages if we are the sender
+          if (prev.find(m => m.id === msg.id)) return prev;
+          return [...prev, msg];
+        });
+      }
+    };
+    
+    socket.on('new_team_message', handleNewMessage);
+    return () => socket.off('new_team_message', handleNewMessage);
+  }, [socket, isConnected, team.id]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -212,17 +232,14 @@ const PrivateChatModal = ({ connection, currentUser, onClose }) => {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [text, setText] = useState('');
-  const [expired, setExpired] = useState(false);
   const messagesEndRef = useRef(null);
+  const { socket, isConnected } = useSocket();
 
   const fetchMessages = useCallback(async () => {
     try {
       const res = await api.get(`/networking/chats/${connection.id}`);
       setMessages(res.data);
     } catch (err) {
-      if (err.response?.data?.expired) {
-        setExpired(true);
-      }
       console.error(err);
     } finally {
       setLoading(false);
@@ -231,9 +248,23 @@ const PrivateChatModal = ({ connection, currentUser, onClose }) => {
 
   useEffect(() => {
     fetchMessages();
-    const interval = setInterval(fetchMessages, 5000); // Poll
-    return () => clearInterval(interval);
   }, [fetchMessages]);
+
+  useEffect(() => {
+    if (!socket || !isConnected) return;
+
+    const handleNewMessage = (msg) => {
+      if (msg.connection_id === connection.id) {
+        setMessages(prev => {
+          if (prev.find(m => m.id === msg.id)) return prev;
+          return [...prev, msg];
+        });
+      }
+    };
+
+    socket.on('new_chat_message', handleNewMessage);
+    return () => socket.off('new_chat_message', handleNewMessage);
+  }, [socket, isConnected, connection.id]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
