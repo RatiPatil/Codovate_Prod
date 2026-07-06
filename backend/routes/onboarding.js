@@ -13,6 +13,7 @@ router.post("/save", auth, async (req, res) => {
       skills,
       desired_roles,
       achievements,
+      seeking,
       portfolio_url, github_url, linkedin_url, bio,
       profile_completion, onboarding_completed,
     } = req.body;
@@ -62,6 +63,8 @@ router.post("/save", auth, async (req, res) => {
       ? desired_roles : null;
     const cleanAchievements = Array.isArray(achievements) && achievements.length > 0
       ? achievements : null;
+    const cleanSeeking = Array.isArray(seeking) && seeking.length > 0
+      ? seeking : null;
 
     // Derive city from taluka/district if not passed directly
     const derivedCity = city || taluka || district || null;
@@ -82,6 +85,7 @@ router.post("/save", auth, async (req, res) => {
       career_interests: cleanInterests,
       desired_roles: cleanDesiredRoles,
       achievements: cleanAchievements,
+      seeking: cleanSeeking,
       experience_level: experience_level || null,
       skills: cleanSkills,
       portfolio_url: portfolio_url || null,

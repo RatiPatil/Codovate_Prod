@@ -94,6 +94,22 @@ const ACHIEVEMENTS = [
   'Community Lead',
 ];
 
+const SEEKING = [
+  'Hackathon Teammates',
+  'Project Collaborators',
+  'Startup Co-founders',
+  'Research Partners',
+  'Study Buddies',
+  'Open Source Contributors',
+  'Mentors',
+  'Internship Partners',
+  'Designers',
+  'Developers',
+  'AI Enthusiasts',
+  'Content Creators',
+  'Community Builders',
+];
+
 // Validation rules per step
 const validateStep = (step, data) => {
   const errors = {};
@@ -190,6 +206,7 @@ export default function Onboarding() {
     desired_roles: [], desired_roles_other: '',
     experience_level: '', skills: [],
     achievements: [], achievements_other: '',
+    seeking: [], seeking_other: '',
     bio: '', github_url: '', linkedin_url: '', portfolio_url: ''
   });
   const [touched, setTouched] = useState({});
@@ -328,7 +345,14 @@ export default function Onboarding() {
             ? [data.achievements_other.trim()]
             : []),
         ];
-        await api.post('/onboarding/save', { ...data, desired_roles: resolvedRoles, achievements: resolvedAchievements, onboarding_completed: true });
+        // Resolve seeking: replace 'Other' with custom text if provided
+        const resolvedSeeking = [
+          ...data.seeking.filter(s => s !== 'Other'),
+          ...(data.seeking.includes('Other') && data.seeking_other.trim()
+            ? [data.seeking_other.trim()]
+            : []),
+        ];
+        await api.post('/onboarding/save', { ...data, desired_roles: resolvedRoles, achievements: resolvedAchievements, seeking: resolvedSeeking, onboarding_completed: true });
         triggerSuccessAnimation();
         
         // Wait a little bit for the user to see the confetti
@@ -934,6 +958,59 @@ export default function Onboarding() {
                       placeholder="https://yourportfolio.com"
                       className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
                     />
+                  </div>
+
+                  {/* Seeking — multi-select with custom entry */}
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-400 mb-1 uppercase tracking-wider">
+                      Seeking
+                      <span className="text-gray-500 font-normal normal-case ml-1">(Optional)</span>
+                      {data.seeking.length > 0 && (
+                        <span className="text-gray-600 normal-case tracking-normal ml-1">
+                          ({[...data.seeking.filter(s => s !== 'Other'), ...(data.seeking.includes('Other') && data.seeking_other.trim() ? [data.seeking_other.trim()] : [])].length} selected)
+                        </span>
+                      )}
+                    </label>
+                    <p className="text-gray-600 text-[10px] mb-3">Who are you looking to connect with? Help us find your perfect collaborators.</p>
+                    <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto pr-1 pb-1">
+                      {SEEKING.map(item => (
+                        <button
+                          key={item}
+                          type="button"
+                          onClick={() => toggleItem('seeking', item)}
+                          className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all duration-200 ${
+                            data.seeking.includes(item)
+                              ? 'bg-emerald-500/20 border-emerald-400 text-emerald-300'
+                              : 'bg-white/5 border-white/10 text-gray-400 hover:border-white/20 hover:text-white'
+                          }`}
+                        >
+                          {data.seeking.includes(item) && <span className="mr-1">🤝</span>}
+                          {item}
+                        </button>
+                      ))}
+                      <button
+                        type="button"
+                        onClick={() => toggleItem('seeking', 'Other')}
+                        className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all duration-200 ${
+                          data.seeking.includes('Other')
+                            ? 'bg-purple-500/20 border-purple-400 text-purple-300'
+                            : 'bg-white/5 border-white/10 text-gray-400 hover:border-white/20 hover:text-white'
+                        }`}
+                      >
+                        ✨ Other
+                      </button>
+                    </div>
+                    {data.seeking.includes('Other') && (
+                      <div className="mt-2">
+                        <input
+                          type="text"
+                          value={data.seeking_other}
+                          onChange={e => update('seeking_other', e.target.value)}
+                          placeholder="e.g. Podcast Co-hosts"
+                          className="w-full bg-white/5 border border-purple-400/40 rounded-xl px-4 py-2.5 text-white placeholder-gray-600 text-xs focus:outline-none focus:ring-2 focus:ring-purple-400/20 focus:border-purple-400 transition-all"
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
               )}

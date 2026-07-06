@@ -80,7 +80,7 @@ router.get("/profile", auth, async (req, res) => {
 });
 
 router.put("/profile", auth, async (req, res) => {
-  const { name, college, branch, year, skills, bio, resume_url, github_url, linkedin_url, avatar_url, desired_roles, achievements } = req.body;
+  const { name, college, branch, year, skills, bio, resume_url, github_url, linkedin_url, avatar_url, desired_roles, achievements, seeking } = req.body;
 
   try {
     const studentRef = db.collection("students").doc(req.user.id);
@@ -116,6 +116,7 @@ router.put("/profile", auth, async (req, res) => {
       avatar_url: avatar_url !== undefined ? avatar_url : currentProfileData.avatar_url,
       desired_roles: desired_roles !== undefined ? desired_roles : currentProfileData.desired_roles,
       achievements: achievements !== undefined ? achievements : currentProfileData.achievements,
+      seeking: seeking !== undefined ? seeking : currentProfileData.seeking,
       profile_completion
     };
 
