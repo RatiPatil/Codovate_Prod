@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
+import gsap from 'gsap';
 import api from '../api/axios';
 import { parseDate, formatTime } from '../utils/dateUtils';
 import { useAuth } from '../context/AuthContext';
@@ -236,7 +237,7 @@ const PrivateChatModal = ({ connection, currentUser, onClose }) => {
   const typingTimeoutRef = useRef(null);
   const messagesEndRef = useRef(null);
   const { socket, isConnected, onlineUsers } = useSocket();
-  const isOnline = onlineUsers.includes(connection.other_user?.id);
+  const isOnline = (onlineUsers || []).includes(connection.other_user?.id);
 
   const fetchMessages = useCallback(async () => {
     try {
@@ -290,13 +291,12 @@ const PrivateChatModal = ({ connection, currentUser, onClose }) => {
 
   const handleSend = async (e) => {
     e.preventDefault();
-    if (!text.trim() || expired) return;
+    if (!text.trim()) return;
     try {
       const res = await api.post(`/networking/chats/${connection.id}/messages`, { text });
       setMessages(prev => [...prev, res.data]);
       setText('');
     } catch (err) {
-      if (err.response?.status === 403) setExpired(true);
       console.error(err);
       alert(err.response?.data?.message || 'Failed to send message');
     }
@@ -506,19 +506,17 @@ const MatchFinder = ({ results, onConnect }) => {
     const card = cardRefs.current[idx];
     if (!card) return;
 
-    import('gsap').then(({ gsap }) => {
-      gsap.to(card, {
-        x: direction === 'right' ? 300 : -300,
-        y: 50,
-        rotation: direction === 'right' ? 15 : -15,
-        opacity: 0,
-        duration: 0.4,
-        ease: "power2.in",
-        onComplete: () => {
-          if (direction === 'right') onConnect(userId);
-          setCurrentIndex(prev => prev + 1);
-        }
-      });
+    gsap.to(card, {
+      x: direction === 'right' ? 300 : -300,
+      y: 50,
+      rotation: direction === 'right' ? 15 : -15,
+      opacity: 0,
+      duration: 0.4,
+      ease: "power2.in",
+      onComplete: () => {
+        if (direction === 'right') onConnect(userId);
+        setCurrentIndex(prev => prev + 1);
+      }
     });
   };
 
