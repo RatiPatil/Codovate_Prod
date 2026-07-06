@@ -558,6 +558,8 @@ const ConnectionsView = ({ currentUser }) => {
             })}
           </div>
         </div>
+      </div>
+      
       {selectedProfile && (
         <StudentProfileModal
           user={selectedProfile.other_user}
