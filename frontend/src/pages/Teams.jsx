@@ -745,7 +745,14 @@ const SuggestedMates = ({ myProfile }) => {
             if (s.year && s.year === myProfile.year) matchScore += 5;
             if (s.experience_level && s.experience_level === myProfile.experience_level) matchScore += 5;
 
-            return { ...s, matchScore: Math.min(matchScore, 99) };
+            let finalScore = Math.min(matchScore, 99);
+            let matchLabels = [`${finalScore}% Match`];
+            if (sharedPassions > 0) matchLabels.push('Similar Interests');
+            if ((s.passionate_about || []).includes('Hackathons')) matchLabels.push('Hackathon Enthusiast');
+            if (s.career_goal === 'AI/ML' || (s.skills || []).some(sk => sk.toUpperCase().includes('AI') || sk.toUpperCase().includes('ML') || sk.toUpperCase().includes('MACHINE LEARNING'))) matchLabels.push('AI/ML Match');
+            if (s.career_goal === 'Startups' || (s.passionate_about || []).includes('Startups')) matchLabels.push('Startup Builder');
+
+            return { ...s, matchScore: finalScore, matchLabels };
           });
           students.sort((a, b) => b.matchScore - a.matchScore);
         }
@@ -819,10 +826,25 @@ const SuggestedMates = ({ myProfile }) => {
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-1.5 mb-4">
-              {user.skills.slice(0, 3).map(s => (
+            <div className="flex flex-wrap gap-1.5 mb-2">
+              {user.skills?.slice(0, 3).map(s => (
                 <span key={s} className="px-2 py-0.5 bg-white/5 border border-white/10 rounded text-[10px] text-gray-300">
                   {s}
+                </span>
+              ))}
+            </div>
+
+            {/* AI/ML, Hackathon, Interest Labels */}
+            <div className="flex flex-wrap gap-1.5 mb-4">
+              {user.matchLabels?.map((label, idx) => (
+                <span key={idx} className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                  label.includes('Match') ? 'bg-primary/20 text-primary border border-primary/30' :
+                  label.includes('Hackathon') ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30' :
+                  label.includes('AI/ML') ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30' :
+                  label.includes('Startup') ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' :
+                  'bg-purple-500/20 text-purple-400 border border-purple-500/30'
+                }`}>
+                  {label}
                 </span>
               ))}
             </div>
