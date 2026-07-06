@@ -110,6 +110,26 @@ const SEEKING = [
   'Community Builders',
 ];
 
+const PASSIONATE_ABOUT = [
+  'AI Products',
+  'Machine Learning',
+  'Hackathons',
+  'Open Source',
+  'Research',
+  'Startups',
+  'Web Development',
+  'Cyber Security',
+  'Cloud Computing',
+  'Data Science',
+  'Competitive Programming',
+  'UI/UX Design',
+  'Robotics',
+  'Entrepreneurship',
+  'Community Building',
+  'Teaching',
+  'Innovation',
+];
+
 // Validation rules per step
 const validateStep = (step, data) => {
   const errors = {};
@@ -207,6 +227,7 @@ export default function Onboarding() {
     experience_level: '', skills: [],
     achievements: [], achievements_other: '',
     seeking: [], seeking_other: '',
+    passionate_about: [], passionate_about_other: '',
     bio: '', github_url: '', linkedin_url: '', portfolio_url: ''
   });
   const [touched, setTouched] = useState({});
@@ -352,7 +373,14 @@ export default function Onboarding() {
             ? [data.seeking_other.trim()]
             : []),
         ];
-        await api.post('/onboarding/save', { ...data, desired_roles: resolvedRoles, achievements: resolvedAchievements, seeking: resolvedSeeking, onboarding_completed: true });
+        // Resolve passionate_about: replace 'Other' with custom text if provided
+        const resolvedPassionateAbout = [
+          ...data.passionate_about.filter(p => p !== 'Other'),
+          ...(data.passionate_about.includes('Other') && data.passionate_about_other.trim()
+            ? [data.passionate_about_other.trim()]
+            : []),
+        ];
+        await api.post('/onboarding/save', { ...data, desired_roles: resolvedRoles, achievements: resolvedAchievements, seeking: resolvedSeeking, passionate_about: resolvedPassionateAbout, onboarding_completed: true });
         triggerSuccessAnimation();
         
         // Wait a little bit for the user to see the confetti
@@ -744,6 +772,59 @@ export default function Onboarding() {
                       <p className="text-red-400 text-xs mt-2 flex items-center gap-1">
                         <span>⚠</span> {errors.career_interests}
                       </p>
+                    )}
+                  </div>
+
+                  {/* Passionate About — multi-select with custom entry */}
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-400 mb-1 uppercase tracking-wider">
+                      Passionate About
+                      <span className="text-gray-500 font-normal normal-case ml-1">(Optional)</span>
+                      {data.passionate_about.length > 0 && (
+                        <span className="text-gray-600 normal-case tracking-normal ml-1">
+                          ({[...data.passionate_about.filter(p => p !== 'Other'), ...(data.passionate_about.includes('Other') && data.passionate_about_other.trim() ? [data.passionate_about_other.trim()] : [])].length} selected)
+                        </span>
+                      )}
+                    </label>
+                    <p className="text-gray-600 text-[10px] mb-3">What topics excite you the most?</p>
+                    <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto pr-1 pb-1">
+                      {PASSIONATE_ABOUT.map(item => (
+                        <button
+                          key={item}
+                          type="button"
+                          onClick={() => toggleItem('passionate_about', item)}
+                          className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all duration-200 ${
+                            data.passionate_about.includes(item)
+                              ? 'bg-rose-500/20 border-rose-400 text-rose-300'
+                              : 'bg-white/5 border-white/10 text-gray-400 hover:border-white/20 hover:text-white'
+                          }`}
+                        >
+                          {data.passionate_about.includes(item) && <span className="mr-1">❤️</span>}
+                          {item}
+                        </button>
+                      ))}
+                      <button
+                        type="button"
+                        onClick={() => toggleItem('passionate_about', 'Other')}
+                        className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all duration-200 ${
+                          data.passionate_about.includes('Other')
+                            ? 'bg-purple-500/20 border-purple-400 text-purple-300'
+                            : 'bg-white/5 border-white/10 text-gray-400 hover:border-white/20 hover:text-white'
+                        }`}
+                      >
+                        ✨ Other
+                      </button>
+                    </div>
+                    {data.passionate_about.includes('Other') && (
+                      <div className="mt-2">
+                        <input
+                          type="text"
+                          value={data.passionate_about_other}
+                          onChange={e => update('passionate_about_other', e.target.value)}
+                          placeholder="e.g. EdTech Innovation"
+                          className="w-full bg-white/5 border border-purple-400/40 rounded-xl px-4 py-2.5 text-white placeholder-gray-600 text-xs focus:outline-none focus:ring-2 focus:ring-purple-400/20 focus:border-purple-400 transition-all"
+                        />
+                      </div>
                     )}
                   </div>
                 </div>

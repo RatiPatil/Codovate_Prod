@@ -34,6 +34,8 @@ const Profile = () => {
   const [customAchievement, setCustomAchievement] = useState('');
   const [seeking, setSeeking] = useState([]);
   const [customSeeking, setCustomSeeking] = useState('');
+  const [passionateAbout, setPassionateAbout] = useState([]);
+  const [customPassionateAbout, setCustomPassionateAbout] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState({ msg: '', type: '' });
@@ -81,6 +83,7 @@ const Profile = () => {
       setDesiredRoles(Array.isArray(d.desired_roles) ? d.desired_roles : []);
       setAchievements(Array.isArray(d.achievements) ? d.achievements : []);
       setSeeking(Array.isArray(d.seeking) ? d.seeking : []);
+      setPassionateAbout(Array.isArray(d.passionate_about) ? d.passionate_about : []);
     }).catch(console.error).finally(() => setLoading(false));
   }, []);
 
@@ -107,7 +110,7 @@ const Profile = () => {
     e.preventDefault();
     setSaving(true);
     try {
-      await api.put('/students/profile', { ...form, skills, desired_roles: desiredRoles, achievements, seeking });
+      await api.put('/students/profile', { ...form, skills, desired_roles: desiredRoles, achievements, seeking, passionate_about: passionateAbout });
       showToast('Profile updated successfully! ✅', 'success');
       fetchProfile();
     } catch (err) {
@@ -219,7 +222,8 @@ const Profile = () => {
             </label>
             <h2 className="text-white font-bold text-2xl tracking-tight relative z-10">{form.name}</h2>
             <p className="text-gray-400 text-sm mt-1 relative z-10">{form.email}</p>
-            {/* Desired Roles — displayed below name, center-aligned */}
+            
+            {/* Desired Roles */}
             {desiredRoles.length > 0 && (
               <div className="mt-3 flex flex-wrap justify-center gap-1.5 relative z-10">
                 {desiredRoles.map(role => (
@@ -233,9 +237,121 @@ const Profile = () => {
                 ))}
               </div>
             )}
-            {form.college && <p className="text-primary text-xs font-bold mt-3 bg-primary/10 border border-primary/20 inline-block px-4 py-1.5 rounded-full relative z-10">{form.college}</p>}
+            
+            {/* College | Year | Branch */}
+            {(form.college || form.year || form.branch) && (
+              <div className="mt-4 flex flex-wrap justify-center gap-2 relative z-10">
+                {form.college && <span className="bg-white/5 border border-white/10 px-3 py-1 rounded-full text-xs text-gray-300">🎓 {form.college}</span>}
+                {form.year && <span className="bg-white/5 border border-white/10 px-3 py-1 rounded-full text-xs text-gray-300">📅 Year {form.year}</span>}
+                {form.branch && <span className="bg-white/5 border border-white/10 px-3 py-1 rounded-full text-xs text-gray-300">📚 {form.branch}</span>}
+              </div>
+            )}
 
-            <div className="mt-8 glass-card border-transparent p-5 relative z-10">
+            {/* Location */}
+            {(profileData?.city || profileData?.state || profileData?.country) && (
+              <p className="text-gray-400 text-xs mt-3 relative z-10 font-medium">
+                📍 {[profileData.city, profileData.state, profileData.country].filter(Boolean).join(', ')}
+              </p>
+            )}
+
+            {/* Private Mobile Number */}
+            {profileData?.phone && (
+              <div className="mt-4 flex justify-center relative z-10">
+                <div className="bg-black/40 border border-white/10 px-3 py-2 rounded-lg text-left inline-flex flex-col">
+                  <span className="text-gray-200 text-sm font-semibold flex items-center gap-2">📱 {profileData.phone}</span>
+                  <span className="text-gray-500 text-[9px] uppercase tracking-wider mt-0.5">🔒 Only you can see this</span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Skills */}
+          {skills.length > 0 && (
+            <div className="glass-panel rounded-2xl p-5 md:p-6 relative overflow-hidden w-full">
+              <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-purple-500/10 rounded-full blur-[40px] pointer-events-none" />
+              <h3 className="text-white font-bold mb-4 flex items-center gap-2 relative z-10"><span className="text-xl">⚡</span> Top Skills</h3>
+              <div className="flex flex-wrap gap-2 relative z-10">
+                {skills.map(skill => (
+                  <span key={skill} className="px-3 py-1.5 bg-white/5 backdrop-blur-md border border-white/10 rounded-lg text-white text-xs font-medium">
+                    {skill}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Achievements */}
+          {achievements.length > 0 && (
+            <div className="glass-panel rounded-2xl p-5 md:p-6 relative overflow-hidden w-full">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/10 rounded-bl-[100px] pointer-events-none" />
+              <h3 className="text-white font-bold mb-4 flex items-center gap-2 relative z-10"><span className="text-xl">🏆</span> Achievements</h3>
+              <div className="flex flex-wrap gap-2 relative z-10">
+                {achievements.map(achievement => (
+                  <span key={achievement} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-yellow-500/10 border border-yellow-500/25 text-yellow-300 rounded-xl text-xs font-bold">
+                    <span>🏅</span>
+                    {achievement}
+                  </span>
+                ))}
+              </div>
+              {profileData?.badges && profileData.badges.length > 0 && (
+                <>
+                  <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-4 mb-2">Platform Badges</p>
+                  <div className="flex flex-wrap gap-2 relative z-10">
+                    {profileData.badges.map(badge => (
+                      <div key={badge} className="flex items-center gap-2 bg-yellow-500/10 border border-yellow-500/20 px-3 py-1.5 rounded-xl">
+                        <span className="text-sm">🏆</span>
+                        <span className="text-xs font-bold text-yellow-400">{badge}</span>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
+          {/* Seeking */}
+          {seeking.length > 0 && (
+            <div className="glass-panel rounded-2xl p-5 md:p-6 relative overflow-hidden w-full">
+              <div className="absolute top-0 left-0 w-28 h-28 bg-emerald-500/10 rounded-br-[100px] pointer-events-none" />
+              <h3 className="text-white font-bold mb-4 flex items-center gap-2 relative z-10"><span className="text-xl">🤝</span> Seeking</h3>
+              <div className="flex flex-wrap gap-2 relative z-10">
+                {seeking.map(item => (
+                  <span key={item} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/25 text-emerald-300 rounded-xl text-xs font-bold">
+                    <span>🤝</span>
+                    {item}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Passionate About */}
+          {passionateAbout.length > 0 && (
+            <div className="glass-panel rounded-2xl p-5 md:p-6 relative overflow-hidden w-full">
+              <div className="absolute bottom-0 right-0 w-28 h-28 bg-rose-500/10 rounded-tl-[100px] pointer-events-none" />
+              <h3 className="text-white font-bold mb-4 flex items-center gap-2 relative z-10"><span className="text-xl">❤️</span> Passionate About</h3>
+              <div className="flex flex-wrap gap-2 relative z-10">
+                {passionateAbout.map(item => (
+                  <span key={item} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-rose-500/10 border border-rose-500/25 text-rose-300 rounded-xl text-xs font-bold">
+                    <span>❤️</span>
+                    {item}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* About Me */}
+          {form.bio && (
+            <div className="glass-panel rounded-2xl p-5 md:p-6 relative w-full">
+              <h3 className="text-white font-bold mb-3 flex items-center gap-2"><span className="text-xl">👋</span> About Me</h3>
+              <p className="text-gray-300 text-sm leading-relaxed whitespace-pre-wrap">{form.bio}</p>
+            </div>
+          )}
+
+          {/* Profile Strength & Stats */}
+          <div className="glass-panel rounded-2xl p-5 md:p-6 w-full space-y-6">
+            <div>
               <div className="flex justify-between items-end mb-3">
                 <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Profile Strength</span>
                 <span className="text-xl text-primary font-black">{profileData?.profile_completion || 0}%</span>
@@ -246,146 +362,90 @@ const Profile = () => {
                   style={{ width: `${profileData?.profile_completion || 0}%` }}
                 />
               </div>
-            </div>
-
-            {getMissingItems().length > 0 && (
-              <div className="mt-4 space-y-2 relative z-10 text-left">
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Boost your profile</p>
-                {getMissingItems().slice(0, 4).map((item, i) => (
-                  <div key={i} className="flex items-center justify-between p-2.5 rounded-xl bg-white/5 border border-white/5">
-                    <span className="text-gray-300 text-xs">{item.label}</span>
-                    <span className="text-xs font-bold text-green-400 bg-green-500/10 px-2 py-0.5 rounded">+{item.boost}%</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Stats Dashboard */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="glass-panel p-4 md:p-5 rounded-2xl flex flex-col items-center justify-center text-center w-full">
-              <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest mb-1">Activity Score</p>
-              <p className="text-3xl font-black text-white">{profileData?.activity_score || 0}</p>
-            </div>
-            <div className="glass-panel p-4 md:p-5 rounded-2xl flex flex-col items-center justify-center text-center w-full">
-              <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest mb-1">Total Points</p>
-              <p className="text-3xl font-black text-primary">{profileData?.points || 0}</p>
-            </div>
-          </div>
-
-          {/* Achievements Section — user-selected chips */}
-          <div className="glass-panel rounded-2xl p-5 md:p-6 relative overflow-hidden w-full">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/10 rounded-bl-[100px] pointer-events-none" />
-            <h3 className="text-white font-bold mb-4 flex items-center gap-2 relative z-10"><span className="text-xl">🏆</span> Achievements</h3>
-            {achievements.length === 0 ? (
-              <div className="text-center py-5 glass-card border-dashed">
-                <p className="text-gray-400 text-xs">No achievements added yet. Edit your profile to highlight your accomplishments!</p>
-              </div>
-            ) : (
-              <div className="flex flex-wrap gap-2 relative z-10">
-                {achievements.map(achievement => (
-                  <span
-                    key={achievement}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-yellow-500/10 border border-yellow-500/25 text-yellow-300 rounded-xl text-xs font-bold"
-                  >
-                    <span>🏅</span>
-                    {achievement}
-                  </span>
-                ))}
-              </div>
-            )}
-            {/* System badges below user achievements */}
-            {profileData?.badges && profileData.badges.length > 0 && (
-              <>
-                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-4 mb-2">Platform Badges</p>
-                <div className="flex flex-wrap gap-2 relative z-10">
-                  {profileData.badges.map(badge => (
-                    <div key={badge} className="flex items-center gap-2 bg-yellow-500/10 border border-yellow-500/20 px-3 py-1.5 rounded-xl">
-                      <span className="text-sm">🏆</span>
-                      <span className="text-xs font-bold text-yellow-400">{badge}</span>
+              {getMissingItems().length > 0 && (
+                <div className="mt-4 space-y-2 text-left">
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Boost your profile</p>
+                  {getMissingItems().slice(0, 4).map((item, i) => (
+                    <div key={i} className="flex items-center justify-between p-2.5 rounded-xl bg-white/5 border border-white/5">
+                      <span className="text-gray-300 text-xs">{item.label}</span>
+                      <span className="text-xs font-bold text-green-400 bg-green-500/10 px-2 py-0.5 rounded">+{item.boost}%</span>
                     </div>
                   ))}
                 </div>
-              </>
-            )}
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-white/5 border border-white/10 p-4 rounded-xl flex flex-col items-center justify-center text-center w-full">
+                <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest mb-1">Activity Score</p>
+                <p className="text-2xl font-black text-white">{profileData?.activity_score || 0}</p>
+              </div>
+              <div className="bg-white/5 border border-white/10 p-4 rounded-xl flex flex-col items-center justify-center text-center w-full">
+                <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest mb-1">Total Points</p>
+                <p className="text-2xl font-black text-primary">{profileData?.points || 0}</p>
+              </div>
+            </div>
           </div>
 
-          {/* Seeking Section — display chips */}
-          <div className="glass-panel rounded-2xl p-5 md:p-6 relative overflow-hidden w-full">
-            <div className="absolute top-0 left-0 w-28 h-28 bg-emerald-500/10 rounded-br-[100px] pointer-events-none" />
-            <h3 className="text-white font-bold mb-4 flex items-center gap-2 relative z-10"><span className="text-xl">🤝</span> Seeking</h3>
-            {seeking.length === 0 ? (
-              <div className="text-center py-5 glass-card border-dashed">
-                <p className="text-gray-400 text-xs">Not specified yet. Edit your profile to show who you're looking to connect with!</p>
-              </div>
-            ) : (
-              <div className="flex flex-wrap gap-2 relative z-10">
-                {seeking.map(item => (
-                  <span
-                    key={item}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/25 text-emerald-300 rounded-xl text-xs font-bold"
+          {/* Action Buttons */}
+          <div className="flex gap-4">
+            <button
+              onClick={() => {
+                document.getElementById('edit-profile-section')?.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="flex-1 py-3 bg-white/10 hover:bg-white/15 border border-white/20 rounded-xl text-white font-bold text-sm transition-all"
+            >
+              Edit Profile
+            </button>
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(window.location.href);
+                showToast('Profile link copied!', 'success');
+              }}
+              className="flex-1 py-3 bg-primary/20 hover:bg-primary/30 border border-primary/40 rounded-xl text-primary font-bold text-sm transition-all"
+            >
+              Share Profile
+            </button>
+          </div>
+
+          {/* Linked Accounts & Preferences */}
+          <div className="glass-panel rounded-2xl p-5 md:p-6 w-full space-y-6">
+            <div>
+              <h3 className="text-white font-bold mb-4 flex items-center gap-2"><span className="text-xl">🔗</span> Linked Accounts</h3>
+              <div className="space-y-3">
+                {profileData?.providers?.includes('google') ? (
+                  <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
+                    <div className="flex items-center gap-3">
+                      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5" />
+                      <span className="text-gray-200 text-sm font-medium">Google Connected</span>
+                    </div>
+                    <span className="text-green-400 text-xs font-bold bg-green-500/10 px-2 py-1 rounded">Linked</span>
+                  </div>
+                ) : (
+                  <button 
+                    onClick={handleLinkGoogle}
+                    disabled={linking}
+                    className="w-full flex items-center justify-center gap-3 p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <span>🤝</span>
-                    {item}
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {skills.length > 0 && (
-            <div className="glass-panel rounded-2xl p-5 md:p-6 relative overflow-hidden w-full">
-              <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-purple-500/10 rounded-full blur-[40px] pointer-events-none" />
-              <h3 className="text-white font-bold mb-5 flex items-center gap-2 relative z-10"><span className="text-xl">⚡</span> Top Skills</h3>
-              <div className="flex flex-wrap gap-2.5 relative z-10">
-                {skills.map(skill => (
-                  <span key={skill} className="px-3.5 py-1.5 bg-white/5 backdrop-blur-md border border-white/10 rounded-lg text-white text-sm font-medium">
-                    {skill}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Linked Accounts */}
-          <div className="glass-panel rounded-2xl p-5 md:p-6 relative overflow-hidden w-full">
-            <h3 className="text-white font-bold mb-4 flex items-center gap-2 relative z-10"><span className="text-xl">🔗</span> Linked Accounts</h3>
-            <div className="space-y-3 relative z-10">
-              {profileData?.providers?.includes('google') ? (
-                <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
-                  <div className="flex items-center gap-3">
                     <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5" />
-                    <span className="text-gray-200 text-sm font-medium">Google Connected</span>
+                    <span className="text-gray-200 text-sm font-medium">{linking ? 'Linking...' : 'Link Google Account'}</span>
+                  </button>
+                )}
+                
+                {profileData?.providers?.includes('phone') && (
+                  <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
+                    <div className="flex items-center gap-3">
+                      <span className="text-xl">📱</span>
+                      <span className="text-gray-200 text-sm font-medium">Phone Connected</span>
+                    </div>
+                    <span className="text-green-400 text-xs font-bold bg-green-500/10 px-2 py-1 rounded">Linked</span>
                   </div>
-                  <span className="text-green-400 text-xs font-bold bg-green-500/10 px-2 py-1 rounded">Linked</span>
-                </div>
-              ) : (
-                <button 
-                  onClick={handleLinkGoogle}
-                  disabled={linking}
-                  className="w-full flex items-center justify-center gap-3 p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5" />
-                  <span className="text-gray-200 text-sm font-medium">{linking ? 'Linking...' : 'Link Google Account'}</span>
-                </button>
-              )}
-              
-              {profileData?.providers?.includes('phone') && (
-                <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
-                  <div className="flex items-center gap-3">
-                    <span className="text-xl">📱</span>
-                    <span className="text-gray-200 text-sm font-medium">Phone Connected</span>
-                  </div>
-                  <span className="text-green-400 text-xs font-bold bg-green-500/10 px-2 py-1 rounded">Linked</span>
-                </div>
-              )}
+                )}
+              </div>
             </div>
-          </div>
 
-          {/* Settings / Preferences */}
-          <div className="glass-panel rounded-2xl p-5 md:p-6 relative overflow-hidden w-full">
-            <h3 className="text-white font-bold mb-4 flex items-center gap-2 relative z-10"><span className="text-xl">⚙️</span> Settings & Preferences</h3>
-            <div className="space-y-3 relative z-10">
+            <div className="pt-4 border-t border-white/10">
+              <h3 className="text-white font-bold mb-4 flex items-center gap-2"><span className="text-xl">⚙️</span> Preferences</h3>
               <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
                 <div className="flex items-center gap-3">
                   <span className="text-xl">{theme === 'dark' ? '🌙' : '☀️'}</span>
@@ -400,7 +460,6 @@ const Profile = () => {
               </div>
             </div>
           </div>
-
         </div>
 
         {/* Right Form */}
@@ -682,6 +741,77 @@ const Profile = () => {
                     }}
                     disabled={!customSeeking.trim()}
                     className="px-4 py-2.5 bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 rounded-xl text-sm font-bold hover:bg-emerald-500/20 transition-all disabled:opacity-40"
+                  >
+                    Add
+                  </button>
+                </div>
+              </div>
+
+              {/* Passionate About Selector */}
+              <div>
+                <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+                  Passionate About <span className="text-gray-500 font-normal normal-case">({passionateAbout.length} selected)</span>
+                </label>
+
+                {/* Selected Passionate About items */}
+                {passionateAbout.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {passionateAbout.map(item => (
+                      <span key={item} className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-500/10 border border-rose-500/30 text-rose-300 rounded-lg text-xs font-bold">
+                        ❤️ {item}
+                        <button type="button" onClick={() => setPassionateAbout(prev => prev.filter(p => p !== item))} className="hover:text-red-400 transition-colors ml-0.5">
+                          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {/* Quick-select pills */}
+                <div className="flex flex-wrap gap-2 mb-3 max-h-36 overflow-y-auto pr-1">
+                  {['AI Products', 'Machine Learning', 'Hackathons', 'Open Source', 'Research', 'Startups', 'Web Development', 'Cyber Security', 'Cloud Computing', 'Data Science', 'Competitive Programming', 'UI/UX Design', 'Robotics', 'Entrepreneurship', 'Community Building', 'Teaching', 'Innovation']
+                    .filter(p => !passionateAbout.includes(p))
+                    .map(item => (
+                      <button
+                        key={item} type="button"
+                        onClick={() => setPassionateAbout(prev => [...prev, item])}
+                        className="px-3 py-1.5 rounded-full text-xs font-semibold border transition-all duration-200 bg-white/5 border-white/10 text-gray-400 hover:border-rose-500/40 hover:text-rose-300"
+                      >
+                        + {item}
+                      </button>
+                    ))}
+                </div>
+
+                {/* Custom passionate about input */}
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={customPassionateAbout}
+                    onChange={e => setCustomPassionateAbout(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const trimmed = customPassionateAbout.trim();
+                        if (trimmed && !passionateAbout.includes(trimmed)) {
+                          setPassionateAbout(prev => [...prev, trimmed]);
+                          setCustomPassionateAbout('');
+                        }
+                      }
+                    }}
+                    placeholder="Add custom passion..."
+                    className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-rose-500/50 focus:ring-1 focus:ring-rose-500/20 transition-all"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const trimmed = customPassionateAbout.trim();
+                      if (trimmed && !passionateAbout.includes(trimmed)) {
+                        setPassionateAbout(prev => [...prev, trimmed]);
+                        setCustomPassionateAbout('');
+                      }
+                    }}
+                    disabled={!customPassionateAbout.trim()}
+                    className="px-4 py-2.5 bg-rose-500/10 border border-rose-500/30 text-rose-300 rounded-xl text-sm font-bold hover:bg-rose-500/20 transition-all disabled:opacity-40"
                   >
                     Add
                   </button>
