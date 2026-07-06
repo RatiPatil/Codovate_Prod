@@ -288,7 +288,7 @@ const PrivateChatModal = ({ connection, currentUser, onClose }) => {
               return (
                 <div key={m.id || idx} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
                   <div className={`px-4 py-2 rounded-2xl max-w-[80%] ${
-                    isMe ? 'bg-primary text-white rounded-br-sm' : 'bg-white/10 text-gray-200 rounded-bl-sm'
+                    isMe ? 'bg-primary text-white rounded-br-sm' : 'bg-gray-800 text-white rounded-bl-sm border border-gray-700'
                   }`}>
                     <p className="text-sm whitespace-pre-wrap">{m.text}</p>
                   </div>
