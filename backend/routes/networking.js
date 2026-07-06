@@ -38,7 +38,7 @@ async function checkExpiredChats(connectionId = null) {
 router.get('/discover', auth, async (req, res) => {
   try {
     const { skill, domain, experience } = req.query;
-    let usersRef = db.collection('student_profiles');
+    let usersRef = db.collection('students');
     
     // We fetch all and filter in memory for now due to Firestore limitations with multiple array-contains
     const snapshot = await usersRef.get();
@@ -58,11 +58,19 @@ router.get('/discover', auth, async (req, res) => {
       if (match) {
         students.push({
           id: doc.id,
-          name: data.name || 'Unknown',
+          name: data.name || data.full_name || 'Unknown',
           college: data.college,
           skills: data.skills || [],
           career_goal: data.career_goal,
-          bio: data.bio
+          bio: data.bio,
+          desired_roles: data.desired_roles || [],
+          year: data.year,
+          district: data.district,
+          state: data.state,
+          achievements: data.achievements || [],
+          seeking: data.seeking || [],
+          passionate_about: data.passionate_about || [],
+          experience_level: data.experience_level
         });
       }
     });
@@ -194,7 +202,7 @@ router.get('/connections', auth, async (req, res) => {
         if (d.status === 'rejected' || d.status === 'expired') continue; // Don't show
         
         const otherId = d.sender_id === req.user.id ? d.receiver_id : d.sender_id;
-        const otherDoc = await db.collection('student_profiles').doc(otherId).get();
+        const otherDoc = await db.collection('students').doc(otherId).get();
         const otherData = otherDoc.exists ? otherDoc.data() : { name: 'Unknown' };
         
         connections.push({
