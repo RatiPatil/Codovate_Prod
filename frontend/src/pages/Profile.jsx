@@ -108,6 +108,14 @@ const Profile = () => {
 
   const handleSave = async (e) => {
     e.preventDefault();
+    if (!form.name || form.name.trim().length < 3) {
+      showToast('Full name must be at least 3 characters.', 'error');
+      return;
+    }
+    if (form.name.trim().length > 100) {
+      showToast('Full name must not exceed 100 characters.', 'error');
+      return;
+    }
     setSaving(true);
     try {
       await api.put('/students/profile', { ...form, skills, desired_roles: desiredRoles, achievements, seeking, passionate_about: passionateAbout });
@@ -220,7 +228,7 @@ const Profile = () => {
                 </div>
               </div>
             </label>
-            <h2 className="text-white font-bold text-2xl tracking-tight relative z-10">{form.name}</h2>
+            <h2 className="text-white font-bold text-2xl tracking-tight relative z-10">{form.name?.toUpperCase()}</h2>
             <p className="text-gray-400 text-sm mt-1 relative z-10">{form.email}</p>
             
             {/* Desired Roles */}
@@ -476,7 +484,12 @@ const Profile = () => {
                   <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2">Full Name <span className="text-red-400">*</span></label>
                   <input
                     type="text" value={form.name} required
-                    onChange={e => setForm({ ...form, name: e.target.value })}
+                    placeholder="Example: VIVEK DAYANAND CHAVAN"
+                    onChange={e => {
+                      let val = e.target.value.toUpperCase().replace(/[^A-Z\s\-']/g, '');
+                      val = val.replace(/\s{2,}/g, ' ');
+                      setForm({ ...form, name: val });
+                    }}
                     className="input-glass w-full"
                   />
                 </div>

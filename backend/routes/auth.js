@@ -49,7 +49,7 @@ router.post("/google", async (req, res) => {
       const newUserRef = usersRef.doc();
       user = {
         id: newUserRef.id,
-        name: name || 'Google User',
+        name: (name || 'Google User').trim().toUpperCase(),
         email: email.toLowerCase(),
         avatar: picture || '',
         role: 'student',
@@ -76,7 +76,7 @@ router.post("/google", async (req, res) => {
         role: 'student',
         created_at: new Date(),
         profile_data: {
-          name: name || 'Google User',
+          name: (name || 'Google User').trim().toUpperCase(),
           avatar: picture || '',
           profile_completion: 0,
           onboarding_completed: false
@@ -356,8 +356,8 @@ router.post("/signup", async (req, res) => {
 
   if (!name || !email || !password)
     return res.status(400).json({ message: "All fields are required." });
-  if (name.trim().length < 2)
-    return res.status(400).json({ message: "Name must be at least 2 characters." });
+  if (name.trim().length < 3)
+    return res.status(400).json({ message: "Name must be at least 3 characters." });
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
     return res.status(400).json({ message: "Invalid email format." });
   if (password.length < 8)
@@ -392,7 +392,7 @@ router.post("/signup", async (req, res) => {
     const newUserRef = usersRef.doc();
     const userData = {
       id: newUserRef.id,
-      name: name.trim(),
+      name: name.trim().toUpperCase(),
       username: cleanUsername || null,
       email: email.toLowerCase(),
       password_hash: hash,
@@ -416,7 +416,7 @@ router.post("/signup", async (req, res) => {
       role: 'student',
       created_at: new Date(),
       profile_data: {
-        name: name.trim(),
+        name: name.trim().toUpperCase(),
         profile_completion: 0,
         onboarding_completed: false
       }

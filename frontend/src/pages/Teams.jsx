@@ -211,7 +211,7 @@ const PrivateChatModal = ({ connection, currentUser, onClose }) => {
         <div className="flex items-center justify-between p-6 border-b border-white/10 bg-black/40">
           <div>
             <h3 className="text-white font-bold text-xl flex items-center gap-2">
-              <span>💬</span> Chat with {connection.other_user?.name}
+              <span>💬</span> Chat with {connection.other_user?.name?.toUpperCase()}
             </h3>
             <p className={`text-sm mt-1 font-bold ${expired ? 'text-red-400' : 'text-yellow-400'}`}>
               {expired ? 'Chat has expired (24h limit reached).' : `Expires at: ${expiresDate.toLocaleString()}`}
@@ -313,7 +313,7 @@ const ConnectionsView = ({ currentUser }) => {
             ) : connections.filter(c => c.status === 'pending' && c.receiver_id === currentUser?.id).map(c => (
               <div key={c.id} className="glass-card p-4 flex justify-between items-center">
                 <div>
-                  <h4 className="font-bold">{c.other_user?.name}</h4>
+                  <h4 className="font-bold">{c.other_user?.name?.toUpperCase()}</h4>
                   <p className="text-xs text-gray-400">{c.other_user?.college}</p>
                 </div>
                 <div className="flex gap-2">
@@ -331,7 +331,7 @@ const ConnectionsView = ({ currentUser }) => {
             ) : connections.filter(c => c.status === 'pending' && c.sender_id === currentUser?.id).map(c => (
               <div key={c.id} className="glass-card p-4 flex justify-between items-center">
                 <div>
-                  <h4 className="font-bold">{c.other_user?.name}</h4>
+                  <h4 className="font-bold">{c.other_user?.name?.toUpperCase()}</h4>
                   <p className="text-xs text-gray-400">Waiting for response...</p>
                 </div>
               </div>
@@ -354,7 +354,7 @@ const ConnectionsView = ({ currentUser }) => {
               return (
                 <div key={c.id} className="glass-card p-4 flex justify-between items-center">
                   <div>
-                    <h4 className="font-bold">{c.other_user?.name}</h4>
+                    <h4 className="font-bold">{c.other_user?.name?.toUpperCase()}</h4>
                     <p className={`text-[10px] uppercase font-bold tracking-widest mt-1 ${isExpired ? 'text-red-400' : 'text-primary'}`}>
                       {isExpired ? 'Expired' : 'Active'}
                     </p>
@@ -442,7 +442,7 @@ const MatchFinder = ({ results, onConnect }) => {
               </div>
               
               {/* Name & Desired Role */}
-              <h2 className="text-2xl font-bold text-white mb-2">{user.name}</h2>
+              <h2 className="text-2xl font-bold text-white mb-2">{user.name?.toUpperCase()}</h2>
               <div className="flex flex-wrap justify-center gap-1.5 mb-3">
                 {user.desired_roles?.length > 0 ? (
                   user.desired_roles.slice(0, 2).map(r => (
@@ -748,7 +748,7 @@ const SuggestedMates = ({ myProfile }) => {
                 {user.name?.charAt(0).toUpperCase() || '?'}
               </div>
               <div>
-                <h4 className="text-white font-bold text-sm leading-tight">{user.name}</h4>
+                <h4 className="text-white font-bold text-sm leading-tight">{user.name?.toUpperCase()}</h4>
                 <p className="text-primary text-[10px] font-bold uppercase tracking-widest mt-0.5">
                   {user.career_goal ? user.career_goal.replace('_', ' ') : 'Student'}
                 </p>

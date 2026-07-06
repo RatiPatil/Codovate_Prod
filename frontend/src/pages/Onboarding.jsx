@@ -135,10 +135,10 @@ const validateStep = (step, data) => {
   const errors = {};
 
   if (step === 1) {
-    if (!data.full_name || data.full_name.trim().length < 2)
-      errors.full_name = 'Full name must be at least 2 characters';
-    else if (!/^[A-Za-z\s]+$/.test(data.full_name.trim()))
-      errors.full_name = 'Full name must contain only alphabetic characters and spaces';
+    if (!data.full_name || data.full_name.trim().length < 3)
+      errors.full_name = 'Full name must be at least 3 characters';
+    else if (data.full_name.trim().length > 100)
+      errors.full_name = 'Full name must not exceed 100 characters';
     if (!data.phone)
       errors.phone = 'Phone number is required';
     else if (!/^\d{10}$/.test(data.phone))
@@ -253,7 +253,10 @@ export default function Onboarding() {
     if (field === 'phone') {
       val = value.replace(/[^0-9]/g, '').slice(0, 10);
     }
-    if (['full_name', 'college', 'branch'].includes(field)) {
+    if (field === 'full_name') {
+      val = value.toUpperCase().replace(/[^A-Z\s\-']/g, '');
+      val = val.replace(/\s{2,}/g, ' '); // Auto-trim multiple spaces
+    } else if (['college', 'branch'].includes(field)) {
       val = value.replace(/[^A-Za-z\s]/g, '');
       val = val.replace(/\s{2,}/g, ' '); // Auto-trim multiple spaces
     }
@@ -522,7 +525,7 @@ export default function Onboarding() {
                 <div className="space-y-4">
                   <InputField
                     label="Full Name" field="full_name"
-                    placeholder="e.g. Ratikant Patil" required
+                    placeholder="Example: VIVEK DAYANAND CHAVAN" required
                     data={data} update={update} handleBlur={handleBlur} touched={touched} errors={errors}
                   />
                   <InputField

@@ -23,8 +23,8 @@ router.post("/save", auth, async (req, res) => {
 
     // ── Server-side Validation ──────────────────────────────────────────
     const errors = {};
-    const trimmedName = (full_name || '').trim();
-    if (!trimmedName || trimmedName.length < 2) errors.full_name = 'Full name must be at least 2 characters';
+    const trimmedName = (full_name || '').trim().toUpperCase();
+    if (!trimmedName || trimmedName.length < 3) errors.full_name = 'Full name must be at least 3 characters';
 
     if (phone) {
       const digitsOnly = phone.replace(/[^0-9]/g, '');

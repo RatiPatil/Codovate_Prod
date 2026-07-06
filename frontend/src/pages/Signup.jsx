@@ -10,7 +10,7 @@ import PasswordStrengthMeter from '../components/auth/PasswordStrengthMeter';
 import GoogleButton from '../components/auth/GoogleButton';
 
 const Signup = () => {
-  const [form, setForm] = useState({ username: '', email: '', password: '', confirmPassword: '' });
+  const [form, setForm] = useState({ fullName: '', username: '', email: '', password: '', confirmPassword: '' });
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
   const [loading, setLoading] = useState(false);
@@ -46,6 +46,12 @@ const Signup = () => {
   // ─── Real-time validation ──────────────────────────────
   const validate = useCallback(() => {
     const newErrors = {};
+    if (!form.fullName || form.fullName.trim().length < 3) {
+      newErrors.fullName = 'Full Name must be at least 3 characters.';
+    } else if (form.fullName.trim().length > 100) {
+      newErrors.fullName = 'Full Name must not exceed 100 characters.';
+    }
+
     const usernameErr = validateUsername(form.username);
     if (usernameErr) newErrors.username = usernameErr;
     else if (usernameAvailable === false) newErrors.username = 'This username is already taken.';
@@ -97,14 +103,18 @@ const Signup = () => {
   };
 
   const handleChange = (field, value) => {
-    setForm(prev => ({ ...prev, [field]: value }));
+    let finalValue = value;
+    if (field === 'fullName') {
+      finalValue = value.toUpperCase().replace(/[^A-Z\s\-']/g, '');
+    }
+    setForm(prev => ({ ...prev, [field]: finalValue }));
     if (field === 'username') setUsernameAvailable(null);
   };
 
   // ─── Signup Submit ─────────────────────────────────────
   const handleSignup = async (e) => {
     e.preventDefault();
-    setTouched({ username: true, email: true, password: true, confirmPassword: true });
+    setTouched({ fullName: true, username: true, email: true, password: true, confirmPassword: true });
     const validationErrors = validate();
     setErrors(validationErrors);
 
@@ -119,7 +129,7 @@ const Signup = () => {
       const { default: api } = await import('../api/axios');
       const res = await api.post('/auth/signup', {
         username: form.username.trim().toLowerCase(),
-        name: form.username.trim(), // Use username as display name
+        name: form.fullName.trim(),
         email: form.email.trim().toLowerCase(),
         password: form.password,
       });
@@ -246,6 +256,22 @@ const Signup = () => {
             )}
 
             <form onSubmit={handleSignup} className="space-y-4 relative z-10" noValidate>
+              <div className="relative">
+                <AuthInput
+                  id="signup-fullname"
+                  label="Full Name *"
+                  type="text"
+                  value={form.fullName}
+                  onChange={e => handleChange('fullName', e.target.value)}
+                  onBlur={() => handleBlur('fullName')}
+                  placeholder="Example: VIVEK DAYANAND CHAVAN"
+                  error={touched.fullName ? errors.fullName : null}
+                  success={touched.fullName && !errors.fullName && form.fullName.length > 2}
+                  autoComplete="name"
+                  disabled={loading}
+                />
+              </div>
+
               <div className="relative">
                 <AuthInput
                   id="signup-username"

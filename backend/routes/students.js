@@ -104,7 +104,7 @@ router.put("/profile", auth, async (req, res) => {
     const profile_completion = Math.round((completedFields / totalFields) * 100);
 
     const updateData = {
-      name: name !== undefined ? name : currentProfileData.name,
+      name: name !== undefined ? name.trim().toUpperCase() : currentProfileData.name,
       college: college !== undefined ? college : currentProfileData.college,
       branch: branch !== undefined ? branch : currentProfileData.branch,
       year: year !== undefined ? year : currentProfileData.year,
