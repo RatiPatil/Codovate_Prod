@@ -94,13 +94,13 @@ io.on("connection", (socket) => {
   socket.on("join", (userId) => {
     socket.userId = userId;
     socket.join(`user_${userId}`);
-    onlineUsers.set(userId, socket.id);
+    onlineUsers.set(socket.id, userId);
     
     // Broadcast to others that this user is online
     socket.broadcast.emit('user_online', userId);
     
-    // Send current online users to this new client
-    socket.emit('online_users', Array.from(onlineUsers.keys()));
+    // Send current unique online users to this new client
+    socket.emit('online_users', Array.from(new Set(onlineUsers.values())));
     
     console.log(`👤 User ${userId} joined and is online`);
   });
@@ -146,8 +146,14 @@ io.on("connection", (socket) => {
 
   socket.on("disconnect", () => {
     if (socket.userId) {
-      onlineUsers.delete(socket.userId);
-      socket.broadcast.emit('user_offline', socket.userId);
+      onlineUsers.delete(socket.id);
+      
+      // Check if user has any other active connections (e.g. another tab)
+      const isStillOnline = Array.from(onlineUsers.values()).includes(socket.userId);
+      
+      if (!isStillOnline) {
+        socket.broadcast.emit('user_offline', socket.userId);
+      }
     }
     console.log("❌ Client disconnected:", socket.id);
   });
