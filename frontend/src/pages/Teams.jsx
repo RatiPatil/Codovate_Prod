@@ -273,7 +273,7 @@ const PrivateChatModal = ({ connection, currentUser, onClose }) => {
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6 space-y-4">
+        <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-[#0b141a]">
           {loading ? (
              <div className="flex justify-center py-8">
                <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
@@ -287,10 +287,10 @@ const PrivateChatModal = ({ connection, currentUser, onClose }) => {
               const isMe = m.sender_id === currentUser?.id;
               return (
                 <div key={m.id || idx} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
-                  <div className={`px-4 py-2 rounded-2xl max-w-[80%] ${
-                    isMe ? 'bg-primary text-white rounded-br-sm' : 'bg-gray-800 text-white rounded-bl-sm border border-gray-700'
+                  <div className={`px-4 py-2 max-w-[80%] shadow-sm ${
+                    isMe ? 'bg-[#005c4b] text-[#e9edef] rounded-tl-xl rounded-bl-xl rounded-br-xl rounded-tr-sm' : 'bg-[#202c33] text-[#e9edef] rounded-tr-xl rounded-br-xl rounded-bl-xl rounded-tl-sm'
                   }`}>
-                    <p className="text-sm whitespace-pre-wrap">{m.text}</p>
+                    <p className="text-[15px] whitespace-pre-wrap leading-relaxed">{m.text}</p>
                   </div>
                   <span className="text-[10px] text-gray-500 mt-1 px-1">
                     {formatTime(m.created_at || Date.now())}
