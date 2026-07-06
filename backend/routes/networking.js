@@ -3,35 +3,9 @@ const router = express.Router();
 const { db } = require('../config/firebase');
 const auth = require('../middleware/auth');
 
-// Helper: Check and delete expired chats
+// Helper: No longer expiring chats
 async function checkExpiredChats(connectionId = null) {
-  const now = new Date();
-  let connectionsRef = db.collection('student_connections').where('status', '==', 'accepted');
-  
-  const snapshot = await connectionsRef.get();
-  for (const doc of snapshot.docs) {
-    const data = doc.data();
-    if (data.chat_expires_at) {
-      const expires = data.chat_expires_at.toDate ? data.chat_expires_at.toDate() : new Date(data.chat_expires_at);
-      if (now > expires) {
-        // Chat expired. Mark connection as "expired" so they can reconnect if they want
-        await db.collection('student_connections').doc(doc.id).update({
-          status: 'expired'
-        });
-        
-        // Delete all chat messages for this connection (Ephemeral requirement)
-        const messagesRef = db.collection('student_chat_messages').where('connection_id', '==', doc.id);
-        const msgSnapshot = await messagesRef.get();
-        
-        const batch = db.batch();
-        msgSnapshot.docs.forEach((msgDoc) => {
-          batch.delete(msgDoc.ref);
-        });
-        await batch.commit();
-        console.log(`🧹 Deleted expired chat messages for connection ${doc.id}`);
-      }
-    }
-  }
+  return; // Disabled expiration to make chat unlimited
 }
 
 // GET: Discover students (porting from teams/discover but tailored)
@@ -161,25 +135,23 @@ router.put('/connect/:id', auth, async (req, res) => {
       return res.json({ message: 'Request rejected' });
     }
 
-    // Accept: Set 24 hour expiry
+    // Accept: No expiry
     const now = new Date();
-    const expiry = new Date(now.getTime() + 24 * 60 * 60 * 1000); // +24 hours
     
     await docRef.update({
       status: 'accepted',
-      accepted_at: now,
-      chat_expires_at: expiry
+      accepted_at: now
     });
 
     if (req.io) {
       req.io.to(`user_${data.sender_id}`).emit('new_notification', {
         title: 'Connection Accepted',
-        body: 'Your connection request was accepted. You can now chat for 24 hours!'
+        body: 'Your connection request was accepted. You can now chat unlimitedly!'
       });
       req.io.to(`user_${data.sender_id}`).emit('connection_accepted', { id: doc.id });
     }
 
-    res.json({ message: 'Request accepted. Chat is active for 24 hours.' });
+    res.json({ message: 'Request accepted. Chat is now active.' });
   } catch (err) {
     console.error("Accept connect error:", err);
     res.status(500).json({ message: "Server error" });
@@ -242,12 +214,8 @@ router.get('/chats/:connectionId', auth, async (req, res) => {
       return res.status(403).json({ message: 'Chat is not active' });
     }
 
-    // Check expiry
-    const now = new Date();
-    const expires = connData.chat_expires_at.toDate ? connData.chat_expires_at.toDate() : new Date(connData.chat_expires_at);
-    if (now > expires) {
-      return res.status(403).json({ message: 'Chat has expired', expired: true });
-    }
+    // No longer checking expiry
+
 
     const messages = await db.collection('student_chat_messages')
       .where('connection_id', '==', req.params.connectionId)
@@ -287,12 +255,8 @@ router.post('/chats/:connectionId/messages', auth, async (req, res) => {
       return res.status(403).json({ message: 'Chat is not active' });
     }
 
-    // Check expiry
+    // No longer checking expiry
     const now = new Date();
-    const expires = connData.chat_expires_at.toDate ? connData.chat_expires_at.toDate() : new Date(connData.chat_expires_at);
-    if (now > expires) {
-      return res.status(403).json({ message: 'Chat has expired and messages cannot be sent.' });
-    }
 
     const msgRef = db.collection('student_chat_messages').doc();
     const newMsg = {

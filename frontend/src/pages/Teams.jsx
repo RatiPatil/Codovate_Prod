@@ -264,8 +264,8 @@ const PrivateChatModal = ({ connection, currentUser, onClose }) => {
             <h3 className="text-white font-bold text-xl flex items-center gap-2">
               <span>💬</span> Chat with {connection.other_user?.name?.toUpperCase()}
             </h3>
-            <p className={`text-sm mt-1 font-bold ${expired ? 'text-red-400' : 'text-yellow-400'}`}>
-              {expired ? 'Chat has expired (24h limit reached).' : `Expires at: ${expiresDate.toLocaleString()}`}
+            <p className="text-sm mt-1 font-bold text-emerald-400">
+              Unlimited Chat
             </p>
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors bg-white/5 hover:bg-white/10 p-2 rounded-full">
@@ -307,11 +307,10 @@ const PrivateChatModal = ({ connection, currentUser, onClose }) => {
             <input
               value={text}
               onChange={e => setText(e.target.value)}
-              placeholder={expired ? "Chat expired." : "Type your message..."}
-              disabled={expired}
+              placeholder="Type your message..."
               className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary disabled:opacity-50"
             />
-            <button type="submit" disabled={!text.trim() || expired} className="bg-primary text-white px-6 py-3 rounded-xl font-bold disabled:opacity-50 hover:bg-primary/90 transition-colors">
+            <button type="submit" disabled={!text.trim()} className="bg-primary text-white px-6 py-3 rounded-xl font-bold disabled:opacity-50 hover:bg-primary/90 transition-colors">
               Send
             </button>
           </form>
@@ -401,26 +400,20 @@ const ConnectionsView = ({ currentUser }) => {
         {/* Active Chats */}
         <div>
           <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-            Active Chats <span className="text-xs font-normal text-yellow-500 bg-yellow-500/10 px-2 py-0.5 rounded">24h Limit</span>
+            Active Chats <span className="text-xs font-bold text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded">Unlimited</span>
           </h3>
           <div className="space-y-3">
             {connections.filter(c => c.status === 'accepted').length === 0 ? (
               <p className="text-sm text-gray-500">No active chats.</p>
             ) : connections.filter(c => c.status === 'accepted').map(c => {
-              const expiresDate = parseDate(c.chat_expires_at);
-              const isExpired = new Date() > expiresDate;
-
               return (
                 <div key={c.id} className="glass-card p-4 flex justify-between items-center">
                   <div>
                     <h4 className="font-bold">{c.other_user?.name?.toUpperCase()}</h4>
-                    <p className={`text-[10px] uppercase font-bold tracking-widest mt-1 ${isExpired ? 'text-red-400' : 'text-primary'}`}>
-                      {isExpired ? 'Expired' : 'Active'}
-                    </p>
+                    <p className="text-xs text-gray-400 mt-1">Unlimited Chat</p>
                   </div>
                   <button 
                     onClick={() => setActiveChat(c)}
-                    disabled={isExpired}
                     className="btn-primary py-1.5 px-4 text-xs shadow-none"
                   >
                     Open Chat
@@ -723,7 +716,9 @@ const SuggestedMates = ({ myProfile }) => {
         // Smart match score computation (Mock complex algorithm based on shared attributes)
         if (myProfile) {
           students = students.map(s => {
-            let matchScore = 20; // Base score
+            let hash = 0;
+            for (let i = 0; i < s.id.length; i++) hash = s.id.charCodeAt(i) + ((hash << 5) - hash);
+            let matchScore = 55 + (Math.abs(hash) % 25); // Base score instead of hardcoded 20%
             
             // Shared Skills
             const sharedSkills = s.skills?.filter(sk => myProfile.skills?.includes(sk)).length || 0;
@@ -955,7 +950,7 @@ const Teams = () => {
           <h1 className="text-3xl md:text-4xl font-bold flex items-center gap-3">
             <span className="text-4xl">🤝</span> <span className="text-gradient">Teams & Networking</span>
           </h1>
-          <p className="text-gray-400 text-sm mt-2">Form squads, discover talent, and network with peers (24h Ephemeral Chats).</p>
+          <p className="text-gray-400 text-sm mt-2">Form squads, discover talent, and network with peers (Unlimited Chats).</p>
         </div>
         <div className="flex gap-3 w-full md:w-auto">
           <button onClick={() => setShowJoin(true)} className="btn-secondary flex-1 md:flex-none">
