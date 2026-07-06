@@ -586,15 +586,13 @@ const MatchFinder = ({ results, onConnect }) => {
                   onClick={() => handleAction('left', user.id, idx)}
                   className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-white/5 border border-white/10 text-red-400 font-bold text-sm hover:bg-red-500/10 hover:border-red-500/30 transition-all"
                 >
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                  Dismiss
+                  <span className="text-lg">❎</span> Dismiss
                 </button>
                 <button
                   onClick={() => handleAction('right', user.id, idx)}
                   className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-primary/20 border border-primary/40 text-primary font-bold text-sm hover:bg-primary/30 hover:text-white transition-all shadow-[0_0_15px_rgba(32,21,255,0.2)]"
                 >
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-                  Connect
+                  <span className="text-lg">🤝</span> Connect
                 </button>
               </div>
             )}
@@ -678,6 +676,10 @@ const FindTeammates = () => {
               <option value="advanced" className="bg-[#0a0a0a]">Advanced</option>
             </select>
           </div>
+          
+          <button onClick={fetchDiscover} className="w-full btn-primary py-2 mt-2 flex items-center justify-center gap-2 shadow-lg">
+            🔍 Search Students
+          </button>
         </div>
       </div>
 
