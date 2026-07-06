@@ -660,14 +660,14 @@ const FindTeammates = () => {
               value={filters.domain}
               onChange={e => setFilters({...filters, domain: e.target.value})}
             >
-              <option value="" className="bg-[#0a0a0a] text-white">All</option>
-              <option value="Data Science" className="bg-[#0a0a0a] text-white">Data Science</option>
-              <option value="AI/ML" className="bg-[#0a0a0a] text-white">AI/ML</option>
-              <option value="Cyber Security" className="bg-[#0a0a0a] text-white">Cyber Security</option>
-              <option value="Web Development" className="bg-[#0a0a0a] text-white">Web Development</option>
-              <option value="Startups" className="bg-[#0a0a0a] text-white">Startups</option>
-              <option value="Research" className="bg-[#0a0a0a] text-white">Research</option>
-              <option value="Hackathons" className="bg-[#0a0a0a] text-white">Hackathons</option>
+              <option value="">All</option>
+              <option value="Data Science">Data Science</option>
+              <option value="AI/ML">AI/ML</option>
+              <option value="Cyber Security">Cyber Security</option>
+              <option value="Web Development">Web Development</option>
+              <option value="Startups">Startups</option>
+              <option value="Research">Research</option>
+              <option value="Hackathons">Hackathons</option>
             </select>
           </div>
 
@@ -678,10 +678,10 @@ const FindTeammates = () => {
               value={filters.experience}
               onChange={e => setFilters({...filters, experience: e.target.value})}
             >
-              <option value="" className="bg-[#0a0a0a] text-white">All</option>
-              <option value="beginner" className="bg-[#0a0a0a] text-white">Beginner</option>
-              <option value="intermediate" className="bg-[#0a0a0a] text-white">Intermediate</option>
-              <option value="advanced" className="bg-[#0a0a0a] text-white">Advanced</option>
+              <option value="">All</option>
+              <option value="beginner">Beginner</option>
+              <option value="intermediate">Intermediate</option>
+              <option value="advanced">Advanced</option>
             </select>
           </div>
           
