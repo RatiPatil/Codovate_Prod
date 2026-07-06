@@ -4,6 +4,7 @@ import { gsap } from 'gsap';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { locationData } from '../utils/locationData';
+import { MAHARASHTRA_COLLEGES } from '../utils/maharashtraColleges';
 import confetti from 'canvas-confetti';
 
 const STEPS = [
@@ -225,6 +226,80 @@ const InputField = ({ label, field, placeholder, type = 'text', required = false
     )}
   </div>
 );
+
+const CollegeAutocomplete = ({ label, field, placeholder, required = false, data, update, handleBlur, touched, errors }) => {
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [filteredColleges, setFilteredColleges] = useState([]);
+  const wrapperRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleChange = (e) => {
+    const val = e.target.value;
+    update(field, val);
+    if (val.length > 0) {
+      const filtered = MAHARASHTRA_COLLEGES.filter(c => c.toLowerCase().includes(val.toLowerCase()));
+      setFilteredColleges(filtered);
+      setShowDropdown(true);
+    } else {
+      setShowDropdown(false);
+    }
+  };
+
+  const handleSelect = (collegeName) => {
+    update(field, collegeName);
+    setShowDropdown(false);
+  };
+
+  return (
+    <div ref={wrapperRef} className="relative">
+      <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">
+        {label} {required && <span className="text-red-400">*</span>}
+      </label>
+      <input
+        type="text"
+        value={data[field]}
+        onChange={handleChange}
+        onFocus={handleChange}
+        onBlur={() => {
+          setTimeout(() => handleBlur(field), 200); // delay to allow click on dropdown
+        }}
+        placeholder={placeholder}
+        className={`w-full bg-white/5 border rounded-xl px-4 py-3.5 text-white placeholder-gray-600 text-sm focus:outline-none focus:ring-2 transition-all duration-200 ${
+          errors[field] && touched[field]
+            ? 'border-red-500/60 focus:ring-red-500/20 focus:border-red-500'
+            : 'border-white/10 focus:ring-primary/20 focus:border-primary'
+        }`}
+      />
+      {showDropdown && filteredColleges.length > 0 && (
+        <ul className="absolute z-50 w-full mt-1 bg-[#1a1a1a] border border-white/10 rounded-xl max-h-60 overflow-y-auto shadow-2xl">
+          {filteredColleges.map((college, idx) => (
+            <li 
+              key={idx}
+              onClick={() => handleSelect(college)}
+              className="px-4 py-3 text-sm text-gray-300 hover:bg-primary/20 hover:text-white cursor-pointer transition-colors"
+            >
+              {college}
+            </li>
+          ))}
+        </ul>
+      )}
+      {errors[field] && touched[field] && (
+        <p className="text-red-400 text-xs mt-1.5 flex items-center gap-1">
+          <span>⚠</span> {errors[field]}
+        </p>
+      )}
+    </div>
+  );
+};
 
 export default function Onboarding() {
   const { completeOnboarding } = useAuth();
@@ -624,7 +699,7 @@ export default function Onboarding() {
               {/* Step 2: Academic */}
               {step === 2 && (
                 <div className="space-y-4">
-                  <InputField
+                  <CollegeAutocomplete
                     label="College / University" field="college"
                     placeholder="e.g. Walchand College of Engineering" required
                     data={data} update={update} handleBlur={handleBlur} touched={touched} errors={errors}
