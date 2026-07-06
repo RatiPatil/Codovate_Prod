@@ -280,7 +280,11 @@ const PrivateChatModal = ({ connection, currentUser, onClose }) => {
           if (prev.find(m => m.id === msg.id)) return prev;
           return [...prev, msg];
         });
-        setIsTyping(false); // Stop typing when message is received
+        setIsTyping(false);
+        // Automatically mark as read if the chat is open
+        if (msg.sender_id === connection.other_user?.id) {
+          socket.emit('mark_messages_read', { connectionId: connection.id, senderId: msg.sender_id });
+        }
       }
     };
 
@@ -292,14 +296,29 @@ const PrivateChatModal = ({ connection, currentUser, onClose }) => {
       if (senderId === connection.other_user?.id) setIsTyping(false);
     };
 
+    const handleMessagesRead = ({ connectionId }) => {
+      if (connectionId === connection.id) {
+        setMessages(prev => prev.map(m => (m.status !== 'read' ? { ...m, status: 'read' } : m)));
+      }
+    };
+
     socket.on('new_chat_message', handleNewMessage);
     socket.on('typing', handleTyping);
     socket.on('stop_typing', handleStopTyping);
+    socket.on('messages_read', handleMessagesRead);
     return () => {
       socket.off('new_chat_message', handleNewMessage);
       socket.off('typing', handleTyping);
       socket.off('stop_typing', handleStopTyping);
+      socket.off('messages_read', handleMessagesRead);
     };
+  }, [socket, isConnected, connection.id, connection.other_user?.id]);
+
+  // Mark all previous unread messages as read when opening the chat
+  useEffect(() => {
+    if (socket && isConnected && connection.id && connection.other_user?.id) {
+      socket.emit('mark_messages_read', { connectionId: connection.id, senderId: connection.other_user.id });
+    }
   }, [socket, isConnected, connection.id, connection.other_user?.id]);
 
   useEffect(() => {
@@ -317,6 +336,7 @@ const PrivateChatModal = ({ connection, currentUser, onClose }) => {
       id: tempId,
       sender_id: currentUser?.id,
       text: messageText,
+      status: 'sent',
       created_at: new Date().toISOString(),
       isSending: true
     };
@@ -346,10 +366,16 @@ const PrivateChatModal = ({ connection, currentUser, onClose }) => {
               <span>💬</span> Chat with {connection.other_user?.name?.toUpperCase()}
             </h3>
             <div className="flex items-center gap-2 mt-1">
-              <div className={`w-2 h-2 rounded-full ${isOnline ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]' : 'bg-gray-500'}`} />
-              <p className="text-sm font-bold text-gray-300">
-                {isOnline ? 'Online' : 'Offline'}
-              </p>
+              {isTyping ? (
+                <p className="text-sm font-bold text-emerald-400 animate-pulse">typing...</p>
+              ) : (
+                <>
+                  <div className={`w-2 h-2 rounded-full ${isOnline ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]' : 'bg-gray-500'}`} />
+                  <p className="text-sm font-bold text-gray-300">
+                    {isOnline ? 'Online' : 'Offline'}
+                  </p>
+                </>
+              )}
             </div>
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors bg-white/5 hover:bg-white/10 p-2 rounded-full">
@@ -378,7 +404,19 @@ const PrivateChatModal = ({ connection, currentUser, onClose }) => {
                   </div>
                   <span className="text-[10px] text-gray-500 mt-1 px-1 flex items-center gap-1">
                     {formatTime(m.created_at || Date.now())}
-                    {m.isSending && <svg className="w-3 h-3 text-gray-400 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>}
+                    {isMe && (
+                      <span className="ml-0.5">
+                        {m.isSending ? (
+                          <svg className="w-3 h-3 text-gray-400 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        ) : m.status === 'read' ? (
+                          <svg className="w-4 h-4 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L7 17l-5-5"></path><path d="M22 10l-5.5 5.5"></path><path d="M10 18l-3-3"></path></svg>
+                        ) : (m.status === 'delivered' || isOnline) ? (
+                          <svg className="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L7 17l-5-5"></path><path d="M22 10l-5.5 5.5"></path><path d="M10 18l-3-3"></path></svg>
+                        ) : (
+                          <svg className="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"></path></svg>
+                        )}
+                      </span>
+                    )}
                   </span>
                 </div>
               );

@@ -282,6 +282,7 @@ router.post('/chats/:connectionId/messages', auth, async (req, res) => {
       connection_id: req.params.connectionId,
       sender_id: req.user.id,
       text,
+      status: 'sent',
       created_at: now
     };
 

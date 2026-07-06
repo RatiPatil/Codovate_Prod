@@ -144,6 +144,32 @@ io.on("connection", (socket) => {
     }
   });
 
+  socket.on("mark_messages_read", async ({ connectionId, senderId }) => {
+    if (socket.userId && connectionId && senderId) {
+      try {
+        const { db } = require('./config/firebase');
+        const unreadQuery = await db.collection('student_chat_messages')
+          .where('connection_id', '==', connectionId)
+          .where('sender_id', '==', senderId)
+          .where('status', 'in', ['sent', 'delivered'])
+          .get();
+
+        if (!unreadQuery.empty) {
+          const batch = db.batch();
+          unreadQuery.forEach(doc => {
+            batch.update(doc.ref, { status: 'read' });
+          });
+          await batch.commit();
+          
+          // Notify the sender that their messages were read
+          socket.to(`user_${senderId}`).emit('messages_read', { connectionId });
+        }
+      } catch (err) {
+        console.error("Error marking messages read:", err);
+      }
+    }
+  });
+
   socket.on("disconnect", () => {
     if (socket.userId) {
       onlineUsers.delete(socket.id);
