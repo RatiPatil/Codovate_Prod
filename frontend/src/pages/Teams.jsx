@@ -655,12 +655,20 @@ const FindTeammates = () => {
           
           <div>
             <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">Domain / Goal</label>
-            <input 
-              placeholder="e.g. Data Science" 
-              className="input-glass w-full"
+            <select 
+              className="input-glass w-full appearance-none"
               value={filters.domain}
               onChange={e => setFilters({...filters, domain: e.target.value})}
-            />
+            >
+              <option value="" className="bg-[#0a0a0a]">All</option>
+              <option value="Data Science" className="bg-[#0a0a0a]">Data Science</option>
+              <option value="AI/ML" className="bg-[#0a0a0a]">AI/ML</option>
+              <option value="Cyber Security" className="bg-[#0a0a0a]">Cyber Security</option>
+              <option value="Web Development" className="bg-[#0a0a0a]">Web Development</option>
+              <option value="Startups" className="bg-[#0a0a0a]">Startups</option>
+              <option value="Research" className="bg-[#0a0a0a]">Research</option>
+              <option value="Hackathons" className="bg-[#0a0a0a]">Hackathons</option>
+            </select>
           </div>
 
           <div>
