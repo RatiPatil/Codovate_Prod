@@ -11,6 +11,7 @@ router.post("/save", auth, async (req, res) => {
       college, branch, year,
       career_goal, career_interests, experience_level,
       skills,
+      desired_roles,
       portfolio_url, github_url, linkedin_url, bio,
       profile_completion, onboarding_completed,
     } = req.body;
@@ -40,6 +41,7 @@ router.post("/save", auth, async (req, res) => {
     if (!year) errors.year = 'Year of study is required';
     if (!career_goal) errors.career_goal = 'Career goal is required';
     if (!Array.isArray(career_interests) || career_interests.length === 0) errors.career_interests = 'Select at least one interest';
+    if (!Array.isArray(desired_roles) || desired_roles.length === 0) errors.desired_roles = 'Select at least one desired role';
     if (!experience_level) errors.experience_level = 'Experience level is required';
     if (!Array.isArray(skills) || skills.length < 2) errors.skills = 'Select at least 2 skills';
     if (!bio || bio.trim().length < 20) errors.bio = 'Bio must be at least 20 characters';
@@ -55,6 +57,8 @@ router.post("/save", auth, async (req, res) => {
       ? career_interests : null;
     const cleanSkills = Array.isArray(skills) && skills.length > 0
       ? skills : null;
+    const cleanDesiredRoles = Array.isArray(desired_roles) && desired_roles.length > 0
+      ? desired_roles : null;
 
     // Derive city from taluka/district if not passed directly
     const derivedCity = city || taluka || district || null;
@@ -73,6 +77,7 @@ router.post("/save", auth, async (req, res) => {
       year: cleanYear,
       career_goal: career_goal || null,
       career_interests: cleanInterests,
+      desired_roles: cleanDesiredRoles,
       experience_level: experience_level || null,
       skills: cleanSkills,
       portfolio_url: portfolio_url || null,

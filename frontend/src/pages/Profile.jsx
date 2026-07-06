@@ -9,6 +9,17 @@ const ALL_SKILLS = [
   'Figma', 'Photoshop', 'Linux', 'GraphQL', 'Next.js', 'Django', 'Vue.js',
 ];
 
+const ALL_DESIRED_ROLES = [
+  'AI Engineer', 'Machine Learning Engineer', 'Data Scientist', 'Data Analyst',
+  'Frontend Developer', 'Backend Developer', 'Full Stack Developer', 'Mobile App Developer',
+  'Flutter Developer', 'Android Developer', 'iOS Developer', 'UI/UX Designer',
+  'Product Designer', 'DevOps Engineer', 'Cloud Engineer', 'Cyber Security Enthusiast',
+  'Ethical Hacker', 'Blockchain Developer', 'Game Developer', 'AR/VR Developer',
+  'IoT Developer', 'Software Engineer', 'Researcher', 'Entrepreneur',
+  'Startup Founder', 'Product Manager', 'Technical Writer', 'Open Source Contributor',
+  'Competitive Programmer',
+];
+
 const Profile = () => {
   const [profileData, setProfileData] = useState(null);
   const [form, setForm] = useState({
@@ -17,6 +28,8 @@ const Profile = () => {
   });
   const [skills, setSkills] = useState([]);
   const [customSkill, setCustomSkill] = useState('');
+  const [desiredRoles, setDesiredRoles] = useState([]);
+  const [customRole, setCustomRole] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState({ msg: '', type: '' });
@@ -61,6 +74,7 @@ const Profile = () => {
         avatar_url: d.avatar_url || ''
       });
       setSkills(Array.isArray(d.skills) ? d.skills : []);
+      setDesiredRoles(Array.isArray(d.desired_roles) ? d.desired_roles : []);
     }).catch(console.error).finally(() => setLoading(false));
   }, []);
 
@@ -87,7 +101,7 @@ const Profile = () => {
     e.preventDefault();
     setSaving(true);
     try {
-      await api.put('/students/profile', { ...form, skills });
+      await api.put('/students/profile', { ...form, skills, desired_roles: desiredRoles });
       showToast('Profile updated successfully! ✅', 'success');
       fetchProfile();
     } catch (err) {
@@ -199,6 +213,20 @@ const Profile = () => {
             </label>
             <h2 className="text-white font-bold text-2xl tracking-tight relative z-10">{form.name}</h2>
             <p className="text-gray-400 text-sm mt-1 relative z-10">{form.email}</p>
+            {/* Desired Roles — displayed below name, center-aligned */}
+            {desiredRoles.length > 0 && (
+              <div className="mt-3 flex flex-wrap justify-center gap-1.5 relative z-10">
+                {desiredRoles.map(role => (
+                  <span
+                    key={role}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide bg-primary/10 border border-primary/25 text-primary"
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary inline-block" />
+                    {role}
+                  </span>
+                ))}
+              </div>
+            )}
             {form.college && <p className="text-primary text-xs font-bold mt-3 bg-primary/10 border border-primary/20 inline-block px-4 py-1.5 rounded-full relative z-10">{form.college}</p>}
 
             <div className="mt-8 glass-card border-transparent p-5 relative z-10">
@@ -400,6 +428,75 @@ const Profile = () => {
                       Year {y}
                     </button>
                   ))}
+                </div>
+              </div>
+
+              {/* Desired Roles Selector */}
+              <div>
+                <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+                  Desired Roles <span className="text-gray-500 font-normal normal-case">({desiredRoles.length} selected)</span>
+                </label>
+
+                {/* Selected roles */}
+                {desiredRoles.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {desiredRoles.map(role => (
+                      <span key={role} className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/15 border border-primary text-primary rounded-lg text-xs font-bold">
+                        {role}
+                        <button type="button" onClick={() => setDesiredRoles(prev => prev.filter(r => r !== role))} className="hover:text-red-400 transition-colors">
+                          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {/* Quick-select pills */}
+                <div className="flex flex-wrap gap-2 mb-3 max-h-36 overflow-y-auto pr-1">
+                  {ALL_DESIRED_ROLES.filter(r => !desiredRoles.includes(r)).map(role => (
+                    <button
+                      key={role} type="button"
+                      onClick={() => setDesiredRoles(prev => [...prev, role])}
+                      className="px-3 py-1.5 rounded-full text-xs font-semibold border transition-all duration-200 bg-white/5 border-white/10 text-gray-400 hover:border-primary/40 hover:text-white"
+                    >
+                      + {role}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Custom role input */}
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={customRole}
+                    onChange={e => setCustomRole(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const trimmed = customRole.trim();
+                        if (trimmed && !desiredRoles.includes(trimmed)) {
+                          setDesiredRoles(prev => [...prev, trimmed]);
+                          setCustomRole('');
+                        }
+                      }
+                    }}
+                    placeholder="Add custom role..."
+                    className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const trimmed = customRole.trim();
+                      if (trimmed && !desiredRoles.includes(trimmed)) {
+                        setDesiredRoles(prev => [...prev, trimmed]);
+                        setCustomRole('');
+                      }
+                    }}
+                    disabled={!customRole.trim()}
+                    className="px-4 py-2.5 bg-primary/10 border border-primary/30 text-primary rounded-xl text-sm font-bold hover:bg-primary/20 transition-all disabled:opacity-40"
+                  >
+                    Add
+                  </button>
                 </div>
               </div>
 

@@ -44,6 +44,38 @@ const EXPERIENCE_LEVELS = [
   { value: 'advanced', label: 'Advanced', desc: '3+ years, production experience', icon: '🏆' },
 ];
 
+const DESIRED_ROLES = [
+  'AI Engineer',
+  'Machine Learning Engineer',
+  'Data Scientist',
+  'Data Analyst',
+  'Frontend Developer',
+  'Backend Developer',
+  'Full Stack Developer',
+  'Mobile App Developer',
+  'Flutter Developer',
+  'Android Developer',
+  'iOS Developer',
+  'UI/UX Designer',
+  'Product Designer',
+  'DevOps Engineer',
+  'Cloud Engineer',
+  'Cyber Security Enthusiast',
+  'Ethical Hacker',
+  'Blockchain Developer',
+  'Game Developer',
+  'AR/VR Developer',
+  'IoT Developer',
+  'Software Engineer',
+  'Researcher',
+  'Entrepreneur',
+  'Startup Founder',
+  'Product Manager',
+  'Technical Writer',
+  'Open Source Contributor',
+  'Competitive Programmer',
+];
+
 // Validation rules per step
 const validateStep = (step, data) => {
   const errors = {};
@@ -81,6 +113,12 @@ const validateStep = (step, data) => {
       errors.career_goal = 'Please select your career goal';
     if (data.career_interests.length === 0)
       errors.career_interests = 'Select at least one area of interest';
+    const effectiveRoles = [
+      ...data.desired_roles.filter(r => r !== 'Other'),
+      ...(data.desired_roles.includes('Other') && data.desired_roles_other.trim() ? [data.desired_roles_other.trim()] : [])
+    ];
+    if (effectiveRoles.length === 0)
+      errors.desired_roles = 'Select at least one desired role';
   }
 
   if (step === 4) {
@@ -131,6 +169,7 @@ export default function Onboarding() {
     full_name: '', phone: '', country: 'India', state: '', district: '', taluka: '',
     college: '', branch: '', year: '',
     career_goal: '', career_interests: [],
+    desired_roles: [], desired_roles_other: '',
     experience_level: '', skills: [],
     bio: '', github_url: '', linkedin_url: '', portfolio_url: ''
   });
@@ -256,7 +295,14 @@ export default function Onboarding() {
     } else {
       setSaving(true);
       try {
-        await api.post('/onboarding/save', { ...data, onboarding_completed: true });
+        // Resolve desired_roles: replace 'Other' with custom text if provided
+        const resolvedRoles = [
+          ...data.desired_roles.filter(r => r !== 'Other'),
+          ...(data.desired_roles.includes('Other') && data.desired_roles_other.trim()
+            ? [data.desired_roles_other.trim()]
+            : []),
+        ];
+        await api.post('/onboarding/save', { ...data, desired_roles: resolvedRoles, onboarding_completed: true });
         triggerSuccessAnimation();
         
         // Wait a little bit for the user to see the confetti
@@ -564,6 +610,61 @@ export default function Onboarding() {
                     {errors.career_goal && (
                       <p className="text-red-400 text-xs mt-2 flex items-center gap-1">
                         <span>⚠</span> {errors.career_goal}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Desired Role — multi-select */}
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-400 mb-3 uppercase tracking-wider">
+                      Desired Role <span className="text-red-400">*</span>
+                      <span className="text-gray-600 normal-case tracking-normal ml-1">
+                        ({[...data.desired_roles.filter(r => r !== 'Other'), ...(data.desired_roles.includes('Other') && data.desired_roles_other.trim() ? [data.desired_roles_other.trim()] : [])].length} selected)
+                      </span>
+                    </label>
+                    <div className="flex flex-wrap gap-2 max-h-44 overflow-y-auto pr-1 pb-1">
+                      {DESIRED_ROLES.map(role => (
+                        <button
+                          key={role}
+                          type="button"
+                          onClick={() => toggleItem('desired_roles', role)}
+                          className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all duration-200 ${
+                            data.desired_roles.includes(role)
+                              ? 'bg-primary/20 border-primary text-primary'
+                              : 'bg-white/5 border-white/10 text-gray-400 hover:border-white/20 hover:text-white'
+                          }`}
+                        >
+                          {role}
+                        </button>
+                      ))}
+                      {/* Other option */}
+                      <button
+                        type="button"
+                        onClick={() => toggleItem('desired_roles', 'Other')}
+                        className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all duration-200 ${
+                          data.desired_roles.includes('Other')
+                            ? 'bg-purple-500/20 border-purple-400 text-purple-300'
+                            : 'bg-white/5 border-white/10 text-gray-400 hover:border-white/20 hover:text-white'
+                        }`}
+                      >
+                        ✨ Other
+                      </button>
+                    </div>
+                    {/* Custom role input shown when 'Other' is selected */}
+                    {data.desired_roles.includes('Other') && (
+                      <div className="mt-2">
+                        <input
+                          type="text"
+                          value={data.desired_roles_other}
+                          onChange={e => update('desired_roles_other', e.target.value)}
+                          placeholder="e.g. Quantum Computing Researcher"
+                          className="w-full bg-white/5 border border-purple-400/40 rounded-xl px-4 py-2.5 text-white placeholder-gray-600 text-xs focus:outline-none focus:ring-2 focus:ring-purple-400/20 focus:border-purple-400 transition-all"
+                        />
+                      </div>
+                    )}
+                    {errors.desired_roles && (
+                      <p className="text-red-400 text-xs mt-2 flex items-center gap-1">
+                        <span>⚠</span> {errors.desired_roles}
                       </p>
                     )}
                   </div>
