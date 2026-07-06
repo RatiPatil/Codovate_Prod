@@ -251,12 +251,17 @@ router.get('/chats/:connectionId', auth, async (req, res) => {
 
     const messages = await db.collection('student_chat_messages')
       .where('connection_id', '==', req.params.connectionId)
-      .orderBy('created_at', 'asc')
       .get();
       
     let msgs = [];
     messages.forEach(doc => msgs.push({ id: doc.id, ...doc.data() }));
     
+    msgs.sort((a, b) => {
+      const timeA = a.created_at?.toDate ? a.created_at.toDate().getTime() : new Date(a.created_at || 0).getTime();
+      const timeB = b.created_at?.toDate ? b.created_at.toDate().getTime() : new Date(b.created_at || 0).getTime();
+      return timeA - timeB;
+    });
+
     res.json(msgs);
   } catch (err) {
     console.error("Get chat error:", err);
