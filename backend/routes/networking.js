@@ -98,11 +98,20 @@ router.post('/connect', auth, async (req, res) => {
 
     await connRef.set(newConn);
 
+    const notifRef = db.collection('notifications').doc();
+    const notifData = {
+      id: notifRef.id,
+      user_id: receiver_id,
+      title: 'New Connection Request',
+      message: 'Someone wants to connect with you!',
+      type: 'connection_request',
+      is_read: false,
+      created_at: new Date()
+    };
+    await notifRef.set(notifData);
+
     if (req.io) {
-      req.io.to(`user_${receiver_id}`).emit('new_notification', {
-        title: 'New Connection Request',
-        body: 'Someone wants to connect with you!'
-      });
+      req.io.to(`user_${receiver_id}`).emit('new_notification', notifData);
       // Emit the raw connection request for real-time UI updates
       req.io.to(`user_${receiver_id}`).emit('connection_request', {
         ...newConn,
@@ -143,11 +152,20 @@ router.put('/connect/:id', auth, async (req, res) => {
       accepted_at: now
     });
 
+    const notifRef = db.collection('notifications').doc();
+    const notifData = {
+      id: notifRef.id,
+      user_id: data.sender_id,
+      title: 'Connection Accepted',
+      message: 'Your connection request was accepted. You can now chat unlimitedly!',
+      type: 'connection_accepted',
+      is_read: false,
+      created_at: new Date()
+    };
+    await notifRef.set(notifData);
+
     if (req.io) {
-      req.io.to(`user_${data.sender_id}`).emit('new_notification', {
-        title: 'Connection Accepted',
-        body: 'Your connection request was accepted. You can now chat unlimitedly!'
-      });
+      req.io.to(`user_${data.sender_id}`).emit('new_notification', notifData);
       req.io.to(`user_${data.sender_id}`).emit('connection_accepted', { id: doc.id });
     }
 

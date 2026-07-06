@@ -232,8 +232,11 @@ const PrivateChatModal = ({ connection, currentUser, onClose }) => {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [text, setText] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
+  const typingTimeoutRef = useRef(null);
   const messagesEndRef = useRef(null);
-  const { socket, isConnected } = useSocket();
+  const { socket, isConnected, onlineUsers } = useSocket();
+  const isOnline = onlineUsers.includes(connection.other_user?.id);
 
   const fetchMessages = useCallback(async () => {
     try {
@@ -259,12 +262,27 @@ const PrivateChatModal = ({ connection, currentUser, onClose }) => {
           if (prev.find(m => m.id === msg.id)) return prev;
           return [...prev, msg];
         });
+        setIsTyping(false); // Stop typing when message is received
       }
     };
 
+    const handleTyping = ({ senderId }) => {
+      if (senderId === connection.other_user?.id) setIsTyping(true);
+    };
+
+    const handleStopTyping = ({ senderId }) => {
+      if (senderId === connection.other_user?.id) setIsTyping(false);
+    };
+
     socket.on('new_chat_message', handleNewMessage);
-    return () => socket.off('new_chat_message', handleNewMessage);
-  }, [socket, isConnected, connection.id]);
+    socket.on('typing', handleTyping);
+    socket.on('stop_typing', handleStopTyping);
+    return () => {
+      socket.off('new_chat_message', handleNewMessage);
+      socket.off('typing', handleTyping);
+      socket.off('stop_typing', handleStopTyping);
+    };
+  }, [socket, isConnected, connection.id, connection.other_user?.id]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -295,9 +313,12 @@ const PrivateChatModal = ({ connection, currentUser, onClose }) => {
             <h3 className="text-white font-bold text-xl flex items-center gap-2">
               <span>💬</span> Chat with {connection.other_user?.name?.toUpperCase()}
             </h3>
-            <p className="text-sm mt-1 font-bold text-emerald-400">
-              Unlimited Chat
-            </p>
+            <div className="flex items-center gap-2 mt-1">
+              <div className={`w-2 h-2 rounded-full ${isOnline ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]' : 'bg-gray-500'}`} />
+              <p className="text-sm font-bold text-gray-300">
+                {isOnline ? 'Online' : 'Offline'}
+              </p>
+            </div>
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors bg-white/5 hover:bg-white/10 p-2 rounded-full">
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
@@ -330,6 +351,15 @@ const PrivateChatModal = ({ connection, currentUser, onClose }) => {
               );
             })
           )}
+          {isTyping && (
+            <div className="flex items-start">
+              <div className="px-4 py-3 max-w-[80%] bg-[#202c33] rounded-tr-xl rounded-br-xl rounded-bl-xl rounded-tl-sm shadow-sm flex items-center gap-1">
+                <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+              </div>
+            </div>
+          )}
           <div ref={messagesEndRef} />
         </div>
 
@@ -337,7 +367,16 @@ const PrivateChatModal = ({ connection, currentUser, onClose }) => {
           <form onSubmit={handleSend} className="flex gap-2">
             <input
               value={text}
-              onChange={e => setText(e.target.value)}
+              onChange={e => {
+                setText(e.target.value);
+                if (socket && isConnected) {
+                  socket.emit('typing', { receiverId: connection.other_user?.id });
+                  clearTimeout(typingTimeoutRef.current);
+                  typingTimeoutRef.current = setTimeout(() => {
+                    socket.emit('stop_typing', { receiverId: connection.other_user?.id });
+                  }, 1500);
+                }
+              }}
               placeholder="Type your message..."
               className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary disabled:opacity-50"
             />
@@ -521,81 +560,77 @@ const MatchFinder = ({ results, onConnect }) => {
             <div className="flex-1 overflow-y-auto p-6 scrollbar-hide flex flex-col items-center text-center">
               {/* Profile Photo */}
               <div className="w-24 h-24 shrink-0 rounded-full bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center text-white font-bold text-4xl shadow-xl mb-4 border-4 border-white/10">
-                {user.name?.charAt(0).toUpperCase() || '?'}
+                {user.name?.charAt(0).toUpperCase() || '👤'}
               </div>
               
-              {/* Name & Desired Role */}
-              <h2 className="text-2xl font-bold text-white mb-2">{user.name?.toUpperCase()}</h2>
-              <div className="flex flex-wrap justify-center gap-1.5 mb-3">
-                {user.desired_roles?.length > 0 ? (
-                  user.desired_roles.slice(0, 2).map(r => (
-                    <span key={r} className="px-2.5 py-1 bg-primary/20 text-primary border border-primary/30 rounded-full text-[10px] font-bold uppercase tracking-wider">{r}</span>
-                  ))
-                ) : (
-                  <span className="px-2.5 py-1 bg-primary/20 text-primary border border-primary/30 rounded-full text-[10px] font-bold uppercase tracking-wider">
-                    {user.career_goal ? user.career_goal.replace('_', ' ') : 'Open to roles'}
-                  </span>
-                )}
+              {/* Center Aligned Name & Desired Role */}
+              <h2 className="text-2xl font-bold text-white leading-tight">{user.name?.toUpperCase()}</h2>
+              <div className="text-primary text-[13px] font-bold mt-1 mb-6">
+                {user.desired_roles?.length > 0 
+                  ? user.desired_roles.join(' • ')
+                  : (user.career_goal ? user.career_goal.replace('_', ' ') : 'Student')
+                }
               </div>
 
-              {/* College, Year, Location */}
-              <div className="text-gray-400 text-xs mb-4 space-y-1">
-                <p>{user.college || 'College not specified'} {user.year && `• Year ${user.year}`}</p>
+              {/* Academic & Location Info */}
+              <div className="w-full text-left space-y-2 mb-6 bg-white/5 p-4 rounded-xl border border-white/10">
+                <p className="text-sm text-gray-300 flex items-start gap-2">
+                  <span className="text-base">🎓</span> 
+                  <span>{user.year ? `${user.year} • ` : ''}{user.college || 'College not specified'}</span>
+                </p>
                 {(user.district || user.state) && (
-                  <p className="flex items-center justify-center gap-1">
-                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.243-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                    {user.district && `${user.district}, `}{user.state}
+                  <p className="text-sm text-gray-300 flex items-start gap-2">
+                    <span className="text-base">📍</span> 
+                    <span>{user.district ? `${user.district}, ` : ''}{user.state}</span>
                   </p>
                 )}
               </div>
-              
-              {user.bio && <p className="text-sm text-gray-300 mb-6 italic">"{user.bio}"</p>}
 
               {/* Attributes Chips Sections */}
-              <div className="w-full space-y-4 text-left">
-                {/* Skills */}
+              <div className="w-full space-y-5 text-left">
+                {/* 🛠 Skills */}
                 {user.skills?.length > 0 && (
                   <div>
-                    <h4 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Skills</h4>
-                    <div className="flex flex-wrap gap-1.5">
+                    <h4 className="text-sm font-bold text-white mb-2 flex items-center gap-2"><span>🛠</span> Skills</h4>
+                    <div className="flex flex-wrap gap-2">
                       {user.skills.map(s => (
-                        <span key={s} className="px-2 py-0.5 bg-white/5 border border-white/10 rounded-md text-xs text-gray-300">{s}</span>
+                        <span key={s} className="px-3 py-1 bg-white/10 rounded-full text-xs text-gray-200">{s}</span>
                       ))}
                     </div>
                   </div>
                 )}
                 
-                {/* Achievements */}
+                {/* 🏆 Achievements */}
                 {user.achievements?.length > 0 && (
                   <div>
-                    <h4 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Achievements</h4>
-                    <div className="flex flex-wrap gap-1.5">
+                    <h4 className="text-sm font-bold text-white mb-2 flex items-center gap-2"><span>🏆</span> Achievements</h4>
+                    <div className="flex flex-wrap gap-2">
                       {user.achievements.map(a => (
-                        <span key={a} className="px-2 py-0.5 bg-yellow-500/10 border border-yellow-500/20 text-yellow-300 rounded-md text-xs">🏆 {a}</span>
+                        <span key={a} className="px-3 py-1 bg-white/10 rounded-full text-xs text-gray-200">{a}</span>
                       ))}
                     </div>
                   </div>
                 )}
 
-                {/* Seeking */}
+                {/* 🤝 Seeking */}
                 {user.seeking?.length > 0 && (
                   <div>
-                    <h4 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Seeking</h4>
-                    <div className="flex flex-wrap gap-1.5">
+                    <h4 className="text-sm font-bold text-white mb-2 flex items-center gap-2"><span>🤝</span> Seeking</h4>
+                    <div className="flex flex-wrap gap-2">
                       {user.seeking.map(s => (
-                        <span key={s} className="px-2 py-0.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 rounded-md text-xs">🤝 {s}</span>
+                        <span key={s} className="px-3 py-1 bg-white/10 rounded-full text-xs text-gray-200">{s}</span>
                       ))}
                     </div>
                   </div>
                 )}
 
-                {/* Passionate About */}
+                {/* 🚀 Passionate About */}
                 {user.passionate_about?.length > 0 && (
                   <div>
-                    <h4 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Passionate About</h4>
-                    <div className="flex flex-wrap gap-1.5">
+                    <h4 className="text-sm font-bold text-white mb-2 flex items-center gap-2"><span>🚀</span> Passionate About</h4>
+                    <div className="flex flex-wrap gap-2">
                       {user.passionate_about.map(p => (
-                        <span key={p} className="px-2 py-0.5 bg-rose-500/10 border border-rose-500/20 text-rose-300 rounded-md text-xs">❤️ {p}</span>
+                        <span key={p} className="px-3 py-1 bg-white/10 rounded-full text-xs text-gray-200">{p}</span>
                       ))}
                     </div>
                   </div>
@@ -605,18 +640,18 @@ const MatchFinder = ({ results, onConnect }) => {
 
             {/* Action Buttons */}
             {isTop && (
-              <div className="flex justify-center gap-4 mt-auto p-4 border-t border-white/5 bg-black/20">
+              <div className="flex justify-center gap-4 mt-auto p-4 border-t border-white/5 bg-black/40 backdrop-blur-md">
                 <button
                   onClick={() => handleAction('left', user.id, idx)}
-                  className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-white/5 border border-white/10 text-red-400 font-bold text-sm hover:bg-red-500/10 hover:border-red-500/30 transition-all"
+                  className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl bg-white/5 border border-white/10 text-gray-400 font-bold hover:bg-white/10 hover:text-white transition-all"
                 >
-                  <span className="text-lg">❎</span> Dismiss
+                  <span className="text-xl">❎</span> Dismiss
                 </button>
                 <button
                   onClick={() => handleAction('right', user.id, idx)}
-                  className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-primary/20 border border-primary/40 text-primary font-bold text-sm hover:bg-primary/30 hover:text-white transition-all shadow-[0_0_15px_rgba(32,21,255,0.2)]"
+                  className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl bg-primary text-white font-bold hover:bg-primary/90 transition-all shadow-lg shadow-primary/30"
                 >
-                  <span className="text-lg">🤝</span> Connect
+                  <span className="text-xl">🤝</span> Connect
                 </button>
               </div>
             )}

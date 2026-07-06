@@ -2,11 +2,12 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 import { useAuth } from './AuthContext';
 
-const SocketContext = createContext({ socket: null, isConnected: false });
+const SocketContext = createContext({ socket: null, isConnected: false, onlineUsers: [] });
 
 export const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
+  const [onlineUsers, setOnlineUsers] = useState([]);
   const { user, token } = useAuth();
 
   useEffect(() => {
@@ -35,6 +36,10 @@ export const SocketProvider = ({ children }) => {
       newSocket.emit('join_global');
     });
 
+    newSocket.on('online_users', (users) => setOnlineUsers(users));
+    newSocket.on('user_online', (userId) => setOnlineUsers(prev => [...new Set([...prev, userId])]));
+    newSocket.on('user_offline', (userId) => setOnlineUsers(prev => prev.filter(id => id !== userId)));
+
     newSocket.on('disconnect', () => setIsConnected(false));
 
     setSocket(newSocket);
@@ -42,7 +47,7 @@ export const SocketProvider = ({ children }) => {
   }, [token, user]);
 
   return (
-    <SocketContext.Provider value={{ socket, isConnected }}>
+    <SocketContext.Provider value={{ socket, isConnected, onlineUsers }}>
       {children}
     </SocketContext.Provider>
   );

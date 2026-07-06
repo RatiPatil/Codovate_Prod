@@ -86,12 +86,23 @@ app.get("/", (req, res) => {
   res.json({ message: "Codovate API running 🚀", realtime: true });
 });
 
+const onlineUsers = new Map();
+
 io.on("connection", (socket) => {
   console.log("🔌 Client connected:", socket.id);
 
   socket.on("join", (userId) => {
+    socket.userId = userId;
     socket.join(`user_${userId}`);
-    console.log(`👤 User ${userId} joined`);
+    onlineUsers.set(userId, socket.id);
+    
+    // Broadcast to others that this user is online
+    socket.broadcast.emit('user_online', userId);
+    
+    // Send current online users to this new client
+    socket.emit('online_users', Array.from(onlineUsers.keys()));
+    
+    console.log(`👤 User ${userId} joined and is online`);
   });
 
   socket.on("join_global", () => {
@@ -121,7 +132,23 @@ io.on("connection", (socket) => {
     }
   });
 
+  socket.on("typing", ({ receiverId }) => {
+    if (socket.userId) {
+      socket.to(`user_${receiverId}`).emit("typing", { senderId: socket.userId });
+    }
+  });
+
+  socket.on("stop_typing", ({ receiverId }) => {
+    if (socket.userId) {
+      socket.to(`user_${receiverId}`).emit("stop_typing", { senderId: socket.userId });
+    }
+  });
+
   socket.on("disconnect", () => {
+    if (socket.userId) {
+      onlineUsers.delete(socket.userId);
+      socket.broadcast.emit('user_offline', socket.userId);
+    }
     console.log("❌ Client disconnected:", socket.id);
   });
 });
