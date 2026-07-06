@@ -100,7 +100,7 @@ const SkillTag = ({ label, onRemove }) => (
 );
 
 const Card = ({ children, className = '' }) => (
-  <div className={`bg-[#080815] border border-white/5 rounded-2xl p-5 space-y-4 ${className}`}>
+  <div className={`glass-panel rounded-2xl p-5 space-y-4 ${className}`}>
     {children}
   </div>
 );
@@ -371,7 +371,7 @@ const GenerateStep = ({ data, onGenerate, aiLoading, aiResult }) => {
   return (
     <div className="space-y-6">
       {/* Readiness Check */}
-      <div className="bg-[#080815] border border-white/5 rounded-2xl p-5">
+      <div className="glass-panel rounded-2xl p-5">
         <h3 className="text-white font-black text-sm mb-4">Resume Readiness Check</h3>
         <div className="space-y-2">
           {[
@@ -410,7 +410,7 @@ const GenerateStep = ({ data, onGenerate, aiLoading, aiResult }) => {
         <div className="space-y-4">
           {/* ATS Score */}
           {aiResult.atsScore !== null && (
-            <div className="bg-[#080815] border border-white/5 rounded-2xl p-5">
+            <div className="glass-panel rounded-2xl p-5">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-white font-black text-sm">ATS Score</h3>
                 <span className={`text-3xl font-black ${scoreColor(aiResult.atsScore)}`}>{aiResult.atsScore}/100</span>
@@ -434,7 +434,7 @@ const GenerateStep = ({ data, onGenerate, aiLoading, aiResult }) => {
 
           {/* Generated Summary */}
           {aiResult.summary && (
-            <div className="bg-[#080815] border border-[#2015FF]/20 rounded-2xl p-5">
+            <div className="glass-panel border-primary/20 rounded-2xl p-5">
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-[#6060FF] text-sm">✨</span>
                 <h3 className="text-white font-black text-sm">AI Generated Summary</h3>
@@ -448,7 +448,7 @@ const GenerateStep = ({ data, onGenerate, aiLoading, aiResult }) => {
 
           {/* Suggested Skills */}
           {aiResult.suggestedSkills?.length > 0 && (
-            <div className="bg-[#080815] border border-white/5 rounded-2xl p-5">
+            <div className="glass-panel rounded-2xl p-5">
               <h3 className="text-white font-black text-sm mb-3">💡 Suggested Skills to Add</h3>
               <div className="flex flex-wrap gap-2">
                 {aiResult.suggestedSkills.map(s => (
@@ -733,7 +733,7 @@ const ResumeBuilder = () => {
 
       <div className="min-h-screen text-white relative z-10 print:hidden">
         {/* Top Bar */}
-        <div className="sticky top-0 z-30 bg-[#050510]/90 backdrop-blur-sm border-b border-white/5 px-4 sm:px-6 py-3 sm:py-4">
+        <div className="sticky top-0 z-30 bg-white/90 dark:bg-[#050510]/90 backdrop-blur-md border-b border-black/5 dark:border-white/5 px-4 sm:px-6 py-3 sm:py-4">
           <div className="max-w-[1600px] mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
             <div className="flex items-center gap-3">
               <span className="text-2xl">📄</span>
