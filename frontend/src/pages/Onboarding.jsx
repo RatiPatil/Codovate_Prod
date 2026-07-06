@@ -173,6 +173,13 @@ const validateStep = (step, data) => {
     ];
     if (effectiveRoles.length === 0)
       errors.desired_roles = 'Select at least one desired role';
+    
+    const effectivePassions = [
+      ...data.passionate_about.filter(p => p !== 'Other'),
+      ...(data.passionate_about.includes('Other') && data.passionate_about_other.trim() ? [data.passionate_about_other.trim()] : [])
+    ];
+    if (effectivePassions.length === 0)
+      errors.passionate_about = 'Select at least one passion';
   }
 
   if (step === 4) {
@@ -183,8 +190,12 @@ const validateStep = (step, data) => {
   }
 
   if (step === 5) {
-    if (!data.bio || data.bio.trim().length < 20)
-      errors.bio = 'Bio must be at least 20 characters';
+    const effectiveSeeking = [
+      ...data.seeking.filter(s => s !== 'Other'),
+      ...(data.seeking.includes('Other') && data.seeking_other.trim() ? [data.seeking_other.trim()] : [])
+    ];
+    if (effectiveSeeking.length === 0)
+      errors.seeking = 'Select at least one option you are seeking';
   }
 
   return errors;
@@ -778,8 +789,7 @@ export default function Onboarding() {
                   {/* Passionate About — multi-select with custom entry */}
                   <div>
                     <label className="block text-xs font-semibold text-gray-400 mb-1 uppercase tracking-wider">
-                      Passionate About
-                      <span className="text-gray-500 font-normal normal-case ml-1">(Optional)</span>
+                      Passionate About <span className="text-red-400">*</span>
                       {data.passionate_about.length > 0 && (
                         <span className="text-gray-600 normal-case tracking-normal ml-1">
                           ({[...data.passionate_about.filter(p => p !== 'Other'), ...(data.passionate_about.includes('Other') && data.passionate_about_other.trim() ? [data.passionate_about_other.trim()] : [])].length} selected)
@@ -825,6 +835,11 @@ export default function Onboarding() {
                           className="w-full bg-white/5 border border-purple-400/40 rounded-xl px-4 py-2.5 text-white placeholder-gray-600 text-xs focus:outline-none focus:ring-2 focus:ring-purple-400/20 focus:border-purple-400 transition-all"
                         />
                       </div>
+                    )}
+                    {errors.passionate_about && (
+                      <p className="text-red-400 text-xs mt-2 flex items-center gap-1">
+                        <span>⚠</span> {errors.passionate_about}
+                      </p>
                     )}
                   </div>
                 </div>
@@ -914,7 +929,7 @@ export default function Onboarding() {
                 <div className="space-y-4">
                   <div>
                     <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">
-                      Bio / About You <span className="text-red-400">*</span>
+                      Bio / About You <span className="text-gray-500 font-normal normal-case">(Optional)</span>
                     </label>
                     <textarea
                       value={data.bio}
@@ -1044,8 +1059,7 @@ export default function Onboarding() {
                   {/* Seeking — multi-select with custom entry */}
                   <div>
                     <label className="block text-xs font-semibold text-gray-400 mb-1 uppercase tracking-wider">
-                      Seeking
-                      <span className="text-gray-500 font-normal normal-case ml-1">(Optional)</span>
+                      Seeking <span className="text-red-400">*</span>
                       {data.seeking.length > 0 && (
                         <span className="text-gray-600 normal-case tracking-normal ml-1">
                           ({[...data.seeking.filter(s => s !== 'Other'), ...(data.seeking.includes('Other') && data.seeking_other.trim() ? [data.seeking_other.trim()] : [])].length} selected)
@@ -1091,6 +1105,11 @@ export default function Onboarding() {
                           className="w-full bg-white/5 border border-purple-400/40 rounded-xl px-4 py-2.5 text-white placeholder-gray-600 text-xs focus:outline-none focus:ring-2 focus:ring-purple-400/20 focus:border-purple-400 transition-all"
                         />
                       </div>
+                    )}
+                    {errors.seeking && (
+                      <p className="text-red-400 text-xs mt-2 flex items-center gap-1">
+                        <span>⚠</span> {errors.seeking}
+                      </p>
                     )}
                   </div>
                 </div>

@@ -427,7 +427,7 @@ const MatchFinder = ({ results, onConnect }) => {
           <div
             key={user.id}
             ref={el => cardRefs.current[idx] = el}
-            className={`absolute top-0 left-0 w-full h-full glass-card p-6 flex flex-col transition-all duration-300 ease-out`}
+            className={`absolute top-0 left-0 w-full h-full glass-card flex flex-col transition-all duration-300 ease-out overflow-hidden`}
             style={{
               transform: `translateY(${translateY}px) scale(${scale})`,
               opacity,
@@ -435,40 +435,107 @@ const MatchFinder = ({ results, onConnect }) => {
               boxShadow: isTop ? '0 25px 50px -12px rgba(32,21,255,0.25)' : 'none'
             }}
           >
-            <div className="flex-1 flex flex-col items-center text-center mt-4">
-              <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center text-white font-bold text-4xl shadow-xl mb-4 border-4 border-white/10">
+            <div className="flex-1 overflow-y-auto p-6 scrollbar-hide flex flex-col items-center text-center">
+              {/* Profile Photo */}
+              <div className="w-24 h-24 shrink-0 rounded-full bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center text-white font-bold text-4xl shadow-xl mb-4 border-4 border-white/10">
                 {user.name?.charAt(0).toUpperCase() || '?'}
               </div>
-              <h2 className="text-2xl font-bold text-white mb-1">{user.name}</h2>
-              <p className="text-primary text-xs font-bold uppercase tracking-widest mb-2">
-                {user.career_goal ? user.career_goal.replace('_', ' ') : 'Open to roles'}
-              </p>
-              <p className="text-gray-400 text-sm mb-4">{user.college || 'College not specified'}</p>
+              
+              {/* Name & Desired Role */}
+              <h2 className="text-2xl font-bold text-white mb-2">{user.name}</h2>
+              <div className="flex flex-wrap justify-center gap-1.5 mb-3">
+                {user.desired_roles?.length > 0 ? (
+                  user.desired_roles.slice(0, 2).map(r => (
+                    <span key={r} className="px-2.5 py-1 bg-primary/20 text-primary border border-primary/30 rounded-full text-[10px] font-bold uppercase tracking-wider">{r}</span>
+                  ))
+                ) : (
+                  <span className="px-2.5 py-1 bg-primary/20 text-primary border border-primary/30 rounded-full text-[10px] font-bold uppercase tracking-wider">
+                    {user.career_goal ? user.career_goal.replace('_', ' ') : 'Open to roles'}
+                  </span>
+                )}
+              </div>
+
+              {/* College, Year, Location */}
+              <div className="text-gray-400 text-xs mb-4 space-y-1">
+                <p>{user.college || 'College not specified'} {user.year && `• Year ${user.year}`}</p>
+                {(user.district || user.state) && (
+                  <p className="flex items-center justify-center gap-1">
+                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.243-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                    {user.district && `${user.district}, `}{user.state}
+                  </p>
+                )}
+              </div>
               
               {user.bio && <p className="text-sm text-gray-300 mb-6 italic">"{user.bio}"</p>}
 
-              <div className="flex flex-wrap justify-center gap-2 mb-6">
-                {user.skills?.slice(0, 5).map(s => (
-                  <span key={s} className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-xs text-gray-200">
-                    {s}
-                  </span>
-                ))}
+              {/* Attributes Chips Sections */}
+              <div className="w-full space-y-4 text-left">
+                {/* Skills */}
+                {user.skills?.length > 0 && (
+                  <div>
+                    <h4 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Skills</h4>
+                    <div className="flex flex-wrap gap-1.5">
+                      {user.skills.map(s => (
+                        <span key={s} className="px-2 py-0.5 bg-white/5 border border-white/10 rounded-md text-xs text-gray-300">{s}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Achievements */}
+                {user.achievements?.length > 0 && (
+                  <div>
+                    <h4 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Achievements</h4>
+                    <div className="flex flex-wrap gap-1.5">
+                      {user.achievements.map(a => (
+                        <span key={a} className="px-2 py-0.5 bg-yellow-500/10 border border-yellow-500/20 text-yellow-300 rounded-md text-xs">🏆 {a}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Seeking */}
+                {user.seeking?.length > 0 && (
+                  <div>
+                    <h4 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Seeking</h4>
+                    <div className="flex flex-wrap gap-1.5">
+                      {user.seeking.map(s => (
+                        <span key={s} className="px-2 py-0.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 rounded-md text-xs">🤝 {s}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Passionate About */}
+                {user.passionate_about?.length > 0 && (
+                  <div>
+                    <h4 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Passionate About</h4>
+                    <div className="flex flex-wrap gap-1.5">
+                      {user.passionate_about.map(p => (
+                        <span key={p} className="px-2 py-0.5 bg-rose-500/10 border border-rose-500/20 text-rose-300 rounded-md text-xs">❤️ {p}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
+            {/* Action Buttons */}
             {isTop && (
-              <div className="flex justify-center gap-6 mt-auto pb-4">
+              <div className="flex justify-center gap-4 mt-auto p-4 border-t border-white/5 bg-black/20">
                 <button
                   onClick={() => handleAction('left', user.id, idx)}
-                  className="w-14 h-14 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-red-400 hover:bg-red-500/20 hover:text-red-300 hover:border-red-500/50 transition-all shadow-lg"
+                  className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-white/5 border border-white/10 text-red-400 font-bold text-sm hover:bg-red-500/10 hover:border-red-500/30 transition-all"
                 >
-                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                  Dismiss
                 </button>
                 <button
                   onClick={() => handleAction('right', user.id, idx)}
-                  className="w-14 h-14 rounded-full bg-primary/20 border border-primary/50 flex items-center justify-center text-primary hover:bg-primary/40 hover:text-white transition-all shadow-[0_0_15px_rgba(32,21,255,0.5)]"
+                  className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-primary/20 border border-primary/40 text-primary font-bold text-sm hover:bg-primary/30 hover:text-white transition-all shadow-[0_0_15px_rgba(32,21,255,0.2)]"
                 >
-                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                  Connect
                 </button>
               </div>
             )}
@@ -584,16 +651,35 @@ const SuggestedMates = ({ myProfile }) => {
         const res = await api.get('/networking/discover');
         let students = res.data;
         
-        // Smart match score computation (Mock complex algorithm based on shared skills/goals)
-        if (myProfile && myProfile.skills) {
+        // Smart match score computation (Mock complex algorithm based on shared attributes)
+        if (myProfile) {
           students = students.map(s => {
-            let matchScore = 50; // Base score
-            const sharedSkills = s.skills.filter(sk => myProfile.skills.includes(sk)).length;
-            matchScore += sharedSkills * 10;
+            let matchScore = 20; // Base score
             
-            if (s.career_goal === myProfile.career_goal) matchScore += 15;
-            if (s.college === myProfile.college) matchScore += 10;
-            if (s.experience_level === myProfile.experience_level) matchScore += 5;
+            // Shared Skills
+            const sharedSkills = s.skills?.filter(sk => myProfile.skills?.includes(sk)).length || 0;
+            matchScore += sharedSkills * 8;
+            
+            // Shared Roles (or Career Goal fallback)
+            if (s.desired_roles && myProfile.desired_roles) {
+              const sharedRoles = s.desired_roles.filter(r => myProfile.desired_roles.includes(r)).length;
+              matchScore += sharedRoles * 10;
+            } else if (s.career_goal === myProfile.career_goal && s.career_goal) {
+              matchScore += 15;
+            }
+            
+            // Shared Seeking
+            const sharedSeeking = s.seeking?.filter(se => myProfile.seeking?.includes(se)).length || 0;
+            matchScore += sharedSeeking * 8;
+            
+            // Shared Passions
+            const sharedPassions = s.passionate_about?.filter(p => myProfile.passionate_about?.includes(p)).length || 0;
+            matchScore += sharedPassions * 8;
+            
+            // Academics & Experience
+            if (s.college && s.college === myProfile.college) matchScore += 10;
+            if (s.year && s.year === myProfile.year) matchScore += 5;
+            if (s.experience_level && s.experience_level === myProfile.experience_level) matchScore += 5;
 
             return { ...s, matchScore: Math.min(matchScore, 99) };
           });
