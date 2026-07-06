@@ -3,16 +3,41 @@ import api from '../api/axios';
 import { parseDate, formatTime } from '../utils/dateUtils';
 import { useAuth } from '../context/AuthContext';
 
-const MembersModal = ({ team, onClose }) => {
+const MembersModal = ({ team, currentUser, onClose }) => {
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const isLeader = team.my_role === 'leader';
 
-  useEffect(() => {
+  const fetchMembers = useCallback(() => {
+    setLoading(true);
     api.get(`/teams/${team.id}/members`)
       .then(res => setMembers(res.data))
       .catch(console.error)
       .finally(() => setLoading(false));
   }, [team.id]);
+
+  useEffect(() => {
+    fetchMembers();
+  }, [fetchMembers]);
+
+  const handleRoleChange = async (userId, newRole) => {
+    try {
+      await api.put(`/teams/${team.id}/members/${userId}/role`, { role: newRole });
+      fetchMembers();
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to update role');
+    }
+  };
+
+  const handleRemove = async (userId) => {
+    if (!window.confirm('Are you sure you want to remove this member?')) return;
+    try {
+      await api.delete(`/teams/${team.id}/members/${userId}`);
+      fetchMembers();
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to remove member');
+    }
+  };
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -21,7 +46,7 @@ const MembersModal = ({ team, onClose }) => {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h3 className="text-white font-bold text-xl">{team.name}</h3>
-            <p className="text-gray-400 text-sm mt-1">{team.member_count} members</p>
+            <p className="text-gray-400 text-sm mt-1">{members.length} members</p>
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors bg-white/5 hover:bg-white/10 p-2 rounded-full">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
@@ -34,17 +59,43 @@ const MembersModal = ({ team, onClose }) => {
           </div>
         ) : (
           <div className="space-y-3">
-            {members.map((m, i) => (
-              <div key={m.id} className="flex items-center gap-4 p-3 bg-white/5 rounded-xl border border-white/10">
-                <div className="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm border border-primary/20 shrink-0">
-                  {m.name?.charAt(0).toUpperCase()}
+            {members.map((m) => (
+              <div key={m.id} className="flex flex-col gap-3 p-3 bg-white/5 rounded-xl border border-white/10">
+                <div className="flex items-center gap-4">
+                  <div className="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm border border-primary/20 shrink-0">
+                    {m.name?.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white font-semibold text-sm truncate">{m.name} {m.id === currentUser?.id ? '(You)' : ''}</p>
+                    <p className="text-gray-500 text-xs truncate">{m.email}</p>
+                  </div>
+                  <span className={`text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-widest shrink-0 border ${
+                    m.role === 'leader' ? 'bg-primary/10 text-primary border-primary/20' : 
+                    m.role === 'mentor' ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' : 
+                    'bg-white/5 text-gray-400 border-white/10'
+                  }`}>
+                    {m.role}
+                  </span>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-white font-semibold text-sm truncate">{m.name}</p>
-                  <p className="text-gray-500 text-xs truncate">{m.email}</p>
-                </div>
-                {i === 0 && (
-                  <span className="text-[10px] bg-primary/10 text-primary border border-primary/20 px-2 py-0.5 rounded font-bold uppercase tracking-widest shrink-0">Leader</span>
+                
+                {isLeader && m.id !== currentUser?.id && (
+                  <div className="flex items-center justify-between gap-2 pt-2 border-t border-white/5 mt-1">
+                    <select
+                      value={m.role}
+                      onChange={(e) => handleRoleChange(m.id, e.target.value)}
+                      className="bg-black/50 text-xs text-gray-300 border border-white/10 rounded-lg px-2 py-1 focus:outline-none focus:border-primary"
+                    >
+                      <option value="member">Member</option>
+                      <option value="mentor">Mentor</option>
+                      <option value="leader">Leader</option>
+                    </select>
+                    <button
+                      onClick={() => handleRemove(m.id)}
+                      className="text-[10px] text-red-400 hover:text-white bg-red-500/10 hover:bg-red-500 border border-red-500/20 px-2 py-1 rounded transition-colors"
+                    >
+                      Remove
+                    </button>
+                  </div>
                 )}
               </div>
             ))}
@@ -783,7 +834,7 @@ const Teams = () => {
   const [showJoin, setShowJoin] = useState(false);
   const [viewMembersTeam, setViewMembersTeam] = useState(null);
   const [discussTeam, setDiscussTeam] = useState(null);
-  const [formData, setFormData] = useState({ name: '', join_code: '' });
+  const [formData, setFormData] = useState({ name: '', join_code: '', description: '', required_skills: '', capacity: 4, status: 'Recruiting' });
   const [toast, setToast] = useState({ msg: '', type: 'success' });
   const [leaving, setLeaving] = useState(null);
   const [myProfile, setMyProfile] = useState(null);
@@ -809,10 +860,16 @@ const Teams = () => {
   const handleCreate = async (e) => {
     e.preventDefault();
     try {
-      await api.post('/teams', { name: formData.name });
+      await api.post('/teams', { 
+        name: formData.name,
+        description: formData.description,
+        required_skills: formData.required_skills.split(',').map(s => s.trim()).filter(Boolean),
+        capacity: formData.capacity,
+        status: formData.status
+      });
       showT('Team created! Share the join code with teammates.', 'success');
       setShowCreate(false);
-      setFormData({ name: '', join_code: '' });
+      setFormData({ name: '', join_code: '', description: '', required_skills: '', capacity: 4, status: 'Recruiting' });
       fetchTeams();
     } catch (err) {
       showT(err.response?.data?.message || 'Error creating team.', 'error');
@@ -825,7 +882,7 @@ const Teams = () => {
       await api.post('/teams/join', { join_code: formData.join_code });
       showT('Joined team successfully!', 'success');
       setShowJoin(false);
-      setFormData({ name: '', join_code: '' });
+      setFormData(prev => ({ ...prev, join_code: '' }));
       fetchTeams();
     } catch (err) {
       showT(err.response?.data?.message || 'Invalid join code.', 'error');
@@ -868,7 +925,7 @@ const Teams = () => {
       )}
 
       {viewMembersTeam && (
-        <MembersModal team={viewMembersTeam} onClose={() => setViewMembersTeam(null)} />
+        <MembersModal team={viewMembersTeam} currentUser={currentUser} onClose={() => setViewMembersTeam(null)} />
       )}
 
       {discussTeam && (
@@ -920,7 +977,7 @@ const Teams = () => {
             {teams.length === 0 ? (
               <div className="col-span-full text-center py-24 glass-card border-dashed">
                 <p className="text-4xl mb-4">👥</p>
-                <p className="text-gray-400 text-sm mb-4">You are not in any teams yet.</p>
+                <p className="text-gray-400 text-sm mb-4">You haven't joined any teams yet.<br/>Create a team or discover opportunities through Find Teammates.</p>
                 <button onClick={() => setShowJoin(true)} className="btn-primary text-sm inline-block">
                   Join your first team
                 </button>
@@ -930,10 +987,27 @@ const Teams = () => {
                 <div className="absolute top-0 right-0 w-24 h-24 bg-primary/10 rounded-bl-full pointer-events-none transition-transform group-hover:scale-125" />
 
                 <h2 className="text-xl font-bold group-hover:text-primary transition-colors mb-2 relative z-10">{t.name}</h2>
-                {t.opportunity_title && (
-                  <span className="text-[10px] uppercase font-bold tracking-widest bg-purple-500/10 text-purple-400 px-2 py-1 rounded border border-purple-500/20 self-start mb-4 relative z-10">
-                    {t.opportunity_title}
+                <div className="flex flex-wrap items-center gap-2 mb-2 relative z-10">
+                  <span className={`text-[10px] uppercase font-bold tracking-widest px-2 py-1 rounded border ${
+                    t.status === 'Open' || t.status === 'Recruiting' ? 'bg-green-500/10 text-green-400 border-green-500/20' :
+                    t.status === 'Full' ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' :
+                    'bg-red-500/10 text-red-400 border-red-500/20'
+                  }`}>
+                    {t.status || 'Recruiting'}
                   </span>
+                  {t.opportunity_title && (
+                    <span className="text-[10px] uppercase font-bold tracking-widest bg-purple-500/10 text-purple-400 px-2 py-1 rounded border border-purple-500/20">
+                      {t.opportunity_title}
+                    </span>
+                  )}
+                </div>
+                {t.description && <p className="text-sm text-gray-400 mb-4 relative z-10 line-clamp-2">{t.description}</p>}
+                {t.required_skills?.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mb-4 relative z-10">
+                    {t.required_skills.map(s => (
+                      <span key={s} className="bg-white/5 border border-white/10 text-gray-300 text-[10px] font-bold px-2 py-1 rounded-md">{s}</span>
+                    ))}
+                  </div>
                 )}
 
                 <div className="mt-auto relative z-10">
@@ -955,7 +1029,7 @@ const Teams = () => {
                       className="text-sm text-gray-300 font-semibold flex items-center gap-2 hover:text-primary transition-colors"
                     >
                       <svg className="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
-                      {t.member_count} members
+                      {t.member_count}{t.capacity ? ` / ${t.capacity}` : ''} members
                     </button>
                     <button
                       onClick={() => handleLeave(t.id, t.name)}
@@ -1001,9 +1075,53 @@ const Teams = () => {
               required
               value={formData.name}
               placeholder="e.g. Code Ninjas"
-              className="input-glass w-full mb-8"
+              className="input-glass w-full mb-4"
               onChange={e => setFormData({ ...formData, name: e.target.value })}
             />
+            
+            <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2">Description</label>
+            <textarea
+              value={formData.description}
+              placeholder="What is your team building?"
+              className="input-glass w-full mb-4 resize-none h-20"
+              onChange={e => setFormData({ ...formData, description: e.target.value })}
+            />
+
+            <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2">Required Skills</label>
+            <input
+              value={formData.required_skills}
+              placeholder="e.g. React, Node.js, UI/UX"
+              className="input-glass w-full mb-4"
+              onChange={e => setFormData({ ...formData, required_skills: e.target.value })}
+            />
+
+            <div className="grid grid-cols-2 gap-4 mb-8">
+              <div>
+                <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2">Capacity</label>
+                <input
+                  type="number"
+                  min="2"
+                  max="10"
+                  required
+                  value={formData.capacity}
+                  className="input-glass w-full"
+                  onChange={e => setFormData({ ...formData, capacity: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2">Status</label>
+                <select
+                  value={formData.status}
+                  onChange={e => setFormData({ ...formData, status: e.target.value })}
+                  className="input-glass w-full bg-black"
+                >
+                  <option value="Open">Open</option>
+                  <option value="Recruiting">Recruiting</option>
+                  <option value="Full">Full</option>
+                  <option value="Closed">Closed</option>
+                </select>
+              </div>
+            </div>
             <div className="flex justify-end gap-3 border-t border-white/10 pt-6">
               <button type="button" onClick={() => setShowCreate(false)} className="text-gray-400 hover:text-white px-5 py-2 font-semibold text-sm transition-colors rounded-full hover:bg-white/5">Cancel</button>
               <button className="btn-primary">Create</button>

@@ -22,6 +22,7 @@ router.get("/my", auth, async (req, res) => {
       
       const membersSnapshot = await db.collection("team_members").where("team_id", "==", team.id).get();
       team.member_count = membersSnapshot.size;
+      team.my_role = tm.role || 'member';
       
       teams.push(team);
     }
@@ -41,7 +42,7 @@ router.get("/my", auth, async (req, res) => {
 
 // Create a team
 router.post("/", auth, async (req, res) => {
-  const { name, opportunity_id } = req.body;
+  const { name, opportunity_id, description, required_skills, capacity, status } = req.body;
   if (!name) return res.status(400).json({ message: "Team name is required." });
 
   // Generate a random 6-character code
@@ -52,6 +53,10 @@ router.post("/", auth, async (req, res) => {
     const team = {
       id: newTeamRef.id,
       name,
+      description: description || '',
+      required_skills: required_skills || [],
+      capacity: parseInt(capacity) || 4,
+      status: status || 'Recruiting',
       join_code,
       opportunity_id: opportunity_id || null,
       created_by: req.user.id,
@@ -66,6 +71,7 @@ router.post("/", auth, async (req, res) => {
       id: newMemberRef.id,
       team_id: team.id,
       user_id: req.user.id,
+      role: 'leader',
       joined_at: new Date()
     });
 
@@ -85,7 +91,9 @@ router.post("/join", auth, async (req, res) => {
     const teamSnapshot = await db.collection("teams").where("join_code", "==", join_code).get();
     if (teamSnapshot.empty) return res.status(404).json({ message: "Invalid join code." });
     
-    const team_id = teamSnapshot.docs[0].id;
+    const teamDoc = teamSnapshot.docs[0];
+    const team_id = teamDoc.id;
+    const teamData = teamDoc.data();
 
     // Check if already in team
     const checkSnapshot = await db.collection("team_members")
@@ -95,13 +103,24 @@ router.post("/join", auth, async (req, res) => {
       
     if (!checkSnapshot.empty) return res.status(400).json({ message: "You are already in this team." });
 
+    // Check capacity
+    const membersSnapshot = await db.collection("team_members").where("team_id", "==", team_id).get();
+    if (teamData.capacity && membersSnapshot.size >= teamData.capacity) {
+      return res.status(400).json({ message: "This team is already full." });
+    }
+
     const newMemberRef = db.collection("team_members").doc();
     await newMemberRef.set({
       id: newMemberRef.id,
       team_id,
       user_id: req.user.id,
+      role: 'member',
       joined_at: new Date()
     });
+
+    if (teamData.capacity && membersSnapshot.size + 1 >= teamData.capacity) {
+      await teamDoc.ref.update({ status: 'Full' });
+    }
 
     res.json({ message: "Successfully joined team!" });
   } catch (err) {
@@ -126,6 +145,7 @@ router.get("/:id/members", auth, async (req, res) => {
           id: studentDoc.id,
           name: sp.name || 'Anonymous Student',
           email: s.email,
+          role: tm.role || 'member',
           joined_at: tm.joined_at
         });
       }
@@ -282,6 +302,90 @@ router.get("/:id/discussions", auth, async (req, res) => {
     res.json(messages.slice(-50)); // Last 50 messages
   } catch (err) {
     console.error("Discussion get error:", err.message);
+    res.status(500).json({ message: "Server error." });
+  }
+});
+
+// ── Update team metadata ──────────────────────────────────────────────────
+router.put("/:id", auth, async (req, res) => {
+  const { description, required_skills, capacity, status } = req.body;
+  try {
+    const checkSnapshot = await db.collection("team_members")
+      .where("team_id", "==", req.params.id)
+      .where("user_id", "==", req.user.id)
+      .get();
+    if (checkSnapshot.empty || checkSnapshot.docs[0].data().role !== 'leader') {
+      return res.status(403).json({ message: "Only team leaders can update team details." });
+    }
+
+    const updateData = {};
+    if (description !== undefined) updateData.description = description;
+    if (required_skills !== undefined) updateData.required_skills = required_skills;
+    if (capacity !== undefined) updateData.capacity = parseInt(capacity);
+    if (status !== undefined) updateData.status = status;
+
+    await db.collection("teams").doc(req.params.id).update(updateData);
+    res.json({ message: "Team updated successfully." });
+  } catch (err) {
+    console.error("Update team error:", err.message);
+    res.status(500).json({ message: "Server error." });
+  }
+});
+
+// ── Manage team members ───────────────────────────────────────────────────
+router.put("/:id/members/:userId/role", auth, async (req, res) => {
+  const { role } = req.body;
+  if (!['leader', 'member', 'mentor'].includes(role)) {
+    return res.status(400).json({ message: "Invalid role." });
+  }
+
+  try {
+    const leaderCheck = await db.collection("team_members")
+      .where("team_id", "==", req.params.id)
+      .where("user_id", "==", req.user.id)
+      .get();
+    if (leaderCheck.empty || leaderCheck.docs[0].data().role !== 'leader') {
+      return res.status(403).json({ message: "Only team leaders can change roles." });
+    }
+
+    const memberCheck = await db.collection("team_members")
+      .where("team_id", "==", req.params.id)
+      .where("user_id", "==", req.params.userId)
+      .get();
+    if (memberCheck.empty) return res.status(404).json({ message: "Member not found." });
+
+    await memberCheck.docs[0].ref.update({ role });
+    res.json({ message: "Role updated successfully." });
+  } catch (err) {
+    console.error("Update role error:", err.message);
+    res.status(500).json({ message: "Server error." });
+  }
+});
+
+router.delete("/:id/members/:userId", auth, async (req, res) => {
+  try {
+    const leaderCheck = await db.collection("team_members")
+      .where("team_id", "==", req.params.id)
+      .where("user_id", "==", req.user.id)
+      .get();
+    if (leaderCheck.empty || leaderCheck.docs[0].data().role !== 'leader') {
+      return res.status(403).json({ message: "Only team leaders can remove members." });
+    }
+
+    const memberCheck = await db.collection("team_members")
+      .where("team_id", "==", req.params.id)
+      .where("user_id", "==", req.params.userId)
+      .get();
+    if (memberCheck.empty) return res.status(404).json({ message: "Member not found." });
+
+    if (req.params.userId === req.user.id) {
+      return res.status(400).json({ message: "You cannot remove yourself using this endpoint. Use leave team instead." });
+    }
+
+    await memberCheck.docs[0].ref.delete();
+    res.json({ message: "Member removed successfully." });
+  } catch (err) {
+    console.error("Remove member error:", err.message);
     res.status(500).json({ message: "Server error." });
   }
 });
