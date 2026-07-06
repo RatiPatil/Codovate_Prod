@@ -352,6 +352,14 @@ const ConnectionsView = ({ currentUser }) => {
 
   return (
     <div className="space-y-6">
+      <div className="bg-primary/10 border border-primary/20 p-4 rounded-xl flex items-start gap-3 mb-2">
+        <span className="text-xl">🚧</span>
+        <div>
+          <h4 className="font-bold text-primary text-sm">Realtime Chat Note</h4>
+          <p className="text-xs text-gray-300">Realtime chat is under development and will be available in upcoming releases.</p>
+        </div>
+      </div>
+
       {activeChat && <PrivateChatModal connection={activeChat} currentUser={currentUser} onClose={() => setActiveChat(null)} />}
       
       <div className="grid md:grid-cols-2 gap-6">
