@@ -562,13 +562,141 @@ const ConnectionsView = ({ currentUser }) => {
   );
 };
 
+const StudentProfileModal = ({ user, onClose, onDismiss, onConnect }) => {
+  return (
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[60] p-4 lg:p-10">
+      <div className="absolute inset-0" onClick={onClose} />
+      <div className="relative z-10 w-[95vw] md:w-full max-w-2xl h-[85vh] lg:h-auto max-h-[90vh] flex flex-col glass-panel rounded-2xl shadow-2xl overflow-hidden bg-[#0b141a]">
+        
+        {/* Header Actions */}
+        <div className="flex justify-end p-4 absolute top-0 right-0 w-full z-20 pointer-events-none">
+          <button onClick={onClose} className="pointer-events-auto text-gray-400 hover:text-white transition-colors bg-black/50 hover:bg-black/70 p-2 rounded-full backdrop-blur-sm">
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-6 lg:p-8 scrollbar-hide pt-12">
+          <div className="flex flex-col items-center text-center">
+            {/* Profile Photo with Glow */}
+            <div className="relative mb-6">
+              <div className="absolute inset-0 bg-primary/40 blur-2xl rounded-full" />
+              <div className="relative w-32 h-32 shrink-0 rounded-full bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center text-white font-bold text-5xl shadow-2xl border-4 border-[#0b141a]">
+                {user.name?.charAt(0).toUpperCase() || '👤'}
+              </div>
+            </div>
+            
+            {/* Center Aligned Name & Desired Role */}
+            <h2 className="text-3xl font-bold text-white leading-tight">{user.name?.toUpperCase()}</h2>
+            <div className="text-primary text-sm font-bold mt-2 mb-8 uppercase tracking-wider">
+              {user.desired_roles?.length > 0 
+                ? user.desired_roles.join(' • ')
+                : (user.career_goal ? user.career_goal.replace('_', ' ') : 'Student')
+              }
+            </div>
+
+            {/* Academic & Location Info */}
+            <div className="w-full text-left space-y-3 mb-8 bg-white/5 p-5 rounded-xl border border-white/10 shadow-inner">
+              <p className="text-sm text-gray-300 flex items-start gap-3">
+                <span className="text-lg">🎓</span> 
+                <span className="mt-0.5">{user.year ? `${user.year} • ` : ''}{user.college || 'College not specified'}</span>
+              </p>
+              {(user.district || user.state) && (
+                <p className="text-sm text-gray-300 flex items-start gap-3">
+                  <span className="text-lg">📍</span> 
+                  <span className="mt-0.5">{user.district ? `${user.district}, ` : ''}{user.state}</span>
+                </p>
+              )}
+            </div>
+
+            {/* Attributes Chips Sections */}
+            <div className="w-full space-y-6 text-left">
+              {/* 🛠 Skills */}
+              {user.skills?.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-bold text-white mb-3 flex items-center gap-2"><span>🛠</span> Skills</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {user.skills.map(s => (
+                      <span key={s} className="px-3 py-1.5 bg-white/10 rounded-full text-xs text-gray-200 border border-white/5">{s}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* 🏆 Achievements */}
+              {user.achievements?.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-bold text-white mb-3 flex items-center gap-2"><span>🏆</span> Achievements</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {user.achievements.map(a => (
+                      <span key={a} className="px-3 py-1.5 bg-white/10 rounded-full text-xs text-gray-200 border border-white/5">{a}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* 🤝 Seeking */}
+              {user.seeking?.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-bold text-white mb-3 flex items-center gap-2"><span>🤝</span> Seeking</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {user.seeking.map(s => (
+                      <span key={s} className="px-3 py-1.5 bg-white/10 rounded-full text-xs text-gray-200 border border-white/5">{s}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* 🚀 Passionate About */}
+              {user.passionate_about?.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-bold text-white mb-3 flex items-center gap-2"><span>🚀</span> Passionate About</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {user.passionate_about.map(p => (
+                      <span key={p} className="px-3 py-1.5 bg-white/10 rounded-full text-xs text-gray-200 border border-white/5">{p}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Action Buttons */}
+        {(onConnect || onDismiss) && (
+          <div className="flex justify-center gap-4 mt-auto p-4 border-t border-white/5 bg-black/40 backdrop-blur-md">
+            {onDismiss && (
+              <button
+                onClick={onDismiss}
+                className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl bg-white/5 border border-white/10 text-gray-400 font-bold hover:bg-white/10 hover:text-white transition-all"
+              >
+                <span className="text-xl">❎</span> Dismiss
+              </button>
+            )}
+            {onConnect && (
+              <button
+                onClick={onConnect}
+                className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl bg-primary text-white font-bold hover:bg-primary/90 transition-all shadow-lg shadow-primary/30"
+              >
+                <span className="text-xl">🤝</span> Connect
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 const MatchFinder = ({ results, onConnect }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [selectedUser, setSelectedUser] = useState(null);
   const cardRefs = useRef([]);
 
   const handleAction = (direction, userId, idx) => {
     const card = cardRefs.current[idx];
     if (!card) return;
+    
+    setSelectedUser(null); // Close modal if open
 
     gsap.to(card, {
       x: direction === 'right' ? 300 : -300,
@@ -596,131 +724,91 @@ const MatchFinder = ({ results, onConnect }) => {
   }
 
   return (
-    <div className="relative h-[500px] w-full max-w-md mx-auto" style={{ perspective: '1000px' }}>
-      {results.map((user, idx) => {
-        if (idx < currentIndex) return null;
-        if (idx > currentIndex + 2) return null; // Only render top 3 for performance
+    <>
+      <div className="relative h-[550px] w-full max-w-sm mx-auto" style={{ perspective: '1000px' }}>
+        {results.map((user, idx) => {
+          if (idx < currentIndex) return null;
+          if (idx > currentIndex + 2) return null; // Only render top 3 for performance
 
-        const isTop = idx === currentIndex;
-        const offset = idx - currentIndex;
-        const scale = 1 - offset * 0.05;
-        const translateY = offset * 20;
-        const opacity = 1 - offset * 0.3;
+          const isTop = idx === currentIndex;
+          const offset = idx - currentIndex;
+          const scale = 1 - offset * 0.05;
+          const translateY = offset * 20;
+          const opacity = 1 - offset * 0.3;
 
-        return (
-          <div
-            key={user.id}
-            ref={el => cardRefs.current[idx] = el}
-            className={`absolute top-0 left-0 w-full h-full glass-card flex flex-col transition-all duration-300 ease-out overflow-hidden`}
-            style={{
-              transform: `translateY(${translateY}px) scale(${scale})`,
-              opacity,
-              zIndex: 10 - offset,
-              boxShadow: isTop ? '0 25px 50px -12px rgba(32,21,255,0.25)' : 'none'
-            }}
-          >
-            <div className="flex-1 overflow-y-auto p-6 scrollbar-hide flex flex-col items-center text-center">
-              {/* Profile Photo */}
-              <div className="w-24 h-24 shrink-0 rounded-full bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center text-white font-bold text-4xl shadow-xl mb-4 border-4 border-white/10">
-                {user.name?.charAt(0).toUpperCase() || '👤'}
-              </div>
-              
-              {/* Center Aligned Name & Desired Role */}
-              <h2 className="text-2xl font-bold text-white leading-tight">{user.name?.toUpperCase()}</h2>
-              <div className="text-primary text-[13px] font-bold mt-1 mb-6">
-                {user.desired_roles?.length > 0 
-                  ? user.desired_roles.join(' • ')
-                  : (user.career_goal ? user.career_goal.replace('_', ' ') : 'Student')
-                }
-              </div>
-
-              {/* Academic & Location Info */}
-              <div className="w-full text-left space-y-2 mb-6 bg-white/5 p-4 rounded-xl border border-white/10">
-                <p className="text-sm text-gray-300 flex items-start gap-2">
-                  <span className="text-base">🎓</span> 
-                  <span>{user.year ? `${user.year} • ` : ''}{user.college || 'College not specified'}</span>
-                </p>
-                {(user.district || user.state) && (
-                  <p className="text-sm text-gray-300 flex items-start gap-2">
-                    <span className="text-base">📍</span> 
-                    <span>{user.district ? `${user.district}, ` : ''}{user.state}</span>
-                  </p>
-                )}
-              </div>
-
-              {/* Attributes Chips Sections */}
-              <div className="w-full space-y-5 text-left">
-                {/* 🛠 Skills */}
-                {user.skills?.length > 0 && (
-                  <div>
-                    <h4 className="text-sm font-bold text-white mb-2 flex items-center gap-2"><span>🛠</span> Skills</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {user.skills.map(s => (
-                        <span key={s} className="px-3 py-1 bg-white/10 rounded-full text-xs text-gray-200">{s}</span>
-                      ))}
-                    </div>
+          return (
+            <div
+              key={user.id}
+              ref={el => cardRefs.current[idx] = el}
+              className={`absolute top-0 left-0 w-full h-full glass-card flex flex-col transition-all duration-300 ease-out overflow-hidden bg-[#0a0a0a] border-white/5 cursor-pointer`}
+              style={{
+                transform: `translateY(${translateY}px) scale(${scale})`,
+                opacity,
+                zIndex: 10 - offset,
+                boxShadow: isTop ? '0 25px 50px -12px rgba(0,0,0,0.8)' : 'none'
+              }}
+              onClick={() => {
+                if (isTop) setSelectedUser(user);
+              }}
+            >
+              <div className="flex-1 p-6 flex flex-col items-center justify-center text-center">
+                {/* Profile Photo with distinct glow */}
+                <div className="relative mb-8">
+                  <div className="absolute inset-0 bg-primary/60 blur-3xl rounded-full transform scale-150" />
+                  <div className="relative w-28 h-28 shrink-0 rounded-full bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center text-white font-bold text-5xl shadow-xl">
+                    {user.name?.charAt(0).toUpperCase() || '👤'}
                   </div>
-                )}
+                </div>
                 
-                {/* 🏆 Achievements */}
-                {user.achievements?.length > 0 && (
-                  <div>
-                    <h4 className="text-sm font-bold text-white mb-2 flex items-center gap-2"><span>🏆</span> Achievements</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {user.achievements.map(a => (
-                        <span key={a} className="px-3 py-1 bg-white/10 rounded-full text-xs text-gray-200">{a}</span>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                {/* Center Aligned Name & Desired Role */}
+                <h2 className="text-2xl font-bold text-white leading-tight tracking-wide">{user.name?.toUpperCase()}</h2>
+                <div className="text-primary text-sm font-bold mt-2 mb-8">
+                  {user.desired_roles?.length > 0 
+                    ? user.desired_roles.join(' • ')
+                    : (user.career_goal ? user.career_goal.replace('_', ' ') : 'Student')
+                  }
+                </div>
 
-                {/* 🤝 Seeking */}
-                {user.seeking?.length > 0 && (
-                  <div>
-                    <h4 className="text-sm font-bold text-white mb-2 flex items-center gap-2"><span>🤝</span> Seeking</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {user.seeking.map(s => (
-                        <span key={s} className="px-3 py-1 bg-white/10 rounded-full text-xs text-gray-200">{s}</span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* 🚀 Passionate About */}
-                {user.passionate_about?.length > 0 && (
-                  <div>
-                    <h4 className="text-sm font-bold text-white mb-2 flex items-center gap-2"><span>🚀</span> Passionate About</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {user.passionate_about.map(p => (
-                        <span key={p} className="px-3 py-1 bg-white/10 rounded-full text-xs text-gray-200">{p}</span>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                {/* College Info Box */}
+                <div className="w-full text-center bg-white/[0.03] p-4 rounded-xl border border-white/5 mt-auto mb-4">
+                  <p className="text-[13px] text-gray-300 flex items-center justify-center gap-2">
+                    <span className="text-lg">🎓</span> 
+                    <span>{user.college || 'College not specified'}</span>
+                  </p>
+                </div>
               </div>
+
+              {/* Action Buttons */}
+              {isTop && (
+                <div className="flex justify-center gap-3 mt-auto p-4 border-t border-white/5 bg-black/40 backdrop-blur-md" onClick={(e) => e.stopPropagation()}>
+                  <button
+                    onClick={() => handleAction('left', user.id, idx)}
+                    className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-[#1a1a1a] border border-white/5 text-gray-400 font-bold hover:bg-white/5 hover:text-white transition-all"
+                  >
+                    <span className="text-lg">❎</span> Dismiss
+                  </button>
+                  <button
+                    onClick={() => handleAction('right', user.id, idx)}
+                    className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-primary text-white font-bold hover:bg-primary/90 transition-all shadow-lg shadow-primary/20"
+                  >
+                    <span className="text-lg">🤝</span> Connect
+                  </button>
+                </div>
+              )}
             </div>
+          );
+        })}
+      </div>
 
-            {/* Action Buttons */}
-            {isTop && (
-              <div className="flex justify-center gap-4 mt-auto p-4 border-t border-white/5 bg-black/40 backdrop-blur-md">
-                <button
-                  onClick={() => handleAction('left', user.id, idx)}
-                  className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl bg-white/5 border border-white/10 text-gray-400 font-bold hover:bg-white/10 hover:text-white transition-all"
-                >
-                  <span className="text-xl">❎</span> Dismiss
-                </button>
-                <button
-                  onClick={() => handleAction('right', user.id, idx)}
-                  className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl bg-primary text-white font-bold hover:bg-primary/90 transition-all shadow-lg shadow-primary/30"
-                >
-                  <span className="text-xl">🤝</span> Connect
-                </button>
-              </div>
-            )}
-          </div>
-        );
-      })}
-    </div>
+      {selectedUser && (
+        <StudentProfileModal 
+          user={selectedUser} 
+          onClose={() => setSelectedUser(null)}
+          onDismiss={() => handleAction('left', selectedUser.id, currentIndex)}
+          onConnect={() => handleAction('right', selectedUser.id, currentIndex)}
+        />
+      )}
+    </>
   );
 };
 
@@ -834,6 +922,7 @@ const FindTeammates = () => {
 const SuggestedMates = ({ myProfile }) => {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedUser, setSelectedUser] = useState(null);
 
   useEffect(() => {
     const fetchSuggested = async () => {
@@ -929,70 +1018,95 @@ const SuggestedMates = ({ myProfile }) => {
         </p>
       </div>
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {results.slice(0, 9).map(user => (
-          <div key={user.id} className="glass-card p-5 relative overflow-hidden flex flex-col">
-            <div className="absolute top-2 right-2 flex flex-col items-center">
-              <div className="relative w-12 h-12 flex items-center justify-center">
+          <div 
+            key={user.id} 
+            className="glass-card relative overflow-hidden flex flex-col bg-[#0a0a0a] border-white/5 cursor-pointer hover:border-primary/50 transition-colors group"
+            onClick={() => setSelectedUser(user)}
+          >
+            {/* Match Score Indicator */}
+            <div className="absolute top-3 right-3 flex flex-col items-center z-10">
+              <div className="relative w-10 h-10 flex items-center justify-center">
                 <svg className="absolute inset-0 w-full h-full transform -rotate-90">
-                  <circle cx="24" cy="24" r="20" stroke="rgba(32,21,255,0.2)" strokeWidth="3" fill="none" />
+                  <circle cx="20" cy="20" r="16" stroke="rgba(32,21,255,0.2)" strokeWidth="2.5" fill="none" />
                   <circle 
-                    cx="24" 
-                    cy="24" 
-                    r="20" 
+                    cx="20" 
+                    cy="20" 
+                    r="16" 
                     stroke="currentColor" 
-                    strokeWidth="3" 
+                    strokeWidth="2.5" 
                     fill="none" 
-                    strokeDasharray="125.6" 
-                    strokeDashoffset={125.6 - (125.6 * (user.matchScore || 85)) / 100} 
+                    strokeDasharray="100.5" 
+                    strokeDashoffset={100.5 - (100.5 * (user.matchScore || 85)) / 100} 
                     className="text-primary drop-shadow-[0_0_5px_rgba(32,21,255,0.8)] transition-all duration-1000"
                   />
                 </svg>
-                <span className="text-[10px] font-bold text-white z-10">{user.matchScore || 85}%</span>
+                <span className="text-[9px] font-bold text-white z-10">{user.matchScore || 85}%</span>
               </div>
             </div>
 
-            <div className="flex items-center gap-3 mb-4 mt-2">
-              <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white font-bold border border-white/20">
-                {user.name?.charAt(0).toUpperCase() || '?'}
+            <div className="flex-1 p-6 flex flex-col items-center text-center">
+              {/* Profile Photo with distinct glow */}
+              <div className="relative mb-6">
+                <div className="absolute inset-0 bg-primary/40 blur-2xl rounded-full transform scale-125 group-hover:bg-primary/60 transition-all" />
+                <div className="relative w-20 h-20 shrink-0 rounded-full bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center text-white font-bold text-3xl shadow-xl border-2 border-[#0a0a0a]">
+                  {user.name?.charAt(0).toUpperCase() || '👤'}
+                </div>
               </div>
-              <div>
-                <h4 className="text-white font-bold text-sm leading-tight">{user.name?.toUpperCase()}</h4>
-                <p className="text-primary text-[10px] font-bold uppercase tracking-widest mt-0.5">
-                  {user.career_goal ? user.career_goal.replace('_', ' ') : 'Student'}
+              
+              {/* Center Aligned Name & Desired Role */}
+              <h2 className="text-xl font-bold text-white leading-tight tracking-wide">{user.name?.toUpperCase()}</h2>
+              <div className="text-primary text-xs font-bold mt-1.5 mb-6">
+                {user.desired_roles?.length > 0 
+                  ? user.desired_roles.join(' • ')
+                  : (user.career_goal ? user.career_goal.replace('_', ' ') : 'Student')
+                }
+              </div>
+
+              {/* College Info Box */}
+              <div className="w-full text-center bg-white/[0.03] p-3 rounded-lg border border-white/5 mt-auto mb-4">
+                <p className="text-xs text-gray-300 flex items-center justify-center gap-2">
+                  <span className="text-base">🎓</span> 
+                  <span className="truncate">{user.college || 'College not specified'}</span>
                 </p>
               </div>
+              
+              {/* AI/ML, Hackathon, Interest Labels */}
+              <div className="flex flex-wrap justify-center gap-1.5">
+                {user.matchLabels?.slice(0, 3).map((label, idx) => (
+                  <span key={idx} className={`px-2 py-0.5 rounded text-[9px] font-bold ${
+                    label.includes('Match') ? 'bg-primary/20 text-primary border border-primary/30' :
+                    label.includes('Hackathon') ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30' :
+                    label.includes('AI/ML') ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30' :
+                    label.includes('Startup') ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' :
+                    'bg-purple-500/20 text-purple-400 border border-purple-500/30'
+                  }`}>
+                    {label}
+                  </span>
+                ))}
+              </div>
             </div>
-
-            <div className="flex flex-wrap gap-1.5 mb-2">
-              {user.skills?.slice(0, 3).map(s => (
-                <span key={s} className="px-2 py-0.5 bg-white/5 border border-white/10 rounded text-[10px] text-gray-300">
-                  {s}
-                </span>
-              ))}
+            
+            <div className="p-3 border-t border-white/5 bg-black/40 backdrop-blur-md">
+              <button className="w-full py-2.5 rounded-lg bg-primary/10 text-primary font-bold text-xs hover:bg-primary hover:text-white transition-all flex items-center justify-center gap-2" onClick={(e) => { e.stopPropagation(); handleConnect(user.id); }}>
+                <span className="text-sm">🤝</span> Connect
+              </button>
             </div>
-
-            {/* AI/ML, Hackathon, Interest Labels */}
-            <div className="flex flex-wrap gap-1.5 mb-4">
-              {user.matchLabels?.map((label, idx) => (
-                <span key={idx} className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                  label.includes('Match') ? 'bg-primary/20 text-primary border border-primary/30' :
-                  label.includes('Hackathon') ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30' :
-                  label.includes('AI/ML') ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30' :
-                  label.includes('Startup') ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' :
-                  'bg-purple-500/20 text-purple-400 border border-purple-500/30'
-                }`}>
-                  {label}
-                </span>
-              ))}
-            </div>
-
-            <button className="mt-auto w-full btn-secondary py-2 text-xs" onClick={() => handleConnect(user.id)}>
-              Connect
-            </button>
           </div>
         ))}
       </div>
+
+      {selectedUser && (
+        <StudentProfileModal 
+          user={selectedUser} 
+          onClose={() => setSelectedUser(null)}
+          onConnect={() => {
+            handleConnect(selectedUser.id);
+            setSelectedUser(null);
+          }}
+        />
+      )}
     </div>
   );
 };
