@@ -30,6 +30,8 @@ const Profile = () => {
   const [customSkill, setCustomSkill] = useState('');
   const [desiredRoles, setDesiredRoles] = useState([]);
   const [customRole, setCustomRole] = useState('');
+  const [achievements, setAchievements] = useState([]);
+  const [customAchievement, setCustomAchievement] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState({ msg: '', type: '' });
@@ -75,6 +77,7 @@ const Profile = () => {
       });
       setSkills(Array.isArray(d.skills) ? d.skills : []);
       setDesiredRoles(Array.isArray(d.desired_roles) ? d.desired_roles : []);
+      setAchievements(Array.isArray(d.achievements) ? d.achievements : []);
     }).catch(console.error).finally(() => setLoading(false));
   }, []);
 
@@ -101,7 +104,7 @@ const Profile = () => {
     e.preventDefault();
     setSaving(true);
     try {
-      await api.put('/students/profile', { ...form, skills, desired_roles: desiredRoles });
+      await api.put('/students/profile', { ...form, skills, desired_roles: desiredRoles, achievements });
       showToast('Profile updated successfully! ✅', 'success');
       fetchProfile();
     } catch (err) {
@@ -267,23 +270,40 @@ const Profile = () => {
             </div>
           </div>
 
-          {/* Badges Section */}
+          {/* Achievements Section — user-selected chips */}
           <div className="glass-panel rounded-2xl p-5 md:p-6 relative overflow-hidden w-full">
             <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/10 rounded-bl-[100px] pointer-events-none" />
-            <h3 className="text-white font-bold mb-4 flex items-center gap-2 relative z-10"><span className="text-xl">🏅</span> Achievements</h3>
-            {(!profileData?.badges || profileData.badges.length === 0) ? (
-              <div className="text-center py-6 glass-card border-dashed">
-                <p className="text-gray-400 text-xs">No badges earned yet. Participate in hackathons to earn badges!</p>
+            <h3 className="text-white font-bold mb-4 flex items-center gap-2 relative z-10"><span className="text-xl">🏆</span> Achievements</h3>
+            {achievements.length === 0 ? (
+              <div className="text-center py-5 glass-card border-dashed">
+                <p className="text-gray-400 text-xs">No achievements added yet. Edit your profile to highlight your accomplishments!</p>
               </div>
             ) : (
               <div className="flex flex-wrap gap-2 relative z-10">
-                {profileData.badges.map(badge => (
-                  <div key={badge} className="flex items-center gap-2 bg-yellow-500/10 border border-yellow-500/20 px-3 py-1.5 rounded-xl">
-                    <span className="text-sm">🏆</span>
-                    <span className="text-xs font-bold text-yellow-400">{badge}</span>
-                  </div>
+                {achievements.map(achievement => (
+                  <span
+                    key={achievement}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-yellow-500/10 border border-yellow-500/25 text-yellow-300 rounded-xl text-xs font-bold"
+                  >
+                    <span>🏅</span>
+                    {achievement}
+                  </span>
                 ))}
               </div>
+            )}
+            {/* System badges below user achievements */}
+            {profileData?.badges && profileData.badges.length > 0 && (
+              <>
+                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-4 mb-2">Platform Badges</p>
+                <div className="flex flex-wrap gap-2 relative z-10">
+                  {profileData.badges.map(badge => (
+                    <div key={badge} className="flex items-center gap-2 bg-yellow-500/10 border border-yellow-500/20 px-3 py-1.5 rounded-xl">
+                      <span className="text-sm">🏆</span>
+                      <span className="text-xs font-bold text-yellow-400">{badge}</span>
+                    </div>
+                  ))}
+                </div>
+              </>
             )}
           </div>
 
@@ -494,6 +514,77 @@ const Profile = () => {
                     }}
                     disabled={!customRole.trim()}
                     className="px-4 py-2.5 bg-primary/10 border border-primary/30 text-primary rounded-xl text-sm font-bold hover:bg-primary/20 transition-all disabled:opacity-40"
+                  >
+                    Add
+                  </button>
+                </div>
+              </div>
+
+              {/* Achievements Selector */}
+              <div>
+                <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+                  Achievements <span className="text-gray-500 font-normal normal-case">({achievements.length} selected)</span>
+                </label>
+
+                {/* Selected achievements */}
+                {achievements.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {achievements.map(achievement => (
+                      <span key={achievement} className="flex items-center gap-1.5 px-3 py-1.5 bg-yellow-500/10 border border-yellow-500/30 text-yellow-300 rounded-lg text-xs font-bold">
+                        🏅 {achievement}
+                        <button type="button" onClick={() => setAchievements(prev => prev.filter(a => a !== achievement))} className="hover:text-red-400 transition-colors ml-0.5">
+                          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {/* Quick-select pills */}
+                <div className="flex flex-wrap gap-2 mb-3 max-h-36 overflow-y-auto pr-1">
+                  {['SIH Participant','SIH Finalist','Hackathon Winner','Hackathon Participant','Research Publication','Patent Filed','Internship Experience','Campus Ambassador','Certification Holder','Open Source Contributor','Startup Founder','Event Organizer','Technical Speaker','Top Performer','Community Lead']
+                    .filter(a => !achievements.includes(a))
+                    .map(achievement => (
+                      <button
+                        key={achievement} type="button"
+                        onClick={() => setAchievements(prev => [...prev, achievement])}
+                        className="px-3 py-1.5 rounded-full text-xs font-semibold border transition-all duration-200 bg-white/5 border-white/10 text-gray-400 hover:border-yellow-500/40 hover:text-yellow-300"
+                      >
+                        + {achievement}
+                      </button>
+                    ))}
+                </div>
+
+                {/* Custom achievement input */}
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={customAchievement}
+                    onChange={e => setCustomAchievement(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const trimmed = customAchievement.trim();
+                        if (trimmed && !achievements.includes(trimmed)) {
+                          setAchievements(prev => [...prev, trimmed]);
+                          setCustomAchievement('');
+                        }
+                      }
+                    }}
+                    placeholder="Add custom achievement..."
+                    className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-yellow-500/50 focus:ring-1 focus:ring-yellow-500/20 transition-all"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const trimmed = customAchievement.trim();
+                      if (trimmed && !achievements.includes(trimmed)) {
+                        setAchievements(prev => [...prev, trimmed]);
+                        setCustomAchievement('');
+                      }
+                    }}
+                    disabled={!customAchievement.trim()}
+                    className="px-4 py-2.5 bg-yellow-500/10 border border-yellow-500/30 text-yellow-300 rounded-xl text-sm font-bold hover:bg-yellow-500/20 transition-all disabled:opacity-40"
                   >
                     Add
                   </button>

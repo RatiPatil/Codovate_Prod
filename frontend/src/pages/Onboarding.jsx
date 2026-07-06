@@ -76,6 +76,24 @@ const DESIRED_ROLES = [
   'Competitive Programmer',
 ];
 
+const ACHIEVEMENTS = [
+  'SIH Participant',
+  'SIH Finalist',
+  'Hackathon Winner',
+  'Hackathon Participant',
+  'Research Publication',
+  'Patent Filed',
+  'Internship Experience',
+  'Campus Ambassador',
+  'Certification Holder',
+  'Open Source Contributor',
+  'Startup Founder',
+  'Event Organizer',
+  'Technical Speaker',
+  'Top Performer',
+  'Community Lead',
+];
+
 // Validation rules per step
 const validateStep = (step, data) => {
   const errors = {};
@@ -171,6 +189,7 @@ export default function Onboarding() {
     career_goal: '', career_interests: [],
     desired_roles: [], desired_roles_other: '',
     experience_level: '', skills: [],
+    achievements: [], achievements_other: '',
     bio: '', github_url: '', linkedin_url: '', portfolio_url: ''
   });
   const [touched, setTouched] = useState({});
@@ -302,7 +321,14 @@ export default function Onboarding() {
             ? [data.desired_roles_other.trim()]
             : []),
         ];
-        await api.post('/onboarding/save', { ...data, desired_roles: resolvedRoles, onboarding_completed: true });
+        // Resolve achievements: replace 'Other' with custom text if provided
+        const resolvedAchievements = [
+          ...data.achievements.filter(a => a !== 'Other'),
+          ...(data.achievements.includes('Other') && data.achievements_other.trim()
+            ? [data.achievements_other.trim()]
+            : []),
+        ];
+        await api.post('/onboarding/save', { ...data, desired_roles: resolvedRoles, achievements: resolvedAchievements, onboarding_completed: true });
         triggerSuccessAnimation();
         
         // Wait a little bit for the user to see the confetti
@@ -807,6 +833,61 @@ export default function Onboarding() {
                         {data.bio.length}/20 min
                       </span>
                     </div>
+                  </div>
+
+                  {/* Achievements — multi-select with custom entry */}
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-400 mb-1 uppercase tracking-wider">
+                      Achievements
+                      <span className="text-gray-500 font-normal normal-case ml-1">(Optional)</span>
+                      {data.achievements.length > 0 && (
+                        <span className="text-gray-600 normal-case tracking-normal ml-1">
+                          ({[...data.achievements.filter(a => a !== 'Other'), ...(data.achievements.includes('Other') && data.achievements_other.trim() ? [data.achievements_other.trim()] : [])].length} selected)
+                        </span>
+                      )}
+                    </label>
+                    <p className="text-gray-600 text-[10px] mb-3">Select all that apply — recruiters love seeing your highlights!</p>
+                    <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto pr-1 pb-1">
+                      {ACHIEVEMENTS.map(achievement => (
+                        <button
+                          key={achievement}
+                          type="button"
+                          onClick={() => toggleItem('achievements', achievement)}
+                          className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all duration-200 ${
+                            data.achievements.includes(achievement)
+                              ? 'bg-yellow-500/20 border-yellow-400 text-yellow-300'
+                              : 'bg-white/5 border-white/10 text-gray-400 hover:border-white/20 hover:text-white'
+                          }`}
+                        >
+                          {data.achievements.includes(achievement) && <span className="mr-1">🏆</span>}
+                          {achievement}
+                        </button>
+                      ))}
+                      {/* Other custom option */}
+                      <button
+                        type="button"
+                        onClick={() => toggleItem('achievements', 'Other')}
+                        className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all duration-200 ${
+                          data.achievements.includes('Other')
+                            ? 'bg-purple-500/20 border-purple-400 text-purple-300'
+                            : 'bg-white/5 border-white/10 text-gray-400 hover:border-white/20 hover:text-white'
+                        }`}
+                      >
+                        ✨ Other
+                      </button>
+                    </div>
+                    {/* Custom achievement text input */}
+                    {data.achievements.includes('Other') && (
+                      <div className="mt-2">
+                        <input
+                          type="text"
+                          value={data.achievements_other}
+                          onChange={e => update('achievements_other', e.target.value)}
+                          placeholder="e.g. National Level Debate Winner"
+                          className="w-full bg-white/5 border border-purple-400/40 rounded-xl px-4 py-2.5 text-white placeholder-gray-600 text-xs focus:outline-none focus:ring-2 focus:ring-purple-400/20 focus:border-purple-400 transition-all"
+                        />
+                      </div>
+                    )}
                   </div>
 
                   <div>
