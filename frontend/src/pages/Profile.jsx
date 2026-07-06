@@ -396,19 +396,41 @@ const Profile = () => {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex gap-4">
+          <div className="flex gap-4 relative z-20">
             <button
+              type="button"
               onClick={() => {
-                document.getElementById('edit-profile-section')?.scrollIntoView({ behavior: 'smooth' });
+                const el = document.getElementById('edit-profile-section');
+                if (el) el.scrollIntoView({ behavior: 'smooth' });
               }}
               className="flex-1 py-3 bg-white/10 hover:bg-white/15 border border-white/20 rounded-xl text-white font-bold text-sm transition-all"
             >
               Edit Profile
             </button>
             <button
+              type="button"
               onClick={() => {
-                navigator.clipboard.writeText(window.location.href);
-                showToast('Profile link copied!', 'success');
+                const url = window.location.href;
+                if (navigator.clipboard && window.isSecureContext) {
+                  navigator.clipboard.writeText(url)
+                    .then(() => showToast('Profile link copied!', 'success'))
+                    .catch(() => showToast('Failed to copy', 'error'));
+                } else {
+                  const textArea = document.createElement("textarea");
+                  textArea.value = url;
+                  textArea.style.position = "fixed";
+                  textArea.style.left = "-9999px";
+                  document.body.appendChild(textArea);
+                  textArea.focus();
+                  textArea.select();
+                  try {
+                    document.execCommand('copy');
+                    showToast('Profile link copied!', 'success');
+                  } catch (err) {
+                    showToast('Failed to copy', 'error');
+                  }
+                  document.body.removeChild(textArea);
+                }
               }}
               className="flex-1 py-3 bg-primary/20 hover:bg-primary/30 border border-primary/40 rounded-xl text-primary font-bold text-sm transition-all"
             >
@@ -431,9 +453,10 @@ const Profile = () => {
                   </div>
                 ) : (
                   <button 
+                    type="button"
                     onClick={handleLinkGoogle}
                     disabled={linking}
-                    className="w-full flex items-center justify-center gap-3 p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full flex items-center justify-center gap-3 p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed relative z-20"
                   >
                     <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5" />
                     <span className="text-gray-200 text-sm font-medium">{linking ? 'Linking...' : 'Link Google Account'}</span>
@@ -460,8 +483,9 @@ const Profile = () => {
                   <span className="text-gray-200 text-sm font-medium">App Theme</span>
                 </div>
                 <button 
+                  type="button"
                   onClick={toggleTheme}
-                  className="px-4 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 bg-primary border-primary text-white hover:bg-primary-light"
+                  className="px-4 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 bg-primary border-primary text-white hover:bg-primary-light relative z-20"
                 >
                   Switch to {theme === 'dark' ? 'Light' : 'Dark'} Mode
                 </button>
@@ -471,7 +495,7 @@ const Profile = () => {
         </div>
 
         {/* Right Form */}
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-2" id="edit-profile-section">
           <div className="glass-panel rounded-2xl p-5 md:p-8 w-full">
             <h3 className="text-white font-bold text-2xl mb-8 flex items-center gap-3">
               <span className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary text-sm">✏️</span>

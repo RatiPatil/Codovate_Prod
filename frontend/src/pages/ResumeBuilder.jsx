@@ -67,14 +67,14 @@ const Label = ({ children, hint }) => (
 const Input = ({ value, onChange, placeholder, type = 'text', className = '', hasError = false }) => (
   <input
     type={type} value={value} onChange={onChange} placeholder={placeholder}
-    className={`w-full bg-[#0d0d1a] border ${hasError ? 'border-red-500 focus:border-red-400 bg-red-500/5' : 'border-white/8 focus:border-[#2015FF]/60'} rounded-xl py-2.5 px-3.5 text-white text-sm placeholder-gray-600 focus:outline-none transition-all ${className}`}
+    className={`w-full input-glass ${hasError ? 'border-red-500 focus:border-red-400 bg-red-500/5' : ''} ${className}`}
   />
 );
 
 const Textarea = ({ value, onChange, placeholder, rows = 3 }) => (
   <textarea
     value={value} onChange={onChange} placeholder={placeholder} rows={rows}
-    className="w-full bg-[#0d0d1a] border border-white/8 rounded-xl py-2.5 px-3.5 text-white text-sm placeholder-gray-600 focus:border-[#2015FF]/60 focus:outline-none resize-y transition-all"
+    className="w-full input-glass resize-y"
   />
 );
 
@@ -301,7 +301,7 @@ const SkillsStep = ({ data, onChange }) => {
           onChange={e => setInputs(p => ({ ...p, [category]: e.target.value }))}
           onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addSkill(category))}
           placeholder={placeholder}
-          className="flex-1 bg-[#0d0d1a] border border-white/8 rounded-xl py-2.5 px-3.5 text-white text-sm placeholder-gray-600 focus:border-[#2015FF]/60 focus:outline-none transition-all"
+          className="flex-1 input-glass"
         />
         <button onClick={() => addSkill(category)} type="button"
           className="px-4 py-2 bg-[#2015FF]/20 border border-[#2015FF]/30 rounded-xl text-[#6060FF] text-xs font-black hover:bg-[#2015FF] hover:text-white transition-all">
