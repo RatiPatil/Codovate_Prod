@@ -465,6 +465,7 @@ const ConnectionsView = ({ currentUser }) => {
   const [connections, setConnections] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeChat, setActiveChat] = useState(null);
+  const [selectedProfile, setSelectedProfile] = useState(null);
 
   const fetchConnections = useCallback(async () => {
     try {
@@ -503,14 +504,14 @@ const ConnectionsView = ({ currentUser }) => {
             {connections.filter(c => c.status === 'pending' && c.receiver_id === currentUser?.id).length === 0 ? (
               <p className="text-sm text-gray-500">No incoming requests.</p>
             ) : connections.filter(c => c.status === 'pending' && c.receiver_id === currentUser?.id).map(c => (
-              <div key={c.id} className="glass-card p-4 flex justify-between items-center">
+              <div key={c.id} className="glass-card p-4 flex justify-between items-center hover:bg-white/5 transition-colors cursor-pointer" onClick={() => setSelectedProfile(c)}>
                 <div>
                   <h4 className="font-bold">{c.other_user?.name?.toUpperCase()}</h4>
                   <p className="text-xs text-gray-400">{c.other_user?.college}</p>
                 </div>
                 <div className="flex gap-2">
-                  <button onClick={() => handleAction(c.id, 'accept')} className="px-3 py-1 bg-green-500/20 text-green-400 rounded text-xs font-bold hover:bg-green-500/30">Accept</button>
-                  <button onClick={() => handleAction(c.id, 'reject')} className="px-3 py-1 bg-red-500/20 text-red-400 rounded text-xs font-bold hover:bg-red-500/30">Reject</button>
+                  <button onClick={(e) => { e.stopPropagation(); handleAction(c.id, 'accept'); }} className="px-3 py-1 bg-green-500/20 text-green-400 rounded text-xs font-bold hover:bg-green-500/30">Accept</button>
+                  <button onClick={(e) => { e.stopPropagation(); handleAction(c.id, 'reject'); }} className="px-3 py-1 bg-red-500/20 text-red-400 rounded text-xs font-bold hover:bg-red-500/30">Reject</button>
                 </div>
               </div>
             ))}
@@ -557,7 +558,14 @@ const ConnectionsView = ({ currentUser }) => {
             })}
           </div>
         </div>
-      </div>
+      {selectedProfile && (
+        <StudentProfileModal
+          user={selectedProfile.other_user}
+          onClose={() => setSelectedProfile(null)}
+          onConnect={() => { handleAction(selectedProfile.id, 'accept'); setSelectedProfile(null); }}
+          onDismiss={() => { handleAction(selectedProfile.id, 'reject'); setSelectedProfile(null); }}
+        />
+      )}
     </div>
   );
 };
