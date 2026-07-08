@@ -12,15 +12,39 @@ async function checkExpiredChats(connectionId = null) {
 router.get('/discover', auth, async (req, res) => {
   try {
     const { skill, domain, experience } = req.query;
-    let usersRef = db.collection('students');
     
-    // We fetch all and filter in memory for now due to Firestore limitations with multiple array-contains
+    // Fetch existing connections to exclude them
+    const sent = await db.collection('student_connections').where('sender_id', '==', req.user.id).get();
+    const received = await db.collection('student_connections').where('receiver_id', '==', req.user.id).get();
+    
+    const excludedUserIds = new Set();
+    sent.forEach(doc => {
+      const d = doc.data();
+      if (d.status !== 'rejected') excludedUserIds.add(d.receiver_id);
+    });
+    received.forEach(doc => {
+      const d = doc.data();
+      if (d.status !== 'rejected') excludedUserIds.add(d.sender_id);
+    });
+
+    // Exclude blocked users (if array exists on user doc)
+    const currentUserDoc = await db.collection('students').doc(req.user.id).get();
+    if (currentUserDoc.exists) {
+      const data = currentUserDoc.data();
+      const blocked = data.blocked_users || [];
+      blocked.forEach(id => excludedUserIds.add(id));
+    }
+
+    let usersRef = db.collection('students');
     const snapshot = await usersRef.get();
     let students = [];
     
     snapshot.forEach(doc => {
       // Don't discover self
       if (doc.id === req.user.id) return;
+      
+      // Exclude already connected, pending, or blocked users
+      if (excludedUserIds.has(doc.id)) return;
       
       const rawData = doc.data();
       const pd = rawData.profile_data || {};

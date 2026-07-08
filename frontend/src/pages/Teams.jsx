@@ -778,7 +778,7 @@ const MatchFinder = ({ results, onConnect }) => {
       <div className="text-center py-24 glass-panel rounded-2xl border-dashed h-[500px] flex flex-col items-center justify-center">
         <p className="text-5xl mb-4">🌟</p>
         <p className="text-gray-300 text-lg font-bold">You've seen all potential teammates!</p>
-        <p className="text-gray-500 text-sm mt-2">Adjust filters to find more.</p>
+        <p className="text-gray-500 text-sm mt-2">No new teammates available. Check back later.</p>
         <button onClick={() => setCurrentIndex(0)} className="mt-6 btn-secondary text-xs px-6 py-2">Start Over</button>
       </div>
     );
@@ -874,6 +874,8 @@ const FindTeammates = () => {
     try {
       await api.post('/networking/connect', { receiver_id: receiverId });
       alert('Connection request sent!');
+      // Remove from results instantly
+      setResults(prev => prev.filter(u => u.id !== receiverId));
     } catch (err) {
       alert(err.response?.data?.message || 'Error sending request');
     }
@@ -945,7 +947,7 @@ const FindTeammates = () => {
         ) : results.length === 0 ? (
           <div className="text-center py-24 glass-panel rounded-2xl border-dashed">
             <p className="text-4xl mb-4">🔍</p>
-            <p className="text-gray-400 text-sm">No teammates found matching your criteria.</p>
+            <p className="text-gray-400 text-sm">No new teammates available. Check back later.</p>
           </div>
         ) : (
           <MatchFinder results={results} onConnect={handleConnect} />
