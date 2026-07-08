@@ -468,6 +468,16 @@ const ConnectionsView = ({ currentUser }) => {
   const [loading, setLoading] = useState(true);
   const [activeChat, setActiveChat] = useState(null);
   const [selectedProfile, setSelectedProfile] = useState(null);
+  
+  // New States
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filter, setFilter] = useState('All'); // All, Connected, Pending Sent, Pending Received
+  const [toast, setToast] = useState({ msg: '', type: 'success' });
+
+  const showToast = (msg, type = 'success') => {
+    setToast({ msg, type });
+    setTimeout(() => setToast({ msg: '', type: 'success' }), 3500);
+  };
 
   const fetchConnections = useCallback(async () => {
     try {
@@ -485,89 +495,182 @@ const ConnectionsView = ({ currentUser }) => {
   const handleAction = async (id, action) => {
     try {
       await api.put(`/networking/connect/${id}`, { action });
+      showToast(action === 'accept' ? 'Connection accepted!' : 'Connection removed.', 'success');
       fetchConnections();
     } catch (err) {
-      alert(err.response?.data?.message || 'Error processing request');
+      showToast(err.response?.data?.message || 'Error processing request', 'error');
     }
   };
 
-  if (loading) return <div className="text-center py-12"><div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" /></div>;
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex gap-4 animate-pulse">
+          <div className="h-10 bg-white/5 rounded-xl flex-1"></div>
+          <div className="h-10 bg-white/5 rounded-xl w-40 hidden md:block"></div>
+        </div>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[1,2,3,4,5,6].map(i => (
+            <div key={i} className="glass-card h-[280px] p-6 animate-pulse bg-white/5 rounded-2xl"></div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  const filteredConnections = connections.filter(c => {
+    const isConnected = c.status === 'accepted';
+    const isPendingSent = c.status === 'pending' && c.sender_id === currentUser?.id;
+    const isPendingReceived = c.status === 'pending' && c.receiver_id === currentUser?.id;
+
+    if (filter === 'Connected' && !isConnected) return false;
+    if (filter === 'Pending Sent' && !isPendingSent) return false;
+    if (filter === 'Pending Received' && !isPendingReceived) return false;
+
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      const nameMatch = c.other_user?.name?.toLowerCase().includes(q);
+      const collegeMatch = c.other_user?.college?.toLowerCase().includes(q);
+      const skillMatch = c.other_user?.skills?.some(s => s.toLowerCase().includes(q));
+      if (!nameMatch && !collegeMatch && !skillMatch) return false;
+    }
+    return true;
+  });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative">
+      {/* Toast Notification */}
+      {toast.msg && (
+        <div className={`fixed top-24 left-1/2 -translate-x-1/2 px-6 py-3 rounded-full shadow-2xl z-50 flex items-center gap-2 font-bold text-sm transition-all animate-bounce-in ${
+          toast.type === 'error' ? 'bg-red-500 text-white' : 'bg-green-500 text-white'
+        }`}>
+          <span>{toast.type === 'error' ? '⚠️' : '✅'}</span> {toast.msg}
+        </div>
+      )}
 
       {activeChat && <PrivateChatModal connection={activeChat} currentUser={currentUser} onClose={() => setActiveChat(null)} />}
       
-      <div className="grid md:grid-cols-2 gap-6">
-        {/* Pending Requests */}
-        <div>
-          <h3 className="text-lg font-bold mb-4">Incoming Requests</h3>
-          <div className="space-y-3">
-            {connections.filter(c => c.status === 'pending' && c.receiver_id === currentUser?.id).length === 0 ? (
-              <p className="text-sm text-gray-500">No incoming requests.</p>
-            ) : connections.filter(c => c.status === 'pending' && c.receiver_id === currentUser?.id).map(c => (
-              <div key={c.id} className="glass-card p-4 flex justify-between items-center hover:bg-white/5 transition-colors cursor-pointer" onClick={() => setSelectedProfile(c)}>
-                <div>
-                  <h4 className="font-bold">{c.other_user?.name?.toUpperCase()}</h4>
-                  <p className="text-xs text-gray-400">{c.other_user?.college}</p>
-                </div>
-                <div className="flex gap-2">
-                  <button onClick={(e) => { e.stopPropagation(); handleAction(c.id, 'accept'); }} className="px-3 py-1 bg-green-500/20 text-green-400 rounded text-xs font-bold hover:bg-green-500/30">Accept</button>
-                  <button onClick={(e) => { e.stopPropagation(); handleAction(c.id, 'reject'); }} className="px-3 py-1 bg-red-500/20 text-red-400 rounded text-xs font-bold hover:bg-red-500/30">Reject</button>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <h3 className="text-lg font-bold mt-8 mb-4">Sent Requests</h3>
-          <div className="space-y-3">
-            {connections.filter(c => c.status === 'pending' && c.sender_id === currentUser?.id).length === 0 ? (
-              <p className="text-sm text-gray-500">No sent requests.</p>
-            ) : connections.filter(c => c.status === 'pending' && c.sender_id === currentUser?.id).map(c => (
-              <div key={c.id} className="glass-card p-4 flex justify-between items-center">
-                <div>
-                  <h4 className="font-bold">{c.other_user?.name?.toUpperCase()}</h4>
-                  <p className="text-xs text-gray-400">Waiting for response...</p>
-                </div>
-              </div>
-            ))}
-          </div>
+      {/* Header & Controls */}
+      <div className="flex flex-col md:flex-row gap-4 justify-between items-center bg-[#0a0a0a] p-4 rounded-2xl border border-white/5">
+        <div className="relative w-full md:w-96">
+          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
+          <input 
+            type="text" 
+            placeholder="Search by name, college, or skills..." 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 pl-11 pr-4 text-white text-sm focus:border-primary transition-all outline-none"
+          />
         </div>
-
-        {/* Active Chats */}
-        <div>
-          <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-            Active Chats <span className="text-xs font-bold text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded">Unlimited</span>
-          </h3>
-          <div className="space-y-3">
-            {connections.filter(c => c.status === 'accepted').length === 0 ? (
-              <p className="text-sm text-gray-500">No active chats.</p>
-            ) : connections.filter(c => c.status === 'accepted').map(c => {
-              return (
-                <div key={c.id} className="glass-card p-4 flex justify-between items-center">
-                  <div>
-                    <h4 className="font-bold">{c.other_user?.name?.toUpperCase()}</h4>
-                    <p className="text-xs text-gray-400 mt-1">Unlimited Chat</p>
-                  </div>
-                  <button 
-                    onClick={() => setActiveChat(c)}
-                    className="btn-primary py-1.5 px-4 text-xs shadow-none"
-                  >
-                    Open Chat
-                  </button>
-                </div>
-              )
-            })}
-          </div>
+        
+        <div className="flex gap-2 w-full md:w-auto overflow-x-auto no-scrollbar">
+          {['All', 'Connected', 'Pending Received', 'Pending Sent'].map(f => (
+            <button 
+              key={f}
+              onClick={() => setFilter(f)}
+              className={`whitespace-nowrap px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                filter === f ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-white/5 text-gray-400 hover:text-white hover:bg-white/10 border border-white/10'
+              }`}
+            >
+              {f}
+            </button>
+          ))}
         </div>
       </div>
-      
+
+      {/* Connection Cards Grid */}
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredConnections.length === 0 ? (
+          <div className="col-span-full text-center py-24 glass-card border-dashed">
+             <p className="text-4xl mb-4">📭</p>
+             <p className="text-gray-400 text-sm">No connections found matching your criteria.</p>
+          </div>
+        ) : filteredConnections.map(c => {
+          const u = c.other_user;
+          const isConnected = c.status === 'accepted';
+          const isPendingSent = c.status === 'pending' && c.sender_id === currentUser?.id;
+          const isPendingReceived = c.status === 'pending' && c.receiver_id === currentUser?.id;
+
+          return (
+            <div key={c.id} className="glass-card flex flex-col overflow-hidden bg-[#0a0a0a] border-white/5 h-full">
+              <div className="p-5 flex-1">
+                {/* Header: Avatar + Status */}
+                <div className="flex justify-between items-start mb-4">
+                  <div className="w-14 h-14 shrink-0 rounded-full bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center text-white font-bold text-xl shadow-lg border-2 border-[#0a0a0a]">
+                    {u?.name?.charAt(0).toUpperCase() || '👤'}
+                  </div>
+                  {isConnected && <span className="bg-green-500/10 text-green-400 border border-green-500/20 px-2.5 py-1 rounded-md text-[9px] font-bold uppercase tracking-widest shrink-0">Connected</span>}
+                  {isPendingSent && <span className="bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 px-2.5 py-1 rounded-md text-[9px] font-bold uppercase tracking-widest shrink-0">Sent</span>}
+                  {isPendingReceived && <span className="bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2.5 py-1 rounded-md text-[9px] font-bold uppercase tracking-widest shrink-0">Needs Reply</span>}
+                </div>
+                
+                <h3 className="font-bold text-lg text-white line-clamp-1">{u?.name?.toUpperCase()}</h3>
+                <p className="text-primary text-[11px] font-bold mt-1 line-clamp-1">
+                  {u?.desired_roles?.length > 0 ? u.desired_roles.join(' • ') : (u?.career_goal ? u.career_goal.replace('_', ' ') : 'Student')}
+                </p>
+                <p className="text-gray-400 text-[11px] mt-2 flex items-center gap-1.5"><span className="text-sm">🎓</span> <span className="truncate">{u?.college || 'College not specified'}</span></p>
+
+                {/* Skills Preview */}
+                {u?.skills?.length > 0 && (
+                  <div className="mt-4 flex flex-wrap gap-1.5">
+                    {u.skills.slice(0, 3).map(s => (
+                      <span key={s} className="px-2 py-0.5 rounded text-[10px] font-bold bg-white/5 text-gray-300 border border-white/10">{s}</span>
+                    ))}
+                    {u.skills.length > 3 && <span className="px-2 py-0.5 rounded text-[10px] font-bold text-gray-500">+{u.skills.length - 3}</span>}
+                  </div>
+                )}
+              </div>
+
+              {/* Action Buttons Footer */}
+              <div className="p-3 border-t border-white/5 bg-black/40 backdrop-blur-md flex flex-wrap gap-2">
+                <button 
+                  onClick={() => setSelectedProfile(c)}
+                  className="flex-1 min-w-[40%] py-2 rounded-lg bg-white/5 border border-white/10 text-white font-bold text-xs hover:bg-white/10 transition-all"
+                >
+                  View Profile
+                </button>
+                
+                {isConnected && (
+                  <button 
+                    onClick={() => setActiveChat(c)}
+                    className="flex-1 min-w-[40%] py-2 rounded-lg bg-primary/20 border border-primary/30 text-primary font-bold text-xs hover:bg-primary/30 transition-all flex items-center justify-center gap-1.5"
+                  >
+                    💬 Message
+                  </button>
+                )}
+
+                {isPendingReceived && (
+                  <button 
+                    onClick={() => handleAction(c.id, 'accept')}
+                    className="flex-1 min-w-[40%] py-2 rounded-lg bg-green-500/20 border border-green-500/30 text-green-400 font-bold text-xs hover:bg-green-500/30 transition-all flex items-center justify-center gap-1.5"
+                  >
+                    Accept
+                  </button>
+                )}
+                
+                {/* Generic Reject / Remove / Cancel logic mapped to backend reject */}
+                <button 
+                  onClick={() => {
+                    const msg = isConnected ? 'Are you sure you want to remove this connection?' : 'Are you sure you want to cancel this request?';
+                    if (window.confirm(msg)) handleAction(c.id, 'reject');
+                  }}
+                  className="w-full mt-1 py-2 rounded-lg text-gray-500 font-semibold text-[10px] uppercase tracking-widest hover:text-red-400 hover:bg-red-500/10 transition-all"
+                >
+                  {isConnected ? 'Remove Connection' : (isPendingSent ? 'Cancel Request' : 'Decline Request')}
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
       {selectedProfile && (
         <StudentProfileModal
           user={selectedProfile.other_user}
           onClose={() => setSelectedProfile(null)}
-          onConnect={() => { handleAction(selectedProfile.id, 'accept'); setSelectedProfile(null); }}
-          onDismiss={() => { handleAction(selectedProfile.id, 'reject'); setSelectedProfile(null); }}
+          // If pending received, we allow Connect/Dismiss from the modal footer
+          onConnect={selectedProfile.status === 'pending' && selectedProfile.receiver_id === currentUser?.id ? () => { handleAction(selectedProfile.id, 'accept'); setSelectedProfile(null); } : null}
+          onDismiss={selectedProfile.status === 'pending' && selectedProfile.receiver_id === currentUser?.id ? () => { handleAction(selectedProfile.id, 'reject'); setSelectedProfile(null); } : null}
         />
       )}
     </div>
