@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { signInWithPopup, getRedirectResult, signInWithCustomToken } from 'firebase/auth';
+import { signInWithPopup, getRedirectResult, signInWithCustomToken, linkWithPopup } from 'firebase/auth';
 import { auth, googleProvider } from '../lib/firebase';
 import api from '../api/axios';
 
@@ -147,7 +147,6 @@ export const AuthProvider = ({ children }) => {
   const linkGoogleAccount = useCallback(async () => {
     try {
       if (!auth.currentUser) throw new Error("No active Firebase session.");
-      const { linkWithPopup } = await import('firebase/auth');
       const result = await linkWithPopup(auth.currentUser, googleProvider);
 
       try {

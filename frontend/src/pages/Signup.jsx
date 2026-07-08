@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../components/ui/ToastProvider';
 import { gsap } from 'gsap';
+import api from '../api/axios';
 import { validateUsername, validateEmail, validatePassword, validateConfirmPassword } from '../utils/validators';
 import { getFirebaseErrorMessage } from '../utils/firebaseErrors';
 import AuthInput from '../components/auth/AuthInput';
@@ -85,7 +86,6 @@ const Signup = () => {
     setUsernameChecking(true);
     usernameTimerRef.current = setTimeout(async () => {
       try {
-        const { default: api } = await import('../api/axios');
         const res = await api.get(`/auth/check-username/${encodeURIComponent(form.username.trim().toLowerCase())}`);
         setUsernameAvailable(res.data.available);
       } catch {
@@ -126,7 +126,6 @@ const Signup = () => {
 
     setLoading(true);
     try {
-      const { default: api } = await import('../api/axios');
       const res = await api.post('/auth/signup', {
         username: form.username.trim().toLowerCase(),
         name: form.fullName.trim(),

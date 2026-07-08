@@ -7,6 +7,7 @@ import { validateEmail } from '../utils/validators';
 import { getFirebaseErrorMessage } from '../utils/firebaseErrors';
 import AuthInput from '../components/auth/AuthInput';
 import GoogleButton from '../components/auth/GoogleButton';
+import api from '../api/axios';
 
 const Login = () => {
   const [form, setForm] = useState({ emailOrUsername: '', password: '' });
@@ -88,7 +89,6 @@ const Login = () => {
 
     setLoading(true);
     try {
-      const { default: api } = await import('../api/axios');
       const payload = {
         email: form.emailOrUsername.trim().toLowerCase(),
         password: form.password,
