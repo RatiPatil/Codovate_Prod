@@ -73,8 +73,9 @@ const PendingRequestsModal = ({ isOpen, onClose }) => {
                     <h3 className="text-white font-bold text-lg">{req.studentName || 'Student'}</h3>
                     <div className="flex items-center gap-4 mt-1">
                       <span className="text-sm text-gray-400">📅 {new Date(req.scheduled_time).toLocaleString()}</span>
+                      {req.mode && <span className="text-sm text-gray-400">📍 {req.mode}</span>}
                     </div>
-                    {req.notes && <p className="text-sm text-gray-500 mt-2 italic">"{req.notes}"</p>}
+                    {(req.topic || req.notes) && <p className="text-sm text-gray-500 mt-2 italic">"{req.topic || req.notes}"</p>}
                   </div>
                   <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button 
