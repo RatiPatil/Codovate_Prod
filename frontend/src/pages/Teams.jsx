@@ -986,6 +986,12 @@ const FindTeammates = () => {
   const [hasMore, setHasMore] = useState(false);
   const [nextCursor, setNextCursor] = useState(null);
   const [showFiltersMobile, setShowFiltersMobile] = useState(false);
+  const [toast, setToast] = useState({ msg: '', type: 'success' });
+
+  const showToast = (msg, type = 'success') => {
+    setToast({ msg, type });
+    setTimeout(() => setToast({ msg: '', type: 'success' }), 3500);
+  };
 
   const fetchDiscover = async (isLoadMore = false) => {
     if (isLoadMore) setLoadingMore(true);
@@ -1021,16 +1027,25 @@ const FindTeammates = () => {
   const handleConnect = async (receiverId) => {
     try {
       await api.post('/networking/connect', { receiver_id: receiverId });
-      alert('Connection request sent!');
+      showToast('Connection request sent!', 'success');
       // Remove from results instantly
       setResults(prev => prev.filter(u => u.id !== receiverId));
     } catch (err) {
-      alert(err.response?.data?.message || 'Error sending request');
+      showToast(err.response?.data?.message || 'Error sending request', 'error');
     }
   };
 
   return (
-    <div className="flex flex-col lg:flex-row gap-6 h-full">
+    <div className="flex flex-col lg:flex-row gap-6 h-full relative">
+      {/* Toast Notification */}
+      {toast.msg && (
+        <div className={`fixed top-24 left-1/2 -translate-x-1/2 px-6 py-3 rounded-full shadow-2xl z-50 flex items-center gap-2 font-bold text-sm transition-all animate-bounce-in ${
+          toast.type === 'error' ? 'bg-red-500 text-white' : 'bg-green-500 text-white'
+        }`}>
+          <span>{toast.type === 'error' ? '⚠️' : '✅'}</span> {toast.msg}
+        </div>
+      )}
+
       {/* Sidebar Filters */}
       <div className="w-full lg:w-1/4 glass-panel p-4 md:p-6 rounded-2xl h-fit border border-white/5">
         <div className="flex justify-between items-center mb-4 lg:mb-6">
