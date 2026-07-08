@@ -11,7 +11,7 @@ async function checkExpiredChats(connectionId = null) {
 // GET: Discover students (porting from teams/discover but tailored)
 router.get('/discover', auth, async (req, res) => {
   try {
-    const { skill, domain, experience, college, year, branch, desired_role, availability, location, interests } = req.query;
+    const { skill, domain, experience, college, year, branch, desired_role, availability, location, interests, cursor, limit } = req.query;
     
     // Fetch existing connections to exclude them
     const sent = await db.collection('student_connections').where('sender_id', '==', req.user.id).get();
@@ -35,7 +35,20 @@ router.get('/discover', auth, async (req, res) => {
       blocked.forEach(id => excludedUserIds.add(id));
     }
 
-    let usersRef = db.collection('students');
+    let usersRef = db.collection('students').orderBy('__name__');
+    
+    if (cursor) {
+      const cursorDoc = await db.collection('students').doc(cursor).get();
+      if (cursorDoc.exists) {
+        usersRef = usersRef.startAfter(cursorDoc);
+      }
+    }
+
+    // Determine batch size: if filtering, fetch more to ensure we find matches
+    const hasFilters = skill || domain || experience || college || year || branch || desired_role || availability || location || interests;
+    const fetchLimit = hasFilters ? 200 : (parseInt(limit) || 20);
+    
+    usersRef = usersRef.limit(fetchLimit);
     const snapshot = await usersRef.get();
     let students = [];
     
@@ -102,7 +115,10 @@ router.get('/discover', auth, async (req, res) => {
       }
     });
 
-    res.json(students);
+    const nextCursor = snapshot.docs.length > 0 ? snapshot.docs[snapshot.docs.length - 1].id : null;
+    const hasMore = snapshot.docs.length === fetchLimit;
+
+    res.json({ data: students, nextCursor, hasMore });
   } catch (err) {
     console.error("Discover error:", err);
     res.status(500).json({ message: "Server error" });
@@ -194,6 +210,11 @@ router.put('/connect/:id', auth, async (req, res) => {
 
     if (action === 'reject') {
       await docRef.update({ status: 'rejected' });
+      if (req.io) {
+        // Emit to the other user so their UI updates if they are online
+        const otherId = data.sender_id === req.user.id ? data.receiver_id : data.sender_id;
+        req.io.to(`user_${otherId}`).emit('connection_rejected', { id: doc.id });
+      }
       return res.json({ message: 'Request rejected' });
     }
 

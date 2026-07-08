@@ -468,6 +468,7 @@ const ConnectionsView = ({ currentUser }) => {
   const [loading, setLoading] = useState(true);
   const [activeChat, setActiveChat] = useState(null);
   const [selectedProfile, setSelectedProfile] = useState(null);
+  const { socket } = useSocket();
   
   // New States
   const [searchQuery, setSearchQuery] = useState('');
@@ -491,6 +492,25 @@ const ConnectionsView = ({ currentUser }) => {
   }, []);
 
   useEffect(() => { fetchConnections(); }, [fetchConnections]);
+
+  // Real-time socket updates
+  useEffect(() => {
+    if (!socket) return;
+    
+    const handleUpdate = () => {
+      fetchConnections();
+    };
+
+    socket.on('connection_request', handleUpdate);
+    socket.on('connection_accepted', handleUpdate);
+    socket.on('connection_rejected', handleUpdate);
+
+    return () => {
+      socket.off('connection_request', handleUpdate);
+      socket.off('connection_accepted', handleUpdate);
+      socket.off('connection_rejected', handleUpdate);
+    };
+  }, [socket, fetchConnections]);
 
   const handleAction = async (id, action) => {
     try {
@@ -851,7 +871,7 @@ const StudentCardBody = ({ user }) => {
   );
 };
 
-const MatchFinder = ({ results, onConnect }) => {
+const MatchFinder = ({ results, onConnect, hasMore, onLoadMore, loadingMore }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedUser, setSelectedUser] = useState(null);
   const cardRefs = useRef([]);
@@ -881,8 +901,15 @@ const MatchFinder = ({ results, onConnect }) => {
       <div className="text-center py-24 glass-panel rounded-2xl border-dashed h-[500px] flex flex-col items-center justify-center">
         <p className="text-5xl mb-4">🌟</p>
         <p className="text-gray-300 text-lg font-bold">You've seen all potential teammates!</p>
-        <p className="text-gray-500 text-sm mt-2">No new teammates available. Check back later.</p>
-        <button onClick={() => setCurrentIndex(0)} className="mt-6 btn-secondary text-xs px-6 py-2">Start Over</button>
+        <p className="text-gray-500 text-sm mt-2">{hasMore ? "There are more users available matching your criteria." : "No new teammates available. Check back later."}</p>
+        <div className="flex gap-4 mt-6">
+          <button onClick={() => setCurrentIndex(0)} className="btn-secondary text-xs px-6 py-2">Start Over</button>
+          {hasMore && (
+            <button onClick={onLoadMore} disabled={loadingMore} className="btn-primary text-xs px-6 py-2">
+              {loadingMore ? 'Loading...' : 'Load More Users'}
+            </button>
+          )}
+        </div>
       </div>
     );
   }
@@ -955,24 +982,41 @@ const FindTeammates = () => {
   const [filters, setFilters] = useState({ skill: '', domain: '', experience: '', college: '', year: '', branch: '', desired_role: '', availability: '', location: '', interests: '' });
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
+  const [nextCursor, setNextCursor] = useState(null);
   const [showFiltersMobile, setShowFiltersMobile] = useState(false);
 
-  const fetchDiscover = useCallback(async () => {
-    setLoading(true);
+  const fetchDiscover = async (isLoadMore = false) => {
+    if (isLoadMore) setLoadingMore(true);
+    else setLoading(true);
+    
     try {
-      const params = new URLSearchParams(filters).toString();
+      const currentParams = { ...filters };
+      if (isLoadMore && nextCursor) currentParams.cursor = nextCursor;
+      
+      const params = new URLSearchParams(currentParams).toString();
       const res = await api.get(`/networking/discover?${params}`);
-      setResults(res.data);
+      
+      if (isLoadMore) {
+        setResults(prev => [...prev, ...res.data.data]);
+      } else {
+        setResults(res.data.data);
+      }
+      setNextCursor(res.data.nextCursor);
+      setHasMore(res.data.hasMore);
     } catch (err) {
       console.error("Discover error", err);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
-  }, [filters]);
+  };
 
   useEffect(() => {
     fetchDiscover();
-  }, [fetchDiscover]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleConnect = async (receiverId) => {
     try {
@@ -1092,12 +1136,19 @@ const FindTeammates = () => {
             <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
           </div>
         ) : results.length === 0 ? (
-          <div className="text-center py-24 glass-panel rounded-2xl border-dashed">
-            <p className="text-4xl mb-4">🔍</p>
-            <p className="text-gray-400 text-sm">No new teammates available. Check back later.</p>
+          <div className="text-center py-24 glass-panel rounded-2xl border-dashed h-[500px] flex flex-col items-center justify-center">
+             <p className="text-5xl mb-4">📭</p>
+             <p className="text-gray-300 text-lg font-bold">No teammates found.</p>
+             <p className="text-gray-500 text-sm mt-2">Try adjusting your filters or check back later.</p>
           </div>
         ) : (
-          <MatchFinder results={results} onConnect={handleConnect} />
+          <MatchFinder 
+            results={results} 
+            onConnect={handleConnect} 
+            hasMore={hasMore} 
+            onLoadMore={() => fetchDiscover(true)} 
+            loadingMore={loadingMore} 
+          />
         )}
       </div>
     </div>
