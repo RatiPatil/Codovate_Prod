@@ -272,7 +272,8 @@ router.post("/:id/discussions", auth, async (req, res) => {
       user_id: req.user.id,
       user_name: userName,
       message: message.trim(),
-      created_at: new Date(),
+      created_at: new Date()
+    };
     await msgRef.set(msg);
 
     if (req.io) {
