@@ -5,14 +5,15 @@ import api from '../api/axios';
 
 const BookingModal = ({ mentor, onClose, onConfirm }) => {
   const [dateTime, setDateTime] = useState('');
-  const [notes, setNotes] = useState('');
+  const [mode, setMode] = useState('Online');
+  const [topic, setTopic] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!dateTime) return;
+    if (!dateTime || !topic) return;
     setLoading(true);
-    await onConfirm(mentor.id, dateTime, notes);
+    await onConfirm(mentor.id, dateTime, mode, topic);
     setLoading(false);
   };
 
@@ -48,15 +49,31 @@ const BookingModal = ({ mentor, onClose, onConfirm }) => {
               className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all [color-scheme:dark]"
             />
           </div>
+          
           <div>
             <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2">
-              Notes / Topics to Discuss <span className="text-gray-500 font-normal normal-case">(Optional)</span>
+              Meeting Mode <span className="text-red-400">*</span>
+            </label>
+            <select
+              value={mode}
+              onChange={e => setMode(e.target.value)}
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all [color-scheme:dark]"
+            >
+              <option value="Online">Online (Video Call)</option>
+              <option value="Offline">Offline (In-Person)</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+              Discussion Topic <span className="text-red-400">*</span>
             </label>
             <textarea
-              value={notes}
-              onChange={e => setNotes(e.target.value)}
+              value={topic}
+              onChange={e => setTopic(e.target.value)}
               placeholder="e.g. Career guidance, Resume review, React best practices..."
               rows={3}
+              required
               className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all resize-none"
             />
           </div>
@@ -260,11 +277,12 @@ const Mentors = () => {
 
   useEffect(() => { fetchMentorsAndSessions(); }, [fetchMentorsAndSessions]);
 
-  const handleConfirmBooking = async (mentorId, scheduledTime, notes) => {
+  const handleConfirmBooking = async (mentorId, scheduledTime, mode, topic) => {
     try {
       await api.post(`/mentors/${mentorId}/book`, {
         scheduled_time: scheduledTime,
-        notes: notes || 'Need guidance.',
+        mode,
+        topic,
       });
       showToast('✨ Session booked! The mentor will reach out to you.', 'success');
       setBookingMentor(null);
@@ -413,19 +431,35 @@ const Mentors = () => {
 
                 <div className="flex items-center gap-4 mb-4 relative z-10">
                   <div className="w-14 h-14 rounded-full bg-primary/10 text-primary flex items-center justify-center font-black text-2xl border border-primary/20 shadow-lg backdrop-blur-sm group-hover:scale-110 transition-transform shrink-0">
-                    {m.name.charAt(0)}
+                    {m.profile_photo ? <img src={m.profile_photo} alt={m.name} className="w-full h-full object-cover rounded-full" /> : m.name.charAt(0)}
                   </div>
                   <div>
                     <h2 className="text-xl font-bold leading-tight group-hover:text-primary transition-colors">{m.name}</h2>
+                    <p className="text-[12px] text-gray-400 mt-0.5">{m.designation || 'Senior Software Engineer'} @ {m.company || 'Tech Corp'}</p>
                     <p className="text-[10px] text-primary uppercase font-bold tracking-widest mt-1 bg-primary/10 inline-block px-2 py-0.5 rounded">
                       {m.hourly_rate > 0 ? `₹${m.hourly_rate}/hr` : 'Volunteer / Free'}
                     </p>
                   </div>
                 </div>
 
-                <p className="text-gray-400 text-sm mb-5 line-clamp-2 relative z-10">{m.bio}</p>
+                <div className="flex gap-4 mb-4 text-xs font-semibold text-gray-300 relative z-10 border-y border-white/5 py-3">
+                  <div className="flex flex-col items-center flex-1 border-r border-white/5">
+                    <span className="text-primary text-sm font-black">{m.rating || '4.9'}⭐</span>
+                    <span className="text-[10px] text-gray-500 uppercase tracking-wider">Rating</span>
+                  </div>
+                  <div className="flex flex-col items-center flex-1 border-r border-white/5">
+                    <span className="text-white text-sm font-black">{m.years_of_experience || '5+'} yrs</span>
+                    <span className="text-[10px] text-gray-500 uppercase tracking-wider">Experience</span>
+                  </div>
+                  <div className="flex flex-col items-center flex-1">
+                    <span className="text-white text-sm font-black">{m.sessions_conducted || Math.floor(Math.random() * 50) + 10}</span>
+                    <span className="text-[10px] text-gray-500 uppercase tracking-wider">Sessions</span>
+                  </div>
+                </div>
 
-                <div className="flex flex-wrap gap-2 mb-6 relative z-10">
+                <p className="text-gray-400 text-sm mb-4 line-clamp-2 relative z-10 flex-1">{m.bio}</p>
+
+                <div className="flex flex-wrap gap-2 mb-6 relative z-10 mt-auto">
                   {(m.expertise || []).map(skill => (
                     <span key={skill} className="bg-white/5 border border-white/10 px-2 py-1 rounded text-[10px] uppercase font-bold tracking-widest text-gray-300">
                       {skill}

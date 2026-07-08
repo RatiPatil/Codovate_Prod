@@ -39,7 +39,7 @@ router.get("/", auth, async (req, res) => {
 
 // Book a mentor
 router.post("/:id/book", auth, async (req, res) => {
-  const { scheduled_time, notes } = req.body;
+  const { scheduled_time, mode, topic } = req.body;
   if (!scheduled_time) return res.status(400).json({ message: "Time is required." });
 
   try {
@@ -48,13 +48,22 @@ router.post("/:id/book", auth, async (req, res) => {
       id: newBookingRef.id,
       mentor_id: req.params.id,
       student_id: req.user.id,
+      student_name: req.user.name || 'Student',
       scheduled_time,
-      notes: notes || "",
+      mode: mode || "Online",
+      topic: topic || "",
       created_at: new Date(),
       status: 'Scheduled'
     };
     
     await newBookingRef.set(booking);
+
+    // Notify mentor and student via socket
+    if (req.io) {
+      req.io.to(`user_${req.user.id}`).emit('new_booking', booking);
+      req.io.to(`admin_mentor_${req.params.id}`).emit('new_booking', booking);
+    }
+
     res.json(booking);
   } catch (err) {
     console.error("Book mentor error:", err.message);
