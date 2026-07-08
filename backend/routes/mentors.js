@@ -6,9 +6,15 @@ const auth = require("../middleware/auth");
 // Get all mentors
 router.get("/", auth, async (req, res) => {
   try {
-    const mentorsSnapshot = await db.collection("mentors").where("is_active", "==", true).get();
+    const mentorsSnapshot = await db.collection("mentors").get();
     
-    const mentors = await Promise.all(mentorsSnapshot.docs.map(async (doc) => {
+    // Filter active mentors in-memory to catch those with status 'active' but missing is_active flag
+    const activeDocs = mentorsSnapshot.docs.filter(doc => {
+      const data = doc.data();
+      return data.is_active === true || data.status === 'active';
+    });
+
+    const mentors = await Promise.all(activeDocs.map(async (doc) => {
       const m = doc.data();
       m.id = doc.id;
       

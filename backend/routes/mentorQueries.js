@@ -5,15 +5,21 @@ const auth = require('../middleware/auth');
 
 // Helper to find an available mentor using a basic FCFS / Least-Loaded approach
 async function assignMentor() {
-  const mentorsSnapshot = await db.collection('users').where('role', '==', 'mentor').get();
-  if (mentorsSnapshot.empty) return null;
+  const mentorsSnapshot = await db.collection('mentors').get();
+  
+  // Filter active mentors
+  const activeMentors = mentorsSnapshot.docs.filter(doc => {
+    const data = doc.data();
+    return data.is_active === true || data.status === 'active';
+  });
 
-  // For a real production app, you might want to query active queries per mentor.
+  if (activeMentors.length === 0) return null;
+
   // We'll do a quick check of active queries to find the least loaded mentor.
   let leastLoadedMentor = null;
   let minQueries = Infinity;
 
-  for (const mentorDoc of mentorsSnapshot.docs) {
+  for (const mentorDoc of activeMentors) {
     const activeQueries = await db.collection('mentor_queries')
       .where('mentor_id', '==', mentorDoc.id)
       .where('status', 'in', ['Assigned', 'In Progress'])
