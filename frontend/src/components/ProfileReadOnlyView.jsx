@@ -1,0 +1,197 @@
+import React from 'react';
+
+const ProfileReadOnlyView = ({ user }) => {
+  if (!user) return null;
+
+  return (
+    <div className="space-y-6 max-h-[80vh] overflow-y-auto scrollbar-hide pr-2">
+      {/* Top Identity Card */}
+      <div className="glass-panel rounded-2xl p-6 md:p-8 text-center relative overflow-hidden w-full">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 rounded-full blur-[50px] -mr-10 -mt-10 pointer-events-none" />
+        
+        <div className="w-24 h-24 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center mx-auto mb-5 shadow-[0_0_20px_rgba(32,21,255,0.2)] backdrop-blur-md relative z-10 overflow-hidden">
+          {user.avatar_url ? (
+            <img src={user.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+          ) : (
+            <span className="text-4xl font-bold text-primary">{user.name ? user.name.charAt(0).toUpperCase() : '👤'}</span>
+          )}
+        </div>
+        
+        <h2 className="text-white font-bold text-2xl tracking-tight relative z-10">{user.name?.toUpperCase() || 'UNKNOWN USER'}</h2>
+        
+        {/* Desired Roles */}
+        {user.desired_roles && user.desired_roles.length > 0 && (
+          <div className="mt-3 flex flex-wrap justify-center gap-1.5 relative z-10">
+            {user.desired_roles.map(role => (
+              <span
+                key={role}
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide bg-primary/10 border border-primary/25 text-primary"
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-primary inline-block" />
+                {role}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* Education Details */}
+        {(user.college || user.year || user.branch || user.degree) && (
+          <div className="mt-4 flex flex-wrap justify-center gap-2 relative z-10">
+            {user.college && <span className="bg-white/5 border border-white/10 px-3 py-1 rounded-full text-xs text-gray-300">🎓 {user.college}</span>}
+            {user.year && <span className="bg-white/5 border border-white/10 px-3 py-1 rounded-full text-xs text-gray-300">📅 Year {user.year}</span>}
+            {(user.branch || user.degree) && <span className="bg-white/5 border border-white/10 px-3 py-1 rounded-full text-xs text-gray-300">📚 {[user.degree, user.branch].filter(Boolean).join(' • ')}</span>}
+          </div>
+        )}
+
+        {/* Location */}
+        {(user.district || user.state || user.city || user.country) && (
+          <p className="text-gray-400 text-xs mt-3 relative z-10 font-medium">
+            📍 {[user.city || user.district, user.state, user.country].filter(Boolean).join(', ')}
+          </p>
+        )}
+      </div>
+
+      {/* Stats Grid */}
+      <div className="grid grid-cols-2 gap-4">
+        <div className="bg-white/5 border border-white/10 p-4 rounded-xl flex flex-col items-center justify-center text-center">
+          <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest mb-1">Activity Score</p>
+          <p className="text-2xl font-black text-white">{user.activity_score || 0}</p>
+        </div>
+        <div className="bg-white/5 border border-white/10 p-4 rounded-xl flex flex-col items-center justify-center text-center">
+          <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest mb-1">Total Points</p>
+          <p className="text-2xl font-black text-primary">{user.points || 0}</p>
+        </div>
+      </div>
+
+      {/* External Links */}
+      {(user.github_url || user.linkedin_url || user.portfolio_url || user.resume_url) && (
+        <div className="glass-panel rounded-2xl p-5 relative overflow-hidden w-full flex flex-wrap gap-3">
+          {user.github_url && (
+            <a href={user.github_url} target="_blank" rel="noreferrer" className="flex-1 min-w-[100px] flex items-center justify-center gap-2 bg-[#24292e] text-white py-2 rounded-lg text-xs font-bold hover:bg-black transition">
+              <i className="fab fa-github text-sm"></i> GitHub
+            </a>
+          )}
+          {user.linkedin_url && (
+            <a href={user.linkedin_url} target="_blank" rel="noreferrer" className="flex-1 min-w-[100px] flex items-center justify-center gap-2 bg-[#0077b5] text-white py-2 rounded-lg text-xs font-bold hover:bg-[#005582] transition">
+              <i className="fab fa-linkedin text-sm"></i> LinkedIn
+            </a>
+          )}
+          {user.portfolio_url && (
+            <a href={user.portfolio_url} target="_blank" rel="noreferrer" className="flex-1 min-w-[100px] flex items-center justify-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white py-2 rounded-lg text-xs font-bold hover:opacity-90 transition">
+              <i className="fas fa-globe text-sm"></i> Portfolio
+            </a>
+          )}
+          {user.resume_url && (
+            <a href={user.resume_url} target="_blank" rel="noreferrer" className="flex-1 min-w-[100px] flex items-center justify-center gap-2 bg-white/10 text-white py-2 rounded-lg text-xs font-bold hover:bg-white/20 transition">
+              <i className="fas fa-file-alt text-sm"></i> Resume
+            </a>
+          )}
+        </div>
+      )}
+
+      {/* About Me */}
+      {user.bio && (
+        <div className="glass-panel rounded-2xl p-6 relative w-full">
+          <h3 className="text-white font-bold mb-3 flex items-center gap-2"><span className="text-xl">👋</span> About Me</h3>
+          <p className="text-gray-300 text-sm leading-relaxed whitespace-pre-wrap">{user.bio}</p>
+        </div>
+      )}
+
+      {/* Skills */}
+      {user.skills && user.skills.length > 0 && (
+        <div className="glass-panel rounded-2xl p-6 relative overflow-hidden w-full">
+          <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-purple-500/10 rounded-full blur-[40px] pointer-events-none" />
+          <h3 className="text-white font-bold mb-4 flex items-center gap-2 relative z-10"><span className="text-xl">⚡</span> All Skills</h3>
+          <div className="flex flex-wrap gap-2 relative z-10">
+            {user.skills.map(skill => (
+              <span key={skill} className="px-3 py-1.5 bg-white/5 backdrop-blur-md border border-white/10 rounded-lg text-white text-xs font-medium">
+                {skill}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Achievements & Badges */}
+      {((user.achievements && user.achievements.length > 0) || (user.badges && user.badges.length > 0)) && (
+        <div className="glass-panel rounded-2xl p-6 relative overflow-hidden w-full">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/10 rounded-bl-[100px] pointer-events-none" />
+          <h3 className="text-white font-bold mb-4 flex items-center gap-2 relative z-10"><span className="text-xl">🏆</span> Achievements & Badges</h3>
+          
+          {user.achievements && user.achievements.length > 0 && (
+            <div className="flex flex-wrap gap-2 relative z-10 mb-4">
+              {user.achievements.map(achievement => (
+                <span key={achievement} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-yellow-500/10 border border-yellow-500/25 text-yellow-300 rounded-xl text-xs font-bold">
+                  <span>🏅</span>
+                  {achievement}
+                </span>
+              ))}
+            </div>
+          )}
+          
+          {user.badges && user.badges.length > 0 && (
+            <>
+              <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-2 mb-2">Platform Badges</p>
+              <div className="flex flex-wrap gap-2 relative z-10">
+                {user.badges.map(badge => (
+                  <div key={badge} className="flex items-center gap-2 bg-yellow-500/10 border border-yellow-500/20 px-3 py-1.5 rounded-xl">
+                    <span className="text-sm">🏆</span>
+                    <span className="text-xs font-bold text-yellow-400">{badge}</span>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Seeking */}
+      {user.seeking && user.seeking.length > 0 && (
+        <div className="glass-panel rounded-2xl p-6 relative overflow-hidden w-full">
+          <div className="absolute top-0 left-0 w-28 h-28 bg-emerald-500/10 rounded-br-[100px] pointer-events-none" />
+          <h3 className="text-white font-bold mb-4 flex items-center gap-2 relative z-10"><span className="text-xl">🤝</span> Seeking</h3>
+          <div className="flex flex-wrap gap-2 relative z-10">
+            {user.seeking.map(item => (
+              <span key={item} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/25 text-emerald-300 rounded-xl text-xs font-bold">
+                <span>🤝</span>
+                {item}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Passionate About */}
+      {user.passionate_about && user.passionate_about.length > 0 && (
+        <div className="glass-panel rounded-2xl p-6 relative overflow-hidden w-full">
+          <div className="absolute bottom-0 right-0 w-28 h-28 bg-rose-500/10 rounded-tl-[100px] pointer-events-none" />
+          <h3 className="text-white font-bold mb-4 flex items-center gap-2 relative z-10"><span className="text-xl">🚀</span> Passionate About</h3>
+          <div className="flex flex-wrap gap-2 relative z-10">
+            {user.passionate_about.map(item => (
+              <span key={item} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-rose-500/10 border border-rose-500/25 text-rose-300 rounded-xl text-xs font-bold">
+                <span>🚀</span>
+                {item}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+      
+      {/* Profile Strength */}
+      <div className="glass-panel rounded-2xl p-6 w-full mt-4">
+        <div className="flex justify-between items-end mb-3">
+          <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Profile Strength</span>
+          <span className="text-xl text-primary font-black">{user.profile_completion || 0}%</span>
+        </div>
+        <div className="h-2.5 bg-black/50 rounded-full overflow-hidden shadow-inner border border-white/5">
+          <div
+            className="h-full bg-gradient-to-r from-primary to-purple-500 rounded-full transition-all duration-1000 ease-out relative shadow-[0_0_10px_rgba(32,21,255,0.5)]"
+            style={{ width: `${user.profile_completion || 0}%` }}
+          />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ProfileReadOnlyView;

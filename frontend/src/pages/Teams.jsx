@@ -4,10 +4,12 @@ import api from '../api/axios';
 import { parseDate, formatTime } from '../utils/dateUtils';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
+import ProfileReadOnlyView from '../components/ProfileReadOnlyView';
 
 const MembersModal = ({ team, currentUser, onClose }) => {
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedUser, setSelectedUser] = useState(null);
   const isLeader = team.my_role === 'leader';
 
   const fetchMembers = useCallback(() => {
@@ -585,95 +587,8 @@ const StudentProfileModal = ({ user, onClose, onDismiss, onConnect }) => {
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6 lg:p-8 scrollbar-hide pt-12">
-          <div className="flex flex-col items-center text-center">
-
-            {/* Center Aligned Name & Desired Role */}
-            <h2 className="text-3xl font-bold text-white leading-tight flex items-center justify-center gap-2">
-              <span>👤</span> {user.name}
-            </h2>
-            <div className="text-primary text-sm font-bold mt-2 mb-8 tracking-wider">
-              {user.desired_roles?.length > 0 
-                ? user.desired_roles.join(' • ')
-                : (user.career_goal ? user.career_goal.replace('_', ' ') : 'Student')
-              }
-            </div>
-
-            {/* Academic & Location Info */}
-            <div className="w-full text-left space-y-3 mb-8 bg-white/5 p-5 rounded-xl border border-white/10 shadow-inner">
-              <p className="text-sm text-gray-300 flex items-start gap-3">
-                <span className="text-lg">🎓</span> 
-                <span className="mt-0.5">
-                  {user.degree ? `${user.degree} • ` : (user.year ? `${user.year} • ` : '')}{user.college || 'College not specified'}
-                </span>
-              </p>
-              <p className="text-sm text-gray-300 flex items-start gap-3">
-                <span className="text-lg">📍</span> 
-                <span className="mt-0.5">
-                  {user.district ? `${user.district}, ` : ''}{user.state || 'Location not specified'}
-                </span>
-              </p>
-            </div>
-
-            {/* Attributes Chips Sections */}
-            <div className="w-full space-y-6 text-left">
-              {/* 🛠 Skills */}
-              <div>
-                <h4 className="text-sm font-bold text-white mb-3 flex items-center gap-2"><span>🛠</span> Skills</h4>
-                {user.skills?.length > 0 ? (
-                  <div className="flex flex-wrap gap-2">
-                    {user.skills.map(s => (
-                      <span key={s} className="px-3 py-1.5 bg-white/10 rounded-full text-xs text-gray-200 border border-white/5">{s}</span>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-xs text-gray-500 italic">No skills added yet</p>
-                )}
-              </div>
-              
-              {/* 🏆 Achievements */}
-              <div>
-                <h4 className="text-sm font-bold text-white mb-3 flex items-center gap-2"><span>🏆</span> Achievements</h4>
-                {user.achievements?.length > 0 ? (
-                  <div className="flex flex-wrap gap-2">
-                    {user.achievements.map(a => (
-                      <span key={a} className="px-3 py-1.5 bg-white/10 rounded-full text-xs text-gray-200 border border-white/5">{a}</span>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-xs text-gray-500 italic">No achievements added yet</p>
-                )}
-              </div>
-
-              {/* 🤝 Seeking */}
-              <div>
-                <h4 className="text-sm font-bold text-white mb-3 flex items-center gap-2"><span>🤝</span> Seeking</h4>
-                {user.seeking?.length > 0 ? (
-                  <div className="flex flex-wrap gap-2">
-                    {user.seeking.map(s => (
-                      <span key={s} className="px-3 py-1.5 bg-white/10 rounded-full text-xs text-gray-200 border border-white/5">{s}</span>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-xs text-gray-500 italic">Not seeking anything specific yet</p>
-                )}
-              </div>
-
-              {/* 🚀 Passionate About */}
-              <div>
-                <h4 className="text-sm font-bold text-white mb-3 flex items-center gap-2"><span>🚀</span> Passionate About</h4>
-                {user.passionate_about?.length > 0 ? (
-                  <div className="flex flex-wrap gap-2">
-                    {user.passionate_about.map(p => (
-                      <span key={p} className="px-3 py-1.5 bg-white/10 rounded-full text-xs text-gray-200 border border-white/5">{p}</span>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-xs text-gray-500 italic">No passions added yet</p>
-                )}
-              </div>
-            </div>
-          </div>
+        <div className="flex-1 overflow-y-auto p-4 lg:p-6 scrollbar-hide pt-10">
+          <ProfileReadOnlyView user={user} />
         </div>
 
         {/* Action Buttons */}

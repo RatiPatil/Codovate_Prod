@@ -49,7 +49,15 @@ router.get('/discover', auth, async (req, res) => {
           achievements: data.achievements || [],
           seeking: data.seeking || [],
           passionate_about: data.passionate_about || [],
-          experience_level: data.experience_level
+          experience_level: data.experience_level,
+          github_url: data.github_url,
+          linkedin_url: data.linkedin_url,
+          portfolio_url: data.portfolio_url,
+          resume_url: data.resume_url,
+          activity_score: data.activity_score || 0,
+          points: data.points || 0,
+          badges: data.badges || [],
+          profile_completion: data.profile_completion || 0
         });
       }
     });
@@ -220,7 +228,15 @@ router.get('/connections', auth, async (req, res) => {
             achievements: otherData.achievements || [],
             seeking: otherData.seeking || [],
             passionate_about: otherData.passionate_about || [],
-            experience_level: otherData.experience_level
+            experience_level: otherData.experience_level,
+            github_url: otherData.github_url,
+            linkedin_url: otherData.linkedin_url,
+            portfolio_url: otherData.portfolio_url,
+            resume_url: otherData.resume_url,
+            activity_score: otherData.activity_score || 0,
+            points: otherData.points || 0,
+            badges: otherData.badges || [],
+            profile_completion: otherData.profile_completion || 0
           }
         });
       }
