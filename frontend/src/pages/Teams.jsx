@@ -952,9 +952,10 @@ const MatchFinder = ({ results, onConnect }) => {
 };
 
 const FindTeammates = () => {
-  const [filters, setFilters] = useState({ skill: '', domain: '', experience: '' });
+  const [filters, setFilters] = useState({ skill: '', domain: '', experience: '', college: '', year: '', branch: '', desired_role: '', availability: '', location: '', interests: '' });
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [showFiltersMobile, setShowFiltersMobile] = useState(false);
 
   const fetchDiscover = useCallback(async () => {
     setLoading(true);
@@ -987,57 +988,100 @@ const FindTeammates = () => {
   return (
     <div className="flex flex-col lg:flex-row gap-6 h-full">
       {/* Sidebar Filters */}
-      <div className="w-full lg:w-1/4 glass-panel p-6 rounded-2xl h-fit">
-        <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
-          <span>🎯</span> Advanced Filters
-        </h3>
-        
-        <div className="space-y-5">
-          <div>
-            <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">Skill</label>
-            <input 
-              placeholder="e.g. React" 
-              className="input-glass w-full"
-              value={filters.skill}
-              onChange={e => setFilters({...filters, skill: e.target.value})}
-            />
-          </div>
-          
-          <div>
-            <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">Domain / Goal</label>
-            <select 
-              className="input-glass w-full appearance-none"
-              value={filters.domain}
-              onChange={e => setFilters({...filters, domain: e.target.value})}
-            >
-              <option value="">All</option>
-              <option value="Data Science">Data Science</option>
-              <option value="AI/ML">AI/ML</option>
-              <option value="Cyber Security">Cyber Security</option>
-              <option value="Web Development">Web Development</option>
-              <option value="Startups">Startups</option>
-              <option value="Research">Research</option>
-              <option value="Hackathons">Hackathons</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">Experience Level</label>
-            <select 
-              className="input-glass w-full appearance-none"
-              value={filters.experience}
-              onChange={e => setFilters({...filters, experience: e.target.value})}
-            >
-              <option value="">All</option>
-              <option value="beginner">Beginner</option>
-              <option value="intermediate">Intermediate</option>
-              <option value="advanced">Advanced</option>
-            </select>
-          </div>
-          
-          <button onClick={fetchDiscover} className="w-full btn-primary py-2 mt-2 flex items-center justify-center gap-2 shadow-lg">
-            🔍 Search Students
+      <div className="w-full lg:w-1/4 glass-panel p-4 md:p-6 rounded-2xl h-fit border border-white/5">
+        <div className="flex justify-between items-center mb-4 lg:mb-6">
+          <h3 className="text-lg font-bold text-white flex items-center gap-2">
+            <span>🎯</span> Filters
+          </h3>
+          <button 
+            className="lg:hidden text-gray-400 text-xs font-bold border border-white/10 bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-lg transition-colors" 
+            onClick={() => setShowFiltersMobile(!showFiltersMobile)}
+          >
+            {showFiltersMobile ? 'Hide Filters' : 'Show Filters'}
           </button>
+        </div>
+        
+        <div className={`space-y-4 ${showFiltersMobile ? 'block' : 'hidden'} lg:block`}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
+            {/* College */}
+            <div>
+              <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-widest">College</label>
+              <input className="input-glass w-full bg-[#0a0a0a] text-sm text-white" placeholder="e.g. Stanford" value={filters.college} onChange={e => setFilters({...filters, college: e.target.value})} />
+            </div>
+            
+            {/* Year */}
+            <div>
+              <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-widest">Year</label>
+              <select className="input-glass w-full appearance-none bg-[#0a0a0a] text-sm text-white cursor-pointer" value={filters.year} onChange={e => setFilters({...filters, year: e.target.value})}>
+                <option value="" className="bg-[#0a0a0a]">All</option>
+                <option value="1" className="bg-[#0a0a0a]">1st Year</option>
+                <option value="2" className="bg-[#0a0a0a]">2nd Year</option>
+                <option value="3" className="bg-[#0a0a0a]">3rd Year</option>
+                <option value="4" className="bg-[#0a0a0a]">4th Year</option>
+              </select>
+            </div>
+            
+            {/* Branch */}
+            <div>
+              <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-widest">Branch</label>
+              <input className="input-glass w-full bg-[#0a0a0a] text-sm text-white" placeholder="e.g. Computer Science" value={filters.branch} onChange={e => setFilters({...filters, branch: e.target.value})} />
+            </div>
+            
+            {/* Skills */}
+            <div>
+              <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-widest">Skills</label>
+              <input className="input-glass w-full bg-[#0a0a0a] text-sm text-white" placeholder="e.g. React, Python" value={filters.skill} onChange={e => setFilters({...filters, skill: e.target.value})} />
+            </div>
+            
+            {/* Desired Role */}
+            <div>
+              <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-widest">Desired Role</label>
+              <input className="input-glass w-full bg-[#0a0a0a] text-sm text-white" placeholder="e.g. Frontend Developer" value={filters.desired_role} onChange={e => setFilters({...filters, desired_role: e.target.value})} />
+            </div>
+            
+            {/* Availability */}
+            <div>
+              <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-widest">Availability</label>
+              <select className="input-glass w-full appearance-none bg-[#0a0a0a] text-sm text-white cursor-pointer" value={filters.availability} onChange={e => setFilters({...filters, availability: e.target.value})}>
+                <option value="" className="bg-[#0a0a0a]">All</option>
+                <option value="Full-time" className="bg-[#0a0a0a]">Full-time</option>
+                <option value="Part-time" className="bg-[#0a0a0a]">Part-time</option>
+                <option value="Weekends" className="bg-[#0a0a0a]">Weekends</option>
+              </select>
+            </div>
+            
+            {/* Location */}
+            <div>
+              <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-widest">Location</label>
+              <input className="input-glass w-full bg-[#0a0a0a] text-sm text-white" placeholder="e.g. Mumbai, Maharashtra" value={filters.location} onChange={e => setFilters({...filters, location: e.target.value})} />
+            </div>
+            
+            {/* Experience */}
+            <div>
+              <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-widest">Experience</label>
+              <select className="input-glass w-full appearance-none bg-[#0a0a0a] text-sm text-white cursor-pointer" value={filters.experience} onChange={e => setFilters({...filters, experience: e.target.value})}>
+                <option value="" className="bg-[#0a0a0a]">All</option>
+                <option value="beginner" className="bg-[#0a0a0a]">Beginner</option>
+                <option value="intermediate" className="bg-[#0a0a0a]">Intermediate</option>
+                <option value="advanced" className="bg-[#0a0a0a]">Advanced</option>
+              </select>
+            </div>
+            
+            {/* Interests */}
+            <div className="sm:col-span-2 lg:col-span-1">
+              <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-widest">Interests</label>
+              <input className="input-glass w-full bg-[#0a0a0a] text-sm text-white" placeholder="e.g. Startups, AI" value={filters.interests} onChange={e => setFilters({...filters, interests: e.target.value})} />
+            </div>
+          </div>
+          
+          <div className="pt-2">
+            <button 
+              onClick={() => { fetchDiscover(); if(window.innerWidth < 1024) setShowFiltersMobile(false); }} 
+              className="w-full btn-primary py-3 rounded-xl flex items-center justify-center gap-2 shadow-lg text-sm font-bold"
+            >
+              🔍 Search Students
+            </button>
+          </div>
         </div>
       </div>
 

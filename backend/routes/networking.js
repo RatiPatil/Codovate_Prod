@@ -11,7 +11,7 @@ async function checkExpiredChats(connectionId = null) {
 // GET: Discover students (porting from teams/discover but tailored)
 router.get('/discover', auth, async (req, res) => {
   try {
-    const { skill, domain, experience } = req.query;
+    const { skill, domain, experience, college, year, branch, desired_role, availability, location, interests } = req.query;
     
     // Fetch existing connections to exclude them
     const sent = await db.collection('student_connections').where('sender_id', '==', req.user.id).get();
@@ -55,6 +55,22 @@ router.get('/discover', auth, async (req, res) => {
       if (skill && !(data.skills || []).some(s => s.toLowerCase().includes(skill.toLowerCase()))) match = false;
       if (domain && data.career_goal !== domain) match = false;
       if (experience && data.experience_level !== experience) match = false;
+      if (college && (!data.college || !data.college.toLowerCase().includes(college.toLowerCase()))) match = false;
+      if (year && data.year !== year) match = false;
+      if (branch && (!data.branch || !data.branch.toLowerCase().includes(branch.toLowerCase()))) match = false;
+      if (desired_role) {
+        const roles = data.desired_roles || (data.career_goal ? [data.career_goal] : []);
+        if (!roles.some(r => r.toLowerCase().includes(desired_role.toLowerCase()))) match = false;
+      }
+      if (availability && data.availability !== availability) match = false;
+      if (location) {
+        const userLoc = `${data.district || ''} ${data.state || ''}`.toLowerCase();
+        if (!userLoc.includes(location.toLowerCase())) match = false;
+      }
+      if (interests) {
+        const userInterests = [...(data.passionate_about || []), ...(data.seeking || [])];
+        if (!userInterests.some(i => i.toLowerCase().includes(interests.toLowerCase()))) match = false;
+      }
       
       if (match) {
         students.push({
