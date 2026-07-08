@@ -702,6 +702,97 @@ const StudentProfileModal = ({ user, onClose, onDismiss, onConnect }) => {
   );
 };
 
+const StudentCardBody = ({ user }) => {
+  return (
+    <div className="flex-1 p-6 flex flex-col w-full text-left overflow-y-auto scrollbar-hide">
+      <div className="flex items-center gap-4 mb-5">
+        <div className="relative w-16 h-16 shrink-0 rounded-full bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center text-white font-bold text-2xl shadow-xl border-2 border-[#0a0a0a]">
+          {user.name?.charAt(0).toUpperCase() || '👤'}
+        </div>
+        <div className="flex-1 min-w-0 pr-8">
+          <h2 className="text-xl font-bold text-white leading-tight tracking-wide truncate">{user.name?.toUpperCase()}</h2>
+          <div className="text-primary text-[11px] font-bold mt-1 truncate">
+            {user.desired_roles?.length > 0 
+              ? user.desired_roles.join(' • ')
+              : (user.career_goal ? user.career_goal.replace('_', ' ') : 'Student')
+            }
+          </div>
+        </div>
+      </div>
+      
+      <div className="w-full text-left bg-white/[0.03] p-3 rounded-xl border border-white/5 mb-5 space-y-2">
+        <p className="text-[12px] text-gray-300 flex items-center gap-2">
+          <span className="text-sm">🎓</span> 
+          <span className="truncate font-medium">{user.college || 'College not specified'}</span>
+        </p>
+        {(user.branch || user.degree || user.year) && (
+          <p className="text-[11px] text-gray-400 flex items-center gap-2 ml-6">
+            <span className="truncate">
+              {[user.degree, user.branch, user.year].filter(Boolean).join(' • ')}
+            </span>
+          </p>
+        )}
+        <p className="text-[12px] text-gray-300 flex items-center gap-2">
+          <span className="text-sm">📍</span> 
+          <span className="truncate font-medium">
+            {user.district ? `${user.district}, ` : ''}{user.state || 'Location not specified'}
+          </span>
+        </p>
+      </div>
+
+      <div className="space-y-4">
+        {(user.skills?.length > 0) && (
+          <div>
+            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1.5 flex items-center gap-1"><span>🛠</span> Skills</p>
+            <div className="flex flex-wrap gap-1.5">
+              {user.skills.slice(0, 3).map((s, i) => (
+                <span key={i} className="px-2 py-0.5 rounded text-[10px] font-bold bg-white/5 text-gray-300 border border-white/10">{s}</span>
+              ))}
+              {user.skills.length > 3 && <span className="px-2 py-0.5 rounded text-[10px] font-bold text-gray-500">+{user.skills.length - 3} more</span>}
+            </div>
+          </div>
+        )}
+        
+        {(user.achievements?.length > 0) && (
+          <div>
+            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1.5 flex items-center gap-1"><span>🏆</span> Achievements</p>
+            <div className="flex flex-wrap gap-1.5">
+              {user.achievements.slice(0, 2).map((a, i) => (
+                <span key={i} className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">{a}</span>
+              ))}
+              {user.achievements.length > 2 && <span className="px-2 py-0.5 rounded text-[10px] font-bold text-gray-500">+{user.achievements.length - 2} more</span>}
+            </div>
+          </div>
+        )}
+
+        {(user.seeking?.length > 0) && (
+          <div>
+            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1.5 flex items-center gap-1"><span>🤝</span> Seeking</p>
+            <div className="flex flex-wrap gap-1.5">
+              {user.seeking.slice(0, 2).map((s, i) => (
+                <span key={i} className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20">{s}</span>
+              ))}
+              {user.seeking.length > 2 && <span className="px-2 py-0.5 rounded text-[10px] font-bold text-gray-500">+{user.seeking.length - 2} more</span>}
+            </div>
+          </div>
+        )}
+
+        {(user.passionate_about?.length > 0) && (
+          <div>
+            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1.5 flex items-center gap-1"><span>🚀</span> Passionate About</p>
+            <div className="flex flex-wrap gap-1.5">
+              {user.passionate_about.slice(0, 2).map((p, i) => (
+                <span key={i} className="px-2 py-0.5 rounded text-[10px] font-bold bg-pink-500/10 text-pink-400 border border-pink-500/20">{p}</span>
+              ))}
+              {user.passionate_about.length > 2 && <span className="px-2 py-0.5 rounded text-[10px] font-bold text-gray-500">+{user.passionate_about.length - 2} more</span>}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 const MatchFinder = ({ results, onConnect }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -755,7 +846,7 @@ const MatchFinder = ({ results, onConnect }) => {
             <div
               key={user.id}
               ref={el => cardRefs.current[idx] = el}
-              className={`absolute top-0 left-0 w-full h-full glass-card flex flex-col transition-all duration-300 ease-out overflow-hidden bg-[#0a0a0a] border-white/5 cursor-pointer`}
+              className={`absolute top-0 left-0 w-full h-[580px] glass-card flex flex-col transition-all duration-300 ease-out overflow-hidden bg-[#0a0a0a] border-white/5 cursor-pointer`}
               style={{
                 transform: `translateY(${translateY}px) scale(${scale})`,
                 opacity,
@@ -766,32 +857,7 @@ const MatchFinder = ({ results, onConnect }) => {
                 if (isTop) setSelectedUser(user);
               }}
             >
-              <div className="flex-1 p-6 flex flex-col items-center justify-center text-center">
-                {/* Profile Photo with distinct glow */}
-                <div className="relative mb-8">
-                  <div className="absolute inset-0 bg-primary/60 blur-3xl rounded-full transform scale-150" />
-                  <div className="relative w-28 h-28 shrink-0 rounded-full bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center text-white font-bold text-5xl shadow-xl">
-                    {user.name?.charAt(0).toUpperCase() || '👤'}
-                  </div>
-                </div>
-                
-                {/* Center Aligned Name & Desired Role */}
-                <h2 className="text-2xl font-bold text-white leading-tight tracking-wide">{user.name?.toUpperCase()}</h2>
-                <div className="text-primary text-sm font-bold mt-2 mb-8">
-                  {user.desired_roles?.length > 0 
-                    ? user.desired_roles.join(' • ')
-                    : (user.career_goal ? user.career_goal.replace('_', ' ') : 'Student')
-                  }
-                </div>
-
-                {/* College Info Box */}
-                <div className="w-full text-center bg-white/[0.03] p-4 rounded-xl border border-white/5 mt-auto mb-4">
-                  <p className="text-[13px] text-gray-300 flex items-center justify-center gap-2">
-                    <span className="text-lg">🎓</span> 
-                    <span>{user.college || 'College not specified'}</span>
-                  </p>
-                </div>
-              </div>
+              <StudentCardBody user={user} />
 
               {/* Action Buttons */}
               {isTop && (
@@ -1037,12 +1103,12 @@ const SuggestedMates = ({ myProfile }) => {
         {results.slice(0, 9).map(user => (
           <div 
             key={user.id} 
-            className="glass-card relative overflow-hidden flex flex-col bg-[#0a0a0a] border-white/5 cursor-pointer hover:border-primary/50 transition-colors group"
+            className="glass-card relative overflow-hidden flex flex-col bg-[#0a0a0a] border-white/5 cursor-pointer hover:border-primary/50 transition-colors group min-h-[500px]"
             onClick={() => setSelectedUser(user)}
           >
             {/* Match Score Indicator */}
-            <div className="absolute top-3 right-3 flex flex-col items-center z-10">
-              <div className="relative w-10 h-10 flex items-center justify-center">
+            <div className="absolute top-4 right-4 flex flex-col items-center z-10">
+              <div className="relative w-10 h-10 flex items-center justify-center bg-black/50 rounded-full backdrop-blur-md">
                 <svg className="absolute inset-0 w-full h-full transform -rotate-90">
                   <circle cx="20" cy="20" r="16" stroke="rgba(32,21,255,0.2)" strokeWidth="2.5" fill="none" />
                   <circle 
@@ -1061,47 +1127,7 @@ const SuggestedMates = ({ myProfile }) => {
               </div>
             </div>
 
-            <div className="flex-1 p-6 flex flex-col items-center text-center">
-              {/* Profile Photo with distinct glow */}
-              <div className="relative mb-6">
-                <div className="absolute inset-0 bg-primary/40 blur-2xl rounded-full transform scale-125 group-hover:bg-primary/60 transition-all" />
-                <div className="relative w-20 h-20 shrink-0 rounded-full bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center text-white font-bold text-3xl shadow-xl border-2 border-[#0a0a0a]">
-                  {user.name?.charAt(0).toUpperCase() || '👤'}
-                </div>
-              </div>
-              
-              {/* Center Aligned Name & Desired Role */}
-              <h2 className="text-xl font-bold text-white leading-tight tracking-wide">{user.name?.toUpperCase()}</h2>
-              <div className="text-primary text-xs font-bold mt-1.5 mb-6">
-                {user.desired_roles?.length > 0 
-                  ? user.desired_roles.join(' • ')
-                  : (user.career_goal ? user.career_goal.replace('_', ' ') : 'Student')
-                }
-              </div>
-
-              {/* College Info Box */}
-              <div className="w-full text-center bg-white/[0.03] p-3 rounded-lg border border-white/5 mt-auto mb-4">
-                <p className="text-xs text-gray-300 flex items-center justify-center gap-2">
-                  <span className="text-base">🎓</span> 
-                  <span className="truncate">{user.college || 'College not specified'}</span>
-                </p>
-              </div>
-              
-              {/* AI/ML, Hackathon, Interest Labels */}
-              <div className="flex flex-wrap justify-center gap-1.5">
-                {user.matchLabels?.slice(0, 3).map((label, idx) => (
-                  <span key={idx} className={`px-2 py-0.5 rounded text-[9px] font-bold ${
-                    label.includes('Match') ? 'bg-primary/20 text-primary border border-primary/30' :
-                    label.includes('Hackathon') ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30' :
-                    label.includes('AI/ML') ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30' :
-                    label.includes('Startup') ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' :
-                    'bg-purple-500/20 text-purple-400 border border-purple-500/30'
-                  }`}>
-                    {label}
-                  </span>
-                ))}
-              </div>
-            </div>
+            <StudentCardBody user={user} />
             
             <div className="p-3 border-t border-white/5 bg-black/40 backdrop-blur-md">
               <button className="w-full py-2.5 rounded-lg bg-primary/10 text-primary font-bold text-xs hover:bg-primary hover:text-white transition-all flex items-center justify-center gap-2" onClick={(e) => { e.stopPropagation(); handleConnect(user.id); }}>
