@@ -59,8 +59,8 @@ const BookingModal = ({ mentor, onClose, onConfirm }) => {
               onChange={e => setMode(e.target.value)}
               className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all [color-scheme:dark]"
             >
-              <option value="Online">Online (Video Call)</option>
-              <option value="Offline">Offline (In-Person)</option>
+              <option className="bg-gray-900" value="Online">Online (Video Call)</option>
+              <option className="bg-gray-900" value="Offline">Offline (In-Person)</option>
             </select>
           </div>
 
@@ -128,17 +128,17 @@ const QueryModal = ({ mentors = [], onClose, onSubmit }) => {
             <div>
               <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2">Category *</label>
               <select value={category} onChange={e => setCategory(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-primary focus:ring-1 focus:ring-primary [color-scheme:dark]">
-                <option value="Technical">Technical</option>
-                <option value="Career Guidance">Career Guidance</option>
-                <option value="General">General</option>
+                <option className="bg-gray-900" value="Technical">Technical</option>
+                <option className="bg-gray-900" value="Career Guidance">Career Guidance</option>
+                <option className="bg-gray-900" value="General">General</option>
               </select>
             </div>
             <div>
               <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2">Priority *</label>
               <select value={priority} onChange={e => setPriority(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-primary focus:ring-1 focus:ring-primary [color-scheme:dark]">
-                <option value="Low">Low</option>
-                <option value="Medium">Medium</option>
-                <option value="High">High</option>
+                <option className="bg-gray-900" value="Low">Low</option>
+                <option className="bg-gray-900" value="Medium">Medium</option>
+                <option className="bg-gray-900" value="High">High</option>
               </select>
             </div>
           </div>
@@ -146,9 +146,9 @@ const QueryModal = ({ mentors = [], onClose, onSubmit }) => {
           <div>
             <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2">Target Mentor *</label>
             <select value={targetMentorId} onChange={e => setTargetMentorId(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-primary focus:ring-1 focus:ring-primary [color-scheme:dark]">
-              <option value="auto">Automatic Assignment (Fastest)</option>
+              <option className="bg-gray-900" value="auto">Automatic Assignment (Fastest)</option>
               {mentors.map(m => (
-                <option key={m.id} value={m.id}>{m.name} - {m.expertise?.join(', ')}</option>
+                <option className="bg-gray-900" key={m.id} value={m.id}>{m.name} - {m.expertise?.join(', ')}</option>
               ))}
             </select>
           </div>
@@ -458,7 +458,7 @@ const Mentors = () => {
               className="w-full md:w-64 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary appearance-none [color-scheme:dark]"
             >
               {allExpertise.map(exp => (
-                <option key={exp} value={exp}>{exp}</option>
+                <option className="bg-gray-900" key={exp} value={exp}>{exp}</option>
               ))}
             </select>
           </div>
