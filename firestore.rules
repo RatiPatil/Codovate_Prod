@@ -1,0 +1,75 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isStudent() {
+      // Assuming a custom claim or looking up user role isn't straightforward without a read,
+      // but typically we can assume if they are authenticated they have basic student rights.
+      // Better to check auth token custom claims if they exist:
+      return isAuthenticated() && request.auth.token.role == 'student';
+    }
+    
+    function isMentor() {
+      return isAuthenticated() && request.auth.token.role == 'mentor';
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && (request.auth.token.role == 'admin' || request.auth.token.role == 'super_admin');
+    }
+
+    // 1. Users collection: Protect private data
+    match /users/{userId} {
+      allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      allow write: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+    }
+
+    // 2. Mentors collection: Students can read mentor profiles
+    match /mentors/{mentorId} {
+      allow read: if isAuthenticated(); // Students and anyone authenticated can read mentor profiles
+      allow write: if isAdmin() || (isAuthenticated() && request.auth.uid == resource.data.user_id);
+    }
+
+    // 3. mentorSessions: Mentors can access only assigned sessions. Students can read/create their own.
+    match /mentorSessions/{sessionId} {
+      // Create bookings
+      allow create: if isAuthenticated();
+      
+      // Read access: Mentors can read if assigned, students can read if they created it
+      allow read, update: if isAdmin() 
+        || (isAuthenticated() && resource.data.student_id == request.auth.uid)
+        || (isMentor() && resource.data.mentor_id == request.auth.uid);
+        
+      allow delete: if isAdmin();
+    }
+
+    // 4. mentorQueries: Mentors can access only assigned queries. Students can read/create their own.
+    match /mentorQueries/{queryId} {
+      // Create queries
+      allow create: if isAuthenticated();
+      
+      // Read/Update access: Mentors can read if assigned, students can read if they created it
+      allow read, update: if isAdmin() 
+        || (isAuthenticated() && resource.data.student_id == request.auth.uid)
+        || (isMentor() && resource.data.mentor_id == request.auth.uid);
+        
+      allow delete: if isAdmin();
+    }
+    
+    // 5. Notifications
+    match /notifications/{notificationId} {
+      allow read: if isAuthenticated() && resource.data.user_id == request.auth.uid;
+      allow create: if isAuthenticated();
+      allow update, delete: if isAuthenticated() && resource.data.user_id == request.auth.uid;
+    }
+
+    // Default deny for everything else
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

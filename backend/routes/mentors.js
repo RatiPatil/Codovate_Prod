@@ -43,7 +43,7 @@ router.post("/:id/book", auth, async (req, res) => {
   if (!scheduled_time) return res.status(400).json({ message: "Time is required." });
 
   try {
-    const newBookingRef = db.collection("mentor_bookings").doc();
+    const newBookingRef = db.collection("mentorSessions").doc();
     const booking = {
       id: newBookingRef.id,
       mentor_id: req.params.id,
@@ -88,7 +88,7 @@ router.get("/requests", auth, async (req, res) => {
 
     const mentorId = mentorDocs.docs[0].id;
 
-    const snapshot = await db.collection("mentor_bookings")
+    const snapshot = await db.collection("mentorSessions")
       .where("mentor_id", "==", mentorId)
       .where("status", "==", "pending")
       .get();
@@ -124,7 +124,7 @@ router.put("/requests/:id", auth, async (req, res) => {
       return res.status(400).json({ message: "Invalid status." });
     }
 
-    const bookingRef = db.collection("mentor_bookings").doc(req.params.id);
+    const bookingRef = db.collection("mentorSessions").doc(req.params.id);
     await bookingRef.update({
       status,
       updated_at: new Date()
@@ -149,7 +149,7 @@ router.put("/requests/:id", auth, async (req, res) => {
 // ── Get user's mentor sessions ──────────────────────────────────────────────
 router.get("/my-sessions", auth, async (req, res) => {
   try {
-    const snap = await db.collection("mentor_bookings")
+    const snap = await db.collection("mentorSessions")
       .where("student_id", "==", req.user.id)
       .get();
 

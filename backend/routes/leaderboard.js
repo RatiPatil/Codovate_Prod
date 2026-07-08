@@ -18,7 +18,7 @@ router.get("/", async (req, res) => {
       const [appsSnap, teamsSnap, mentorsSnap] = await Promise.all([
         db.collection("applications").where("student_id", "==", doc.id).get(),
         db.collection("team_members").where("user_id", "==", doc.id).get(),
-        db.collection("mentor_bookings").where("student_id", "==", doc.id).get(),
+        db.collection("mentorSessions").where("student_id", "==", doc.id).get(),
       ]);
 
       const appPoints = appsSnap.size * 50;

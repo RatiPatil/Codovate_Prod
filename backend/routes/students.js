@@ -162,7 +162,7 @@ router.get("/activity", auth, async (req, res) => {
     }
 
     // Mentor bookings
-    const bookSnap = await db.collection("mentor_bookings").where("student_id", "==", uid).get();
+    const bookSnap = await db.collection("mentorSessions").where("student_id", "==", uid).get();
     for (const doc of bookSnap.docs) {
       const b = doc.data();
       const mentorDoc = b.mentor_id ? await db.collection("mentors").doc(b.mentor_id).get() : null;
@@ -193,7 +193,7 @@ router.get("/stats", auth, async (req, res) => {
     const [appsSnap, teamsSnap, bookingsSnap, studentDoc] = await Promise.all([
       db.collection("applications").where("student_id", "==", uid).get(),
       db.collection("team_members").where("user_id", "==", uid).get(),
-      db.collection("mentor_bookings").where("student_id", "==", uid).get(),
+      db.collection("mentorSessions").where("student_id", "==", uid).get(),
       db.collection("students").doc(uid).get(),
     ]);
 

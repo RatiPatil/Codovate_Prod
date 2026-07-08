@@ -41,7 +41,7 @@ async function assignMentor(category = '') {
   let minQueries = Infinity;
 
   for (const mentorDoc of preferredMentors) {
-    const activeQueries = await db.collection('mentor_queries')
+    const activeQueries = await db.collection('mentorQueries')
       .where('mentor_id', '==', mentorDoc.id)
       .where('status', 'in', ['Assigned', 'In Progress'])
       .get();
@@ -61,7 +61,7 @@ async function assignMentor(category = '') {
 // Helper to check for SLA Escalation (4 hours)
 async function checkEscalations() {
   const now = new Date();
-  const queriesRef = db.collection('mentor_queries');
+  const queriesRef = db.collection('mentorQueries');
   const snapshot = await queriesRef.where('status', 'in', ['Assigned', 'In Progress']).get();
   
   for (const doc of snapshot.docs) {
@@ -93,7 +93,7 @@ router.post('/', auth, async (req, res) => {
 
     // If part of an existing session, find the assigned mentor for that session
     if (finalSessionId) {
-      const sessionQueries = await db.collection('mentor_queries')
+      const sessionQueries = await db.collection('mentorQueries')
         .where('session_id', '==', finalSessionId)
         .where('student_id', '==', req.user.id)
         .limit(1)
@@ -127,7 +127,7 @@ router.post('/', auth, async (req, res) => {
     const now = new Date();
     const deadline = new Date(now.getTime() + 4 * 60 * 60 * 1000); // 4 hours SLA
 
-    const queryRef = db.collection('mentor_queries').doc();
+    const queryRef = db.collection('mentorQueries').doc();
     const newQuery = {
       id: queryRef.id,
       student_id: req.user.id,
@@ -168,7 +168,7 @@ router.get('/', auth, async (req, res) => {
     // Also run escalation check opportunistically
     await checkEscalations();
 
-    let queriesRef = db.collection('mentor_queries');
+    let queriesRef = db.collection('mentorQueries');
     
     if (req.user.role === 'student') {
       queriesRef = queriesRef.where('student_id', '==', req.user.id);
@@ -215,7 +215,7 @@ router.put('/:id/status', auth, async (req, res) => {
   }
 
   try {
-    const docRef = db.collection('mentor_queries').doc(req.params.id);
+    const docRef = db.collection('mentorQueries').doc(req.params.id);
     const doc = await docRef.get();
 
     if (!doc.exists) return res.status(404).json({ message: 'Query not found' });
