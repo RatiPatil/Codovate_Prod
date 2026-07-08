@@ -69,7 +69,7 @@ async function checkEscalations() {
 router.post('/', auth, async (req, res) => {
   if (req.user.role !== 'student') return res.status(403).json({ message: 'Only students can submit queries.' });
 
-  const { title, description, attachments, session_id } = req.body;
+  const { title, description, category, priority, target_mentor_id, attachments, session_id } = req.body;
   if (!title || !description) return res.status(400).json({ message: 'Title and description required.' });
 
   try {
@@ -89,10 +89,20 @@ router.post('/', auth, async (req, res) => {
       }
     }
 
-    // If no existing session or no mentor found, create new session and assign a mentor (FCFS)
+    // Assign specific mentor if provided, else FCFS
     if (!assignedMentorId) {
       finalSessionId = finalSessionId || `sess_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
-      assignedMentorId = await assignMentor();
+      
+      if (target_mentor_id && target_mentor_id !== 'auto') {
+        const mentorDoc = await db.collection('mentors').doc(target_mentor_id).get();
+        if (mentorDoc.exists && (mentorDoc.data().is_active === true || mentorDoc.data().status === 'active')) {
+          assignedMentorId = target_mentor_id;
+        } else {
+          return res.status(400).json({ message: 'Selected mentor is not available.' });
+        }
+      } else {
+        assignedMentorId = await assignMentor();
+      }
     }
 
     if (!assignedMentorId) {
@@ -111,6 +121,8 @@ router.post('/', auth, async (req, res) => {
       session_id: finalSessionId,
       title,
       description,
+      category: category || 'General',
+      priority: priority || 'Medium',
       attachments: attachments || [],
       status: 'Assigned',
       created_at: now,

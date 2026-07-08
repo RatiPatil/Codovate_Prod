@@ -102,6 +102,18 @@ const MentorQueries = () => {
                         {q.status}
                       </span>
                     </div>
+                    <div className="flex items-center gap-2 mb-3">
+                      {q.category && (
+                        <span className="text-[10px] bg-white/5 border border-white/10 px-2 py-0.5 rounded text-gray-400 uppercase tracking-widest">{q.category}</span>
+                      )}
+                      {q.priority && (
+                        <span className={`text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 rounded ${
+                          q.priority === 'High' ? 'text-red-400 bg-red-500/10 border border-red-500/20' :
+                          q.priority === 'Medium' ? 'text-yellow-400 bg-yellow-500/10 border border-yellow-500/20' :
+                          'text-green-400 bg-green-500/10 border border-green-500/20'
+                        }`}>{q.priority}</span>
+                      )}
+                    </div>
                     <p className="text-gray-400 text-sm">{q.description}</p>
                     <p className="text-xs text-gray-600 mt-2">
                       From: <span className="text-gray-400">{q.student_name || 'Student'}</span> • {formatDateTime(q.created_at)}

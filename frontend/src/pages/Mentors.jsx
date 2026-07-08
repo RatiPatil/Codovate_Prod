@@ -97,16 +97,19 @@ const BookingModal = ({ mentor, onClose, onConfirm }) => {
     </div>
   );
 };
-const QueryModal = ({ onClose, onSubmit }) => {
+const QueryModal = ({ mentors = [], onClose, onSubmit }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [category, setCategory] = useState('Technical');
+  const [priority, setPriority] = useState('Medium');
+  const [targetMentorId, setTargetMentorId] = useState('auto');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!title || !description) return;
     setLoading(true);
-    await onSubmit({ title, description });
+    await onSubmit({ title, description, category, priority, target_mentor_id: targetMentorId });
     setLoading(false);
   };
 
@@ -120,6 +123,36 @@ const QueryModal = ({ onClose, onSubmit }) => {
             <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2">Topic / Title *</label>
             <input required value={title} onChange={e => setTitle(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-primary focus:ring-1 focus:ring-primary" placeholder="e.g. Help with React useEffect" />
           </div>
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2">Category *</label>
+              <select value={category} onChange={e => setCategory(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-primary focus:ring-1 focus:ring-primary [color-scheme:dark]">
+                <option value="Technical">Technical</option>
+                <option value="Career Guidance">Career Guidance</option>
+                <option value="General">General</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2">Priority *</label>
+              <select value={priority} onChange={e => setPriority(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-primary focus:ring-1 focus:ring-primary [color-scheme:dark]">
+                <option value="Low">Low</option>
+                <option value="Medium">Medium</option>
+                <option value="High">High</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2">Target Mentor *</label>
+            <select value={targetMentorId} onChange={e => setTargetMentorId(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-primary focus:ring-1 focus:ring-primary [color-scheme:dark]">
+              <option value="auto">Automatic Assignment (Fastest)</option>
+              {mentors.map(m => (
+                <option key={m.id} value={m.id}>{m.name} - {m.expertise?.join(', ')}</option>
+              ))}
+            </select>
+          </div>
+
           <div>
             <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2">Description *</label>
             <textarea required rows={4} value={description} onChange={e => setDescription(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white resize-none focus:border-primary focus:ring-1 focus:ring-primary" placeholder="Describe your problem or question in detail..." />
@@ -134,7 +167,7 @@ const QueryModal = ({ onClose, onSubmit }) => {
   );
 };
 
-const QueriesView = ({ showToast }) => {
+const QueriesView = ({ showToast, mentors }) => {
   const [queries, setQueries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -183,7 +216,7 @@ const QueriesView = ({ showToast }) => {
         <button onClick={() => setShowModal(true)} className="btn-primary text-sm px-4 py-2">+ Ask Mentor</button>
       </div>
 
-      {showModal && <QueryModal onClose={() => setShowModal(false)} onSubmit={handleSubmitQuery} />}
+      {showModal && <QueryModal mentors={mentors} onClose={() => setShowModal(false)} onSubmit={handleSubmitQuery} />}
 
       <div className="space-y-4">
         {queries.length === 0 ? (
@@ -207,6 +240,18 @@ const QueriesView = ({ showToast }) => {
                 q.status === 'Answered' ? 'text-green-400 border-green-500/30 bg-green-500/10' :
                 'text-primary border-primary/30 bg-primary/10'
               }`}>{q.status}</span>
+            </div>
+            <div className="flex items-center gap-2 mb-3 relative z-10">
+              {q.category && (
+                <span className="text-[10px] bg-white/5 border border-white/10 px-2 py-0.5 rounded text-gray-400 uppercase tracking-widest">{q.category}</span>
+              )}
+              {q.priority && (
+                <span className={`text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 rounded ${
+                  q.priority === 'High' ? 'text-red-400 bg-red-500/10 border border-red-500/20' :
+                  q.priority === 'Medium' ? 'text-yellow-400 bg-yellow-500/10 border border-yellow-500/20' :
+                  'text-green-400 bg-green-500/10 border border-green-500/20'
+                }`}>{q.priority} Priority</span>
+              )}
             </div>
             
             <p className="text-sm text-gray-300 mb-4 whitespace-pre-wrap relative z-10">{q.description}</p>
@@ -243,6 +288,7 @@ const Mentors = () => {
   const [activeTab, setActiveTab] = useState('discover'); // 'discover' | 'sessions' | 'queries'
   const [mentors, setMentors] = useState([]);
   const [sessions, setSessions] = useState([]);
+  const [sessionFilter, setSessionFilter] = useState('All'); // 'All' | 'Scheduled' | 'Completed' | 'Cancelled'
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState({ msg: '', type: 'success' });
   const [bookingMentor, setBookingMentor] = useState(null);
@@ -492,16 +538,29 @@ const Mentors = () => {
 
       {activeTab === 'sessions' && (
         <div className="relative z-10">
+          <div className="flex gap-2 mb-6 overflow-x-auto pb-2 custom-scrollbar">
+            {['All', 'Scheduled', 'Completed', 'Cancelled'].map(filter => (
+              <button
+                key={filter}
+                onClick={() => setSessionFilter(filter)}
+                className={`px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition-colors ${
+                  sessionFilter === filter ? 'bg-primary text-black' : 'bg-white/5 text-gray-400 hover:text-white hover:bg-white/10'
+                }`}
+              >
+                {filter === 'Scheduled' ? 'Upcoming' : filter}
+              </button>
+            ))}
+          </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {sessions.length === 0 ? (
+            {sessions.filter(s => sessionFilter === 'All' || s.status === sessionFilter).length === 0 ? (
               <div className="col-span-full text-center py-24 glass-card border-dashed">
                 <p className="text-4xl mb-4">📅</p>
-                <p className="text-gray-400 text-sm mb-4">You have no booked sessions.</p>
+                <p className="text-gray-400 text-sm mb-4">No sessions found in this category.</p>
                 <button onClick={() => setActiveTab('discover')} className="btn-primary text-sm inline-block">
                   Discover Mentors
                 </button>
               </div>
-            ) : sessions.map(s => (
+            ) : sessions.filter(s => sessionFilter === 'All' || s.status === sessionFilter).map(s => (
               <div key={s.id} className="glass-card p-6 flex flex-col group relative overflow-hidden">
                 <div className={`absolute top-0 right-0 w-24 h-24 rounded-bl-full pointer-events-none transition-transform group-hover:scale-125 ${
                   s.status === 'Scheduled' ? 'bg-blue-500/10' :
@@ -554,7 +613,7 @@ const Mentors = () => {
         </div>
       )}
 
-      {activeTab === 'queries' && <QueriesView showToast={showToast} />}
+      {activeTab === 'queries' && <QueriesView showToast={showToast} mentors={mentors} />}
     </div>
   );
 };
