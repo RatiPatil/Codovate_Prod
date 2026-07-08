@@ -6,13 +6,16 @@ const auth = require("../middleware/auth");
 // Get all mentors
 router.get("/", auth, async (req, res) => {
   try {
+    console.log(`[GET /mentors] Fetching mentors for user ${req.user.id}`);
     const mentorsSnapshot = await db.collection("mentors").get();
+    console.log(`[GET /mentors] Found ${mentorsSnapshot.size} total mentors in DB.`);
     
     // Filter active mentors in-memory to catch those with status 'active' but missing is_active flag
     const activeDocs = mentorsSnapshot.docs.filter(doc => {
       const data = doc.data();
       return data.is_active === true || data.status === 'active';
     });
+    console.log(`[GET /mentors] Filtered to ${activeDocs.length} active mentors.`);
 
     const mentors = await Promise.all(activeDocs.map(async (doc) => {
       const m = doc.data();
@@ -26,9 +29,10 @@ router.get("/", auth, async (req, res) => {
       return m;
     }));
     
+    console.log(`[GET /mentors] Returning ${mentors.length} mentors to client.`);
     res.json(mentors);
   } catch (err) {
-    console.error("Get mentors error:", err.message);
+    console.error("[GET /mentors] Error:", err.message);
     res.status(500).json({ message: "Server error." });
   }
 });
