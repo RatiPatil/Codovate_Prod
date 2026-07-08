@@ -61,7 +61,10 @@ router.post("/:id/book", auth, async (req, res) => {
     // Notify mentor and student via socket
     if (req.io) {
       req.io.to(`user_${req.user.id}`).emit('new_booking', booking);
-      req.io.to(`admin_mentor_${req.params.id}`).emit('new_booking', booking);
+      const mDoc = await db.collection("mentors").doc(req.params.id).get();
+      if (mDoc.exists && mDoc.data().user_id) {
+        req.io.to(`admin_mentor_${mDoc.data().user_id}`).emit('new_booking', booking);
+      }
     }
 
     res.json(booking);
@@ -121,10 +124,20 @@ router.put("/requests/:id", auth, async (req, res) => {
       return res.status(400).json({ message: "Invalid status." });
     }
 
-    await db.collection("mentor_bookings").doc(req.params.id).update({
+    const bookingRef = db.collection("mentor_bookings").doc(req.params.id);
+    await bookingRef.update({
       status,
       updated_at: new Date()
     });
+
+    const updatedDoc = (await bookingRef.get()).data();
+    
+    if (req.io && status === 'accepted') {
+      req.io.to(`user_${updatedDoc.student_id}`).emit('student_booking_confirmed', {
+        mentorName: req.user.name || 'Your mentor',
+        ...updatedDoc
+      });
+    }
 
     res.json({ message: `Request ${status}` });
   } catch (err) {

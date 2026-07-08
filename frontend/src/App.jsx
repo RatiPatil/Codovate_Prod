@@ -5,6 +5,7 @@ import { ToastProvider } from './components/ui/ToastProvider';
 import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
 import DashboardRouter from './components/DashboardRouter';
+import GlobalNotifications from './components/GlobalNotifications';
 
 import Home from './pages/Home';
 import Login from './pages/Login';
@@ -40,6 +41,7 @@ function App() {
     <ToastProvider>
       <AuthProvider>
         <SocketProvider>
+          <GlobalNotifications />
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<Home />} />

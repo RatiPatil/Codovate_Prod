@@ -3,9 +3,9 @@ const router = express.Router();
 const { db } = require('../config/firebase');
 const auth = require('../middleware/auth');
 
-// Helper to find an available mentor using a basic FCFS / Least-Loaded approach
-async function assignMentor() {
-  console.log(`[AssignMentor] Starting mentor assignment process...`);
+// Helper to find an available mentor
+async function assignMentor(category = '') {
+  console.log(`[AssignMentor] Starting mentor assignment process for category: ${category}...`);
   const mentorsSnapshot = await db.collection('mentors').get();
   console.log(`[AssignMentor] Found ${mentorsSnapshot.size} total mentors in DB.`);
   
@@ -21,11 +21,26 @@ async function assignMentor() {
     return null;
   }
 
+  // Prefer mentors with matching expertise
+  let preferredMentors = activeMentors;
+  if (category && category !== 'General') {
+    const matchingMentors = activeMentors.filter(doc => {
+      const data = doc.data();
+      return Array.isArray(data.expertise) && data.expertise.some(exp => exp.toLowerCase() === category.toLowerCase());
+    });
+    if (matchingMentors.length > 0) {
+      console.log(`[AssignMentor] Found ${matchingMentors.length} mentors matching expertise '${category}'.`);
+      preferredMentors = matchingMentors;
+    } else {
+      console.log(`[AssignMentor] No mentors match expertise '${category}'. Falling back to all active mentors.`);
+    }
+  }
+
   // We'll do a quick check of active queries to find the least loaded mentor.
   let leastLoadedMentor = null;
   let minQueries = Infinity;
 
-  for (const mentorDoc of activeMentors) {
+  for (const mentorDoc of preferredMentors) {
     const activeQueries = await db.collection('mentor_queries')
       .where('mentor_id', '==', mentorDoc.id)
       .where('status', 'in', ['Assigned', 'In Progress'])
@@ -101,7 +116,7 @@ router.post('/', auth, async (req, res) => {
           return res.status(400).json({ message: 'Selected mentor is not available.' });
         }
       } else {
-        assignedMentorId = await assignMentor();
+        assignedMentorId = await assignMentor(category);
       }
     }
 
@@ -134,7 +149,10 @@ router.post('/', auth, async (req, res) => {
 
     // Notify mentor via socket if connected
     if (req.io) {
-      req.io.to(`admin_mentor_${assignedMentorId}`).emit('new_query', newQuery);
+      const mDoc = await db.collection('mentors').doc(assignedMentorId).get();
+      if (mDoc.exists && mDoc.data().user_id) {
+        req.io.to(`admin_mentor_${mDoc.data().user_id}`).emit('new_query', newQuery);
+      }
     }
 
     res.status(201).json(newQuery);
@@ -235,7 +253,12 @@ router.put('/:id/status', auth, async (req, res) => {
     // Notify the other party
     if (req.io) {
       if (isMentor) req.io.to(`user_${queryData.student_id}`).emit('query_update', updatedDoc);
-      if (isStudent) req.io.to(`admin_mentor_${queryData.mentor_id}`).emit('query_update', updatedDoc);
+      if (isStudent) {
+        const mDoc = await db.collection('mentors').doc(queryData.mentor_id).get();
+        if (mDoc.exists && mDoc.data().user_id) {
+          req.io.to(`admin_mentor_${mDoc.data().user_id}`).emit('query_update', updatedDoc);
+        }
+      }
     }
 
     res.json(updatedDoc);
