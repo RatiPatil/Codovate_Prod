@@ -143,7 +143,14 @@ router.get('/', auth, async (req, res) => {
     if (req.user.role === 'student') {
       queriesRef = queriesRef.where('student_id', '==', req.user.id);
     } else if (req.user.role === 'mentor') {
-      queriesRef = queriesRef.where('mentor_id', '==', req.user.id);
+      // Find the mentor document associated with this user
+      const mentorDocs = await db.collection('mentors').where('user_id', '==', req.user.id).get();
+      if (!mentorDocs.empty) {
+        queriesRef = queriesRef.where('mentor_id', '==', mentorDocs.docs[0].id);
+      } else {
+        // If they don't have a mentor profile, they won't have queries
+        return res.json([]);
+      }
     } else if (req.user.role === 'admin' || req.user.role === 'super_admin') {
       // Admins see all
     } else {
@@ -185,8 +192,14 @@ router.put('/:id/status', auth, async (req, res) => {
     
     const queryData = doc.data();
 
+    let mentorId = null;
+    if (req.user.role === 'mentor') {
+      const mentorDocs = await db.collection('mentors').where('user_id', '==', req.user.id).get();
+      if (!mentorDocs.empty) mentorId = mentorDocs.docs[0].id;
+    }
+
     // Permissions: Only assigned mentor or student (can close) or admin
-    const isMentor = req.user.role === 'mentor' && queryData.mentor_id === req.user.id;
+    const isMentor = req.user.role === 'mentor' && queryData.mentor_id === mentorId;
     const isStudent = req.user.role === 'student' && queryData.student_id === req.user.id;
     const isAdmin = ['admin', 'super_admin'].includes(req.user.role);
 

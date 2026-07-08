@@ -69,8 +69,15 @@ router.get("/requests", auth, async (req, res) => {
       return res.status(403).json({ message: "Mentor access required." });
     }
 
+    const mentorDocs = await db.collection("mentors").where("user_id", "==", req.user.id).get();
+    if (mentorDocs.empty) {
+      return res.json([]);
+    }
+
+    const mentorId = mentorDocs.docs[0].id;
+
     const snapshot = await db.collection("mentor_bookings")
-      .where("mentor_id", "==", req.user.id)
+      .where("mentor_id", "==", mentorId)
       .where("status", "==", "pending")
       .get();
 
