@@ -621,52 +621,60 @@ const StudentProfileModal = ({ user, onClose, onDismiss, onConnect }) => {
             {/* Attributes Chips Sections */}
             <div className="w-full space-y-6 text-left">
               {/* 🛠 Skills */}
-              {user.skills?.length > 0 && (
-                <div>
-                  <h4 className="text-sm font-bold text-white mb-3 flex items-center gap-2"><span>🛠</span> Skills</h4>
+              <div>
+                <h4 className="text-sm font-bold text-white mb-3 flex items-center gap-2"><span>🛠</span> Skills</h4>
+                {user.skills?.length > 0 ? (
                   <div className="flex flex-wrap gap-2">
                     {user.skills.map(s => (
                       <span key={s} className="px-3 py-1.5 bg-white/10 rounded-full text-xs text-gray-200 border border-white/5">{s}</span>
                     ))}
                   </div>
-                </div>
-              )}
+                ) : (
+                  <p className="text-xs text-gray-500 italic">No skills added yet</p>
+                )}
+              </div>
               
               {/* 🏆 Achievements */}
-              {user.achievements?.length > 0 && (
-                <div>
-                  <h4 className="text-sm font-bold text-white mb-3 flex items-center gap-2"><span>🏆</span> Achievements</h4>
+              <div>
+                <h4 className="text-sm font-bold text-white mb-3 flex items-center gap-2"><span>🏆</span> Achievements</h4>
+                {user.achievements?.length > 0 ? (
                   <div className="flex flex-wrap gap-2">
                     {user.achievements.map(a => (
                       <span key={a} className="px-3 py-1.5 bg-white/10 rounded-full text-xs text-gray-200 border border-white/5">{a}</span>
                     ))}
                   </div>
-                </div>
-              )}
+                ) : (
+                  <p className="text-xs text-gray-500 italic">No achievements added yet</p>
+                )}
+              </div>
 
               {/* 🤝 Seeking */}
-              {user.seeking?.length > 0 && (
-                <div>
-                  <h4 className="text-sm font-bold text-white mb-3 flex items-center gap-2"><span>🤝</span> Seeking</h4>
+              <div>
+                <h4 className="text-sm font-bold text-white mb-3 flex items-center gap-2"><span>🤝</span> Seeking</h4>
+                {user.seeking?.length > 0 ? (
                   <div className="flex flex-wrap gap-2">
                     {user.seeking.map(s => (
                       <span key={s} className="px-3 py-1.5 bg-white/10 rounded-full text-xs text-gray-200 border border-white/5">{s}</span>
                     ))}
                   </div>
-                </div>
-              )}
+                ) : (
+                  <p className="text-xs text-gray-500 italic">Not seeking anything specific yet</p>
+                )}
+              </div>
 
               {/* 🚀 Passionate About */}
-              {user.passionate_about?.length > 0 && (
-                <div>
-                  <h4 className="text-sm font-bold text-white mb-3 flex items-center gap-2"><span>🚀</span> Passionate About</h4>
+              <div>
+                <h4 className="text-sm font-bold text-white mb-3 flex items-center gap-2"><span>🚀</span> Passionate About</h4>
+                {user.passionate_about?.length > 0 ? (
                   <div className="flex flex-wrap gap-2">
                     {user.passionate_about.map(p => (
                       <span key={p} className="px-3 py-1.5 bg-white/10 rounded-full text-xs text-gray-200 border border-white/5">{p}</span>
                     ))}
                   </div>
-                </div>
-              )}
+                ) : (
+                  <p className="text-xs text-gray-500 italic">No passions added yet</p>
+                )}
+              </div>
             </div>
           </div>
         </div>
