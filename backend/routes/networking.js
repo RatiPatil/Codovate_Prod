@@ -22,7 +22,10 @@ router.get('/discover', auth, async (req, res) => {
       // Don't discover self
       if (doc.id === req.user.id) return;
       
-      const data = doc.data();
+      const rawData = doc.data();
+      const pd = rawData.profile_data || {};
+      const data = { ...rawData, ...pd }; // Merge profile_data into top level
+
       let match = true;
       
       if (skill && !(data.skills || []).some(s => s.toLowerCase().includes(skill.toLowerCase()))) match = false;
@@ -39,6 +42,7 @@ router.get('/discover', auth, async (req, res) => {
           bio: data.bio,
           desired_roles: data.desired_roles || [],
           year: data.year,
+          degree: data.degree,
           district: data.district,
           state: data.state,
           achievements: data.achievements || [],
@@ -193,14 +197,16 @@ router.get('/connections', auth, async (req, res) => {
         
         const otherId = d.sender_id === req.user.id ? d.receiver_id : d.sender_id;
         const otherDoc = await db.collection('students').doc(otherId).get();
-        const otherData = otherDoc.exists ? otherDoc.data() : { name: 'Unknown' };
+        const rawOtherData = otherDoc.exists ? otherDoc.data() : { name: 'Unknown' };
+        const pd = rawOtherData.profile_data || {};
+        const otherData = { ...rawOtherData, ...pd };
         
         connections.push({
           ...d,
           id: doc.id,
           other_user: {
             id: otherId,
-            name: otherData.name,
+            name: otherData.name || otherData.full_name || 'Unknown',
             college: otherData.college,
             skills: otherData.skills || [],
             career_goal: otherData.career_goal,

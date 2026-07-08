@@ -587,14 +587,7 @@ const StudentProfileModal = ({ user, onClose, onDismiss, onConnect }) => {
 
         <div className="flex-1 overflow-y-auto p-6 lg:p-8 scrollbar-hide pt-12">
           <div className="flex flex-col items-center text-center">
-            {/* Profile Photo with Glow */}
-            <div className="relative mb-6">
-              <div className="absolute inset-0 bg-primary/40 blur-2xl rounded-full" />
-              <div className="relative w-32 h-32 shrink-0 rounded-full bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center text-white font-bold text-5xl shadow-2xl border-4 border-[#0b141a]">
-                {user.name?.charAt(0).toUpperCase() || '👤'}
-              </div>
-            </div>
-            
+
             {/* Center Aligned Name & Desired Role */}
             <h2 className="text-3xl font-bold text-white leading-tight flex items-center justify-center gap-2">
               <span>👤</span> {user.name}
