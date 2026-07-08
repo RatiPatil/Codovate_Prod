@@ -596,8 +596,10 @@ const StudentProfileModal = ({ user, onClose, onDismiss, onConnect }) => {
             </div>
             
             {/* Center Aligned Name & Desired Role */}
-            <h2 className="text-3xl font-bold text-white leading-tight">{user.name?.toUpperCase()}</h2>
-            <div className="text-primary text-sm font-bold mt-2 mb-8 uppercase tracking-wider">
+            <h2 className="text-3xl font-bold text-white leading-tight flex items-center justify-center gap-2">
+              <span>👤</span> {user.name}
+            </h2>
+            <div className="text-primary text-sm font-bold mt-2 mb-8 tracking-wider">
               {user.desired_roles?.length > 0 
                 ? user.desired_roles.join(' • ')
                 : (user.career_goal ? user.career_goal.replace('_', ' ') : 'Student')
@@ -608,14 +610,16 @@ const StudentProfileModal = ({ user, onClose, onDismiss, onConnect }) => {
             <div className="w-full text-left space-y-3 mb-8 bg-white/5 p-5 rounded-xl border border-white/10 shadow-inner">
               <p className="text-sm text-gray-300 flex items-start gap-3">
                 <span className="text-lg">🎓</span> 
-                <span className="mt-0.5">{user.year ? `${user.year} • ` : ''}{user.college || 'College not specified'}</span>
+                <span className="mt-0.5">
+                  {user.degree ? `${user.degree} • ` : (user.year ? `${user.year} • ` : '')}{user.college || 'College not specified'}
+                </span>
               </p>
-              {(user.district || user.state) && (
-                <p className="text-sm text-gray-300 flex items-start gap-3">
-                  <span className="text-lg">📍</span> 
-                  <span className="mt-0.5">{user.district ? `${user.district}, ` : ''}{user.state}</span>
-                </p>
-              )}
+              <p className="text-sm text-gray-300 flex items-start gap-3">
+                <span className="text-lg">📍</span> 
+                <span className="mt-0.5">
+                  {user.district ? `${user.district}, ` : ''}{user.state || 'Location not specified'}
+                </span>
+              </p>
             </div>
 
             {/* Attributes Chips Sections */}
