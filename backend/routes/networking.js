@@ -201,7 +201,18 @@ router.get('/connections', auth, async (req, res) => {
           other_user: {
             id: otherId,
             name: otherData.name,
-            college: otherData.college
+            college: otherData.college,
+            skills: otherData.skills || [],
+            career_goal: otherData.career_goal,
+            desired_roles: otherData.desired_roles || [],
+            year: otherData.year,
+            degree: otherData.degree,
+            district: otherData.district,
+            state: otherData.state,
+            achievements: otherData.achievements || [],
+            seeking: otherData.seeking || [],
+            passionate_about: otherData.passionate_about || [],
+            experience_level: otherData.experience_level
           }
         });
       }
