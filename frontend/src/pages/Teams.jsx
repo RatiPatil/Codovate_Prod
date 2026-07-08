@@ -688,53 +688,61 @@ const StudentCardBody = ({ user }) => {
       </div>
 
       <div className="space-y-4">
-        {(user.skills?.length > 0) && (
-          <div>
-            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1.5 flex items-center gap-1"><span>🛠</span> Skills</p>
+        <div>
+          <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1.5 flex items-center gap-1"><span>🛠</span> Skills</p>
+          {(user.skills?.length > 0) ? (
             <div className="flex flex-wrap gap-1.5">
               {user.skills.slice(0, 3).map((s, i) => (
                 <span key={i} className="px-2 py-0.5 rounded text-[10px] font-bold bg-white/5 text-gray-300 border border-white/10">{s}</span>
               ))}
               {user.skills.length > 3 && <span className="px-2 py-0.5 rounded text-[10px] font-bold text-gray-500">+{user.skills.length - 3} more</span>}
             </div>
-          </div>
-        )}
+          ) : (
+            <p className="text-[11px] text-gray-500/70 italic">No skills added yet</p>
+          )}
+        </div>
         
-        {(user.achievements?.length > 0) && (
-          <div>
-            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1.5 flex items-center gap-1"><span>🏆</span> Achievements</p>
+        <div>
+          <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1.5 flex items-center gap-1"><span>🏆</span> Achievements</p>
+          {(user.achievements?.length > 0) ? (
             <div className="flex flex-wrap gap-1.5">
               {user.achievements.slice(0, 2).map((a, i) => (
                 <span key={i} className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">{a}</span>
               ))}
               {user.achievements.length > 2 && <span className="px-2 py-0.5 rounded text-[10px] font-bold text-gray-500">+{user.achievements.length - 2} more</span>}
             </div>
-          </div>
-        )}
+          ) : (
+            <p className="text-[11px] text-gray-500/70 italic">No achievements added yet</p>
+          )}
+        </div>
 
-        {(user.seeking?.length > 0) && (
-          <div>
-            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1.5 flex items-center gap-1"><span>🤝</span> Seeking</p>
+        <div>
+          <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1.5 flex items-center gap-1"><span>🤝</span> Seeking</p>
+          {(user.seeking?.length > 0) ? (
             <div className="flex flex-wrap gap-1.5">
               {user.seeking.slice(0, 2).map((s, i) => (
                 <span key={i} className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20">{s}</span>
               ))}
               {user.seeking.length > 2 && <span className="px-2 py-0.5 rounded text-[10px] font-bold text-gray-500">+{user.seeking.length - 2} more</span>}
             </div>
-          </div>
-        )}
+          ) : (
+            <p className="text-[11px] text-gray-500/70 italic">Not seeking anything specific yet</p>
+          )}
+        </div>
 
-        {(user.passionate_about?.length > 0) && (
-          <div>
-            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1.5 flex items-center gap-1"><span>🚀</span> Passionate About</p>
+        <div>
+          <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1.5 flex items-center gap-1"><span>🚀</span> Passionate About</p>
+          {(user.passionate_about?.length > 0) ? (
             <div className="flex flex-wrap gap-1.5">
               {user.passionate_about.slice(0, 2).map((p, i) => (
                 <span key={i} className="px-2 py-0.5 rounded text-[10px] font-bold bg-pink-500/10 text-pink-400 border border-pink-500/20">{p}</span>
               ))}
               {user.passionate_about.length > 2 && <span className="px-2 py-0.5 rounded text-[10px] font-bold text-gray-500">+{user.passionate_about.length - 2} more</span>}
             </div>
-          </div>
-        )}
+          ) : (
+            <p className="text-[11px] text-gray-500/70 italic">No passions added yet</p>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -1076,8 +1084,23 @@ const SuggestedMates = ({ myProfile }) => {
 
             <StudentCardBody user={user} />
             
-            <div className="p-3 border-t border-white/5 bg-black/40 backdrop-blur-md">
-              <button className="w-full py-2.5 rounded-lg bg-primary/10 text-primary font-bold text-xs hover:bg-primary hover:text-white transition-all flex items-center justify-center gap-2" onClick={(e) => { e.stopPropagation(); handleConnect(user.id); }}>
+            <div className="p-3 border-t border-white/5 bg-black/40 backdrop-blur-md flex gap-2">
+              <button 
+                className="flex-1 py-2.5 rounded-lg bg-white/5 border border-white/10 text-gray-400 font-bold text-xs hover:bg-white/10 hover:text-white transition-all flex items-center justify-center gap-2" 
+                onClick={(e) => { 
+                  e.stopPropagation(); 
+                  setResults(prev => prev.filter(u => u.id !== user.id)); 
+                }}
+              >
+                <span className="text-sm">❎</span> Dismiss
+              </button>
+              <button 
+                className="flex-1 py-2.5 rounded-lg bg-primary/10 text-primary font-bold text-xs hover:bg-primary hover:text-white transition-all flex items-center justify-center gap-2" 
+                onClick={(e) => { 
+                  e.stopPropagation(); 
+                  handleConnect(user.id); 
+                }}
+              >
                 <span className="text-sm">🤝</span> Connect
               </button>
             </div>
@@ -1091,6 +1114,10 @@ const SuggestedMates = ({ myProfile }) => {
           onClose={() => setSelectedUser(null)}
           onConnect={() => {
             handleConnect(selectedUser.id);
+            setSelectedUser(null);
+          }}
+          onDismiss={() => {
+            setResults(prev => prev.filter(u => u.id !== selectedUser.id));
             setSelectedUser(null);
           }}
         />
