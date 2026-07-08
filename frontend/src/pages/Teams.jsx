@@ -591,27 +591,59 @@ const StudentProfileModal = ({ user, onClose, onDismiss, onConnect }) => {
           <ProfileReadOnlyView user={user} />
         </div>
 
-        {/* Action Buttons */}
-        {(onConnect || onDismiss) && (
-          <div className="flex justify-center gap-4 mt-auto p-4 border-t border-white/5 bg-black/40 backdrop-blur-md">
-            {onDismiss && (
-              <button
-                onClick={onDismiss}
-                className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl bg-white/5 border border-white/10 text-gray-400 font-bold hover:bg-white/10 hover:text-white transition-all"
+        {/* Sticky Action Footer */}
+        <div className="mt-auto p-4 border-t border-white/5 bg-[#0b141a]/95 backdrop-blur-xl z-20">
+          
+          {/* Primary Actions (Connect / Dismiss) */}
+          {(onConnect || onDismiss) && (
+            <div className="flex gap-4 mb-3">
+              {onDismiss && (
+                <button
+                  onClick={onDismiss}
+                  className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl bg-white/5 border border-white/10 text-gray-400 font-bold hover:bg-white/10 hover:text-white transition-all"
+                >
+                  <span className="text-xl">❎</span> Dismiss
+                </button>
+              )}
+              {onConnect && (
+                <button
+                  onClick={onConnect}
+                  className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl bg-primary text-white font-bold hover:bg-primary/90 transition-all shadow-lg shadow-primary/30"
+                >
+                  <span className="text-xl">🤝</span> Connect
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Secondary Actions (Future-ready) */}
+          <div className="flex gap-2">
+            <button
+              disabled
+              title="Coming Soon"
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg bg-white/5 text-gray-500 font-semibold text-xs border border-white/5 cursor-not-allowed"
+            >
+              <i className="fas fa-paper-plane"></i> Message
+            </button>
+            <button
+              disabled
+              title="Coming Soon"
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg bg-white/5 text-gray-500 font-semibold text-xs border border-white/5 cursor-not-allowed"
+            >
+              <i className="fas fa-user-plus"></i> Invite to Team
+            </button>
+            {user?.resume_url && (
+              <a
+                href={user.resume_url}
+                target="_blank"
+                rel="noreferrer"
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg bg-white/10 text-white font-semibold text-xs border border-white/20 hover:bg-white/20 transition-all"
               >
-                <span className="text-xl">❎</span> Dismiss
-              </button>
-            )}
-            {onConnect && (
-              <button
-                onClick={onConnect}
-                className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl bg-primary text-white font-bold hover:bg-primary/90 transition-all shadow-lg shadow-primary/30"
-              >
-                <span className="text-xl">🤝</span> Connect
-              </button>
+                <i className="fas fa-file-pdf"></i> View Resume
+              </a>
             )}
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

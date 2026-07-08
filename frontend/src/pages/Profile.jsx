@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
+import ProfileReadOnlyView from '../components/ProfileReadOnlyView';
 
 const ALL_SKILLS = [
   'JavaScript', 'Python', 'Java', 'C++', 'React', 'Node.js',
@@ -191,307 +192,65 @@ const Profile = () => {
 
       <div className="grid lg:grid-cols-3 gap-8">
         {/* Left Panel */}
-        <div className="space-y-6">
-          <div className="glass-panel rounded-2xl p-5 md:p-8 text-center relative overflow-hidden group w-full">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 rounded-full blur-[50px] -mr-10 -mt-10 pointer-events-none" />
-            <input 
-              type="file" 
-              id="avatar-upload" 
-              accept="image/*" 
-              className="hidden" 
-              onChange={(e) => {
-                const file = e.target.files[0];
-                if (file) {
-                  if (file.size > 5 * 1024 * 1024) {
-                    showToast('File too large (max 5MB)', 'error');
-                    return;
-                  }
-                  const reader = new FileReader();
-                  reader.onload = (ev) => {
-                    setForm({ ...form, avatar_url: ev.target.result });
-                  };
-                  reader.readAsDataURL(file);
+        <div className="w-full lg:col-span-1">
+          <ProfileReadOnlyView
+            isOwner={true}
+            user={{
+              ...profileData,
+              ...form,
+              skills,
+              desired_roles: desiredRoles,
+              achievements,
+              seeking,
+              passionate_about: passionateAbout
+            }}
+            onAvatarChange={(e) => {
+              const file = e.target.files[0];
+              if (file) {
+                if (file.size > 5 * 1024 * 1024) {
+                  showToast('File too large (max 5MB)', 'error');
+                  return;
                 }
-              }} 
-            />
-            <label htmlFor="avatar-upload">
-              <div 
-                className="w-24 h-24 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center mx-auto mb-5 shadow-[0_0_20px_rgba(32,21,255,0.2)] backdrop-blur-md relative z-10 overflow-hidden cursor-pointer group"
-              >
-                {form.avatar_url ? (
-                  <img src={form.avatar_url} alt="Profile" className="w-full h-full object-cover group-hover:opacity-50 transition-all" />
-                ) : (
-                  <span className="text-4xl font-bold text-primary group-hover:opacity-50 transition-all">{form.name ? form.name.charAt(0).toUpperCase() : 'U'}</span>
-                )}
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40">
-                  <span className="text-[10px] uppercase font-bold text-white tracking-widest text-center">Edit<br/>Picture</span>
-                </div>
-              </div>
-            </label>
-            <h2 className="text-white font-bold text-2xl tracking-tight relative z-10">{form.name?.toUpperCase()}</h2>
-            <p className="text-gray-400 text-sm mt-1 relative z-10">{form.email}</p>
-            
-            {/* Desired Roles */}
-            {desiredRoles.length > 0 && (
-              <div className="mt-3 flex flex-wrap justify-center gap-1.5 relative z-10">
-                {desiredRoles.map(role => (
-                  <span
-                    key={role}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide bg-primary/10 border border-primary/25 text-primary"
-                  >
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary inline-block" />
-                    {role}
-                  </span>
-                ))}
-              </div>
-            )}
-            
-            {/* College | Year | Branch */}
-            {(form.college || form.year || form.branch) && (
-              <div className="mt-4 flex flex-wrap justify-center gap-2 relative z-10">
-                {form.college && <span className="bg-white/5 border border-white/10 px-3 py-1 rounded-full text-xs text-gray-300">🎓 {form.college}</span>}
-                {form.year && <span className="bg-white/5 border border-white/10 px-3 py-1 rounded-full text-xs text-gray-300">📅 Year {form.year}</span>}
-                {form.branch && <span className="bg-white/5 border border-white/10 px-3 py-1 rounded-full text-xs text-gray-300">📚 {form.branch}</span>}
-              </div>
-            )}
-
-            {/* Location */}
-            {(profileData?.city || profileData?.state || profileData?.country) && (
-              <p className="text-gray-400 text-xs mt-3 relative z-10 font-medium">
-                📍 {[profileData.city, profileData.state, profileData.country].filter(Boolean).join(', ')}
-              </p>
-            )}
-
-            {/* Private Mobile Number */}
-            {profileData?.phone && (
-              <div className="mt-4 flex justify-center relative z-10">
-                <div className="bg-black/40 border border-white/10 px-3 py-2 rounded-lg text-left inline-flex flex-col">
-                  <span className="text-gray-200 text-sm font-semibold flex items-center gap-2">📱 {profileData.phone}</span>
-                  <span className="text-gray-500 text-[9px] uppercase tracking-wider mt-0.5">🔒 Only you can see this</span>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Skills */}
-          {skills.length > 0 && (
-            <div className="glass-panel rounded-2xl p-5 md:p-6 relative overflow-hidden w-full">
-              <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-purple-500/10 rounded-full blur-[40px] pointer-events-none" />
-              <h3 className="text-white font-bold mb-4 flex items-center gap-2 relative z-10"><span className="text-xl">⚡</span> Top Skills</h3>
-              <div className="flex flex-wrap gap-2 relative z-10">
-                {skills.map(skill => (
-                  <span key={skill} className="px-3 py-1.5 bg-white/5 backdrop-blur-md border border-white/10 rounded-lg text-white text-xs font-medium">
-                    {skill}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Achievements */}
-          {achievements.length > 0 && (
-            <div className="glass-panel rounded-2xl p-5 md:p-6 relative overflow-hidden w-full">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/10 rounded-bl-[100px] pointer-events-none" />
-              <h3 className="text-white font-bold mb-4 flex items-center gap-2 relative z-10"><span className="text-xl">🏆</span> Achievements</h3>
-              <div className="flex flex-wrap gap-2 relative z-10">
-                {achievements.map(achievement => (
-                  <span key={achievement} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-yellow-500/10 border border-yellow-500/25 text-yellow-300 rounded-xl text-xs font-bold">
-                    <span>🏅</span>
-                    {achievement}
-                  </span>
-                ))}
-              </div>
-              {profileData?.badges && profileData.badges.length > 0 && (
-                <>
-                  <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-4 mb-2">Platform Badges</p>
-                  <div className="flex flex-wrap gap-2 relative z-10">
-                    {profileData.badges.map(badge => (
-                      <div key={badge} className="flex items-center gap-2 bg-yellow-500/10 border border-yellow-500/20 px-3 py-1.5 rounded-xl">
-                        <span className="text-sm">🏆</span>
-                        <span className="text-xs font-bold text-yellow-400">{badge}</span>
-                      </div>
-                    ))}
-                  </div>
-                </>
-              )}
-            </div>
-          )}
-
-          {/* Seeking */}
-          {seeking.length > 0 && (
-            <div className="glass-panel rounded-2xl p-5 md:p-6 relative overflow-hidden w-full">
-              <div className="absolute top-0 left-0 w-28 h-28 bg-emerald-500/10 rounded-br-[100px] pointer-events-none" />
-              <h3 className="text-white font-bold mb-4 flex items-center gap-2 relative z-10"><span className="text-xl">🤝</span> Seeking</h3>
-              <div className="flex flex-wrap gap-2 relative z-10">
-                {seeking.map(item => (
-                  <span key={item} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/25 text-emerald-300 rounded-xl text-xs font-bold">
-                    <span>🤝</span>
-                    {item}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Passionate About */}
-          {passionateAbout.length > 0 && (
-            <div className="glass-panel rounded-2xl p-5 md:p-6 relative overflow-hidden w-full">
-              <div className="absolute bottom-0 right-0 w-28 h-28 bg-rose-500/10 rounded-tl-[100px] pointer-events-none" />
-              <h3 className="text-white font-bold mb-4 flex items-center gap-2 relative z-10"><span className="text-xl">❤️</span> Passionate About</h3>
-              <div className="flex flex-wrap gap-2 relative z-10">
-                {passionateAbout.map(item => (
-                  <span key={item} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-rose-500/10 border border-rose-500/25 text-rose-300 rounded-xl text-xs font-bold">
-                    <span>❤️</span>
-                    {item}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* About Me */}
-          {form.bio && (
-            <div className="glass-panel rounded-2xl p-5 md:p-6 relative w-full">
-              <h3 className="text-white font-bold mb-3 flex items-center gap-2"><span className="text-xl">👋</span> About Me</h3>
-              <p className="text-gray-300 text-sm leading-relaxed whitespace-pre-wrap">{form.bio}</p>
-            </div>
-          )}
-
-          {/* Profile Strength & Stats */}
-          <div className="glass-panel rounded-2xl p-5 md:p-6 w-full space-y-6">
-            <div>
-              <div className="flex justify-between items-end mb-3">
-                <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Profile Strength</span>
-                <span className="text-xl text-primary font-black">{profileData?.profile_completion || 0}%</span>
-              </div>
-              <div className="h-2.5 bg-black/50 rounded-full overflow-hidden shadow-inner border border-white/5">
-                <div
-                  className="h-full bg-gradient-to-r from-primary to-purple-500 rounded-full transition-all duration-1000 ease-out relative shadow-[0_0_10px_rgba(32,21,255,0.5)]"
-                  style={{ width: `${profileData?.profile_completion || 0}%` }}
-                />
-              </div>
-              {getMissingItems().length > 0 && (
-                <div className="mt-4 space-y-2 text-left">
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Boost your profile</p>
-                  {getMissingItems().slice(0, 4).map((item, i) => (
-                    <div key={i} className="flex items-center justify-between p-2.5 rounded-xl bg-white/5 border border-white/5">
-                      <span className="text-gray-300 text-xs">{item.label}</span>
-                      <span className="text-xs font-bold text-green-400 bg-green-500/10 px-2 py-0.5 rounded">+{item.boost}%</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-white/5 border border-white/10 p-4 rounded-xl flex flex-col items-center justify-center text-center w-full">
-                <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest mb-1">Activity Score</p>
-                <p className="text-2xl font-black text-white">{profileData?.activity_score || 0}</p>
-              </div>
-              <div className="bg-white/5 border border-white/10 p-4 rounded-xl flex flex-col items-center justify-center text-center w-full">
-                <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest mb-1">Total Points</p>
-                <p className="text-2xl font-black text-primary">{profileData?.points || 0}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex gap-4 relative z-20">
-            <button
-              type="button"
-              onClick={() => {
-                const el = document.getElementById('edit-profile-section');
-                if (el) el.scrollIntoView({ behavior: 'smooth' });
-              }}
-              className="flex-1 py-3 bg-white/10 hover:bg-white/15 border border-white/20 rounded-xl text-white font-bold text-sm transition-all"
-            >
-              Edit Profile
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                const url = window.location.href;
-                if (navigator.clipboard && window.isSecureContext) {
-                  navigator.clipboard.writeText(url)
-                    .then(() => showToast('Profile link copied!', 'success'))
-                    .catch(() => showToast('Failed to copy', 'error'));
-                } else {
-                  const textArea = document.createElement("textarea");
-                  textArea.value = url;
-                  textArea.style.position = "fixed";
-                  textArea.style.left = "-9999px";
-                  document.body.appendChild(textArea);
-                  textArea.focus();
-                  textArea.select();
-                  try {
-                    document.execCommand('copy');
-                    showToast('Profile link copied!', 'success');
-                  } catch (err) {
-                    showToast('Failed to copy', 'error');
-                  }
-                  document.body.removeChild(textArea);
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                  setForm({ ...form, avatar_url: ev.target.result });
+                };
+                reader.readAsDataURL(file);
+              }
+            }}
+            getMissingItems={getMissingItems}
+            onEditClick={() => {
+              const el = document.getElementById('edit-profile-section');
+              if (el) el.scrollIntoView({ behavior: 'smooth' });
+            }}
+            onShareClick={() => {
+              const url = window.location.href;
+              if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(url)
+                  .then(() => showToast('Profile link copied!', 'success'))
+                  .catch(() => showToast('Failed to copy', 'error'));
+              } else {
+                const textArea = document.createElement("textarea");
+                textArea.value = url;
+                textArea.style.position = "fixed";
+                textArea.style.left = "-9999px";
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                try {
+                  document.execCommand('copy');
+                  showToast('Profile link copied!', 'success');
+                } catch (err) {
+                  showToast('Failed to copy', 'error');
                 }
-              }}
-              className="flex-1 py-3 bg-primary/20 hover:bg-primary/30 border border-primary/40 rounded-xl text-primary font-bold text-sm transition-all"
-            >
-              Share Profile
-            </button>
-          </div>
-
-          {/* Linked Accounts & Preferences */}
-          <div className="glass-panel rounded-2xl p-5 md:p-6 w-full space-y-6">
-            <div>
-              <h3 className="text-white font-bold mb-4 flex items-center gap-2"><span className="text-xl">🔗</span> Linked Accounts</h3>
-              <div className="space-y-3">
-                {profileData?.providers?.includes('google') ? (
-                  <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
-                    <div className="flex items-center gap-3">
-                      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5" />
-                      <span className="text-gray-200 text-sm font-medium">Google Connected</span>
-                    </div>
-                    <span className="text-green-400 text-xs font-bold bg-green-500/10 px-2 py-1 rounded">Linked</span>
-                  </div>
-                ) : (
-                  <button 
-                    type="button"
-                    onClick={handleLinkGoogle}
-                    disabled={linking}
-                    className="w-full flex items-center justify-center gap-3 p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed relative z-20"
-                  >
-                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5" />
-                    <span className="text-gray-200 text-sm font-medium">{linking ? 'Linking...' : 'Link Google Account'}</span>
-                  </button>
-                )}
-                
-                {profileData?.providers?.includes('phone') && (
-                  <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
-                    <div className="flex items-center gap-3">
-                      <span className="text-xl">📱</span>
-                      <span className="text-gray-200 text-sm font-medium">Phone Connected</span>
-                    </div>
-                    <span className="text-green-400 text-xs font-bold bg-green-500/10 px-2 py-1 rounded">Linked</span>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="pt-4 border-t border-white/10">
-              <h3 className="text-white font-bold mb-4 flex items-center gap-2"><span className="text-xl">⚙️</span> Preferences</h3>
-              <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
-                <div className="flex items-center gap-3">
-                  <span className="text-xl">{theme === 'dark' ? '🌙' : '☀️'}</span>
-                  <span className="text-gray-200 text-sm font-medium">App Theme</span>
-                </div>
-                <button 
-                  type="button"
-                  onClick={toggleTheme}
-                  className="px-4 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 bg-primary border-primary text-white hover:bg-primary-light relative z-20"
-                >
-                  Switch to {theme === 'dark' ? 'Light' : 'Dark'} Mode
-                </button>
-              </div>
-            </div>
-          </div>
+                document.body.removeChild(textArea);
+              }
+            }}
+            linking={linking}
+            onLinkGoogle={handleLinkGoogle}
+            theme={theme}
+            toggleTheme={toggleTheme}
+          />
         </div>
 
         {/* Right Form */}
