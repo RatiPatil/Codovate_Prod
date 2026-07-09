@@ -53,7 +53,7 @@ router.post("/:id/book", auth, async (req, res) => {
       mode: mode || "Online",
       topic: topic || "",
       created_at: new Date(),
-      status: 'Scheduled'
+      status: 'Pending'
     };
     
     await newBookingRef.set(booking);
@@ -90,7 +90,7 @@ router.get("/requests", auth, async (req, res) => {
 
     const snapshot = await db.collection("mentorSessions")
       .where("mentor_id", "==", mentorId)
-      .where("status", "==", "pending")
+      .where("status", "==", "Pending")
       .get();
 
     const requests = await Promise.all(snapshot.docs.map(async (doc) => {
@@ -124,9 +124,11 @@ router.put("/requests/:id", auth, async (req, res) => {
       return res.status(400).json({ message: "Invalid status." });
     }
 
+    const newStatus = status === 'accepted' ? 'Scheduled' : 'Cancelled';
+
     const bookingRef = db.collection("mentorSessions").doc(req.params.id);
     await bookingRef.update({
-      status,
+      status: newStatus,
       updated_at: new Date()
     });
 

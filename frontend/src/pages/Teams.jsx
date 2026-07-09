@@ -139,6 +139,7 @@ const DiscussionModal = ({ team, onClose, currentUser }) => {
         setMessages(prev => {
           // Avoid duplicate messages if we are the sender
           if (prev.find(m => m.id === msg.id)) return prev;
+          if (msg.user_id === currentUser?.id) return prev;
           return [...prev, msg];
         });
       }
