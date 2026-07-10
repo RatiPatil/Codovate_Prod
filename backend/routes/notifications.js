@@ -6,10 +6,19 @@ const auth = require("../middleware/auth");
 // Get all notifications
 router.get("/", auth, async (req, res) => {
   try {
-    const [userSnapshot, globalSnapshot] = await Promise.all([
+    const queries = [
       db.collection("notifications").where("user_id", "==", req.user.id).get(),
       db.collection("notifications").where("is_global", "==", true).where("target_role", "in", ["all", req.user.role || 'student']).get()
-    ]);
+    ];
+    
+    if (req.user.college_id) {
+      queries.push(db.collection("notifications").where("college_id", "==", req.user.college_id).where("is_global", "==", false).get());
+    }
+
+    const snapshots = await Promise.all(queries);
+    const userSnapshot = snapshots[0];
+    const globalSnapshot = snapshots[1];
+    const collegeSnapshot = snapshots.length > 2 ? snapshots[2] : null;
       
     let notifications = [];
     
@@ -25,6 +34,15 @@ router.get("/", auth, async (req, res) => {
       data.is_read = true; // For MVP, treat global announcements as read so they don't clutter
       notifications.push(data);
     });
+
+    if (collegeSnapshot) {
+      collegeSnapshot.forEach(doc => {
+        const data = doc.data();
+        data.id = doc.id;
+        data.is_read = true;
+        notifications.push(data);
+      });
+    }
     
     // Sort and limit in memory since we aren't using composite indexes for MVP
     notifications.sort((a, b) => {

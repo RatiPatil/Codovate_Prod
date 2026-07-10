@@ -39,11 +39,18 @@ router.post('/', companyAdminOnly, [
   try {
     const targetCompanyId = req.user.role === 'super_admin' ? req.body.company_id : req.user.company_id;
     
+    // Fetch company name to prefix the title
+    const compDoc = await db.collection('companies').doc(targetCompanyId).get();
+    const compName = compDoc.exists ? compDoc.data().name : 'Company';
+    
     const newDocRef = db.collection('notifications').doc();
     const newItem = {
       id: newDocRef.id,
       ...req.body,
+      title: `[${compName}] ${req.body.title}`,
       company_id: targetCompanyId,
+      is_global: true,
+      target_role: 'student',
       created_at: new Date()
     };
     await newDocRef.set(newItem);
@@ -61,7 +68,7 @@ router.put('/:id', companyAdminOnly, async (req, res) => {
     if (!doc.exists) return res.status(404).json({ message: 'Not found' });
     if (doc.data().company_id !== targetCompanyId && req.user.role !== 'super_admin') return res.status(403).json({ message: 'Forbidden' });
     
-    const updateData = { ...req.body };
+    const updateData = { ...req.body, is_global: true, target_role: 'student' };
     delete updateData.company_id;
     await docRef.update(updateData);
     res.json((await docRef.get()).data());

@@ -15,7 +15,7 @@ const CompanyAdminHiring = () => {
     try {
       const response = await api.get('/company-admin/applications');
       // Filter for those successfully hired
-      setHires(response.data.filter(app => app.status === 'selected'));
+      setHires(response.data.filter(app => app.status === 'Selected' || app.status === 'selected'));
     } catch (err) {
       console.error(err);
     } finally {
