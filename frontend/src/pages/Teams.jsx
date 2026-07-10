@@ -1072,12 +1072,12 @@ const FindTeammates = () => {
             {/* Year */}
             <div>
               <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-widest">Year</label>
-              <select className="input-glass w-full appearance-none bg-[#0a0a0a] text-sm text-white cursor-pointer" value={filters.year} onChange={e => setFilters({...filters, year: e.target.value})}>
-                <option value="" className="bg-[#0a0a0a]">All</option>
-                <option value="1" className="bg-[#0a0a0a]">1st Year</option>
-                <option value="2" className="bg-[#0a0a0a]">2nd Year</option>
-                <option value="3" className="bg-[#0a0a0a]">3rd Year</option>
-                <option value="4" className="bg-[#0a0a0a]">4th Year</option>
+              <select className="input-glass w-full bg-black text-sm text-white cursor-pointer" value={filters.year} onChange={e => setFilters({...filters, year: e.target.value})}>
+                <option value="" className="bg-gray-900 text-white">All</option>
+                <option value="1" className="bg-gray-900 text-white">1st Year</option>
+                <option value="2" className="bg-gray-900 text-white">2nd Year</option>
+                <option value="3" className="bg-gray-900 text-white">3rd Year</option>
+                <option value="4" className="bg-gray-900 text-white">4th Year</option>
               </select>
             </div>
             
@@ -1102,11 +1102,11 @@ const FindTeammates = () => {
             {/* Availability */}
             <div>
               <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-widest">Availability</label>
-              <select className="input-glass w-full appearance-none bg-[#0a0a0a] text-sm text-white cursor-pointer" value={filters.availability} onChange={e => setFilters({...filters, availability: e.target.value})}>
-                <option value="" className="bg-[#0a0a0a]">All</option>
-                <option value="Full-time" className="bg-[#0a0a0a]">Full-time</option>
-                <option value="Part-time" className="bg-[#0a0a0a]">Part-time</option>
-                <option value="Weekends" className="bg-[#0a0a0a]">Weekends</option>
+              <select className="input-glass w-full bg-black text-sm text-white cursor-pointer" value={filters.availability} onChange={e => setFilters({...filters, availability: e.target.value})}>
+                <option value="" className="bg-gray-900 text-white">All</option>
+                <option value="Full-time" className="bg-gray-900 text-white">Full-time</option>
+                <option value="Part-time" className="bg-gray-900 text-white">Part-time</option>
+                <option value="Weekends" className="bg-gray-900 text-white">Weekends</option>
               </select>
             </div>
             
@@ -1119,11 +1119,11 @@ const FindTeammates = () => {
             {/* Experience */}
             <div>
               <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-widest">Experience</label>
-              <select className="input-glass w-full appearance-none bg-[#0a0a0a] text-sm text-white cursor-pointer" value={filters.experience} onChange={e => setFilters({...filters, experience: e.target.value})}>
-                <option value="" className="bg-[#0a0a0a]">All</option>
-                <option value="beginner" className="bg-[#0a0a0a]">Beginner</option>
-                <option value="intermediate" className="bg-[#0a0a0a]">Intermediate</option>
-                <option value="advanced" className="bg-[#0a0a0a]">Advanced</option>
+              <select className="input-glass w-full bg-black text-sm text-white cursor-pointer" value={filters.experience} onChange={e => setFilters({...filters, experience: e.target.value})}>
+                <option value="" className="bg-gray-900 text-white">All</option>
+                <option value="beginner" className="bg-gray-900 text-white">Beginner</option>
+                <option value="intermediate" className="bg-gray-900 text-white">Intermediate</option>
+                <option value="advanced" className="bg-gray-900 text-white">Advanced</option>
               </select>
             </div>
             
