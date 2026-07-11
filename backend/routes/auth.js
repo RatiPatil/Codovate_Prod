@@ -77,7 +77,7 @@ router.post("/google", async (req, res) => {
       const userDoc = snapshot.docs[0];
       user = userDoc.data();
       
-      if (user.is_active === false) return res.status(403).json({ message: "Account is deactivated." });
+      if (user.is_active === false) return res.status(403).json({ message: "Your account has been suspended. Please contact the administrator." });
       
       // Update authUid, providers, claimed, and last_login_at
       const providers = user.providers || [];
@@ -191,7 +191,7 @@ router.post("/phone", async (req, res) => {
       const userDoc = snapshot.docs[0];
       user = userDoc.data();
       
-      if (user.is_active === false) return res.status(403).json({ message: "Account is deactivated." });
+      if (user.is_active === false) return res.status(403).json({ message: "Your account has been suspended. Please contact the administrator." });
       
       const providers = user.providers || [];
       if (!providers.includes('phone')) providers.push('phone');
@@ -491,7 +491,7 @@ router.post("/login", async (req, res) => {
     const user = snapshot.docs[0].data();
 
     if (!user.is_active)
-      return res.status(403).json({ message: "Account is deactivated." });
+      return res.status(403).json({ message: "Your account has been suspended. Please contact the administrator." });
 
     // AUTH-002 FIX: Return provider-specific error message
     if (!user.password_hash) {
@@ -580,7 +580,7 @@ router.post("/admin-login", async (req, res) => {
       return res.status(403).json({ message: "Access Denied: Admin privileges required." });
 
     if (!user.is_active)
-      return res.status(403).json({ message: "Account is deactivated. Contact super admin." });
+      return res.status(403).json({ message: "Your account has been suspended. Please contact the administrator." });
 
     if (!user.password_hash)
       return res.status(401).json({ message: "This account uses Google login. No password set." });

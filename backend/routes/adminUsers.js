@@ -144,26 +144,86 @@ router.put('/:id', superAdminOnly, [
   }
 });
 
-// DELETE (Soft delete) user
-router.delete('/:id', superAdminOnly, async (req, res) => {
+// PUT suspend user
+router.put('/:id/suspend', superAdminOnly, async (req, res) => {
   try {
     let userRef = db.collection('users').doc(req.params.id);
     let doc = await userRef.get();
+    let targetCollection = 'users';
+    
     if (!doc.exists) {
       userRef = db.collection('students').doc(req.params.id);
       doc = await userRef.get();
+      targetCollection = 'students';
       if (!doc.exists) return res.status(404).json({ message: 'User not found' });
     }
 
-    await userRef.update({ 
-      status: 'inactive', 
+    const userData = doc.data();
+
+    const batch = db.batch();
+    batch.update(userRef, { 
+      status: 'suspended', 
       is_active: false,
-      updated_at: FieldValue.serverTimestamp(),
-      deleted_at: FieldValue.serverTimestamp()
+      updated_at: FieldValue.serverTimestamp()
     });
-    res.json({ message: 'User deactivated successfully' });
+
+    batch.set(db.collection('audit_logs').doc(), {
+      actor_id: req.user.id,
+      actor_name: req.user.name || 'Admin',
+      actor_email: req.user.email,
+      target_user_id: req.params.id,
+      target_user_name: userData.name || userData.profile_data?.name || 'Unknown',
+      action: 'Suspend',
+      module: 'adminUsers',
+      created_at: FieldValue.serverTimestamp()
+    });
+
+    await batch.commit();
+    res.json({ message: 'User suspended successfully' });
   } catch (error) {
-    console.error("User DELETE error:", error);
+    console.error("User SUSPEND error:", error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// PUT unsuspend user
+router.put('/:id/unsuspend', superAdminOnly, async (req, res) => {
+  try {
+    let userRef = db.collection('users').doc(req.params.id);
+    let doc = await userRef.get();
+    let targetCollection = 'users';
+    
+    if (!doc.exists) {
+      userRef = db.collection('students').doc(req.params.id);
+      doc = await userRef.get();
+      targetCollection = 'students';
+      if (!doc.exists) return res.status(404).json({ message: 'User not found' });
+    }
+
+    const userData = doc.data();
+
+    const batch = db.batch();
+    batch.update(userRef, { 
+      status: 'active', 
+      is_active: true,
+      updated_at: FieldValue.serverTimestamp()
+    });
+
+    batch.set(db.collection('audit_logs').doc(), {
+      actor_id: req.user.id,
+      actor_name: req.user.name || 'Admin',
+      actor_email: req.user.email,
+      target_user_id: req.params.id,
+      target_user_name: userData.name || userData.profile_data?.name || 'Unknown',
+      action: 'Unsuspend',
+      module: 'adminUsers',
+      created_at: FieldValue.serverTimestamp()
+    });
+
+    await batch.commit();
+    res.json({ message: 'User unsuspended successfully' });
+  } catch (error) {
+    console.error("User UNSUSPEND error:", error);
     res.status(500).json({ message: 'Server error' });
   }
 });

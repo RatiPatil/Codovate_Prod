@@ -2,36 +2,56 @@ import React, { useState, useEffect } from 'react';
 import { useSocket } from '../../context/SocketContext';
 import api from '../../api/axios';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, BarChart, Bar } from 'recharts';
+import { 
+  Users, 
+  GraduationCap, 
+  Building2, 
+  UserCheck, 
+  Briefcase, 
+  FileText, 
+  Award, 
+  Rocket, 
+  Trophy,
+  ArrowUpRight,
+  ArrowDownRight
+} from 'lucide-react';
 
-const StatCard = ({ title, value, icon, trend }) => (
-  <div className="bg-[#080812] border border-white/5 rounded-2xl p-6 relative overflow-hidden group">
+const StatCard = ({ title, value, Icon, trend }) => (
+  <div className="bg-[#0A0A10] border border-white/10 rounded-2xl p-6 relative overflow-hidden group hover:border-[#2015FF]/30 transition-all duration-300">
     <div className="flex justify-between items-start mb-4">
-      <div className="text-3xl opacity-50 group-hover:opacity-100 transition-opacity">{icon}</div>
-      {trend && (
-        <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${trend > 0 ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}`}>
-          {trend > 0 ? '+' : ''}{trend}%
+      <div className="p-3 rounded-xl bg-white/5 group-hover:bg-[#2015FF]/10 text-gray-400 group-hover:text-[#2015FF] transition-all">
+        <Icon className="w-6 h-6" />
+      </div>
+      {trend !== undefined && (
+        <span className={`flex items-center gap-1 text-[11px] font-bold px-2 py-1 rounded-full ${trend > 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
+          {trend > 0 ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
+          {Math.abs(trend)}%
         </span>
       )}
     </div>
-    <div className="text-4xl font-black text-white tracking-tighter mb-1">
+    <div className="text-3xl font-black text-white tracking-tighter mb-1">
       {value.toLocaleString()}
     </div>
-    <div className="text-sm font-semibold text-gray-500 uppercase tracking-wider">{title}</div>
+    <div className="text-xs font-bold text-gray-500 uppercase tracking-widest">{title}</div>
     
-    <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-[#2015FF]/5 rounded-full blur-2xl group-hover:bg-[#2015FF]/10 transition-colors pointer-events-none" />
+    <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-[#2015FF]/0 rounded-full blur-2xl group-hover:bg-[#2015FF]/5 transition-colors pointer-events-none" />
   </div>
 );
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-[#080812] border border-white/10 p-3 rounded-xl shadow-xl">
-        <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">{label}</p>
-        {payload.map((entry, index) => (
-          <p key={index} className="text-white text-sm font-black" style={{ color: entry.color }}>
-            {entry.name}: {entry.value}
-          </p>
-        ))}
+      <div className="bg-[#12121A] border border-white/10 p-4 rounded-xl shadow-2xl backdrop-blur-xl">
+        <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-3">{label}</p>
+        <div className="space-y-2">
+          {payload.map((entry, index) => (
+            <div key={index} className="flex items-center gap-3">
+              <span className="w-2 h-2 rounded-full" style={{ background: entry.color }} />
+              <p className="text-white text-sm font-bold flex-1">{entry.name}</p>
+              <p className="text-white font-black" style={{ color: entry.color }}>{entry.value}</p>
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
@@ -55,8 +75,6 @@ const SuperAdminDashboard = () => {
       });
 
     if (!socket) return;
-    
-    // Future real-time listeners for all these stats
     socket.emit('join_admin', { role: 'super_admin' });
   }, [socket]);
 
@@ -78,86 +96,84 @@ const SuperAdminDashboard = () => {
   const charts = stats.charts;
 
   return (
-    <div className="w-full">
-      <div className="p-4 md:p-8 max-w-[1600px] mx-auto">
-        <header className="mb-10">
-          <h1 className="text-4xl font-black text-white tracking-tight mb-2 flex items-center gap-3">
-            <span className="w-12 h-12 rounded-2xl bg-[#2015FF]/15 border border-[#2015FF]/30 flex items-center justify-center text-2xl shadow-[0_0_30px_rgba(32,21,255,0.2)]">⚡</span>
-            Command Center
-          </h1>
-          <p className="text-gray-500 font-medium">Global Codovate Ecosystem Intelligence</p>
+    <div className="w-full h-[calc(100vh-80px)] overflow-y-auto custom-scrollbar">
+      <div className="p-6 md:p-8 max-w-[1600px] mx-auto space-y-8">
+        
+        {/* Header */}
+        <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-black text-white tracking-tight mb-1">
+              Command Center
+            </h1>
+            <p className="text-sm font-medium text-gray-500">
+              Global Platform Intelligence Overview
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <button className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg text-sm font-bold transition-colors">
+              Download Report
+            </button>
+            <button className="px-4 py-2 bg-[#2015FF] hover:bg-blue-600 text-white rounded-lg text-sm font-bold shadow-lg shadow-[#2015FF]/20 transition-colors">
+              Manage System
+            </button>
+          </div>
         </header>
         
         {/* Top KPIs */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
-          <StatCard title="Total Users" value={data.users} icon="👥" isLive trend={12} />
-          <StatCard title="Students" value={data.students} icon="🎓" trend={8} />
-          <StatCard title="Colleges" value={data.colleges} icon="🏛️" trend={2} />
-          <StatCard title="Companies" value={data.companies} icon="🏢" trend={5} />
-          <StatCard title="Mentors" value={data.mentors} icon="🧑‍🏫" trend={15} />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <StatCard title="Total Users" value={data.users} Icon={Users} trend={12} />
+          <StatCard title="Students" value={data.students} Icon={GraduationCap} trend={8} />
+          <StatCard title="Colleges" value={data.colleges} Icon={Building2} trend={2} />
+          <StatCard title="Companies" value={data.companies} Icon={Briefcase} trend={5} />
+          <StatCard title="Mentors" value={data.mentors} Icon={UserCheck} trend={15} />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-10">
-          <StatCard title="Hackathons" value={data.hackathons} icon="🏆" trend={24} />
-          <StatCard title="Jobs" value={data.jobs} icon="💼" trend={18} />
-          <StatCard title="Applications" value={data.applications} icon="📄" isLive trend={45} />
-          <StatCard title="Projects" value={data.projects} icon="🚀" trend={30} />
-          <StatCard title="Certificates" value={data.certificates} icon="📜" trend={10} />
+        {/* Secondary KPIs */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <StatCard title="Hackathons" value={data.hackathons} Icon={Trophy} trend={24} />
+          <StatCard title="Jobs & Internships" value={data.jobs + data.internships} Icon={Briefcase} trend={18} />
+          <StatCard title="Applications" value={data.applications} Icon={FileText} trend={45} />
+          <StatCard title="Projects" value={data.projects} Icon={Rocket} trend={30} />
+          <StatCard title="Certificates" value={data.certificates} Icon={Award} trend={10} />
         </div>
 
         {/* Real-time Analytics Charts */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <div className="bg-[#080812] border border-white/5 rounded-3xl p-6 relative">
-            <h2 className="text-lg font-bold text-white mb-6">Daily Active Users</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="bg-[#0A0A10] border border-white/5 rounded-2xl p-6 relative">
+            <h2 className="text-sm font-bold text-white uppercase tracking-widest mb-6">Daily Active Users</h2>
             <div className="h-[300px] w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={charts.activeUsers} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <defs>
                     <linearGradient id="colorUv" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#2015FF" stopOpacity={0.8}/>
-                      <stop offset="95%" stopColor="#2015FF" stopOpacity={0}/>
+                      <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.8}/>
+                      <stop offset="95%" stopColor="#3B82F6" stopOpacity={0}/>
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-                  <XAxis dataKey="name" stroke="#666" tick={{fill: '#666', fontSize: 10}} axisLine={false} tickLine={false} />
-                  <YAxis stroke="#666" tick={{fill: '#666', fontSize: 10}} axisLine={false} tickLine={false} />
+                  <XAxis dataKey="name" stroke="#666" tick={{fill: '#666', fontSize: 10, fontWeight: 700}} axisLine={false} tickLine={false} />
+                  <YAxis stroke="#666" tick={{fill: '#666', fontSize: 10, fontWeight: 700}} axisLine={false} tickLine={false} />
                   <Tooltip content={<CustomTooltip />} />
-                  <Area type="monotone" dataKey="uv" name="Active Users" stroke="#2015FF" strokeWidth={3} fillOpacity={1} fill="url(#colorUv)" />
+                  <Area type="monotone" dataKey="uv" name="Active Users" stroke="#3B82F6" strokeWidth={3} fillOpacity={1} fill="url(#colorUv)" />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
           </div>
 
-          <div className="bg-[#080812] border border-white/5 rounded-3xl p-6 relative">
-            <h2 className="text-lg font-bold text-white mb-6">Monthly Registrations</h2>
+          <div className="bg-[#0A0A10] border border-white/5 rounded-2xl p-6 relative">
+            <h2 className="text-sm font-bold text-white uppercase tracking-widest mb-6">Monthly Registrations</h2>
             <div className="h-[300px] w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={charts.registrations} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-                  <XAxis dataKey="name" stroke="#666" tick={{fill: '#666', fontSize: 10}} axisLine={false} tickLine={false} />
-                  <YAxis stroke="#666" tick={{fill: '#666', fontSize: 10}} axisLine={false} tickLine={false} />
-                  <Tooltip content={<CustomTooltip />} cursor={{fill: 'rgba(255,255,255,0.05)'}} />
+                  <XAxis dataKey="name" stroke="#666" tick={{fill: '#666', fontSize: 10, fontWeight: 700}} axisLine={false} tickLine={false} />
+                  <YAxis stroke="#666" tick={{fill: '#666', fontSize: 10, fontWeight: 700}} axisLine={false} tickLine={false} />
+                  <Tooltip content={<CustomTooltip />} cursor={{fill: 'rgba(255,255,255,0.02)'}} />
                   <Bar dataKey="uv" name="Students" fill="#10B981" radius={[4, 4, 0, 0]} />
                   <Bar dataKey="pv" name="Companies" fill="#8B5CF6" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
-          </div>
-        </div>
-
-        <div className="bg-[#080812] border border-white/5 rounded-3xl p-6 relative">
-          <h2 className="text-lg font-bold text-white mb-6">Revenue & Engagement Trends</h2>
-          <div className="h-[300px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={charts.revenue} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-                <XAxis dataKey="name" stroke="#666" tick={{fill: '#666', fontSize: 10}} axisLine={false} tickLine={false} />
-                <YAxis stroke="#666" tick={{fill: '#666', fontSize: 10}} axisLine={false} tickLine={false} />
-                <Tooltip content={<CustomTooltip />} />
-                <Line type="monotone" dataKey="uv" name="Revenue ($)" stroke="#F59E0B" strokeWidth={3} dot={{r: 4, fill: '#080812', strokeWidth: 2}} activeDot={{r: 6}} />
-                <Line type="monotone" dataKey="pv" name="Engagement Score" stroke="#EC4899" strokeWidth={3} dot={{r: 4, fill: '#080812', strokeWidth: 2}} activeDot={{r: 6}} />
-              </LineChart>
-            </ResponsiveContainer>
           </div>
         </div>
 

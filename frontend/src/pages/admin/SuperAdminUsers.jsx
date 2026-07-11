@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import AdminDataTable from '../../components/common/AdminDataTable';
 import AdminCrudModal from '../../components/common/AdminCrudModal';
 import api from '../../api/axios';
@@ -28,7 +28,7 @@ const userSchema = [
     options: [
       { label: 'Active', value: 'active' },
       { label: 'Pending', value: 'pending' },
-      { label: 'Banned', value: 'banned' },
+      { label: 'Suspended', value: 'suspended' },
       { label: 'Inactive', value: 'inactive' }
     ]
   },
@@ -41,6 +41,7 @@ const SuperAdminUsers = () => {
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
+  const [filterTab, setFilterTab] = useState('all');
 
   useEffect(() => {
     fetchUsers();
@@ -67,13 +68,31 @@ const SuperAdminUsers = () => {
     setModalOpen(true);
   };
 
-  const handleDelete = async (id) => {
-    if (!await showConfirm("Are you sure you want to delete this user?")) return;
+  const handleSuspend = async (id) => {
+    const confirmed = await showConfirm(
+      "Are you sure you want to suspend this user? They will not be able to log in or use the application until you reactivate their account."
+    );
+    if (!confirmed) return;
+
     try {
-      await api.delete(`/admin/users/${id}`);
+      await api.put(`/admin/users/${id}/suspend`);
       fetchUsers();
     } catch (err) {
-      showAlert("Failed to delete user");
+      showAlert("Failed to suspend user");
+    }
+  };
+
+  const handleUnsuspend = async (id) => {
+    const confirmed = await showConfirm(
+      "Are you sure you want to unsuspend this user? They will regain full access."
+    );
+    if (!confirmed) return;
+
+    try {
+      await api.put(`/admin/users/${id}/unsuspend`);
+      fetchUsers();
+    } catch (err) {
+      showAlert("Failed to unsuspend user");
     }
   };
 
@@ -85,6 +104,16 @@ const SuperAdminUsers = () => {
     }
     fetchUsers();
   };
+
+  const filteredUsers = useMemo(() => {
+    if (filterTab === 'active') {
+      return users.filter(u => u.status === 'active');
+    }
+    if (filterTab === 'suspended') {
+      return users.filter(u => u.status === 'suspended');
+    }
+    return users;
+  }, [users, filterTab]);
 
   const columns = [
     { header: 'Name', accessor: 'name' },
@@ -100,12 +129,18 @@ const SuperAdminUsers = () => {
     { 
       header: 'Status', 
       render: (row) => (
-        <span className={`px-2 py-1 rounded-md text-xs font-bold uppercase ${
-          row.status === 'banned' ? 'bg-red-500/20 text-red-500' :
-          row.status === 'pending' ? 'bg-yellow-500/20 text-yellow-500' :
-          row.status === 'inactive' ? 'bg-gray-500/20 text-gray-500' :
-          'bg-emerald-500/20 text-emerald-500'
+        <span className={`px-2 py-1 rounded-md text-xs font-bold uppercase flex items-center gap-1.5 w-fit ${
+          row.status === 'suspended' ? 'bg-red-500/10 text-red-400 border border-red-500/20' :
+          row.status === 'active' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+          row.status === 'pending' ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20' :
+          'bg-gray-500/10 text-gray-400 border border-gray-500/20'
         }`}>
+          <span className={`w-1.5 h-1.5 rounded-full ${
+            row.status === 'suspended' ? 'bg-red-400' :
+            row.status === 'active' ? 'bg-emerald-400' :
+            row.status === 'pending' ? 'bg-yellow-400' :
+            'bg-gray-400'
+          }`} />
           {row.status || 'active'}
         </span>
       )
@@ -120,12 +155,20 @@ const SuperAdminUsers = () => {
           >
             Edit
           </button>
-          {row.status !== 'inactive' && (
+          
+          {row.status === 'suspended' ? (
             <button 
-              onClick={() => handleDelete(row.id)}
+              onClick={() => handleUnsuspend(row.id)}
+              className="px-3 py-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-500 rounded-lg text-xs font-bold transition-colors"
+            >
+              Unsuspend
+            </button>
+          ) : (
+            <button 
+              onClick={() => handleSuspend(row.id)}
               className="px-3 py-1 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-lg text-xs font-bold transition-colors"
             >
-              Delete
+              Suspend
             </button>
           )}
         </div>
@@ -135,9 +178,32 @@ const SuperAdminUsers = () => {
 
   return (
     <div className="p-8 h-[calc(100vh-80px)] overflow-y-auto">
+      
+      {/* Filter Tabs */}
+      <div className="flex items-center gap-2 mb-6">
+        <button
+          onClick={() => setFilterTab('all')}
+          className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${filterTab === 'all' ? 'bg-[#2015FF] text-white shadow-lg shadow-[#2015FF]/20' : 'bg-white/5 text-gray-400 hover:bg-white/10'}`}
+        >
+          All Users
+        </button>
+        <button
+          onClick={() => setFilterTab('active')}
+          className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${filterTab === 'active' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-white/5 text-gray-400 hover:bg-white/10'}`}
+        >
+          Active
+        </button>
+        <button
+          onClick={() => setFilterTab('suspended')}
+          className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${filterTab === 'suspended' ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-white/5 text-gray-400 hover:bg-white/10'}`}
+        >
+          Suspended
+        </button>
+      </div>
+
       <AdminDataTable 
         title="Manage Users"
-        data={users}
+        data={filteredUsers}
         columns={columns}
         loading={loading}
         onAdd={handleAdd}

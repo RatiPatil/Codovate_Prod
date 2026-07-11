@@ -1,94 +1,104 @@
 import { useState } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useSocket } from '../context/SocketContext';
+import { 
+  LayoutDashboard, 
+  LineChart, 
+  Users, 
+  Briefcase, 
+  FileText, 
+  Building2, 
+  GraduationCap, 
+  UserCheck, 
+  Rocket, 
+  Award, 
+  Image as ImageIcon, 
+  Bell, 
+  Settings, 
+  ShieldAlert, 
+  LogOut, 
+  Menu, 
+  X,
+  ChevronRight,
+  UserSquare2
+} from 'lucide-react';
 
-// ─── Nav Config per Role ──────────────────────────────────────────────────────
 const NAV_CONFIG = {
-  // Super Admin + Admin — full access
   super_admin: [
     {
-      label: 'PLATFORM',
+      label: 'DASHBOARD',
       items: [
-        { path: '/admin',              label: 'Overview',       icon: '⊞',  exact: true },
-        { path: '/admin/analytics',    label: 'Analytics',      icon: '📈' },
+        { path: '/admin',              label: 'Overview',       icon: LayoutDashboard, exact: true },
+        { path: '/admin/analytics',    label: 'Analytics',      icon: LineChart },
       ]
     },
     {
-      label: 'MANAGEMENT',
+      label: 'USER MANAGEMENT',
       items: [
-        { path: '/admin/users',        label: 'Users',          icon: '👥' },
-        { path: '/admin/opportunities',label: 'Opportunities',  icon: '🔍' },
-        { path: '/admin/applications', label: 'Applications',   icon: '📋' },
-        { path: '/admin/colleges',     label: 'Colleges',       icon: '🏛️' },
-        { path: '/admin/companies',    label: 'Companies',      icon: '🏢' },
-        { path: '/admin/mentors',      label: 'Mentors',        icon: '🧑‍🏫' },
-        { path: '/admin/teams',        label: 'Teams',          icon: '🤝' },
+        { path: '/admin/users',        label: 'Users',          icon: Users },
+        { path: '/admin/students',     label: 'Students',       icon: UserSquare2 },
+        { path: '/admin/colleges',     label: 'Colleges',       icon: GraduationCap },
+        { path: '/admin/companies',    label: 'Companies',      icon: Building2 },
+        { path: '/admin/mentors',      label: 'Mentors',        icon: UserCheck },
       ]
     },
     {
-      label: 'CONTENT',
+      label: 'ECOSYSTEM',
       items: [
-        { path: '/admin/projects',     label: 'Projects',       icon: '🚀' },
-        { path: '/admin/certificates', label: 'Certificates',   icon: '📜' },
-        { path: '/admin/content',      label: 'Content Mgmt',   icon: '🖼️' },
+        { path: '/admin/opportunities',label: 'Opportunities',  icon: Briefcase },
+        { path: '/admin/applications', label: 'Applications',   icon: FileText },
+        { path: '/admin/projects',     label: 'Projects',       icon: Rocket },
+        { path: '/admin/certificates', label: 'Certificates',   icon: Award },
+        { path: '/admin/content',      label: 'Content Mgmt',   icon: ImageIcon },
       ]
     },
     {
-      label: 'SYSTEM',
+      label: 'SYSTEM & SETTINGS',
       items: [
-        { path: '/admin/notifications',label: 'Notifications',  icon: '🔔' },
-        { path: '/admin/gamification', label: 'Gamification',   icon: '🎮' },
-        { path: '/admin/settings',     label: 'Settings',       icon: '⚙️' },
-        { path: '/admin/audit',        label: 'Audit Logs',     icon: '📜' },
+        { path: '/admin/notifications',label: 'Notifications',  icon: Bell },
+        { path: '/admin/settings',     label: 'Platform Settings',icon: Settings },
+        { path: '/admin/system',       label: 'System Health',  icon: ShieldAlert },
+        { path: '/admin/audit',        label: 'Audit Logs',     icon: ShieldAlert },
       ]
     }
   ],
-
-  // College Admin — restricted
   college_admin: [
     {
       label: 'MY COLLEGE',
       items: [
-        { path: '/admin',              label: 'Overview',       icon: '⊞',  exact: true },
-        { path: '/admin/users',        label: 'Students',       icon: '👥' },
-        { path: '/admin/applications', label: 'Applications',   icon: '📋' },
-        { path: '/admin/projects',     label: 'Projects',       icon: '🚀' },
-        { path: '/admin/certificates', label: 'Certificates',   icon: '📜' },
+        { path: '/admin',              label: 'Overview',       icon: LayoutDashboard, exact: true },
+        { path: '/admin/users',        label: 'Students',       icon: Users },
+        { path: '/admin/applications', label: 'Applications',   icon: FileText },
+        { path: '/admin/projects',     label: 'Projects',       icon: Rocket },
+        { path: '/admin/certificates', label: 'Certificates',   icon: Award },
       ]
     }
   ],
-
-  // Company Admin — restricted to jobs & internships
   company_admin: [
     {
       label: 'RECRUITING',
       items: [
-        { path: '/admin',              label: 'Overview',       icon: '⊞',  exact: true },
-        { path: '/admin/opportunities',label: 'My Listings',    icon: '🔍' },
-        { path: '/admin/applications', label: 'Applicants',     icon: '📋' },
+        { path: '/admin',              label: 'Overview',       icon: LayoutDashboard, exact: true },
+        { path: '/admin/opportunities',label: 'My Listings',    icon: Briefcase },
+        { path: '/admin/applications', label: 'Applicants',     icon: FileText },
       ]
     }
   ],
 };
 
-// admin role falls back to super_admin nav
 NAV_CONFIG['admin'] = NAV_CONFIG['super_admin'];
 
-// ─── Role Meta ────────────────────────────────────────────────────────────────
 const ROLE_META = {
-  super_admin:   { label: 'Super Admin',    color: '#FF4444', bg: 'bg-red-500/10',    border: 'border-red-500/20',    icon: '⚡' },
-  admin:         { label: 'Admin',          color: '#F59E0B', bg: 'bg-yellow-500/10', border: 'border-yellow-500/20', icon: '🛡️' },
-  college_admin: { label: 'College Admin',  color: '#2015FF', bg: 'bg-[#2015FF]/10',  border: 'border-[#2015FF]/20',  icon: '🏛️' },
-  company_admin: { label: 'Company Admin',  color: '#10B981', bg: 'bg-green-500/10',  border: 'border-green-500/20',  icon: '🏢' },
+  super_admin:   { label: 'Super Admin',    color: '#3B82F6', bg: 'bg-blue-500/10',    border: 'border-blue-500/20' },
+  admin:         { label: 'Admin',          color: '#F59E0B', bg: 'bg-yellow-500/10', border: 'border-yellow-500/20' },
+  college_admin: { label: 'College Admin',  color: '#8B5CF6', bg: 'bg-purple-500/10',  border: 'border-purple-500/20' },
+  company_admin: { label: 'Company Admin',  color: '#10B981', bg: 'bg-green-500/10',  border: 'border-green-500/20' },
 };
 
-// ─── Sidebar Content ──────────────────────────────────────────────────────────
 const SidebarContent = ({ setMobileOpen }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const { isConnected } = useSocket();
 
   const role = user?.role || 'admin';
   const sections = NAV_CONFIG[role] || NAV_CONFIG['admin'];
@@ -105,128 +115,124 @@ const SidebarContent = ({ setMobileOpen }) => {
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#050510] relative overflow-hidden select-none">
-      {/* Ambient glow */}
-      <div className="absolute top-0 left-0 w-full h-48 opacity-[0.06] blur-[60px] pointer-events-none" style={{ background: meta.color }} />
-
-      {/* Logo */}
-      <div className="px-5 py-5 border-b border-white/5 relative z-10 shrink-0">
+    <div className="flex flex-col h-full bg-[#030308] border-r border-white/5 relative overflow-hidden select-none">
+      <div className="px-6 py-6 border-b border-white/5 relative z-10 shrink-0">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center shadow-lg shrink-0"
-            style={{ background: `linear-gradient(135deg, ${meta.color}, ${meta.color}99)`, boxShadow: `0 0 20px ${meta.color}40` }}>
-            <span className="text-white font-black text-base">C</span>
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg shrink-0"
+            style={{ background: `linear-gradient(135deg, ${meta.color}, ${meta.color}CC)` }}>
+            <span className="text-white font-black text-xl">C</span>
           </div>
           <div className="min-w-0">
-            <p className="text-white font-black text-sm tracking-tight leading-none">CODOVATE</p>
-            <p className="text-[10px] font-bold uppercase tracking-[0.15em] mt-0.5 truncate" style={{ color: meta.color }}>
-              {meta.icon} {meta.label}
+            <p className="text-white font-black text-lg tracking-tight leading-none">CODOVATE</p>
+            <p className="text-[11px] font-bold uppercase tracking-widest mt-1 truncate" style={{ color: meta.color }}>
+              ADMIN PANEL
             </p>
           </div>
-
         </div>
       </div>
 
-      {/* Admin Badge */}
-      <div className={`mx-4 mt-4 mb-2 p-3 rounded-xl ${meta.bg} border ${meta.border} relative z-10 shrink-0`}>
+      <div className="px-6 py-5 border-b border-white/5 relative z-10 shrink-0">
         <div className="flex items-center gap-3">
-          <div className={`w-8 h-8 rounded-lg ${meta.bg} border ${meta.border} flex items-center justify-center font-black text-sm shrink-0`}
+          <div className={`w-10 h-10 rounded-full ${meta.bg} border ${meta.border} flex items-center justify-center font-bold text-lg shrink-0`}
             style={{ color: meta.color }}>
             {user?.name?.charAt(0)?.toUpperCase() || 'A'}
           </div>
           <div className="overflow-hidden min-w-0">
-            <p className="text-white text-xs font-bold truncate leading-none">{user?.name || 'Administrator'}</p>
-            <p className="text-[9px] font-bold uppercase tracking-widest truncate mt-0.5" style={{ color: `${meta.color}99` }}>
+            <p className="text-gray-200 text-sm font-bold truncate leading-none">{user?.name || 'Administrator'}</p>
+            <p className="text-xs text-gray-500 font-medium truncate mt-1">
               {meta.label}
             </p>
           </div>
         </div>
-        {/* College / Company sub-info */}
-        {user?.college_name && (
-          <p className="text-[9px] text-gray-600 mt-2 truncate">{user.college_name}</p>
-        )}
-        {user?.company_name && (
-          <p className="text-[9px] text-gray-600 mt-2 truncate">{user.company_name}</p>
-        )}
       </div>
 
-      {/* Nav */}
-      <nav className="flex-1 px-3 py-2 space-y-4 overflow-y-auto scrollbar-hide relative z-10">
-        {sections.map(section => (
-          <div key={section.label}>
-            <p className="text-[9px] font-black text-gray-600 uppercase tracking-[0.2em] px-3 mb-1.5">{section.label}</p>
-            <div className="space-y-0.5">
-              {section.items.map(item => {
+      <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar py-4 px-3 relative z-10 space-y-6">
+        {sections.map((section, idx) => (
+          <div key={idx}>
+            <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-widest text-gray-500">
+              {section.label}
+            </p>
+            <ul className="space-y-1">
+              {section.items.map((item, itemIdx) => {
                 const active = isActive(item.path, item.exact);
+                const Icon = item.icon;
                 return (
-                  <NavLink
-                    key={item.path}
-                    to={item.path}
-                    end={item.exact}
-                    onClick={() => setMobileOpen && setMobileOpen(false)}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition-all duration-150 group ${
-                      active
-                        ? 'text-white shadow-lg'
-                        : 'text-gray-500 hover:text-white hover:bg-white/5'
-                    }`}
-                    style={active ? { background: meta.color, boxShadow: `0 4px 16px ${meta.color}40` } : {}}
-                  >
-                    <span className="text-sm w-5 text-center shrink-0">{item.icon}</span>
-                    <span className="tracking-wide truncate">{item.label}</span>
-                    {active && <div className="ml-auto w-1 h-4 bg-white/40 rounded-full shrink-0" />}
-                  </NavLink>
+                  <li key={itemIdx}>
+                    <NavLink
+                      to={item.path}
+                      onClick={() => setMobileOpen?.(false)}
+                      className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-semibold transition-all group ${
+                        active 
+                          ? 'bg-blue-500/10 text-blue-500' 
+                          : 'text-gray-400 hover:text-gray-200 hover:bg-white/5'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <Icon className={`w-4 h-4 transition-colors ${active ? 'text-blue-500' : 'text-gray-500 group-hover:text-gray-300'}`} />
+                        {item.label}
+                      </div>
+                      {active && (
+                        <ChevronRight className="w-4 h-4 opacity-50" />
+                      )}
+                    </NavLink>
+                  </li>
                 );
               })}
-            </div>
+            </ul>
           </div>
         ))}
+      </div>
 
-        {/* Student Portal Link */}
-        <div className="border-t border-white/5 pt-4">
-          <p className="text-[9px] font-black text-gray-600 uppercase tracking-[0.2em] px-3 mb-1.5">EXTERNAL</p>
-          <NavLink
-            to="/dashboard"
-            onClick={() => setMobileOpen && setMobileOpen(false)}
-            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-gray-600 hover:text-white hover:bg-white/5 transition-all"
-          >
-            <span className="text-sm w-5 text-center">🎓</span>
-            <span>Student Portal</span>
-            <span className="ml-auto text-[9px] text-gray-700">↗</span>
-          </NavLink>
-        </div>
-      </nav>
-
-      {/* Logout */}
-      <div className="p-3 border-t border-white/5 relative z-10 shrink-0">
+      <div className="px-4 py-4 border-t border-white/5 shrink-0 z-10 bg-[#030308]">
         <button
           onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-red-500/60 hover:text-white hover:bg-red-500 transition-all duration-200 group"
+          className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-bold text-red-500/70 hover:text-red-400 hover:bg-red-500/10 transition-colors"
         >
-          <span className="text-sm w-5 text-center">🚪</span>
-          <span>Secure Logout</span>
+          <LogOut className="w-4 h-4" />
+          Sign Out
         </button>
       </div>
     </div>
   );
 };
 
-// ─── Main Export ──────────────────────────────────────────────────────────────
-const AdminSidebar = ({ mobileOpen, setMobileOpen }) => (
-  <>
-    {/* Desktop */}
-    <aside className="hidden md:flex flex-col w-56 border-l border-white/5 h-screen sticky top-0 shrink-0 z-20">
-      <SidebarContent setMobileOpen={setMobileOpen} />
-    </aside>
+const AdminSidebar = () => {
+  const [mobileOpen, setMobileOpen] = useState(false);
 
-    {/* Mobile Overlay */}
-    {mobileOpen && (
-      <div className="md:hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-40" onClick={() => setMobileOpen(false)} />
-    )}
-    
-    {/* Mobile Drawer */}
-    <aside className={`md:hidden fixed top-0 right-0 h-screen w-56 z-50 transition-transform duration-300 ${mobileOpen ? 'translate-x-0' : 'translate-x-full'}`}>
-      <SidebarContent setMobileOpen={setMobileOpen} />
-    </aside>
-  </>
-);
+  return (
+    <>
+      <button 
+        onClick={() => setMobileOpen(true)}
+        className="lg:hidden fixed top-4 left-4 z-[60] w-10 h-10 bg-[#12121A] border border-white/10 rounded-xl flex items-center justify-center text-white"
+      >
+        <Menu className="w-5 h-5" />
+      </button>
+
+      {mobileOpen && (
+        <div 
+          className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[70]"
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
+
+      <aside className={`
+        fixed top-0 left-0 h-[100dvh] w-[260px] z-[80]
+        transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]
+        lg:translate-x-0 lg:sticky lg:top-0
+        ${mobileOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'}
+      `}>
+        {mobileOpen && (
+          <button 
+            onClick={() => setMobileOpen(false)}
+            className="lg:hidden absolute top-4 -right-12 w-10 h-10 bg-[#12121A] border border-white/10 rounded-xl flex items-center justify-center text-white"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        )}
+        <SidebarContent setMobileOpen={setMobileOpen} />
+      </aside>
+    </>
+  );
+};
 
 export default AdminSidebar;
