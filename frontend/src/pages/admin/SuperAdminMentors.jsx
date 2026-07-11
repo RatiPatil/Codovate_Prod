@@ -101,12 +101,27 @@ const SuperAdminMentors = () => {
           >
             Edit
           </button>
-          {row.status !== 'suspended' && (
+          {row.status !== 'suspended' ? (
             <button 
               onClick={() => handleDelete(row.id)}
               className="px-3 py-1 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-lg text-xs font-bold transition-colors"
             >
               Suspend
+            </button>
+          ) : (
+            <button 
+              onClick={async () => {
+                if (!await showConfirm("Are you sure you want to unsuspend this mentor?")) return;
+                try {
+                  await api.put(`/admin/mentors/${row.id}`, { status: 'active' });
+                  fetchMentors();
+                } catch (err) {
+                  showAlert("Failed to unsuspend mentor");
+                }
+              }}
+              className="px-3 py-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-500 rounded-lg text-xs font-bold transition-colors"
+            >
+              Unsuspend
             </button>
           )}
         </div>

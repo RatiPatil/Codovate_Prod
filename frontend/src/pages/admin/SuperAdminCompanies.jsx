@@ -107,12 +107,27 @@ const SuperAdminCompanies = () => {
           >
             Edit
           </button>
-          {row.status !== 'suspended' && (
+          {row.status !== 'suspended' ? (
             <button 
               onClick={() => handleDelete(row.id)}
               className="px-3 py-1 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-lg text-xs font-bold transition-colors"
             >
               Suspend
+            </button>
+          ) : (
+            <button 
+              onClick={async () => {
+                if (!await showConfirm("Are you sure you want to unsuspend this company?")) return;
+                try {
+                  await api.put(`/admin/companies/${row.id}`, { status: 'active' });
+                  fetchCompanies();
+                } catch (err) {
+                  showAlert("Failed to unsuspend company");
+                }
+              }}
+              className="px-3 py-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-500 rounded-lg text-xs font-bold transition-colors"
+            >
+              Unsuspend
             </button>
           )}
         </div>

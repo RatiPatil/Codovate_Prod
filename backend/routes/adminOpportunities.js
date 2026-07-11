@@ -101,4 +101,18 @@ router.delete('/:id', superAdminOnly, async (req, res) => {
   }
 });
 
+// DELETE (Hard delete) opportunity
+router.delete('/:id/hard', superAdminOnly, async (req, res) => {
+  try {
+    const docRef = db.collection('opportunities').doc(req.params.id);
+    const doc = await docRef.get();
+    if (!doc.exists) return res.status(404).json({ message: 'Opportunity not found' });
+
+    await docRef.delete();
+    res.json({ message: 'Opportunity permanently deleted' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 module.exports = router;

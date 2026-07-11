@@ -112,13 +112,44 @@ const SuperAdminOpportunities = () => {
           >
             Edit
           </button>
-          {row.is_active && (
+          {row.is_active ? (
             <button 
               onClick={() => handleDelete(row.id)}
               className="px-3 py-1 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-lg text-xs font-bold transition-colors"
             >
               Suspend
             </button>
+          ) : (
+            <>
+              <button 
+                onClick={async () => {
+                  if (!await showConfirm("Are you sure you want to reactivate this opportunity?")) return;
+                  try {
+                    await api.put(`/admin/opportunities/${row.id}`, { status: 'active' });
+                    fetchOps();
+                  } catch (err) {
+                    showAlert("Failed to reactivate opportunity");
+                  }
+                }}
+                className="px-3 py-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-500 rounded-lg text-xs font-bold transition-colors"
+              >
+                Reactivate
+              </button>
+              <button 
+                onClick={async () => {
+                  if (!await showConfirm("Are you sure you want to permanently delete this outdated opportunity? This cannot be undone.")) return;
+                  try {
+                    await api.delete(`/admin/opportunities/${row.id}/hard`);
+                    fetchOps();
+                  } catch (err) {
+                    showAlert("Failed to permanently delete opportunity");
+                  }
+                }}
+                className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-bold transition-colors shadow-lg"
+              >
+                Delete
+              </button>
+            </>
           )}
         </div>
       )
