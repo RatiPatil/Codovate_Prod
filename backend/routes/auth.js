@@ -7,29 +7,8 @@ require("dotenv").config();
 
 const { getAuth } = require("firebase-admin/auth");
 
-// ─── TEMPORARY ENDPOINT TO SEED ADMINS ON FREE RENDER ───
-router.get("/seed-admins-now", async (req, res) => {
-  try {
-    const ADMINS = [
-      { id: 'super_admin_001', name: 'Ratikant Patil', email: 'superadmin@codovate.in', password: 'Super@Admin#2026', role: 'super_admin' },
-      { id: 'college_admin_001', name: 'SVERI College Admin', email: 'college@codovate.in', password: 'College@Admin#2026', role: 'college_admin' },
-      { id: 'company_admin_001', name: 'Company Recruiter Admin', email: 'company@codovate.in', password: 'Company@Admin#2026', role: 'company_admin' }
-    ];
-    let created = [];
-    for (const admin of ADMINS) {
-      const hash = await bcrypt.hash(admin.password, 12);
-      await db.collection('users').doc(admin.id).set({
-        id: admin.id, name: admin.name, email: admin.email.toLowerCase(),
-        password_hash: hash, role: admin.role, is_active: true, is_verified: true,
-        created_at: new Date()
-      }, { merge: true });
-      created.push(admin.email);
-    }
-    res.json({ message: "Seeding complete!", newlyCreated: created, allAdmins: ADMINS.map(a => a.email) });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
+// ─── SECURITY: Admin seeder endpoint removed (was publicly accessible) ───
+// Use a protected CLI script or one-time migration for admin seeding instead.
 
 router.post("/google", async (req, res) => {
   const { idToken } = req.body;
