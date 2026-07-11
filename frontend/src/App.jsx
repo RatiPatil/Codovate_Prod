@@ -20,7 +20,7 @@ import Applications from './pages/Applications';
 import Profile from './pages/Profile';
 
 import AdminLogin from './pages/AdminLogin';
-import Teams from './pages/Teams';
+import TeamsLayout from './pages/teams/TeamsLayout';
 import Mentors from './pages/Mentors';
 import Leaderboard from './pages/Leaderboard';
 import ResumeBuilder from './pages/ResumeBuilder';
@@ -88,7 +88,7 @@ function App() {
               } />
               <Route path="/teams" element={
                 <ProtectedRoute>
-                  <Layout><Teams /></Layout>
+                  <Layout><TeamsLayout /></Layout>
                 </ProtectedRoute>
               } />
               <Route path="/mentors" element={

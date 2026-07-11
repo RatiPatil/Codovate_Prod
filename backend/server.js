@@ -97,6 +97,7 @@ app.use("/api/mentor-resources", require("./routes/mentorResources"));
 app.use("/api/mentor-queries", require("./routes/mentorQueries"));
 app.use("/api/networking",    require("./routes/networking"));
 app.use("/api/leaderboard",   require("./routes/leaderboard"));
+app.use("/api/chat",          require("./routes/chat"));
 app.use("/api/resume",        require("./routes/resume"));
 app.use("/api/colleges",      require("./routes/colleges"));
 app.use("/api/companies",     require("./routes/companies"));

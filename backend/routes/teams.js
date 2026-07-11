@@ -40,9 +40,44 @@ router.get("/my", auth, async (req, res) => {
   }
 });
 
+// Get all public teams (for Teams Home Page)
+router.get("/all", auth, async (req, res) => {
+  try {
+    const teamsSnapshot = await db.collection("teams").where("status", "==", "Recruiting").get();
+    
+    let teams = [];
+    for (const doc of teamsSnapshot.docs) {
+      const team = doc.data();
+      team.id = doc.id;
+      
+      const membersSnapshot = await db.collection("team_members").where("team_id", "==", team.id).get();
+      team.member_count = membersSnapshot.size;
+      
+      // Get owner info
+      const ownerDoc = await db.collection("students").doc(team.created_by).get();
+      if (ownerDoc.exists) {
+        team.owner_name = ownerDoc.data().name || ownerDoc.data().full_name || 'Anonymous';
+      }
+
+      teams.push(team);
+    }
+    
+    teams.sort((a, b) => {
+      const timeA = a.created_at?.toMillis ? a.created_at.toMillis() : new Date(a.created_at || 0).getTime();
+      const timeB = b.created_at?.toMillis ? b.created_at.toMillis() : new Date(b.created_at || 0).getTime();
+      return timeB - timeA;
+    });
+
+    res.json(teams);
+  } catch (err) {
+    console.error("Get all teams error:", err.message);
+    res.status(500).json({ message: "Server error." });
+  }
+});
+
 // Create a team
 router.post("/", auth, async (req, res) => {
-  const { name, opportunity_id, description, required_skills, capacity, status } = req.body;
+  const { name, project_title, description, category, required_skills, capacity, status, work_mode, college, logo, tags } = req.body;
   if (!name) return res.status(400).json({ message: "Team name is required." });
 
   // Generate a random 6-character code
@@ -53,12 +88,17 @@ router.post("/", auth, async (req, res) => {
     const team = {
       id: newTeamRef.id,
       name,
+      project_title: project_title || '',
       description: description || '',
+      category: category || 'General',
       required_skills: required_skills || [],
+      tags: tags || [],
       capacity: parseInt(capacity) || 4,
       status: status || 'Recruiting',
+      work_mode: work_mode || 'Remote',
+      college: college || null,
+      logo: logo || null,
       join_code,
-      opportunity_id: opportunity_id || null,
       created_by: req.user.id,
       created_at: new Date()
     };
