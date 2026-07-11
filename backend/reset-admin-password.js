@@ -1,5 +1,5 @@
 const { db } = require('./config/firebase');
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcrypt');
 
 async function resetAdminPassword() {
   const email = 'patilratikant8@gmail.com'; // Adjust if you used a different one
