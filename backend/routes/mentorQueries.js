@@ -149,10 +149,7 @@ router.post('/', auth, async (req, res) => {
 
     // Notify mentor via socket if connected
     if (req.io) {
-      const mDoc = await db.collection('mentors').doc(assignedMentorId).get();
-      if (mDoc.exists && mDoc.data().user_id) {
-        req.io.to(`admin_mentor_${mDoc.data().user_id}`).emit('new_query', newQuery);
-      }
+      req.io.to(`admin_mentor_${assignedMentorId}`).emit('new_query', newQuery);
     }
 
     res.status(201).json(newQuery);
@@ -172,15 +169,6 @@ router.get('/', auth, async (req, res) => {
     
     if (req.user.role === 'student') {
       queriesRef = queriesRef.where('student_id', '==', req.user.id);
-    } else if (req.user.role === 'mentor') {
-      // Find the mentor document associated with this user
-      const mentorDocs = await db.collection('mentors').where('user_id', '==', req.user.id).get();
-      if (!mentorDocs.empty) {
-        queriesRef = queriesRef.where('mentor_id', '==', mentorDocs.docs[0].id);
-      } else {
-        // If they don't have a mentor profile, they won't have queries
-        return res.json([]);
-      }
     } else if (req.user.role === 'admin' || req.user.role === 'super_admin') {
       // Admins see all
     } else {
@@ -222,18 +210,11 @@ router.put('/:id/status', auth, async (req, res) => {
     
     const queryData = doc.data();
 
-    let mentorId = null;
-    if (req.user.role === 'mentor') {
-      const mentorDocs = await db.collection('mentors').where('user_id', '==', req.user.id).get();
-      if (!mentorDocs.empty) mentorId = mentorDocs.docs[0].id;
-    }
-
-    // Permissions: Only assigned mentor or student (can close) or admin
-    const isMentor = req.user.role === 'mentor' && queryData.mentor_id === mentorId;
+    // Permissions: Only student (can close) or admin
     const isStudent = req.user.role === 'student' && queryData.student_id === req.user.id;
     const isAdmin = ['admin', 'super_admin'].includes(req.user.role);
 
-    if (!isMentor && !isStudent && !isAdmin) {
+    if (!isStudent && !isAdmin) {
       return res.status(403).json({ message: 'Forbidden' });
     }
 
@@ -252,12 +233,8 @@ router.put('/:id/status', auth, async (req, res) => {
 
     // Notify the other party
     if (req.io) {
-      if (isMentor) req.io.to(`user_${queryData.student_id}`).emit('query_update', updatedDoc);
       if (isStudent) {
-        const mDoc = await db.collection('mentors').doc(queryData.mentor_id).get();
-        if (mDoc.exists && mDoc.data().user_id) {
-          req.io.to(`admin_mentor_${mDoc.data().user_id}`).emit('query_update', updatedDoc);
-        }
+        req.io.to(`admin_mentor_${queryData.mentor_id}`).emit('query_update', updatedDoc);
       }
     }
 

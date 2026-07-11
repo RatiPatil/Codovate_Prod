@@ -92,6 +92,8 @@ app.use("/api/notifications", require("./routes/notifications"));
 
 app.use("/api/teams",         require("./routes/teams"));
 app.use("/api/mentors",       require("./routes/mentors"));
+app.use("/api/mentor-interactions", require("./routes/mentorInteractions"));
+app.use("/api/mentor-resources", require("./routes/mentorResources"));
 app.use("/api/mentor-queries", require("./routes/mentorQueries"));
 app.use("/api/networking",    require("./routes/networking"));
 app.use("/api/leaderboard",   require("./routes/leaderboard"));

@@ -65,4 +65,52 @@ router.post("/login", async (req, res) => {
   }
 });
 
+const auth = require('../middleware/auth');
+
+router.get("/me", auth, async (req, res) => {
+  if (req.user.role !== 'mentor') return res.status(403).json({ message: 'Forbidden' });
+  try {
+    const doc = await db.collection('mentors').doc(req.user.id).get();
+    if (!doc.exists) return res.status(404).json({ message: 'Mentor not found' });
+    const { password_hash, ...safeData } = doc.data();
+    res.json(safeData);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+router.put("/profile", auth, async (req, res) => {
+  if (req.user.role !== 'mentor') return res.status(403).json({ message: 'Forbidden' });
+  try {
+    const { name, mobile, designation, company, experience, bio } = req.body;
+    await db.collection('mentors').doc(req.user.id).update({
+      name, mobile, designation, company, experience, bio
+    });
+    res.json({ message: 'Profile updated' });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+router.post("/change-password", auth, async (req, res) => {
+  if (req.user.role !== 'mentor') return res.status(403).json({ message: 'Forbidden' });
+  try {
+    const { current_password, new_password } = req.body;
+    const doc = await db.collection('mentors').doc(req.user.id).get();
+    if (!doc.exists) return res.status(404).json({ message: 'Mentor not found' });
+    
+    const mentor = doc.data();
+    const match = await bcrypt.compare(current_password, mentor.password_hash);
+    if (!match) return res.status(400).json({ message: 'Incorrect current password' });
+    
+    const salt = await bcrypt.genSalt(10);
+    const password_hash = await bcrypt.hash(new_password, salt);
+    
+    await db.collection('mentors').doc(req.user.id).update({ password_hash });
+    res.json({ message: 'Password changed successfully' });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 module.exports = router;
