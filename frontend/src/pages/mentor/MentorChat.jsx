@@ -163,7 +163,7 @@ const MentorChat = () => {
             <div className="p-4 border-b border-white/10 flex justify-between items-center bg-[#0A0A1B]">
               <div>
                 <h3 className="font-bold text-lg">{activeChat.title}</h3>
-                <p className="text-sm text-gray-400">Asked by {activeChat.student_name} • {activeChat.category}</p>
+                <p className="text-sm text-gray-400">Asked by {activeChat.student_name} â¢ {activeChat.category}</p>
               </div>
               <div className="flex items-center gap-3">
                 {activeChat.status !== 'Closed' && (
@@ -262,5 +262,3 @@ const MentorChat = () => {
 };
 
 export default MentorChat;
-/ /   E O F  
- 
