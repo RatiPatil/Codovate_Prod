@@ -10,6 +10,7 @@ const statusStyles = {
   'Under Review': 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
   Selected: 'bg-green-500/10 text-green-400 border-green-500/20',
   Rejected: 'bg-red-500/10 text-red-400 border-red-500/20',
+  'External Link Opened': 'bg-blue-500/10 text-blue-400 border-blue-500/20',
 };
 
 const typeColors = {
@@ -139,19 +140,34 @@ const Applications = () => {
                 className="glass-card p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 group"
               >
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap mb-1.5">
-                    <h3 className="text-white font-bold text-lg group-hover:text-primary transition-colors">{app.title}</h3>
-                    <span className={`text-[10px] uppercase tracking-widest font-bold px-2 py-0.5 rounded-md bg-white/5 ${typeColors[app.type] || 'text-gray-400'}`}>
-                      {app.type}
-                    </span>
+                  <div className="flex items-start justify-between gap-4 mb-4">
+                    <div>
+                      <h3 className="text-xl font-bold text-white mb-1 group-hover:text-primary transition-colors">
+                        {app.title}
+                      </h3>
+                      <p className="text-gray-400 text-sm font-semibold flex items-center gap-2">
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                        {app.company}
+                      </p>
+                    </div>
                   </div>
-                  <p className="text-primary text-sm font-semibold">{app.company}</p>
-                  <p className="text-gray-500 text-xs mt-2 flex items-center gap-1">
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                    Applied on {formatDate(app.applied_at, {
-                      day: 'numeric', month: 'short', year: 'numeric'
-                    })}
-                  </p>
+                  
+                  {app.is_external && (
+                    <div className="mb-4 bg-blue-500/10 border border-blue-500/20 rounded-lg p-3">
+                      <p className="text-xs text-blue-400">
+                        <span className="font-bold">Note:</span> You opened the original application page. Since this opportunity is hosted externally, Codovate cannot track whether your application was successfully submitted.
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="flex flex-wrap gap-x-6 gap-y-2 mt-auto">
+                    <p className="text-gray-500 text-xs flex items-center gap-1">
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                      Applied on {formatDate(app.applied_at, {
+                        day: 'numeric', month: 'short', year: 'numeric'
+                      })}
+                    </p>
+                  </div>
                 </div>
 
                 <div className="flex items-center gap-4 shrink-0 border-t sm:border-t-0 sm:border-l border-white/10 pt-4 sm:pt-0 sm:pl-4">
