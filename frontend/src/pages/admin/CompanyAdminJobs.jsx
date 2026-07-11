@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import AdminDataTable from '../../components/common/AdminDataTable';
 import AdminCrudModal from '../../components/common/AdminCrudModal';
 import api from '../../api/axios';
+import { showAlert, showConfirm } from '../../utils/uiUtils';
 
 const jobSchema = [
   { name: 'title', label: 'Job Title', type: 'text', required: true },
@@ -52,12 +53,12 @@ const CompanyAdminJobs = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this job?")) return;
+    if (!await showConfirm("Are you sure you want to delete this job?")) return;
     try {
       await api.delete(`/company-admin/opportunities/${id}`);
       fetchJobs();
     } catch (err) {
-      alert("Failed to delete job");
+      showAlert("Failed to delete job");
     }
   };
 
@@ -73,7 +74,7 @@ const CompanyAdminJobs = () => {
       fetchJobs();
     } catch (err) {
       const msg = err.response?.data?.message || "Failed to save job";
-      alert(msg);
+      showAlert(msg);
       throw err;
     }
   };

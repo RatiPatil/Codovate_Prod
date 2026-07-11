@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import AdminDataTable from '../../components/common/AdminDataTable';
 import AdminCrudModal from '../../components/common/AdminCrudModal';
 import api from '../../api/axios';
+import { showAlert, showConfirm } from '../../utils/uiUtils';
 
 const internshipSchema = [
   { name: 'title', label: 'Internship Title', type: 'text', required: true },
@@ -52,12 +53,12 @@ const CompanyAdminInternships = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this internship?")) return;
+    if (!await showConfirm("Are you sure you want to delete this internship?")) return;
     try {
       await api.delete(`/company-admin/opportunities/${id}`);
       fetchInternships();
     } catch (err) {
-      alert("Failed to delete internship");
+      showAlert("Failed to delete internship");
     }
   };
 
@@ -73,7 +74,7 @@ const CompanyAdminInternships = () => {
       fetchInternships();
     } catch (err) {
       const msg = err.response?.data?.message || "Failed to save internship";
-      alert(msg);
+      showAlert(msg);
       throw err;
     }
   };

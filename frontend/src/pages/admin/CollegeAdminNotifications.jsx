@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import AdminDataTable from '../../components/common/AdminDataTable';
 import AdminCrudModal from '../../components/common/AdminCrudModal';
 import api from '../../api/axios';
+import { showAlert, showConfirm } from '../../utils/uiUtils';
 
 const notificationSchema = [
   { name: 'title', label: 'Notification Title', type: 'text', required: true },
@@ -80,12 +81,12 @@ const CollegeAdminNotifications = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this notification?")) return;
+    if (!await showConfirm("Are you sure you want to delete this notification?")) return;
     try {
       await api.delete(`/college-admin/notifications/${id}`);
       fetchNotifications();
     } catch (err) {
-      alert("Failed to delete notification");
+      showAlert("Failed to delete notification");
     }
   };
 

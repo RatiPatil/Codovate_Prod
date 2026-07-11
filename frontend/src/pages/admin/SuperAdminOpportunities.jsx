@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import AdminDataTable from '../../components/common/AdminDataTable';
 import AdminCrudModal from '../../components/common/AdminCrudModal';
 import api from '../../api/axios';
+import { showAlert, showConfirm } from '../../utils/uiUtils';
 
 const oppSchema = [
   { name: 'title', label: 'Opportunity Title', type: 'text', required: true },
@@ -68,12 +69,12 @@ const SuperAdminOpportunities = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to suspend this opportunity?")) return;
+    if (!await showConfirm("Are you sure you want to suspend this opportunity?")) return;
     try {
       await api.delete(`/admin/opportunities/${id}`);
       fetchOps();
     } catch (err) {
-      alert("Failed to delete opportunity");
+      showAlert("Failed to delete opportunity");
     }
   };
 

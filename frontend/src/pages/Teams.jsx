@@ -5,6 +5,7 @@ import { parseDate, formatTime } from '../utils/dateUtils';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import ProfileReadOnlyView from '../components/ProfileReadOnlyView';
+import { showAlert, showConfirm } from '../utils/uiUtils';
 
 const MembersModal = ({ team, currentUser, onClose }) => {
   const [members, setMembers] = useState([]);
@@ -29,17 +30,17 @@ const MembersModal = ({ team, currentUser, onClose }) => {
       await api.put(`/teams/${team.id}/members/${userId}/role`, { role: newRole });
       fetchMembers();
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to update role');
+      showAlert(err.response?.data?.message || 'Failed to update role');
     }
   };
 
   const handleRemove = async (userId) => {
-    if (!window.confirm('Are you sure you want to remove this member?')) return;
+    if (!await showConfirm('Are you sure you want to remove this member?')) return;
     try {
       await api.delete(`/teams/${team.id}/members/${userId}`);
       fetchMembers();
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to remove member');
+      showAlert(err.response?.data?.message || 'Failed to remove member');
     }
   };
 
@@ -178,7 +179,7 @@ const DiscussionModal = ({ team, onClose, currentUser }) => {
     } catch (err) {
       console.error(err);
       setMessages(prev => prev.filter(m => m.id !== tempId));
-      alert('Failed to send message');
+      showAlert('Failed to send message');
     }
   };
 
@@ -353,7 +354,7 @@ const PrivateChatModal = ({ connection, currentUser, onClose }) => {
     } catch (err) {
       console.error(err);
       setMessages(prev => prev.filter(m => m.id !== tempId));
-      alert(err.response?.data?.message || 'Failed to send message');
+      showAlert(err.response?.data?.message || 'Failed to send message');
     }
   };
 
@@ -671,9 +672,9 @@ const ConnectionsView = ({ currentUser }) => {
                 
                 {/* Generic Reject / Remove / Cancel logic mapped to backend reject */}
                 <button 
-                  onClick={() => {
+                  onClick={async () => {
                     const msg = isConnected ? 'Are you sure you want to remove this connection?' : 'Are you sure you want to cancel this request?';
-                    if (window.confirm(msg)) handleAction(c.id, 'reject');
+                    if (await showConfirm(msg)) handleAction(c.id, 'reject');
                   }}
                   className="w-full mt-1 py-2 rounded-lg text-gray-500 font-semibold text-[10px] uppercase tracking-widest hover:text-red-400 hover:bg-red-500/10 transition-all"
                 >
@@ -1249,9 +1250,9 @@ const SuggestedMates = ({ myProfile }) => {
   const handleConnect = async (receiverId) => {
     try {
       await api.post('/networking/connect', { receiver_id: receiverId });
-      alert('Connection request sent!');
+      showAlert('Connection request sent!');
     } catch (err) {
-      alert(err.response?.data?.message || 'Error sending request');
+      showAlert(err.response?.data?.message || 'Error sending request');
     }
   };
 
@@ -1408,7 +1409,7 @@ const Teams = () => {
   };
 
   const handleLeave = async (teamId, teamName) => {
-    if (!window.confirm(`Are you sure you want to leave "${teamName}"?`)) return;
+    if (!await showConfirm(`Are you sure you want to leave "${teamName}"?`)) return;
     setLeaving(teamId);
     try {
       await api.delete(`/teams/${teamId}/leave`);

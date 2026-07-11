@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
+import { showAlert, showConfirm } from '../utils/uiUtils';
 
 // ─── Print Styles ─────────────────────────────────────────────────────────────
 const PRINT_CSS = `
@@ -695,7 +696,7 @@ const ResumeBuilder = () => {
 
       setShowPreview(true);
     } catch (err) {
-      alert(err.response?.data?.message || 'AI generation failed. Check server logs.');
+      showAlert(err.response?.data?.message || 'AI generation failed. Check server logs.');
     } finally {
       setAiLoading(false);
     }

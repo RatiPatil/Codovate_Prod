@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import AdminDataTable from '../../components/common/AdminDataTable';
 import AdminCrudModal from '../../components/common/AdminCrudModal';
 import api from '../../api/axios';
+import { showAlert, showConfirm } from '../../utils/uiUtils';
 
 const eventSchema = [
   { name: 'title', label: 'Event Title', type: 'text', required: true },
@@ -54,12 +55,12 @@ const CollegeAdminEvents = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this event?")) return;
+    if (!await showConfirm("Are you sure you want to delete this event?")) return;
     try {
       await api.delete(`/college-admin/events/${id}`);
       fetchEvents();
     } catch (err) {
-      alert("Failed to delete event");
+      showAlert("Failed to delete event");
     }
   };
 

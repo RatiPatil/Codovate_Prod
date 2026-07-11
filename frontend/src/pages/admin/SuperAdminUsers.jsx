@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import AdminDataTable from '../../components/common/AdminDataTable';
 import AdminCrudModal from '../../components/common/AdminCrudModal';
 import api from '../../api/axios';
+import { showAlert, showConfirm } from '../../utils/uiUtils';
 
 const userSchema = [
   { name: 'name', label: 'Full Name', type: 'text', required: true },
@@ -67,12 +68,12 @@ const SuperAdminUsers = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this user?")) return;
+    if (!await showConfirm("Are you sure you want to delete this user?")) return;
     try {
       await api.delete(`/admin/users/${id}`);
       fetchUsers();
     } catch (err) {
-      alert("Failed to delete user");
+      showAlert("Failed to delete user");
     }
   };
 

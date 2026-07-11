@@ -4,6 +4,7 @@ import MentorLayout from '../../components/layouts/MentorLayout';
 import api from '../../api/axios';
 import { useSocket } from '../../context/SocketContext';
 import { useAuth } from '../../context/AuthContext';
+import { showAlert, showConfirm } from '../../utils/uiUtils';
 
 const MentorQueries = () => {
   const [queries, setQueries] = useState([]);
@@ -57,7 +58,7 @@ const MentorQueries = () => {
       setAnswerText('');
     } catch (err) {
       console.error(err);
-      alert('Failed to update query status');
+      showAlert('Failed to update query status');
     }
   };
 

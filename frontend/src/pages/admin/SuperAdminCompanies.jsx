@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import AdminDataTable from '../../components/common/AdminDataTable';
 import AdminCrudModal from '../../components/common/AdminCrudModal';
 import api from '../../api/axios';
+import { showAlert, showConfirm } from '../../utils/uiUtils';
 
 const companySchema = [
   { name: 'name', label: 'Company Name', type: 'text', required: true },
@@ -52,12 +53,12 @@ const SuperAdminCompanies = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to suspend this company?")) return;
+    if (!await showConfirm("Are you sure you want to suspend this company?")) return;
     try {
       await api.delete(`/admin/companies/${id}`);
       fetchCompanies();
     } catch (err) {
-      alert("Failed to delete company");
+      showAlert("Failed to delete company");
     }
   };
 

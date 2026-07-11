@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import AdminDataTable from '../../components/common/AdminDataTable';
 import AdminCrudModal from '../../components/common/AdminCrudModal';
 import api from '../../api/axios';
+import { showAlert, showConfirm } from '../../utils/uiUtils';
 
 const interviewSchema = [
   { name: 'candidate_name', label: 'Candidate Name', type: 'text', required: true },
@@ -52,12 +53,12 @@ const CompanyAdminInterviews = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this interview?")) return;
+    if (!await showConfirm("Are you sure you want to delete this interview?")) return;
     try {
       await api.delete(`/company-admin/interviews/${id}`);
       fetchInterviews();
     } catch (err) {
-      alert("Failed to delete interview");
+      showAlert("Failed to delete interview");
     }
   };
 
@@ -72,7 +73,7 @@ const CompanyAdminInterviews = () => {
       setEditData(null);
       fetchInterviews();
     } catch (err) {
-      alert("Failed to save interview");
+      showAlert("Failed to save interview");
     }
   };
 

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import AdminDataTable from '../../components/common/AdminDataTable';
 import AdminCrudModal from '../../components/common/AdminCrudModal';
 import api from '../../api/axios';
+import { showAlert, showConfirm } from '../../utils/uiUtils';
 
 const projectSchema = [
   { name: 'title', label: 'Project Title', type: 'text', required: true },
@@ -58,12 +59,12 @@ const SuperAdminProjects = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to suspend this project?")) return;
+    if (!await showConfirm("Are you sure you want to suspend this project?")) return;
     try {
       await api.delete(`/admin/projects/${id}`);
       fetchProjects();
     } catch (err) {
-      alert("Failed to suspend project");
+      showAlert("Failed to suspend project");
     }
   };
 

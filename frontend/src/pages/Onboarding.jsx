@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { locationData } from '../utils/locationData';
 import { MAHARASHTRA_COLLEGES } from '../utils/maharashtraColleges';
 import confetti from 'canvas-confetti';
+import { showAlert, showConfirm } from '../utils/uiUtils';
 
 const STEPS = [
   { id: 1, title: 'Personal Info', icon: '👤', desc: 'Basic information about you' },
@@ -479,7 +480,7 @@ export default function Onboarding() {
         }, 1500);
       } catch (err) {
         console.error(err);
-        alert(err.response?.data?.message || 'Failed to save profile');
+        showAlert(err.response?.data?.message || 'Failed to save profile');
         setSaving(false);
       }
     }

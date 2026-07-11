@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import AdminDataTable from '../../components/common/AdminDataTable';
 import AdminCrudModal from '../../components/common/AdminCrudModal';
 import api from '../../api/axios';
+import { showAlert, showConfirm } from '../../utils/uiUtils';
 
 const collegeSchema = [
   { name: 'name', label: 'Institution Name', type: 'text', required: true },
@@ -52,12 +53,12 @@ const SuperAdminColleges = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to suspend this college?")) return;
+    if (!await showConfirm("Are you sure you want to suspend this college?")) return;
     try {
       await api.delete(`/admin/colleges/${id}`);
       fetchColleges();
     } catch (err) {
-      alert("Failed to delete college");
+      showAlert("Failed to delete college");
     }
   };
 

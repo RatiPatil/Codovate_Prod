@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import api from '../api/axios';
 import { useSocket } from '../context/SocketContext';
 import { formatDate } from '../utils/dateUtils';
+import { showAlert, showConfirm } from '../utils/uiUtils';
 
 const statusStyles = {
   Applied: 'bg-primary/10 text-primary border-primary/20',
@@ -58,7 +59,7 @@ const Applications = () => {
   }, [socket]);
 
   const handleWithdraw = async (appId) => {
-    if (!window.confirm('Are you sure you want to withdraw this application? This cannot be undone.')) return;
+    if (!await showConfirm('Are you sure you want to withdraw this application? This cannot be undone.')) return;
     setWithdrawing(appId);
     try {
       await api.delete(`/applications/${appId}`);

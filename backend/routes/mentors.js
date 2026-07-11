@@ -41,8 +41,19 @@ router.get("/", auth, async (req, res) => {
 router.post("/:id/book", auth, async (req, res) => {
   const { scheduled_time, mode, topic } = req.body;
   if (!scheduled_time) return res.status(400).json({ message: "Time is required." });
+  if (!topic || topic.trim().length < 10) return res.status(400).json({ message: "Topic must be at least 10 characters long." });
 
   try {
+    // Check for scheduling conflicts
+    const conflict = await db.collection("mentorSessions")
+      .where("mentor_id", "==", req.params.id)
+      .where("scheduled_time", "==", scheduled_time)
+      .where("status", "in", ["Pending", "Scheduled"])
+      .get();
+      
+    if (!conflict.empty) {
+      return res.status(409).json({ message: "This time slot is already booked. Please choose another time." });
+    }
     const newBookingRef = db.collection("mentorSessions").doc();
     const booking = {
       id: newBookingRef.id,

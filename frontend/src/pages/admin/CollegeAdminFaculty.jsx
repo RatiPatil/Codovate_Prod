@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import AdminDataTable from '../../components/common/AdminDataTable';
 import AdminCrudModal from '../../components/common/AdminCrudModal';
 import api from '../../api/axios';
+import { showAlert, showConfirm } from '../../utils/uiUtils';
 
 const facultySchema = [
   { name: 'name', label: 'Faculty Name', type: 'text', required: true },
@@ -51,12 +52,12 @@ const CollegeAdminFaculty = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to suspend this faculty member?")) return;
+    if (!await showConfirm("Are you sure you want to suspend this faculty member?")) return;
     try {
       await api.delete(`/college-admin/faculty/${id}`);
       fetchFaculty();
     } catch (err) {
-      alert("Failed to suspend faculty");
+      showAlert("Failed to suspend faculty");
     }
   };
 

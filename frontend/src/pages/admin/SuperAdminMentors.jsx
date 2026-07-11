@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import AdminDataTable from '../../components/common/AdminDataTable';
 import AdminCrudModal from '../../components/common/AdminCrudModal';
 import api from '../../api/axios';
+import { showAlert, showConfirm } from '../../utils/uiUtils';
 
 const mentorSchema = [
   { name: 'name', label: 'Mentor Full Name', type: 'text', required: true },
@@ -53,12 +54,12 @@ const SuperAdminMentors = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to suspend this mentor?")) return;
+    if (!await showConfirm("Are you sure you want to suspend this mentor?")) return;
     try {
       await api.delete(`/admin/mentors/${id}`);
       fetchMentors();
     } catch (err) {
-      alert("Failed to delete mentor");
+      showAlert("Failed to delete mentor");
     }
   };
 

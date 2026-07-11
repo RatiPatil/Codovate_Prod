@@ -24,6 +24,7 @@ import Leaderboard from './pages/Leaderboard';
 import ResumeBuilder from './pages/ResumeBuilder';
 import Notifications from './pages/Notifications';
 import { useEffect } from 'react';
+import { Toaster } from 'react-hot-toast';
 
 function App() {
   useEffect(() => {
@@ -42,6 +43,12 @@ function App() {
       <AuthProvider>
         <SocketProvider>
           <GlobalNotifications />
+          <Toaster position="top-right" toastOptions={{
+            style: {
+              background: '#333',
+              color: '#fff',
+            }
+          }} />
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<Home />} />

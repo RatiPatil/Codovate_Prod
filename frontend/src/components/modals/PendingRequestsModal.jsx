@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
+import { showAlert, showConfirm } from '../../utils/uiUtils';
 
 const PendingRequestsModal = ({ isOpen, onClose }) => {
   const { user } = useAuth();
@@ -34,7 +35,7 @@ const PendingRequestsModal = ({ isOpen, onClose }) => {
       await api.put(`/mentors/requests/${requestId}`, { status: action });
       setRequests(requests.filter(r => r.id !== requestId));
     } catch (err) {
-      alert(`Failed to ${action} request.`);
+      showAlert(`Failed to ${action} request.`);
     }
   };
 

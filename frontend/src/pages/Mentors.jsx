@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { formatTime, formatDateTime } from '../utils/dateUtils';
 import api from '../api/axios';
+import { showAlert, showConfirm } from '../utils/uiUtils';
 
 const BookingModal = ({ mentor, onClose, onConfirm }) => {
   const [dateTime, setDateTime] = useState('');
@@ -197,7 +198,7 @@ const QueriesView = ({ showToast, mentors }) => {
   };
 
   const handleCloseQuery = async (id) => {
-    if (!window.confirm('Are you sure you want to close this query?')) return;
+    if (!await showConfirm('Are you sure you want to close this query?')) return;
     try {
       await api.put(`/mentor-queries/${id}/status`, { status: 'Closed' });
       showToast('Query closed.', 'success');

@@ -2,6 +2,7 @@ import { formatDate, formatTime, formatDateTime, parseDate, getISODate } from '.
 import React, { useState, useEffect } from 'react';
 import AdminDataTable from '../../components/common/AdminDataTable';
 import api from '../../api/axios';
+import { showAlert, showConfirm } from '../../utils/uiUtils';
 
 const CompanyAdminApplications = () => {
   const [applications, setApplications] = useState([]);
@@ -28,17 +29,17 @@ const CompanyAdminApplications = () => {
       await api.put(`/company-admin/applications/${id}/status`, { status: newStatus });
       fetchApplications();
     } catch (err) {
-      alert("Failed to update status");
+      showAlert("Failed to update status");
     }
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this application?")) return;
+    if (!await showConfirm("Are you sure you want to delete this application?")) return;
     try {
       await api.delete(`/company-admin/applications/${id}`);
       fetchApplications();
     } catch (err) {
-      alert("Failed to delete application");
+      showAlert("Failed to delete application");
     }
   };
 

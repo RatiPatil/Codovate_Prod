@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import AdminDataTable from '../../components/common/AdminDataTable';
 import AdminCrudModal from '../../components/common/AdminCrudModal';
 import api from '../../api/axios';
+import { showAlert, showConfirm } from '../../utils/uiUtils';
 
 const certSchema = [
   { name: 'title', label: 'Certificate Title', type: 'text', required: true },
@@ -43,12 +44,12 @@ const CollegeAdminCertificates = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to revoke this certificate?")) return;
+    if (!await showConfirm("Are you sure you want to revoke this certificate?")) return;
     try {
       await api.delete(`/college-admin/certificates/${id}`);
       fetchCerts();
     } catch (err) {
-      alert("Failed to revoke certificate");
+      showAlert("Failed to revoke certificate");
     }
   };
 

@@ -1,5 +1,6 @@
 import React from 'react';
 import api from '../../api/axios';
+import { showAlert, showConfirm } from '../../utils/uiUtils';
 
 const CollegeAdminReports = () => {
   const handleGenerateCSV = async () => {
@@ -15,7 +16,7 @@ const CollegeAdminReports = () => {
       link.click();
       document.body.removeChild(link);
     } catch (err) {
-      alert("Failed to generate report");
+      showAlert("Failed to generate report");
     }
   };
 

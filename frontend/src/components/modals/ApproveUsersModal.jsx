@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../api/axios';
+import { showAlert, showConfirm } from '../../utils/uiUtils';
 
 const ApproveUsersModal = ({ isOpen, onClose, targetRole }) => {
   const [users, setUsers] = useState([]);
@@ -36,7 +37,7 @@ const ApproveUsersModal = ({ isOpen, onClose, targetRole }) => {
       await api.put(`/admin/users/${userId}/status`, { status: action });
       setUsers(users.filter(u => u.id !== userId));
     } catch (err) {
-      alert(`Failed to ${action === 'active' ? 'approve' : 'reject'} user.`);
+      showAlert(`Failed to ${action === 'active' ? 'approve' : 'reject'} user.`);
     }
   };
 

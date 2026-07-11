@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import AdminDataTable from '../../components/common/AdminDataTable';
 import api from '../../api/axios';
+import { showAlert, showConfirm } from '../../utils/uiUtils';
 
 const CompanyAdminCandidates = () => {
   const [candidates, setCandidates] = useState([]);
@@ -28,17 +29,17 @@ const CompanyAdminCandidates = () => {
       await api.put(`/company-admin/applications/${id}/status`, { status: newStatus });
       fetchCandidates();
     } catch (err) {
-      alert("Failed to update status");
+      showAlert("Failed to update status");
     }
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this candidate?")) return;
+    if (!await showConfirm("Are you sure you want to delete this candidate?")) return;
     try {
       await api.delete(`/company-admin/applications/${id}`);
       fetchCandidates();
     } catch (err) {
-      alert("Failed to delete candidate");
+      showAlert("Failed to delete candidate");
     }
   };
 

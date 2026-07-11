@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import AdminDataTable from '../../components/common/AdminDataTable';
 import AdminCrudModal from '../../components/common/AdminCrudModal';
 import api from '../../api/axios';
+import { showAlert, showConfirm } from '../../utils/uiUtils';
 
 const studentSchema = [
   { name: 'name', label: 'Student Name', type: 'text', required: true },
@@ -43,7 +44,7 @@ const CollegeAdminStudents = () => {
       await api.put(`/college-admin/students/${id}/status`, { status });
       setStudents(students.map(s => s.id === id ? { ...s, status } : s));
     } catch (err) {
-      alert("Failed to update student status");
+      showAlert("Failed to update student status");
     }
   };
 
@@ -56,7 +57,7 @@ const CollegeAdminStudents = () => {
       await api.post('/college-admin/students', formData);
       fetchStudents();
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to add student");
+      showAlert(err.response?.data?.message || "Failed to add student");
     }
   };
 
