@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { db } = require("../config/firebase");
 const auth = require("../middleware/auth");
+const { awardPoints, updatePlacementScore } = require("../utils/scoring");
 
 router.get("/", auth, async (req, res) => {
   if (!["admin", "super_admin", "college_admin", "company_admin"].includes(req.user.role)) return res.status(403).json({ message: "Admin only." });
@@ -129,6 +130,17 @@ router.put("/profile", auth, async (req, res) => {
     });
 
     await studentRef.set({ profile_data: updateData }, { merge: true });
+
+    // Scoring Engine Integration
+    if (profile_completion === 100) {
+      await awardPoints(req.user.id, 'profile_complete', 100);
+    }
+    if (updateData.resume_url) {
+      await awardPoints(req.user.id, 'resume_upload', 50);
+    }
+    
+    // Update Placement Score
+    await updatePlacementScore(req.user.id);
 
     res.json({ message: "Profile updated successfully." });
   } catch (err) {

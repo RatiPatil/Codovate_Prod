@@ -55,6 +55,7 @@ const authLimiter = rateLimit({
 });
 
 app.use("/api/auth", authLimiter, require("./routes/auth"));
+app.use("/api/mentor-auth", require("./routes/mentorAuth"));
 
 app.use("/api/admin",         protect, require("./routes/admin"));
 app.use("/api/admin/users",   protect, require("./routes/adminUsers"));

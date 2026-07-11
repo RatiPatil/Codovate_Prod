@@ -104,6 +104,13 @@ const OppDetailModal = ({ opp, isApplied, isApplying, onApply, onClose }) => {
                       onClick={async () => {
                         const confirm = await showConfirm("You are being redirected to the original internship provider to complete your application.");
                         if (confirm) {
+                          try {
+                            await api.post('/applications/external', { opportunity_id: opp.id });
+                            // The modal doesn't have setAppliedIds but the parent does, 
+                            // though it doesn't matter much for external, we can just log it.
+                          } catch (err) {
+                            console.error("Failed to log external apply", err);
+                          }
                           window.open(opp.applyUrl || opp.registration_link, '_blank', 'noopener,noreferrer');
                         }
                       }}
@@ -360,11 +367,18 @@ const Opportunities = () => {
                   
                   {(opp.external || opp.applyUrl || opp.registration_link) ? (
                     <button
-                      onClick={(e) => {
+                      onClick={async (e) => {
                         e.stopPropagation();
-                        showConfirm("You are being redirected to the original internship provider to complete your application.").then(confirm => {
-                          if (confirm) window.open(opp.applyUrl || opp.registration_link, '_blank', 'noopener,noreferrer');
-                        });
+                        const confirm = await showConfirm("You are being redirected to the original internship provider to complete your application.");
+                        if (confirm) {
+                          try {
+                            await api.post('/applications/external', { opportunity_id: opp.id });
+                            setAppliedIds(prev => new Set([...prev, opp.id]));
+                          } catch (err) {
+                            console.error("Failed to log external apply", err);
+                          }
+                          window.open(opp.applyUrl || opp.registration_link, '_blank', 'noopener,noreferrer');
+                        }
                       }}
                       className="btn-primary text-sm px-5 py-2 rounded-xl flex items-center gap-2"
                     >

@@ -93,6 +93,11 @@ router.post("/", auth, async (req, res) => {
     
     await newAppRef.set(application);
 
+    // Scoring Engine Integration
+    const { awardPoints, updatePlacementScore } = require("../utils/scoring");
+    await awardPoints(req.user.id, `apply_internship_${opportunity_id}`, 20, true);
+    await updatePlacementScore(req.user.id);
+
     // Log platform event
     await db.collection('platform_events').add({
       actor_id: req.user.id,
@@ -149,6 +154,60 @@ router.post("/", auth, async (req, res) => {
 
   } catch (err) {
     console.error("Apply error:", err.message);
+    res.status(500).json({ message: "Server error." });
+  }
+});
+
+// Track external application click
+router.post("/external", auth, async (req, res) => {
+  const { opportunity_id } = req.body;
+
+  if (!opportunity_id)
+    return res.status(400).json({ message: "Opportunity ID is required." });
+
+  try {
+    const oppRef = db.collection("opportunities").doc(opportunity_id);
+    const oppDoc = await oppRef.get();
+    
+    if (!oppDoc.exists)
+      return res.status(404).json({ message: "Opportunity not found." });
+      
+    const opp = oppDoc.data();
+
+    // Check if already tracked
+    const existingApps = await db.collection("applications")
+      .where("user_id", "==", req.user.id)
+      .where("opportunity_id", "==", opportunity_id)
+      .where("status", "==", "External Link Opened")
+      .get();
+      
+    if (!existingApps.empty) {
+      return res.status(200).json({ message: "Already tracked" });
+    }
+
+    const newAppRef = db.collection("applications").doc();
+    const application = {
+      id: newAppRef.id,
+      user_id: req.user.id,
+      opportunity_id: opportunity_id,
+      company_id: opp.company_id || '',
+      status: 'External Link Opened',
+      applied_at: new Date(),
+      is_external: true
+    };
+    
+    await newAppRef.set(application);
+
+    // Scoring Engine Integration for external apply
+    const { awardPoints, updatePlacementScore } = require("../utils/scoring");
+    await awardPoints(req.user.id, `apply_internship_${opportunity_id}`, 10, true); // give fewer points for external? Or 20 as before. Let's give 20.
+    await updatePlacementScore(req.user.id);
+
+    console.log(`🌐 Student ${req.user.id} opened external opportunity ${opp.title}`);
+    res.status(201).json(application);
+
+  } catch (err) {
+    console.error("External apply error:", err.message);
     res.status(500).json({ message: "Server error." });
   }
 });
@@ -212,6 +271,13 @@ router.put("/:id/status", auth, async (req, res) => {
       return res.status(404).json({ message: "Application not found." });
       
     await appRef.update({ status, updated_at: new Date() });
+    
+    // Scoring Engine Integration for Selection
+    if (status === "Selected") {
+      const { awardPoints, updatePlacementScore } = require("../utils/scoring");
+      await awardPoints(appDoc.data().user_id, `selected_internship_${req.params.id}`, 500, true);
+      await updatePlacementScore(appDoc.data().user_id);
+    }
     
     const app = appDoc.data();
     app.id = appDoc.id;
