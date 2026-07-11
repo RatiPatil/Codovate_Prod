@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import api from '../../../api/axios';
-import { showAlert } from '../../../utils/uiUtils';
+import api from '../../api/axios';
+import { showAlert } from '../../utils/uiUtils';
 import TeamDetailsModal from './TeamDetailsModal';
 
 const TeamsHome = () => {

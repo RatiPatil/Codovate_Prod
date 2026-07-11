@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import api from '../../../api/axios';
-import { showAlert } from '../../../utils/uiUtils';
+import api from '../../api/axios';
+import { showAlert } from '../../utils/uiUtils';
 
 const StudentProfileModal = ({ student, onClose }) => {
   const [loading, setLoading] = useState(false);

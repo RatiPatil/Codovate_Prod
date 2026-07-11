@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
-import api from '../../../api/axios';
-import { useAuth } from '../../../context/AuthContext';
-import { useSocket } from '../../../context/SocketContext';
-import { showAlert } from '../../../utils/uiUtils';
-import { formatTime } from '../../../utils/dateUtils';
+import api from '../../api/axios';
+import { useAuth } from '../../context/AuthContext';
+import { useSocket } from '../../context/SocketContext';
+import { showAlert } from '../../utils/uiUtils';
+import { formatTime } from '../../utils/dateUtils';
 
 const ChatInterface = ({ initialChatId, onChatSelect }) => {
   const { currentUser } = useAuth();

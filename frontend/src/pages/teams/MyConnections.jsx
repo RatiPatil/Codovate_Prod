@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import api from '../../../api/axios';
-import { showAlert } from '../../../utils/uiUtils';
-import { useAuth } from '../../../context/AuthContext';
+import api from '../../api/axios';
+import { showAlert } from '../../utils/uiUtils';
+import { useAuth } from '../../context/AuthContext';
 
 const MyConnections = ({ onOpenChat }) => {
   const { currentUser } = useAuth();

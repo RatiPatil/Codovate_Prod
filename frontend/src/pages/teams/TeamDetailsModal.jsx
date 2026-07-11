@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
-import api from '../../../api/axios';
-import { showAlert, showConfirm } from '../../../utils/uiUtils';
-import { useAuth } from '../../../context/AuthContext';
-import { formatTime } from '../../../utils/dateUtils';
+import api from '../../api/axios';
+import { showAlert, showConfirm } from '../../utils/uiUtils';
+import { useAuth } from '../../context/AuthContext';
+import { formatTime } from '../../utils/dateUtils';
 
 const TeamDetailsModal = ({ team, onClose, onUpdate, currentUserRole }) => {
   const { currentUser } = useAuth();
