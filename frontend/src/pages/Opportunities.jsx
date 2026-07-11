@@ -83,15 +83,24 @@ const OppDetailModal = ({ opp, isApplied, isApplying, onApply, onClose }) => {
           )}
 
           <div className="flex items-center justify-between gap-4 pt-6 border-t border-white/10">
-            {opp.registration_link && (
-              <a href={opp.registration_link} target="_blank" rel="noopener noreferrer"
+            {(opp.applyUrl || opp.registration_link) && (
+              <a href={opp.applyUrl || opp.registration_link} target="_blank" rel="noopener noreferrer"
                 className="text-primary text-sm font-bold hover:underline flex items-center gap-1">
-                External Registration ↗
+                External Link ↗
               </a>
             )}
             <div className="flex gap-3 ml-auto">
               <button onClick={onClose} className="btn-secondary text-sm px-5 py-2 rounded-xl">Close</button>
-              {isApplied ? (
+              {opp.applyUrl || opp.registration_link ? (
+                <a
+                  href={opp.applyUrl || opp.registration_link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-primary text-sm px-5 py-2 rounded-xl font-bold transition-all flex items-center justify-center"
+                >
+                  Apply Externally ↗
+                </a>
+              ) : isApplied ? (
                 <Link
                   to="/applications"
                   className="bg-green-500/10 text-green-400 border border-green-500/20 text-sm px-5 py-2 rounded-xl font-bold flex items-center gap-2 hover:bg-green-500/20 transition-colors"
