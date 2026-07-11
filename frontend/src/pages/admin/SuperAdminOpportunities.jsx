@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import AdminDataTable from '../../components/common/AdminDataTable';
 import AdminCrudModal from '../../components/common/AdminCrudModal';
+import ImportJsonModal from '../../components/modals/ImportJsonModal';
+import ImportHistoryModal from '../../components/modals/ImportHistoryModal';
+import { History, FileJson } from 'lucide-react';
 import api from '../../api/axios';
 import { showAlert, showConfirm } from '../../utils/uiUtils';
 
@@ -39,6 +42,8 @@ const SuperAdminOpportunities = () => {
   const [ops, setOps] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
+  const [importModalOpen, setImportModalOpen] = useState(false);
+  const [historyModalOpen, setHistoryModalOpen] = useState(false);
   const [editingOpp, setEditingOpp] = useState(null);
 
   useEffect(() => {
@@ -164,6 +169,22 @@ const SuperAdminOpportunities = () => {
         columns={columns}
         loading={loading}
         onAdd={handleAdd}
+        customActions={
+          <div className="flex gap-2">
+            <button 
+              onClick={() => setHistoryModalOpen(true)}
+              className="px-4 py-3 bg-[#2a2a35] hover:bg-[#353542] text-white text-sm font-bold rounded-xl transition-colors flex items-center gap-2"
+            >
+              <History className="w-4 h-4" /> History
+            </button>
+            <button 
+              onClick={() => setImportModalOpen(true)}
+              className="px-4 py-3 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-xl transition-colors shadow-lg flex items-center gap-2"
+            >
+              <FileJson className="w-4 h-4" /> Import JSON
+            </button>
+          </div>
+        }
         searchPlaceholder="Search jobs & internships..."
         searchableKeys={['title', 'company', 'type']}
       />
@@ -174,6 +195,15 @@ const SuperAdminOpportunities = () => {
         title={editingOpp ? "Edit Opportunity" : "Add New Opportunity"}
         schema={oppSchema}
         initialData={editingOpp}
+      />
+      <ImportJsonModal 
+        isOpen={importModalOpen} 
+        onClose={() => setImportModalOpen(false)} 
+        onSuccess={fetchOps} 
+      />
+      <ImportHistoryModal 
+        isOpen={historyModalOpen} 
+        onClose={() => setHistoryModalOpen(false)} 
       />
     </div>
   );

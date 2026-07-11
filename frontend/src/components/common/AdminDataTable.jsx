@@ -7,6 +7,7 @@ const AdminDataTable = ({
   loading, 
   onAction,
   onAdd,
+  customActions,
   searchPlaceholder = "Search...",
   searchableKeys = ['name', 'email']
 }) => {
@@ -65,6 +66,7 @@ const AdminDataTable = ({
               className="w-full md:w-64 bg-white/5 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-[#2015FF] transition-colors"
             />
           </div>
+          {customActions && customActions}
           {onAdd && (
             <button
               onClick={onAdd}
