@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSocket } from '../../context/SocketContext';
 import api from '../../api/axios';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, BarChart, Bar } from 'recharts';
+import { useNavigate } from 'react-router-dom';
 import { 
   Users, 
   GraduationCap, 
@@ -16,27 +17,33 @@ import {
   ArrowDownRight
 } from 'lucide-react';
 
-const StatCard = ({ title, value, Icon, trend }) => (
-  <div className="bg-[#0A0A10] border border-white/10 rounded-2xl p-6 relative overflow-hidden group hover:border-[#2015FF]/30 transition-all duration-300">
-    <div className="flex justify-between items-start mb-4">
-      <div className="p-3 rounded-xl bg-white/5 group-hover:bg-[#2015FF]/10 text-gray-400 group-hover:text-[#2015FF] transition-all">
-        <Icon className="w-6 h-6" />
+const StatCard = ({ title, value, Icon, trend, linkTo }) => {
+  const navigate = useNavigate();
+  return (
+    <div 
+      onClick={() => linkTo && navigate(linkTo)}
+      className={`bg-[#0A0A10] border border-white/10 rounded-2xl p-6 relative overflow-hidden group hover:border-[#2015FF]/30 transition-all duration-300 ${linkTo ? 'cursor-pointer' : ''}`}
+    >
+      <div className="flex justify-between items-start mb-4">
+        <div className="p-3 rounded-xl bg-white/5 group-hover:bg-[#2015FF]/10 text-gray-400 group-hover:text-[#2015FF] transition-all">
+          <Icon className="w-6 h-6" />
+        </div>
+        {trend !== undefined && (
+          <span className={`flex items-center gap-1 text-[11px] font-bold px-2 py-1 rounded-full ${trend > 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
+            {trend > 0 ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
+            {Math.abs(trend)}%
+          </span>
+        )}
       </div>
-      {trend !== undefined && (
-        <span className={`flex items-center gap-1 text-[11px] font-bold px-2 py-1 rounded-full ${trend > 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
-          {trend > 0 ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
-          {Math.abs(trend)}%
-        </span>
-      )}
+      <div className="text-3xl font-black text-white tracking-tighter mb-1">
+        {value.toLocaleString()}
+      </div>
+      <div className="text-xs font-bold text-gray-500 uppercase tracking-widest">{title}</div>
+      
+      <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-[#2015FF]/0 rounded-full blur-2xl group-hover:bg-[#2015FF]/5 transition-colors pointer-events-none" />
     </div>
-    <div className="text-3xl font-black text-white tracking-tighter mb-1">
-      {value.toLocaleString()}
-    </div>
-    <div className="text-xs font-bold text-gray-500 uppercase tracking-widest">{title}</div>
-    
-    <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-[#2015FF]/0 rounded-full blur-2xl group-hover:bg-[#2015FF]/5 transition-colors pointer-events-none" />
-  </div>
-);
+  );
+};
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
@@ -121,20 +128,20 @@ const SuperAdminDashboard = () => {
         
         {/* Top KPIs */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-          <StatCard title="Total Users" value={data.users} Icon={Users} trend={12} />
-          <StatCard title="Students" value={data.students} Icon={GraduationCap} trend={8} />
-          <StatCard title="Colleges" value={data.colleges} Icon={Building2} trend={2} />
-          <StatCard title="Companies" value={data.companies} Icon={Briefcase} trend={5} />
-          <StatCard title="Mentors" value={data.mentors} Icon={UserCheck} trend={15} />
+          <StatCard title="Total Users" value={data.users} Icon={Users} trend={12} linkTo="/super-admin/users" />
+          <StatCard title="Students" value={data.students} Icon={GraduationCap} trend={8} linkTo="/super-admin/students" />
+          <StatCard title="Colleges" value={data.colleges} Icon={Building2} trend={2} linkTo="/super-admin/colleges" />
+          <StatCard title="Companies" value={data.companies} Icon={Briefcase} trend={5} linkTo="/super-admin/companies" />
+          <StatCard title="Mentors" value={data.mentors} Icon={UserCheck} trend={15} linkTo="/super-admin/mentors" />
         </div>
 
         {/* Secondary KPIs */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-          <StatCard title="Hackathons" value={data.hackathons} Icon={Trophy} trend={24} />
-          <StatCard title="Jobs & Internships" value={data.jobs + data.internships} Icon={Briefcase} trend={18} />
-          <StatCard title="Applications" value={data.applications} Icon={FileText} trend={45} />
-          <StatCard title="Projects" value={data.projects} Icon={Rocket} trend={30} />
-          <StatCard title="Certificates" value={data.certificates} Icon={Award} trend={10} />
+          <StatCard title="Hackathons" value={data.hackathons} Icon={Trophy} trend={24} linkTo="/super-admin/opportunities" />
+          <StatCard title="Jobs & Internships" value={data.jobs + data.internships} Icon={Briefcase} trend={18} linkTo="/super-admin/opportunities" />
+          <StatCard title="Applications" value={data.applications} Icon={FileText} trend={45} linkTo="/super-admin/applications" />
+          <StatCard title="Projects" value={data.projects} Icon={Rocket} trend={30} linkTo="/super-admin/projects" />
+          <StatCard title="Certificates" value={data.certificates} Icon={Award} trend={10} linkTo="/super-admin/certificates" />
         </div>
 
         {/* Real-time Analytics Charts */}
