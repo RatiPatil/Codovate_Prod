@@ -132,7 +132,7 @@ router.post("/google", async (req, res) => {
 
     const token = jwt.sign(
       tokenPayload,
-      process.env.JWT_SECRET || 'codovate_secret',
+      process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
 
@@ -259,7 +259,7 @@ router.post("/phone", async (req, res) => {
 
         const token = jwt.sign(
           tokenPayload,
-          process.env.JWT_SECRET || 'codovate_secret',
+          process.env.JWT_SECRET,
           { expiresIn: "7d" }
         );
 
@@ -299,7 +299,7 @@ router.post("/phone", async (req, res) => {
 
     const token = jwt.sign(
       tokenPayload,
-      process.env.JWT_SECRET || 'codovate_secret',
+      process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
 
@@ -390,6 +390,33 @@ router.post("/signup", async (req, res) => {
 
     const hash = await bcrypt.hash(password, 12);
     const newUserRef = usersRef.doc();
+
+    // ─── AUTH-001 FIX: Also create the user in Firebase Auth ───
+    // This ensures sendPasswordResetEmail() works for local users.
+    let firebaseAuthUid = null;
+    try {
+      const fbUser = await getAuth().createUser({
+        email: email.toLowerCase(),
+        password: password,
+        displayName: name.trim().toUpperCase(),
+      });
+      firebaseAuthUid = fbUser.uid;
+    } catch (fbErr) {
+      // If user already exists in Firebase Auth (e.g. via Google), link instead
+      if (fbErr.code === 'auth/email-already-exists') {
+        try {
+          const existingFbUser = await getAuth().getUserByEmail(email.toLowerCase());
+          firebaseAuthUid = existingFbUser.uid;
+          // Update their password so local login works
+          await getAuth().updateUser(existingFbUser.uid, { password: password });
+        } catch (linkErr) {
+          console.warn("Could not link existing Firebase Auth user:", linkErr.message);
+        }
+      } else {
+        console.warn("Firebase Auth user creation failed (non-blocking):", fbErr.message);
+      }
+    }
+
     const userData = {
       id: newUserRef.id,
       name: name.trim().toUpperCase(),
@@ -399,6 +426,8 @@ router.post("/signup", async (req, res) => {
       role: 'student',
       is_verified: false,
       is_active: true,
+      authUid: firebaseAuthUid,
+      providers: ['local'],
       created_at: new Date()
     };
     
@@ -409,7 +438,7 @@ router.post("/signup", async (req, res) => {
     batch.set(db.collection('students').doc(newUserRef.id), {
       id: newUserRef.id,
       email: email.toLowerCase(),
-      authUid: null,
+      authUid: firebaseAuthUid,
       providers: ['local'],
       claimed: true,
       is_active: true,
@@ -435,7 +464,7 @@ router.post("/signup", async (req, res) => {
     await batch.commit();
 
     // 🔴 REAL-TIME: Notify Admin
-    req.io.to("admin_room").emit("admin_new_student", userData);
+    if (req.io) req.io.to("admin_room").emit("admin_new_student", userData);
 
     const tokenPayload = { id: userData.id, role: userData.role, name: userData.name, email: userData.email };
     if (userData.college_id) tokenPayload.college_id = userData.college_id;
@@ -443,7 +472,7 @@ router.post("/signup", async (req, res) => {
 
     const token = jwt.sign(
       tokenPayload,
-      process.env.JWT_SECRET || 'codovate_secret',
+      process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
 
@@ -485,8 +514,14 @@ router.post("/login", async (req, res) => {
     if (!user.is_active)
       return res.status(403).json({ message: "Account is deactivated." });
 
-    if (!user.password_hash)
+    // AUTH-002 FIX: Return provider-specific error message
+    if (!user.password_hash) {
+      const providers = user.providers || [];
+      if (providers.includes('phone')) {
+        return res.status(401).json({ message: "This account uses Phone Authentication. Please login using your mobile number." });
+      }
       return res.status(401).json({ message: "This account uses Google login. Please click 'Continue with Google'." });
+    }
 
     const match = await bcrypt.compare(password, user.password_hash);
     if (!match)
@@ -522,7 +557,7 @@ router.post("/login", async (req, res) => {
 
     const token = jwt.sign(
       tokenPayload,
-      process.env.JWT_SECRET || 'codovate_secret',
+      process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
 
@@ -605,7 +640,7 @@ router.post("/admin-login", async (req, res) => {
 
     const token = jwt.sign(
       tokenPayload,
-      process.env.JWT_SECRET || 'codovate_secret',
+      process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
 

@@ -105,7 +105,9 @@ const Signup = () => {
   const handleChange = (field, value) => {
     let finalValue = value;
     if (field === 'fullName') {
-      finalValue = value.toUpperCase().replace(/[^A-Z\s\-']/g, '');
+      // AUTH-003 FIX: Allow natural typing. Only strip dangerous characters.
+      // Uppercase conversion happens on submit (backend handles it).
+      finalValue = value.replace(/[^a-zA-Z\s\-']/g, '');
     }
     setForm(prev => ({ ...prev, [field]: finalValue }));
     if (field === 'username') setUsernameAvailable(null);

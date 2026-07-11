@@ -5,7 +5,14 @@ const cors = require("cors");
 const http = require("http");
 const { Server } = require("socket.io");
 const { initializeAdminRealtime } = require("./services/adminRealtime");
+const rateLimit = require("express-rate-limit");
 require("dotenv").config();
+
+// ─── SECURITY: Fail fast if JWT_SECRET is missing ───
+if (!process.env.JWT_SECRET) {
+  console.error("❌ FATAL: JWT_SECRET environment variable is not set. Server cannot start securely.");
+  process.exit(1);
+}
 
 const app = express();
 app.set("trust proxy", 1);
@@ -38,7 +45,16 @@ app.use((req, res, next) => {
 
 const protect = require("./middleware/auth");
 
-app.use("/api/auth",          require("./routes/auth"));
+// ─── SECURITY: Rate limit auth endpoints ───
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 30,                   // max 30 requests per window per IP
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: "Too many requests. Please try again after 15 minutes." },
+});
+
+app.use("/api/auth", authLimiter, require("./routes/auth"));
 
 app.use("/api/admin",         protect, require("./routes/admin"));
 app.use("/api/admin/users",   protect, require("./routes/adminUsers"));
