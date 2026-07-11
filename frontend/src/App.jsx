@@ -6,9 +6,11 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
 import DashboardRouter from './components/DashboardRouter';
 import GlobalNotifications from './components/GlobalNotifications';
+import MentorRouter from './components/MentorRouter';
 
 import Home from './pages/Home';
 import Login from './pages/Login';
+import MentorLogin from './pages/MentorLogin';
 import Signup from './pages/Signup';
 import ForgotPassword from './pages/ForgotPassword';
 import Onboarding from './pages/Onboarding';
@@ -113,6 +115,13 @@ function App() {
               <Route path="/admin/*" element={
                 <ProtectedRoute requireOnboarding={false}>
                   <DashboardRouter />
+                </ProtectedRoute>
+              } />
+
+              <Route path="/mentor/login" element={<MentorLogin />} />
+              <Route path="/mentor/*" element={
+                <ProtectedRoute requireOnboarding={false}>
+                  <MentorRouter />
                 </ProtectedRoute>
               } />
 
