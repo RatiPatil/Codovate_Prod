@@ -185,12 +185,20 @@ router.post("/external", auth, async (req, res) => {
       return res.status(200).json({ message: "Already tracked" });
     }
 
+    // Fetch Student Name
+    const studentDoc = await db.collection("students").doc(req.user.id).get();
+    const studentName = studentDoc.exists ? (studentDoc.data().profile_data?.name || 'Unknown Student') : 'Unknown Student';
+
     const newAppRef = db.collection("applications").doc();
     const application = {
       id: newAppRef.id,
       user_id: req.user.id,
+      student_name: studentName,
       opportunity_id: opportunity_id,
+      internship_title: opp.title || 'Unknown Title',
       company_id: opp.company_id || '',
+      company_name: opp.company || 'Unknown Company',
+      source: opp.source || 'External Provider',
       status: 'External Link Opened',
       applied_at: new Date(),
       is_external: true
