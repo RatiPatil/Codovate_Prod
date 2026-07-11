@@ -58,6 +58,7 @@ app.use("/api/auth", authLimiter, require("./routes/auth"));
 
 app.use("/api/admin",         protect, require("./routes/admin"));
 app.use("/api/admin/users",   protect, require("./routes/adminUsers"));
+app.use("/api/admin/students", protect, require("./routes/adminStudents"));
 app.use("/api/admin/colleges",protect, require("./routes/adminColleges"));
 app.use("/api/admin/companies",protect, require("./routes/adminCompanies"));
 app.use("/api/admin/mentors", protect, require("./routes/adminMentors"));
