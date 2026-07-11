@@ -121,6 +121,12 @@ router.get('/dashboard', async (req, res) => {
 router.get('/', async (req, res) => {
   try {
     const studentsSnap = await db.collection('students').get();
+    const usersSnap = await db.collection('users').where('role', '==', 'student').get();
+    
+    const usersLoginMap = {};
+    usersSnap.forEach(doc => {
+      usersLoginMap[doc.id] = doc.data().last_login_at || doc.data().updated_at;
+    });
     
     // We'll also prefetch some application counts to make the list rich
     const appsSnap = await db.collection('applications').get();
@@ -149,7 +155,7 @@ router.get('/', async (req, res) => {
         status: data.status || (data.is_active ? 'active' : 'inactive'),
         is_verified: !!data.is_verified,
         created_at: safeDate(data.created_at),
-        last_login: safeDate(data.last_login || data.updated_at)
+        last_login: safeDate(data.last_login_at || usersLoginMap[doc.id] || data.updated_at)
       };
     });
 

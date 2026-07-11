@@ -128,20 +128,20 @@ const SuperAdminDashboard = () => {
         
         {/* Top KPIs */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-          <StatCard title="Total Users" value={data.users} Icon={Users} trend={12} linkTo="/super-admin/users" />
-          <StatCard title="Students" value={data.students} Icon={GraduationCap} trend={8} linkTo="/super-admin/students" />
-          <StatCard title="Colleges" value={data.colleges} Icon={Building2} trend={2} linkTo="/super-admin/colleges" />
-          <StatCard title="Companies" value={data.companies} Icon={Briefcase} trend={5} linkTo="/super-admin/companies" />
-          <StatCard title="Mentors" value={data.mentors} Icon={UserCheck} trend={15} linkTo="/super-admin/mentors" />
+          <StatCard title="Total Users" value={data.users} Icon={Users} trend={12} linkTo="/admin/users" />
+          <StatCard title="Students" value={data.students} Icon={GraduationCap} trend={8} linkTo="/admin/students" />
+          <StatCard title="Colleges" value={data.colleges} Icon={Building2} trend={2} linkTo="/admin/colleges" />
+          <StatCard title="Companies" value={data.companies} Icon={Briefcase} trend={5} linkTo="/admin/companies" />
+          <StatCard title="Mentors" value={data.mentors} Icon={UserCheck} trend={15} linkTo="/admin/mentors" />
         </div>
 
         {/* Secondary KPIs */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-          <StatCard title="Hackathons" value={data.hackathons} Icon={Trophy} trend={24} linkTo="/super-admin/opportunities" />
-          <StatCard title="Jobs & Internships" value={data.jobs + data.internships} Icon={Briefcase} trend={18} linkTo="/super-admin/opportunities" />
-          <StatCard title="Applications" value={data.applications} Icon={FileText} trend={45} linkTo="/super-admin/applications" />
-          <StatCard title="Projects" value={data.projects} Icon={Rocket} trend={30} linkTo="/super-admin/projects" />
-          <StatCard title="Certificates" value={data.certificates} Icon={Award} trend={10} linkTo="/super-admin/certificates" />
+          <StatCard title="Hackathons" value={data.hackathons} Icon={Trophy} trend={24} linkTo="/admin/opportunities" />
+          <StatCard title="Jobs & Internships" value={data.jobs + data.internships} Icon={Briefcase} trend={18} linkTo="/admin/opportunities" />
+          <StatCard title="Applications" value={data.applications} Icon={FileText} trend={45} linkTo="/admin/applications" />
+          <StatCard title="Projects" value={data.projects} Icon={Rocket} trend={30} linkTo="/admin/projects" />
+          <StatCard title="Certificates" value={data.certificates} Icon={Award} trend={10} linkTo="/admin/certificates" />
         </div>
 
         {/* Real-time Analytics Charts */}

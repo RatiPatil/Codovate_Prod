@@ -85,7 +85,13 @@ const OppDetailModal = ({ opp, isApplied, isApplying, onApply, onClose }) => {
 
           <div className="flex items-center justify-between gap-4 pt-6 border-t border-white/10">
             {/* Left side empty or could contain other info */}
-            <div></div>
+            <div>
+              {(opp.external || opp.applyUrl || opp.registration_link) && (
+                 <p className="text-xs text-gray-400 max-w-sm">
+                   <span className="text-blue-400 font-bold">Note:</span> This opportunity is hosted by an external platform. Applications are submitted on the original website. Codovate cannot track the application status for external opportunities.
+                 </p>
+              )}
+            </div>
             <div className="flex flex-col items-end gap-2 ml-auto">
               {(opp.external || opp.applyUrl || opp.registration_link) ? (
                 <>
@@ -351,7 +357,20 @@ const Opportunities = () => {
                       {opp.deadline ? formatDate(opp.deadline, { day: 'numeric', month: 'short', year: 'numeric' }) : 'Open'}
                     </p>
                   </div>
-                  {isApplied ? (
+                  
+                  {(opp.external || opp.applyUrl || opp.registration_link) ? (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        showConfirm("You are being redirected to the original internship provider to complete your application.").then(confirm => {
+                          if (confirm) window.open(opp.applyUrl || opp.registration_link, '_blank', 'noopener,noreferrer');
+                        });
+                      }}
+                      className="btn-primary text-sm px-5 py-2 rounded-xl flex items-center gap-2"
+                    >
+                      🌐 Apply Externally
+                    </button>
+                  ) : isApplied ? (
                     <Link
                       to="/applications"
                       className="bg-green-500/10 text-green-400 border border-green-500/20 px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-1.5 hover:bg-green-500/20 transition-colors"
