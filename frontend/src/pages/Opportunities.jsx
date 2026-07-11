@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import api from '../api/axios';
 import { useSocket } from '../context/SocketContext';
 import { formatDate } from '../utils/dateUtils';
+import { showConfirm } from '../utils/uiUtils';
 
 const typeColors = {
   Internship: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
@@ -83,40 +84,51 @@ const OppDetailModal = ({ opp, isApplied, isApplying, onApply, onClose }) => {
           )}
 
           <div className="flex items-center justify-between gap-4 pt-6 border-t border-white/10">
-            {(opp.applyUrl || opp.registration_link) && (
-              <a href={opp.applyUrl || opp.registration_link} target="_blank" rel="noopener noreferrer"
-                className="text-primary text-sm font-bold hover:underline flex items-center gap-1">
-                External Link ↗
-              </a>
-            )}
-            <div className="flex gap-3 ml-auto">
-              <button onClick={onClose} className="btn-secondary text-sm px-5 py-2 rounded-xl">Close</button>
-              {opp.applyUrl || opp.registration_link ? (
-                <a
-                  href={opp.applyUrl || opp.registration_link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn-primary text-sm px-5 py-2 rounded-xl font-bold transition-all flex items-center justify-center"
-                >
-                  Apply Externally ↗
-                </a>
-              ) : isApplied ? (
-                <Link
-                  to="/applications"
-                  className="bg-green-500/10 text-green-400 border border-green-500/20 text-sm px-5 py-2 rounded-xl font-bold flex items-center gap-2 hover:bg-green-500/20 transition-colors"
-                >
-                  ✓ View App
-                </Link>
+            {/* Left side empty or could contain other info */}
+            <div></div>
+            <div className="flex flex-col items-end gap-2 ml-auto">
+              {(opp.external || opp.applyUrl || opp.registration_link) ? (
+                <>
+                  <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest bg-white/5 px-2 py-1 rounded">
+                    Source: {opp.source || 'External Provider'}
+                  </span>
+                  <div className="flex gap-3">
+                    <button onClick={onClose} className="btn-secondary text-sm px-5 py-2 rounded-xl">Close</button>
+                    <button
+                      onClick={async () => {
+                        const confirm = await showConfirm("You are being redirected to the original internship provider to complete your application.");
+                        if (confirm) {
+                          window.open(opp.applyUrl || opp.registration_link, '_blank', 'noopener,noreferrer');
+                        }
+                      }}
+                      className="btn-primary text-sm px-5 py-2 rounded-xl font-bold transition-all flex items-center justify-center gap-2"
+                    >
+                      🌐 Apply Externally
+                    </button>
+                  </div>
+                </>
               ) : (
-                <button
-                  onClick={() => onApply(opp.id)}
-                  disabled={isApplying}
-                  className="btn-primary text-sm px-5 py-2 rounded-xl font-bold transition-all"
-                >
-                  {isApplying ? (
-                    <span className="flex items-center gap-2"><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Applying...</span>
-                  ) : 'Apply Now'}
-                </button>
+                <div className="flex gap-3">
+                  <button onClick={onClose} className="btn-secondary text-sm px-5 py-2 rounded-xl">Close</button>
+                  {isApplied ? (
+                    <Link
+                      to="/applications"
+                      className="bg-green-500/10 text-green-400 border border-green-500/20 text-sm px-5 py-2 rounded-xl font-bold flex items-center gap-2 hover:bg-green-500/20 transition-colors"
+                    >
+                      ✓ View App
+                    </Link>
+                  ) : (
+                    <button
+                      onClick={() => onApply(opp.id)}
+                      disabled={isApplying}
+                      className="btn-primary text-sm px-5 py-2 rounded-xl font-bold transition-all"
+                    >
+                      {isApplying ? (
+                        <span className="flex items-center gap-2"><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Applying...</span>
+                      ) : 'Apply Now'}
+                    </button>
+                  )}
+                </div>
               )}
             </div>
           </div>
