@@ -7,19 +7,19 @@ router.post("/save", auth, async (req, res) => {
   try {
     const {
       full_name, phone, city,
-      country, state, district, taluka,
-      college, branch, year,
-      career_goal, career_interests, experience_level,
-      skills,
-      desired_roles,
-      achievements,
-      seeking,
-      passionate_about,
-      portfolio_url, github_url, linkedin_url, bio,
-      profile_completion, onboarding_completed,
+      country, state,
+      college, branch, year, profile_photo,
+      career_goal, dream_company, placement_goal,
+      skills, // expects array of objects { name, level }
+      interests,
+      learning_style, daily_time,
+      experience_level, projects_built,
+      portfolio_url, github_url, linkedin_url, resume_url,
+      leetcode_url, codechef_url, hackerrank_url,
+      onboarding_completed
     } = req.body;
 
-    console.log("📥 Saving onboarding for user:", req.user.id);
+    console.log("📥 Saving onboarding V2 for user:", req.user.id);
 
     // ── Server-side Validation ──────────────────────────────────────────
     const errors = {};
@@ -29,98 +29,129 @@ router.post("/save", auth, async (req, res) => {
     if (phone) {
       const digitsOnly = phone.replace(/[^0-9]/g, '');
       if (digitsOnly.length < 10 || digitsOnly.length > 15) errors.phone = 'Phone must be 10-15 digits';
-      // Check duplicate phone
-      const phoneCheck = await db.collection("students")
-        .where("phone", "==", phone).get();
+      const phoneCheck = await db.collection("students").where("phone", "==", phone).get();
       const isDuplicate = phoneCheck.docs.some(doc => doc.id !== req.user.id);
       if (isDuplicate) errors.phone = 'This phone number is already registered';
     }
 
     if (!country) errors.country = 'Country is required';
     if (!state) errors.state = 'State is required';
-    if (!district) errors.district = 'District is required';
-    if (!college || college.trim().length < 3) errors.college = 'College name is required (min 3 chars)';
+    if (!city) errors.city = 'City is required';
+    if (!college || college.trim().length < 3) errors.college = 'College name is required';
     if (!branch || branch.trim().length < 2) errors.branch = 'Branch is required';
     if (!year) errors.year = 'Year of study is required';
-    if (!career_goal) errors.career_goal = 'Career goal is required';
-    if (!Array.isArray(career_interests) || career_interests.length === 0) errors.career_interests = 'Select at least one interest';
-    if (!Array.isArray(desired_roles) || desired_roles.length === 0) errors.desired_roles = 'Select at least one desired role';
-    if (!experience_level) errors.experience_level = 'Experience level is required';
-    if (!Array.isArray(skills) || skills.length < 2) errors.skills = 'Select at least 2 skills';
-    if (!bio || bio.trim().length < 20) errors.bio = 'Bio must be at least 20 characters';
 
     if (Object.keys(errors).length > 0) {
       return res.status(400).json({ message: "Validation failed", errors });
     }
 
     const cleanYear = year ? parseInt(year) : null;
-    const cleanCompletion = profile_completion !== undefined && profile_completion !== ""
-      ? parseInt(profile_completion) : null;
-    const cleanInterests = Array.isArray(career_interests) && career_interests.length > 0
-      ? career_interests : null;
-    const cleanSkills = Array.isArray(skills) && skills.length > 0
-      ? skills : null;
-    const cleanDesiredRoles = Array.isArray(desired_roles) && desired_roles.length > 0
-      ? desired_roles : null;
-    const cleanAchievements = Array.isArray(achievements) && achievements.length > 0
-      ? achievements : null;
-    const cleanSeeking = Array.isArray(seeking) && seeking.length > 0
-      ? seeking : null;
-    const cleanPassionateAbout = Array.isArray(passionate_about) && passionate_about.length > 0
-      ? passionate_about : null;
+    const cleanSkills = Array.isArray(skills) && skills.length > 0 ? skills : null;
+    const cleanInterests = Array.isArray(interests) && interests.length > 0 ? interests : null;
 
-    // Derive city from taluka/district if not passed directly
-    const derivedCity = city || taluka || district || null;
+    // ── Profile Completion Calculation ──────────────────────────────────
+    let completion = 0;
+    // Basic Details & Education (25%)
+    if (trimmedName) completion += 5;
+    if (college) completion += 5;
+    if (branch) completion += 5;
+    if (cleanYear) completion += 5;
+    if (city && state && country) completion += 5;
 
-    const updateData = {
+    // Career Vision & Skills (25%)
+    if (career_goal) completion += 10;
+    if (dream_company) completion += 5;
+    if (cleanSkills && cleanSkills.length >= 2) completion += 10;
+
+    // Experience & Interests (20%)
+    if (experience_level) completion += 10;
+    if (projects_built) completion += 5;
+    if (cleanInterests && cleanInterests.length > 0) completion += 5;
+
+    // Resume & Links (30%)
+    if (resume_url) completion += 15;
+    if (github_url) completion += 5;
+    if (linkedin_url) completion += 5;
+    if (portfolio_url || leetcode_url || codechef_url || hackerrank_url) completion += 5;
+
+    const profile_completion = Math.min(100, completion);
+
+    // ── Data Construction ───────────────────────────────────────────────
+    // 1. Profile Data (Legacy / Merged)
+    const profileData = {
       name: trimmedName || null,
       full_name: trimmedName || null,
       phone: phone || null,
-      city: derivedCity,
+      city: city || null,
       country: country || null,
       state: state || null,
-      district: district || null,
-      taluka: taluka || null,
       college: college?.trim() || null,
       branch: branch?.trim() || null,
       year: cleanYear,
       career_goal: career_goal || null,
-      career_interests: cleanInterests,
-      desired_roles: cleanDesiredRoles,
-      achievements: cleanAchievements,
-      seeking: cleanSeeking,
-      passionate_about: cleanPassionateAbout,
+      career_interests: cleanInterests, // backward compat
+      interests: cleanInterests,
       experience_level: experience_level || null,
       skills: cleanSkills,
       portfolio_url: portfolio_url || null,
       github_url: github_url || null,
       linkedin_url: linkedin_url || null,
-      bio: bio?.trim() || null,
-      profile_completion: cleanCompletion,
+      resume_url: resume_url || null,
+      profile_completion,
       onboarding_completed: onboarding_completed !== undefined ? onboarding_completed : null,
+      profile_photo: profile_photo || null
     };
 
-    // Remove undefined and null
-    Object.keys(updateData).forEach(k => {
-      if (updateData[k] === undefined || updateData[k] === null) {
-        delete updateData[k];
-      }
+    // 2. Career Profile
+    const careerProfileData = {
+      career_goal: career_goal || null,
+      dream_company: dream_company || null,
+      placement_goal: placement_goal || null,
+      experience_level: experience_level || null,
+      projects_built: projects_built || null,
+      resume_url: resume_url || null,
+      updated_at: new Date()
+    };
+
+    // 3. Learning Profile
+    const learningProfileData = {
+      skills: cleanSkills,
+      interests: cleanInterests,
+      learning_style: learning_style || null,
+      daily_time: daily_time || null,
+      coding_profiles: {
+        leetcode: leetcode_url || null,
+        codechef: codechef_url || null,
+        hackerrank: hackerrank_url || null
+      },
+      updated_at: new Date()
+    };
+
+    // Clean objects
+    [profileData, careerProfileData, learningProfileData].forEach(obj => {
+      Object.keys(obj).forEach(k => {
+        if (obj[k] === undefined || obj[k] === null) delete obj[k];
+      });
     });
 
+    // ── Firestore Batch Write ───────────────────────────────────────────
+    const batch = db.batch();
     const studentRef = db.collection("students").doc(req.user.id);
-    
-    // Set top level phone and name if needed, but primarily put in profile_data
+    const careerProfileRef = db.collection("careerProfiles").doc(req.user.id);
+    const learningProfileRef = db.collection("learningProfiles").doc(req.user.id);
+
     const topLevelUpdates = {};
     if (phone) topLevelUpdates.phone = phone;
     if (trimmedName) topLevelUpdates.name = trimmedName;
 
-    await studentRef.set({
-      ...topLevelUpdates,
-      profile_data: updateData 
-    }, { merge: true });
+    batch.set(studentRef, { ...topLevelUpdates, profile_data: profileData }, { merge: true });
+    batch.set(careerProfileRef, careerProfileData, { merge: true });
+    batch.set(learningProfileRef, learningProfileData, { merge: true });
 
-    console.log("✅ Onboarding saved successfully");
-    res.json({ message: "Saved.", profile_completion: cleanCompletion });
+    await batch.commit();
+
+    console.log("✅ Onboarding V2 saved successfully with batch write.");
+    res.json({ message: "Saved.", profile_completion });
 
   } catch (err) {
     console.error("❌ Onboarding save error:", err.message);
@@ -155,7 +186,6 @@ router.get("/status", auth, async (req, res) => {
     const studentDoc = await db.collection("students").doc(req.user.id).get();
 
     if (!studentDoc.exists) {
-      // Graceful fallback for legacy users who completed onboarding under the old architecture
       const legacyProfile = await db.collection("student_profiles").doc(req.user.id).get();
       if (legacyProfile.exists && (legacyProfile.data().onboarding_completed === true || legacyProfile.data().onboarding_completed === "true")) {
         return res.json({ 
@@ -169,10 +199,8 @@ router.get("/status", auth, async (req, res) => {
     const s = studentDoc.data();
     const sp = s.profile_data || {};
 
-    // In case the merged sp.onboarding_completed wasn't synced well
     let isCompleted = sp.onboarding_completed === true || sp.onboarding_completed === "true";
     
-    // Double fallback to legacy just in case
     if (!isCompleted) {
       const legacyProfile = await db.collection("student_profiles").doc(req.user.id).get();
       if (legacyProfile.exists && (legacyProfile.data().onboarding_completed === true || legacyProfile.data().onboarding_completed === "true")) {
