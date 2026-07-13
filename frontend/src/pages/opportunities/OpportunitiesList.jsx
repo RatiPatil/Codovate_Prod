@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import apiV1 from '../../api/v1/api';
 import { useAuth } from '../../context/AuthContext';
 import { formatDate } from '../../utils/dateUtils';
-import { formatTimeAgo } from '../../utils/dateUtils'; // Assuming this exists or will write it
 
 const typeColors = {
   Internship: 'text-blue-400 bg-blue-500/10 border-blue-500/20',
