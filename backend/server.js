@@ -103,6 +103,12 @@ app.use("/api/colleges",      require("./routes/colleges"));
 app.use("/api/companies",     require("./routes/companies"));
 app.use("/api/projects",      require("./routes/projects"));
 
+// V1 Enterprise Routes
+app.use("/api/v1/opportunities", require("./routes/v1/opportunities"));
+app.use("/api/v1/applications", require("./routes/v1/applications"));
+app.use("/api/v1/companies", require("./routes/v1/companies"));
+app.use("/api/v1/saved", require("./routes/v1/saved_opportunities"));
+
 app.get("/", (req, res) => {
   res.json({ message: "Codovate API running 🚀", realtime: true });
 });

@@ -18,8 +18,11 @@ const Signup = lazy(() => import('./pages/Signup'));
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
 const Onboarding = lazy(() => import('./pages/Onboarding'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
-const Opportunities = lazy(() => import('./pages/Opportunities'));
-const Applications = lazy(() => import('./pages/Applications'));
+const OpportunitiesList = lazy(() => import('./pages/opportunities/OpportunitiesList'));
+const OpportunityDetails = lazy(() => import('./pages/opportunities/OpportunityDetails'));
+const SavedOpportunities = lazy(() => import('./pages/opportunities/SavedOpportunities'));
+const CompanyProfile = lazy(() => import('./pages/company/CompanyProfile'));
+const ApplicationsTracker = lazy(() => import('./pages/applications/ApplicationsTracker'));
 const Profile = lazy(() => import('./pages/Profile'));
 const AdminLogin = lazy(() => import('./pages/AdminLogin'));
 const TeamsLayout = lazy(() => import('./pages/teams/TeamsLayout'));
@@ -81,12 +84,27 @@ function App() {
                 } />
                 <Route path="/opportunities" element={
                   <ProtectedRoute>
-                    <Layout><Opportunities /></Layout>
+                    <Layout><OpportunitiesList /></Layout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/opportunities/saved" element={
+                  <ProtectedRoute>
+                    <Layout><SavedOpportunities /></Layout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/opportunities/:id" element={
+                  <ProtectedRoute>
+                    <Layout><OpportunityDetails /></Layout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/company/:companyId" element={
+                  <ProtectedRoute>
+                    <Layout><CompanyProfile /></Layout>
                   </ProtectedRoute>
                 } />
                 <Route path="/applications" element={
                   <ProtectedRoute>
-                    <Layout><Applications /></Layout>
+                    <Layout><ApplicationsTracker /></Layout>
                   </ProtectedRoute>
                 } />
                 <Route path="/profile" element={
