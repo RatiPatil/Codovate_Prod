@@ -1,7 +1,8 @@
-﻿import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import ProfileReadOnlyView from '../components/ProfileReadOnlyView';
+import MilestoneModal from '../components/MilestoneModal';
 
 const ALL_SKILLS = [
   'JavaScript', 'Python', 'Java', 'C++', 'React', 'Node.js',
@@ -43,6 +44,7 @@ const Profile = () => {
   const { linkGoogleAccount } = useAuth();
   const [linking, setLinking] = useState(false);
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark');
+  const [showMilestone, setShowMilestone] = useState(false);
 
   useEffect(() => {
     if (theme === 'light') {
@@ -85,6 +87,11 @@ const Profile = () => {
       setAchievements(Array.isArray(d.achievements) ? d.achievements : []);
       setSeeking(Array.isArray(d.seeking) ? d.seeking : []);
       setPassionateAbout(Array.isArray(d.passionate_about) ? d.passionate_about : []);
+      
+      if (d.profile_completion === 100 && localStorage.getItem('milestone_100_shown') !== 'true') {
+        setShowMilestone(true);
+        localStorage.setItem('milestone_100_shown', 'true');
+      }
     }).catch(console.error).finally(() => setLoading(false));
   }, []);
 
@@ -166,6 +173,12 @@ const Profile = () => {
 
   return (
     <div className="w-full max-w-7xl mx-auto relative z-10">
+      <MilestoneModal 
+        isOpen={showMilestone} 
+        onClose={() => setShowMilestone(false)} 
+        title="100% Profile Complete"
+        description="You've unlocked the ultimate builder status."
+      />
       {toast.msg && (
         <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-xl text-sm font-semibold shadow-2xl glass-panel ${
           toast.type === 'success'

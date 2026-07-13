@@ -24,11 +24,12 @@ const ProtectedRoute = ({ children, requireOnboarding = true }) => {
   const isAdmin = user?.role === 'admin' || user?.role === 'super_admin' || user?.role === 'college_admin' || user?.role === 'company_admin' || user?.role === 'mentor';
 
   if (requireOnboarding && onboardingCompleted === false && !isAdmin) {
-    return <Navigate to="/onboarding" replace />;
+    if (location.pathname === '/welcome') return children;
+    return <Navigate to="/welcome" replace />;
   }
 
-  // If they are on the onboarding page but already completed it, kick them to dashboard
-  if (!requireOnboarding && onboardingCompleted === true && location.pathname === '/onboarding') {
+  // If they are on the welcome or onboarding page but already completed it, kick them to dashboard
+  if (!requireOnboarding && onboardingCompleted === true && (location.pathname === '/onboarding' || location.pathname === '/welcome' || location.pathname === '/onboarding-success')) {
     return <Navigate to="/dashboard" replace />;
   }
 

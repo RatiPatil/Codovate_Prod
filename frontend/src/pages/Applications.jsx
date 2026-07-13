@@ -4,6 +4,7 @@ import api from '../api/axios';
 import { useSocket } from '../context/SocketContext';
 import { formatDate } from '../utils/dateUtils';
 import { showAlert, showConfirm } from '../utils/uiUtils';
+import Loader from '../components/common/Loader';
 
 const statusStyles = {
   Applied: 'bg-primary/10 text-primary border-primary/20',
@@ -81,11 +82,13 @@ const Applications = () => {
     rejected: apps.filter(a => a.status === 'Rejected').length,
   };
 
-  if (loading) return (
-    <div className="flex-1 flex items-center justify-center h-full min-h-screen">
-      <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-    </div>
-  );
+  if (loading) {
+    return (
+      <div className="flex-1 overflow-y-auto">
+        <Loader fullScreen={false} message="Loading Applications..." />
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 p-6 md:p-8 overflow-y-auto relative z-10 max-w-7xl mx-auto w-full">
@@ -122,11 +125,17 @@ const Applications = () => {
 
       {/* Applications List */}
       {apps.length === 0 ? (
-        <div className="text-center py-24 glass-card border-dashed">
-          <p className="text-5xl mb-4">📋</p>
-          <p className="text-gray-400 text-sm mb-4">No applications yet.</p>
-          <Link to="/opportunities" className="btn-primary text-sm inline-block">
-            Browse opportunities
+        <div className="glass-panel p-12 rounded-3xl relative overflow-hidden text-center flex flex-col items-center justify-center min-h-[350px]">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-primary/10 rounded-full blur-[80px] pointer-events-none" />
+          <div className="w-20 h-20 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center text-4xl mb-6 shadow-xl relative z-10 transform transition-transform hover:scale-105">
+            📋
+          </div>
+          <h3 className="text-xl font-bold text-white mb-2 relative z-10">Your Journey Begins Here</h3>
+          <p className="text-gray-400 text-sm mb-8 max-w-md mx-auto relative z-10">
+            You haven't applied to any opportunities yet. Discover hackathons and internships to start building your career.
+          </p>
+          <Link to="/opportunities" className="btn-primary py-3 px-8 text-sm font-bold shadow-[0_0_20px_rgba(32,21,255,0.3)] relative z-10">
+            Explore Opportunities
           </Link>
         </div>
       ) : (

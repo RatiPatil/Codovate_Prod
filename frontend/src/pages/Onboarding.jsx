@@ -476,7 +476,7 @@ export default function Onboarding() {
         // Wait a little bit for the user to see the confetti
         setTimeout(() => {
           completeOnboarding();
-          navigate('/dashboard');
+          navigate('/onboarding-success');
         }, 1500);
       } catch (err) {
         console.error(err);

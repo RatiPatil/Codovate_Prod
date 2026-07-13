@@ -4,6 +4,7 @@ import api from '../api/axios';
 import { useSocket } from '../context/SocketContext';
 import { formatDate } from '../utils/dateUtils';
 import { showConfirm } from '../utils/uiUtils';
+import Loader from '../components/common/Loader';
 
 const typeColors = {
   Internship: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
@@ -236,11 +237,13 @@ const Opportunities = () => {
     return true;
   });
 
-  if (loading) return (
-    <div className="flex items-center justify-center min-h-screen">
-      <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-    </div>
-  );
+  if (loading) {
+    return (
+      <div className="flex-1 overflow-y-auto">
+        <Loader fullScreen={false} message="Loading Opportunities..." />
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 md:p-8 max-w-7xl mx-auto relative z-10">
@@ -313,9 +316,15 @@ const Opportunities = () => {
 
       {/* Cards */}
       {filtered.length === 0 ? (
-        <div className="text-center py-20 glass-card border-dashed">
-          <p className="text-4xl mb-4">🔍</p>
-          <p className="text-gray-400 text-sm">No opportunities found. Try changing your search or filters.</p>
+        <div className="glass-panel p-12 rounded-3xl relative overflow-hidden text-center flex flex-col items-center justify-center min-h-[350px]">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-primary/10 rounded-full blur-[80px] pointer-events-none" />
+          <div className="w-20 h-20 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center text-4xl mb-6 shadow-xl relative z-10 transform transition-transform hover:scale-105">
+            🔍
+          </div>
+          <h3 className="text-xl font-bold text-white mb-2 relative z-10">No Opportunities Found</h3>
+          <p className="text-gray-400 text-sm mb-4 max-w-md mx-auto relative z-10">
+            We couldn't find any opportunities matching your current search or filters. Try adjusting your criteria.
+          </p>
         </div>
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 relative z-10">

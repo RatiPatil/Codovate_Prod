@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import api from '../../api/axios';
 import { showAlert } from '../../utils/uiUtils';
 import TeamDetailsModal from './TeamDetailsModal';
+import Loader from '../../components/common/Loader';
 
 const TeamsHome = () => {
   const [teams, setTeams] = useState([]);
@@ -48,20 +49,21 @@ const TeamsHome = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+      <div className="flex-1 h-full overflow-y-auto">
+        <Loader fullScreen={false} message="Loading Teams..." />
       </div>
     );
   }
 
   if (teams.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-full text-center max-w-md mx-auto">
-        <div className="w-20 h-20 bg-primary/10 text-primary rounded-full flex items-center justify-center text-4xl mb-4">
+      <div className="glass-panel p-12 rounded-3xl relative overflow-hidden text-center flex flex-col items-center justify-center min-h-[400px] max-w-2xl mx-auto mt-10">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-primary/10 rounded-full blur-[80px] pointer-events-none" />
+        <div className="w-20 h-20 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center text-4xl mb-6 shadow-xl relative z-10 transform transition-transform hover:scale-105">
           🔭
         </div>
-        <h2 className="text-2xl font-bold text-white mb-2">No Teams Available</h2>
-        <p className="text-gray-400">
+        <h3 className="text-xl font-bold text-white mb-2 relative z-10">No Teams Available</h3>
+        <p className="text-gray-400 text-sm mb-4 max-w-md mx-auto relative z-10">
           There are currently no active teams looking for members. Check back later or create your own team!
         </p>
       </div>

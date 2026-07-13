@@ -1,8 +1,10 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { formatDate } from '../utils/dateUtils';
 import api from '../api/axios';
 import { useSocket } from '../context/SocketContext';
+import { gsap } from 'gsap';
+import Loader from '../components/common/Loader';
 
 const calculateMatchScore = (opp, profileSkills) => {
   if (!profileSkills || profileSkills.length === 0) return 60;
@@ -18,6 +20,14 @@ const calculateMatchScore = (opp, profileSkills) => {
   return Math.floor(50 + (matchPercentage / 2));
 };
 
+const MOTIVATIONAL_QUOTES = [
+  "Small progress every day leads to big success. 🚀",
+  "Today's effort becomes tomorrow's opportunity. 💡",
+  "Complete today's goals to improve your placement readiness. 📈",
+  "Your potential is endless. Keep building! 🛠️",
+  "Dream big, work hard, stay focused. ✨"
+];
+
 const Dashboard = () => {
   const [profile, setProfile] = useState(null);
   const [apps, setApps] = useState([]);
@@ -25,7 +35,11 @@ const Dashboard = () => {
   const [activity, setActivity] = useState([]);
   const [loading, setLoading] = useState(true);
   const [liveToast, setLiveToast] = useState('');
+  const [quoteIndex, setQuoteIndex] = useState(0);
+  
   const { socket } = useSocket();
+  const dashboardRef = useRef(null);
+  const quoteRef = useRef(null);
 
   const fetchAll = useCallback(async () => {
     try {
@@ -49,6 +63,37 @@ const Dashboard = () => {
   useEffect(() => {
     fetchAll();
   }, [fetchAll]);
+
+  // Handle GSAP Entrance Animation
+  useEffect(() => {
+    if (!loading && dashboardRef.current) {
+      // Respect reduced motion
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (!prefersReducedMotion) {
+        gsap.fromTo(
+          gsap.utils.toArray('.stagger-card'),
+          { opacity: 0, y: 30 },
+          { opacity: 1, y: 0, duration: 0.8, stagger: 0.08, ease: 'power3.out' }
+        );
+      }
+    }
+  }, [loading]);
+
+  // Handle Rotating Quotes
+  useEffect(() => {
+    const interval = setInterval(() => {
+      gsap.to(quoteRef.current, {
+        opacity: 0,
+        y: -10,
+        duration: 0.5,
+        onComplete: () => {
+          setQuoteIndex(prev => (prev + 1) % MOTIVATIONAL_QUOTES.length);
+          gsap.fromTo(quoteRef.current, { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.5 });
+        }
+      });
+    }, 8000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     if (!socket) return;
@@ -80,11 +125,13 @@ const Dashboard = () => {
     setTimeout(() => setLiveToast(''), 4000);
   };
 
-  if (loading) return (
-    <div className="flex items-center justify-center min-h-screen">
-      <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-    </div>
-  );
+  if (loading) {
+    return (
+      <div className="flex-1 overflow-y-auto">
+        <Loader fullScreen={false} message="Loading Dashboard..." />
+      </div>
+    );
+  }
 
   const selected = apps.filter(a => a.status === 'Selected').length;
 
@@ -108,29 +155,34 @@ const Dashboard = () => {
     return 'bg-primary';
   };
 
-  const getGreeting = () => {
+  const getGreetingData = () => {
     const hour = new Date().getHours();
-    if (hour < 12) return "Good morning";
-    if (hour < 18) return "Good afternoon";
-    return "Good evening";
+    if (hour < 12) return { text: "Good morning", sub: "☀️ Ready to achieve your goals today?" };
+    if (hour < 18) return { text: "Good afternoon", sub: "☕ Keep the momentum going!" };
+    return { text: "Good evening", sub: "🌙 Let's continue your journey." };
   };
 
+  const greeting = getGreetingData();
+
   return (
-    <div className="p-6 md:p-8 max-w-7xl mx-auto relative z-10">
+    <div ref={dashboardRef} className="p-6 md:p-8 max-w-7xl mx-auto relative z-10">
       {liveToast && (
-        <div className="fixed top-4 right-4 z-50 flex items-center gap-2 glass-panel px-4 py-3 rounded-xl shadow-2xl text-sm animate-pulse">
-          <div className="w-2 h-2 rounded-full bg-primary" />
+        <div className="fixed top-4 right-4 z-50 flex items-center gap-2 glass-panel px-4 py-3 rounded-xl shadow-2xl text-sm animate-[toast-slide-in_0.3s_ease-out]">
+          <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
           {liveToast}
         </div>
       )}
 
       {/* Header */}
-      <div className="mb-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div className="mb-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 stagger-card opacity-0">
         <div>
           <h1 className="text-3xl md:text-4xl font-bold text-white tracking-tight">
-            {getGreeting()}, <span className="text-gradient">{profile?.name?.split(' ')[0] || 'Student'}</span> 👋
+            {greeting.text}, <span className="text-gradient">{profile?.name?.split(' ')[0] || 'Student'}</span>
           </h1>
-          <p className="text-gray-400 text-sm mt-2">Here is what's happening with your profile today.</p>
+          <p className="text-primary-light font-medium mt-1">{greeting.sub}</p>
+          <div className="mt-3 overflow-hidden h-6">
+            <p ref={quoteRef} className="text-gray-400 text-sm italic">"{MOTIVATIONAL_QUOTES[quoteIndex]}"</p>
+          </div>
         </div>
       </div>
 
@@ -145,9 +197,9 @@ const Dashboard = () => {
           <Link 
             key={idx} 
             to={shortcut.to}
-            className={`glass-card p-4 flex items-center gap-3 border border-white/10 transition-all duration-300 hover:-translate-y-1 bg-gradient-to-br ${shortcut.color}`}
+            className={`stagger-card opacity-0 glass-card p-4 flex items-center gap-3 border border-white/10 transition-all duration-300 hover:-translate-y-1 bg-gradient-to-br ${shortcut.color}`}
           >
-            <span className="text-2xl">{shortcut.icon}</span>
+            <span className="text-2xl transition-transform group-hover:scale-110">{shortcut.icon}</span>
             <span className="text-white font-semibold text-sm">{shortcut.label}</span>
           </Link>
         ))}
@@ -166,7 +218,7 @@ const Dashboard = () => {
               { label: 'Opportunities', value: opps.length, color: 'text-yellow-400', glow: 'hover:shadow-[0_0_20px_rgba(250,204,21,0.2)]' },
               { label: 'Profile', value: `${profile?.profile_completion || 0}%`, color: 'text-purple-400', glow: 'hover:shadow-[0_0_20px_rgba(192,132,252,0.2)]' },
             ].map(s => (
-              <div key={s.label} className={`glass-card p-5 ${s.glow}`}>
+              <div key={s.label} className={`stagger-card opacity-0 glass-card p-5 ${s.glow}`}>
                 <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest mb-1.5">{s.label}</p>
                 <p className={`text-4xl font-black tracking-tighter ${s.color}`}>{s.value}</p>
               </div>
@@ -175,7 +227,7 @@ const Dashboard = () => {
 
           <div className="grid md:grid-cols-2 gap-6">
             {/* Application Timeline */}
-            <div className="glass-panel rounded-2xl p-6 relative overflow-hidden">
+            <div className="stagger-card opacity-0 glass-panel rounded-2xl p-6 relative overflow-hidden">
               <div className="absolute -top-24 -left-24 w-48 h-48 bg-primary/10 rounded-full blur-[60px]" />
               
               <div className="flex items-center justify-between mb-6 relative z-10">
@@ -188,10 +240,12 @@ const Dashboard = () => {
               </div>
               
               {apps.length === 0 ? (
-                <div className="text-center py-12 glass-card border-dashed">
-                  <p className="text-gray-400 text-sm">No applications yet.</p>
-                  <Link to="/opportunities" className="btn-primary inline-block mt-4 text-sm">
-                    Browse opportunities
+                <div className="text-center py-10 px-4 glass-card border-dashed">
+                  <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-3 text-xl">🚀</div>
+                  <p className="text-white font-medium text-sm mb-1">Your journey starts here.</p>
+                  <p className="text-gray-400 text-xs mb-4">Browse opportunities and take the first step towards your career.</p>
+                  <Link to="/opportunities" className="btn-primary inline-block text-xs py-1.5 px-4">
+                    Find Opportunities
                   </Link>
                 </div>
               ) : (
@@ -223,7 +277,7 @@ const Dashboard = () => {
             </div>
 
             {/* Recent Activity Feed */}
-            <div className="glass-panel rounded-2xl p-6 relative overflow-hidden">
+            <div className="stagger-card opacity-0 glass-panel rounded-2xl p-6 relative overflow-hidden">
               <div className="flex items-center justify-between mb-6 relative z-10">
                 <h2 className="text-white font-bold text-xl flex items-center gap-2">
                   <span className="text-2xl">⚡</span> Recent Activity
@@ -231,8 +285,10 @@ const Dashboard = () => {
               </div>
               
               {activity.length === 0 ? (
-                <div className="text-center py-12 glass-card border-dashed">
-                  <p className="text-gray-400 text-sm">No recent activity.</p>
+                <div className="text-center py-10 px-4 glass-card border-dashed">
+                  <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-3 text-xl">🌱</div>
+                  <p className="text-white font-medium text-sm mb-1">It's quiet here.</p>
+                  <p className="text-gray-400 text-xs">Complete your profile or apply for a role to generate activity.</p>
                 </div>
               ) : (
                 <div className="space-y-4 relative z-10">
@@ -262,7 +318,7 @@ const Dashboard = () => {
         <div className="space-y-6">
           
           {/* Enhanced Profile Tracker */}
-          <div className="glass-panel rounded-2xl p-6 relative overflow-hidden group">
+          <div className="stagger-card opacity-0 glass-panel rounded-2xl p-6 relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 rounded-full blur-[50px] -mr-10 -mt-10 pointer-events-none transition-transform duration-700 group-hover:scale-150" />
             
             <h2 className="text-white font-bold text-xl mb-6 flex items-center gap-2 relative z-10">
@@ -295,15 +351,16 @@ const Dashboard = () => {
                 ))}
               </div>
             ) : (
-              <div className="p-5 glass-panel bg-green-500/5 border-green-500/20 rounded-xl text-center mt-6 relative z-10">
-                <p className="text-green-400 font-bold text-lg mb-1">🎉 You're all set!</p>
+              <div className="p-5 glass-panel bg-green-500/5 border-green-500/20 rounded-xl text-center mt-6 relative z-10 transform transition-transform hover:scale-105">
+                <div className="text-3xl mb-2 animate-bounce">🏆</div>
+                <p className="text-green-400 font-bold text-lg mb-1">You're all set!</p>
                 <p className="text-gray-400 text-sm">Your profile is 100% complete.</p>
               </div>
             )}
           </div>
 
           {/* AI Recommendations */}
-          <div className="glass-panel rounded-2xl p-6 relative overflow-hidden group">
+          <div className="stagger-card opacity-0 glass-panel rounded-2xl p-6 relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-bl-[100px] pointer-events-none" />
             <div className="flex items-center justify-between mb-5 relative z-10">
               <h2 className="text-white font-bold text-xl flex items-center gap-2">
@@ -312,8 +369,9 @@ const Dashboard = () => {
             </div>
 
             {opps.length === 0 ? (
-              <div className="text-center py-8 glass-card border-dashed">
-                <p className="text-gray-400 text-sm">No new opportunities available.</p>
+              <div className="text-center py-10 glass-card border-dashed">
+                <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-3 text-lg">⏳</div>
+                <p className="text-gray-400 text-sm">Analyzing market for new roles...</p>
               </div>
             ) : (
               <div className="space-y-4 relative z-10">

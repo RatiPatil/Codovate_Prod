@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo } from 'react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
+import Loader from '../components/common/Loader';
 
 const Leaderboard = () => {
   const { user: currentUser } = useAuth();
@@ -117,8 +118,8 @@ const Leaderboard = () => {
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center py-20">
-          <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin shadow-[0_0_15px_rgba(32,21,255,0.5)]" />
+        <div className="flex-1 overflow-y-auto">
+          <Loader fullScreen={false} message="Loading Leaderboard..." />
         </div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-24 glass-card border-dashed rounded-3xl">

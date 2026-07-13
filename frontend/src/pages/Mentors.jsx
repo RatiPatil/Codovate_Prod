@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { formatTime, formatDateTime } from '../utils/dateUtils';
 import api from '../api/axios';
 import { showAlert, showConfirm } from '../utils/uiUtils';
+import Loader from '../components/common/Loader';
 
 const BookingModal = ({ mentor, onClose, onConfirm }) => {
   const [dateTime, setDateTime] = useState('');
@@ -208,7 +209,7 @@ const QueriesView = ({ showToast, mentors }) => {
     }
   };
 
-  if (loading) return <div className="text-center py-12"><div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" /></div>;
+  if (loading) return <div className="text-center py-12"><Loader message="Loading queries..." /></div>;
 
   return (
     <div className="relative z-10">
@@ -221,9 +222,18 @@ const QueriesView = ({ showToast, mentors }) => {
 
       <div className="space-y-4">
         {queries.length === 0 ? (
-          <div className="text-center py-12 glass-panel border-dashed rounded-2xl">
-            <p className="text-4xl mb-3">💬</p>
-            <p className="text-gray-400">You haven't asked any questions yet.</p>
+          <div className="glass-panel p-12 rounded-3xl relative overflow-hidden text-center flex flex-col items-center justify-center min-h-[350px]">
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-primary/10 rounded-full blur-[80px] pointer-events-none" />
+            <div className="w-20 h-20 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center text-4xl mb-6 shadow-xl relative z-10 transform transition-transform hover:scale-105">
+              💬
+            </div>
+            <h3 className="text-xl font-bold text-white mb-2 relative z-10">No Queries Yet</h3>
+            <p className="text-gray-400 text-sm mb-8 max-w-md mx-auto relative z-10">
+              Need help with a project or career advice? Ask our mentors anything and get expert guidance.
+            </p>
+            <button onClick={() => setShowModal(true)} className="btn-primary py-3 px-8 text-sm font-bold shadow-[0_0_20px_rgba(32,21,255,0.3)] relative z-10">
+              Ask a Mentor
+            </button>
           </div>
         ) : queries.map(q => (
           <div key={q.id} className="glass-card p-5 relative overflow-hidden">
@@ -346,11 +356,13 @@ const Mentors = () => {
     return matchesSearch && matchesExpertise;
   });
 
-  if (loading) return (
-    <div className="flex items-center justify-center min-h-screen">
-      <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-    </div>
-  );
+  if (loading) {
+    return (
+      <div className="flex-1 overflow-y-auto">
+        <Loader fullScreen={false} message="Loading Mentors..." />
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 md:p-8 max-w-7xl mx-auto text-white relative z-10">
@@ -466,10 +478,14 @@ const Mentors = () => {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredMentors.length === 0 ? (
-              <div className="col-span-full text-center py-24 glass-card border-dashed">
-                <p className="text-4xl mb-4">👥</p>
-                <p className="text-gray-400 text-sm mb-4">
-                  {mentors.length === 0 ? 'No mentors are available right now.' : 'No mentors match your search.'}
+              <div className="col-span-full glass-panel p-12 rounded-3xl relative overflow-hidden text-center flex flex-col items-center justify-center min-h-[350px]">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-primary/10 rounded-full blur-[80px] pointer-events-none" />
+                <div className="w-20 h-20 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center text-4xl mb-6 shadow-xl relative z-10 transform transition-transform hover:scale-105">
+                  👥
+                </div>
+                <h3 className="text-xl font-bold text-white mb-2 relative z-10">No Mentors Found</h3>
+                <p className="text-gray-400 text-sm max-w-md mx-auto relative z-10">
+                  {mentors.length === 0 ? 'No mentors are available right now. Please check back later.' : 'No mentors match your search criteria. Try adjusting your filters.'}
                 </p>
               </div>
             ) : filteredMentors.map(m => (
@@ -554,10 +570,16 @@ const Mentors = () => {
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {sessions.filter(s => sessionFilter === 'All' || s.status === sessionFilter).length === 0 ? (
-              <div className="col-span-full text-center py-24 glass-card border-dashed">
-                <p className="text-4xl mb-4">📅</p>
-                <p className="text-gray-400 text-sm mb-4">No sessions found in this category.</p>
-                <button onClick={() => setActiveTab('discover')} className="btn-primary text-sm inline-block">
+              <div className="col-span-full glass-panel p-12 rounded-3xl relative overflow-hidden text-center flex flex-col items-center justify-center min-h-[350px]">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-primary/10 rounded-full blur-[80px] pointer-events-none" />
+                <div className="w-20 h-20 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center text-4xl mb-6 shadow-xl relative z-10 transform transition-transform hover:scale-105">
+                  📅
+                </div>
+                <h3 className="text-xl font-bold text-white mb-2 relative z-10">No Sessions Found</h3>
+                <p className="text-gray-400 text-sm mb-8 max-w-md mx-auto relative z-10">
+                  You don't have any sessions in this category. Book a session with a mentor to accelerate your growth.
+                </p>
+                <button onClick={() => setActiveTab('discover')} className="btn-primary py-3 px-8 text-sm font-bold shadow-[0_0_20px_rgba(32,21,255,0.3)] relative z-10">
                   Discover Mentors
                 </button>
               </div>
