@@ -22,7 +22,8 @@ export const Step9AIGeneration = ({ onComplete }) => {
       tl.to(item.querySelector('.check-icon'), { scale: 1, opacity: 1, duration: 0.2, ease: "back.out(2)" });
     });
 
-    tl.fromTo(".ai-almost", { opacity: 0 }, { opacity: 1, duration: 0.5, yoyo: true, repeat: -1 }, "+=0.5");
+    // Make the infinite animation separate from the main timeline so onComplete fires
+    gsap.fromTo(".ai-almost", { opacity: 0 }, { opacity: 1, duration: 0.5, yoyo: true, repeat: -1, delay: tl.duration() + 0.5 });
   }, [onComplete]);
 
   const tasks = [
