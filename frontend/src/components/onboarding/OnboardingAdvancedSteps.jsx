@@ -60,6 +60,8 @@ export const Step9AIGeneration = ({ onComplete }) => {
 
 // Screen 10: Success Screen
 export const Step10Success = ({ data, onFinish }) => {
+  const navigate = require('react-router-dom').useNavigate();
+
   useEffect(() => {
     gsap.fromTo(".success-card", { scale: 0.9, opacity: 0, y: 30 }, { scale: 1, opacity: 1, y: 0, duration: 0.8, ease: "elastic.out(1, 0.5)" });
     
@@ -73,6 +75,14 @@ export const Step10Success = ({ data, onFinish }) => {
       if (Date.now() < end) requestAnimationFrame(frame);
     }());
   }, []);
+
+  const firstSkill = data.skills?.[0]?.name || 'Basics';
+  const todaysGoal = `Complete ${firstSkill}`;
+
+  const handleReviewProfile = () => {
+    onFinish(); // complete onboarding first
+    navigate('/profile');
+  };
 
   return (
     <div className="flex flex-col items-center justify-center py-6 text-center">
@@ -91,14 +101,18 @@ export const Step10Success = ({ data, onFinish }) => {
           <span className="text-gray-500 text-sm">Placement Target</span>
           <span className="text-white font-semibold text-sm">{data.placement_goal || 'Not specified'}</span>
         </div>
-        <div className="flex justify-between items-center pb-3">
+        <div className="flex justify-between items-center border-b border-white/5 pb-3">
           <span className="text-gray-500 text-sm">Current Skill Level</span>
           <span className="text-white font-semibold text-sm">{data.experience_level || 'Beginner'}</span>
+        </div>
+        <div className="flex justify-between items-center pb-3">
+          <span className="text-gray-500 text-sm">Today's Goal</span>
+          <span className="text-primary font-semibold text-sm">{todaysGoal}</span>
         </div>
         <div className="bg-primary/10 rounded-xl p-4 mt-2 border border-primary/20">
           <p className="text-xs text-primary font-semibold uppercase tracking-wider mb-1">Suggested Learning Path</p>
           <div className="flex items-center gap-2 text-sm text-white flex-wrap">
-            <span>{data.skills?.[0]?.name || 'Basics'}</span>
+            <span>{firstSkill}</span>
             <span className="text-gray-500">→</span>
             <span>{data.skills?.[1]?.name || 'Advanced'}</span>
             <span className="text-gray-500">→</span>
@@ -107,9 +121,14 @@ export const Step10Success = ({ data, onFinish }) => {
         </div>
       </div>
 
-      <button onClick={onFinish} className="bg-primary hover:bg-primary-hover text-white font-bold py-4 px-10 rounded-xl transition-all shadow-lg shadow-primary/30 hover:scale-105 w-full sm:w-auto">
-        Continue to Dashboard
-      </button>
+      <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+        <button onClick={onFinish} className="bg-primary hover:bg-primary-hover text-white font-bold py-4 px-10 rounded-xl transition-all shadow-lg shadow-primary/30 hover:shadow-primary/50 hover:scale-105 w-full sm:w-auto">
+          Continue to Dashboard
+        </button>
+        <button onClick={handleReviewProfile} className="bg-white/5 hover:bg-white/10 text-white font-bold py-4 px-10 rounded-xl border border-white/10 transition-all hover:border-white/30 hover:scale-105 w-full sm:w-auto">
+          Review Profile
+        </button>
+      </div>
     </div>
   );
 };

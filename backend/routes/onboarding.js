@@ -8,7 +8,7 @@ router.post("/save", auth, async (req, res) => {
     const {
       full_name, phone, city,
       country, state,
-      college, branch, year, profile_photo,
+      college, course, branch, year, profile_photo,
       career_goal, dream_company, placement_goal,
       skills, // expects array of objects { name, level }
       interests,
@@ -38,6 +38,7 @@ router.post("/save", auth, async (req, res) => {
     if (!state) errors.state = 'State is required';
     if (!city) errors.city = 'City is required';
     if (!college || college.trim().length < 3) errors.college = 'College name is required';
+    if (!course || course.trim().length < 2) errors.course = 'Course is required';
     if (!branch || branch.trim().length < 2) errors.branch = 'Branch is required';
     if (!year) errors.year = 'Year of study is required';
 
@@ -53,9 +54,7 @@ router.post("/save", auth, async (req, res) => {
     let completion = 0;
     // Basic Details & Education (25%)
     if (trimmedName) completion += 5;
-    if (college) completion += 5;
-    if (branch) completion += 5;
-    if (cleanYear) completion += 5;
+    if (college && course && branch && cleanYear) completion += 15;
     if (city && state && country) completion += 5;
 
     // Career Vision & Skills (25%)
@@ -86,6 +85,7 @@ router.post("/save", auth, async (req, res) => {
       country: country || null,
       state: state || null,
       college: college?.trim() || null,
+      course: course?.trim() || null,
       branch: branch?.trim() || null,
       year: cleanYear,
       career_goal: career_goal || null,

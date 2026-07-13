@@ -8,7 +8,7 @@ import { showAlert } from '../utils/uiUtils';
 import {
   Step1Welcome, Step2BasicInfo, Step3CareerVision,
   Step4Skills, Step5Interests, Step6Learning,
-  Step7Experience, Step8Links
+  Step7Experience, Step8Links, LiveProfilePreview
 } from '../components/onboarding/OnboardingSteps';
 import { Step9AIGeneration, Step10Success } from '../components/onboarding/OnboardingAdvancedSteps';
 
@@ -20,6 +20,7 @@ export default function Onboarding() {
   const [step, setStep] = useState(1);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
   
   const [data, setData] = useState({
     full_name: '', college: '', course: '', branch: '', year: '', city: '', state: '', country: 'India', profile_photo: null,
@@ -37,6 +38,28 @@ export default function Onboarding() {
   
   const cardRef = useRef(null);
   const contentRef = useRef(null);
+
+  // Load saved state
+  useEffect(() => {
+    const saved = localStorage.getItem('codovate_onboarding');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed.data) setData(parsed.data);
+        if (parsed.step && parsed.step > 1 && parsed.step < 9) setStep(parsed.step);
+      } catch (e) {}
+    }
+    setIsLoaded(true);
+  }, []);
+
+  // Auto save
+  useEffect(() => {
+    if (isLoaded && step > 1 && step < 9) {
+      localStorage.setItem('codovate_onboarding', JSON.stringify({ data, step }));
+    } else if (step >= 9) {
+      localStorage.removeItem('codovate_onboarding');
+    }
+  }, [data, step, isLoaded]);
 
   useEffect(() => {
     if (step > 1 && step <= TOTAL_STEPS && cardRef.current) {
@@ -187,12 +210,13 @@ export default function Onboarding() {
       )}
 
       {/* Content Area */}
-      <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 py-8">
+      <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 py-8 w-full max-w-6xl mx-auto">
         
         {step === 1 && <Step1Welcome onNext={handleNext} />}
         
         {step > 1 && step <= TOTAL_STEPS && (
-          <div ref={cardRef} className="w-full max-w-xl">
+          <div className="flex w-full gap-8 justify-center items-start">
+            <div ref={cardRef} className="w-full max-w-xl shrink-0">
             <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl overflow-hidden glass-panel" style={{ boxShadow: '0 0 80px rgba(32,21,255,0.06), 0 25px 50px rgba(0,0,0,0.5)' }}>
               <div ref={contentRef} className="px-8 py-8">
                 {step === 2 && (
@@ -248,6 +272,14 @@ export default function Onboarding() {
                 </div>
               </div>
             </div>
+            </div>
+            
+            {/* Live Profile Preview - Hidden on small screens */}
+            {step > 1 && step <= 8 && (
+              <div className="hidden lg:block w-full max-w-sm sticky top-8">
+                <LiveProfilePreview data={data} step={step} />
+              </div>
+            )}
           </div>
         )}
 

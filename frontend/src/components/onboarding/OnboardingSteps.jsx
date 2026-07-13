@@ -70,8 +70,40 @@ export const Step1Welcome = ({ onNext }) => {
 
 // Screen 2: Basic Information
 export const Step2BasicInfo = ({ data, update, touched, handleBlur, errors }) => {
+  const handlePhotoUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        alert('File size must be less than 2MB');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => update('profile_photo', reader.result);
+      reader.readAsDataURL(file);
+    }
+  };
+
   return (
     <div className="space-y-4">
+      <div className="flex flex-col items-center mb-6">
+        <div className="relative group cursor-pointer mb-2">
+          <div className="w-24 h-24 rounded-full border-2 border-white/10 bg-[#0a0a0a] overflow-hidden flex items-center justify-center relative">
+            {data.profile_photo ? (
+              <img src={data.profile_photo} alt="Profile" className="w-full h-full object-cover" />
+            ) : (
+              <svg className="w-10 h-10 text-gray-600" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />
+              </svg>
+            )}
+            <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+              <span className="text-xs text-white font-medium">Upload</span>
+            </div>
+            <input type="file" accept="image/*" onChange={handlePhotoUpload} className="absolute inset-0 opacity-0 cursor-pointer" />
+          </div>
+        </div>
+        <span className="text-xs text-gray-500">Profile Photo (Optional)</span>
+      </div>
+
       <InputField label="Full Name" field="full_name" placeholder="John Doe" required data={data} update={update} handleBlur={handleBlur} touched={touched} errors={errors} />
       <div className="grid grid-cols-2 gap-4">
         <InputField label="College" field="college" placeholder="Your College" required data={data} update={update} handleBlur={handleBlur} touched={touched} errors={errors} />
@@ -313,13 +345,73 @@ export const Step8Links = ({ data, update }) => {
       </div>
       <div className="pt-4 border-t border-white/10">
         <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">Resume Upload <span className="text-gray-500 font-normal normal-case">(Optional)</span></label>
-        <div className="border-2 border-dashed border-white/10 rounded-xl p-6 text-center hover:border-primary/50 transition-colors bg-white/5">
-          <svg className="w-8 h-8 mx-auto text-gray-500 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="border-2 border-dashed border-white/10 rounded-xl p-6 text-center hover:border-primary/50 transition-colors bg-white/5 relative group">
+          <input type="file" accept=".pdf" className="absolute inset-0 opacity-0 cursor-pointer" onChange={() => alert('Resume upload will be handled by Firebase Storage in full implementation.')} />
+          <svg className="w-8 h-8 mx-auto text-gray-500 mb-3 group-hover:text-primary transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
           </svg>
-          <span className="text-sm font-medium text-white block">Upload Resume (PDF)</span>
+          <span className="text-sm font-medium text-white block group-hover:text-primary transition-colors">Upload Resume (PDF)</span>
           <span className="text-xs text-gray-500 mt-1 block">Drag and drop or click to browse</span>
         </div>
+      </div>
+    </div>
+  );
+};
+
+// Live Profile Preview
+export const LiveProfilePreview = ({ data, step }) => {
+  return (
+    <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl overflow-hidden glass-panel flex flex-col p-6 h-full min-h-[400px]">
+      <div className="flex items-center gap-4 mb-6">
+        <div className="w-16 h-16 rounded-full bg-white/5 border border-white/10 overflow-hidden flex-shrink-0">
+          {data.profile_photo ? (
+            <img src={data.profile_photo} alt="Avatar" className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-gray-500">
+              <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />
+              </svg>
+            </div>
+          )}
+        </div>
+        <div>
+          <h3 className="text-lg font-bold text-white">{data.full_name || 'Your Name'}</h3>
+          <p className="text-xs text-primary">{data.career_goal || 'Future Innovator'}</p>
+        </div>
+      </div>
+
+      <div className="space-y-4 flex-1">
+        <div className="bg-white/5 rounded-xl p-3">
+          <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Education</p>
+          <p className="text-sm text-gray-200">{data.college || 'College Name'}</p>
+          <p className="text-xs text-gray-400">{data.course} {data.branch ? `- ${data.branch}` : ''} {data.year ? `(Year ${data.year})` : ''}</p>
+        </div>
+
+        <div className="bg-white/5 rounded-xl p-3">
+          <p className="text-xs text-gray-500 uppercase tracking-wider mb-2">Top Skills</p>
+          <div className="flex flex-wrap gap-1.5">
+            {data.skills.length > 0 ? data.skills.slice(0, 4).map(s => (
+              <span key={s.name} className="px-2 py-0.5 bg-primary/20 text-primary text-[10px] rounded-full font-medium">
+                {s.name}
+              </span>
+            )) : <span className="text-xs text-gray-500 italic">No skills added yet</span>}
+            {data.skills.length > 4 && <span className="px-2 py-0.5 bg-white/10 text-gray-300 text-[10px] rounded-full font-medium">+{data.skills.length - 4} more</span>}
+          </div>
+        </div>
+
+        <div className="bg-white/5 rounded-xl p-3">
+          <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Career Goal</p>
+          <p className="text-sm text-gray-200">{data.dream_company || 'Dream Company'}</p>
+          <p className="text-xs text-gray-400">Target: {data.placement_goal || 'Timeline'}</p>
+        </div>
+      </div>
+
+      <div className="mt-4 pt-4 border-t border-white/5 flex justify-between items-center text-xs text-gray-500">
+        <span>Completion</span>
+        <span className="text-primary font-bold">{Math.round((step / 9) * 100)}%</span>
+      </div>
+      <div className="w-full h-1 bg-white/5 rounded-full mt-2 overflow-hidden">
+        <div className="h-full bg-primary transition-all duration-500" style={{ width: `${(step / 9) * 100}%` }} />
       </div>
     </div>
   );
