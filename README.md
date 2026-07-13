@@ -1,75 +1,131 @@
-# Codovate
+# ?? Codovate � Redefine Your Potential
 
-Codovate is a robust, multi-tenant application serving students, college admins, company recruiters, mentors, and super admins.
+> **The future of student growth. An ecosystem built specifically for ambitious students.**
 
-## Tech Stack
-- **Frontend:** React + Vite, Tailwind CSS, GSAP for animations.
-- **Backend:** Node.js, Express, Socket.io (Real-time updates).
-- **Database:** Firebase (Firestore & Authentication).
+[![GitHub](https://img.shields.io/badge/GitHub-RatiPatil%2FCodovate__Prod-blue?logo=github)](https://github.com/RatiPatil/Codovate_Prod)
+[![Branch](https://img.shields.io/badge/Branch-developer-green)](https://github.com/RatiPatil/Codovate_Prod/tree/developer)
+[![Status](https://img.shields.io/badge/Status-In%20Development-orange)]()
+[![License](https://img.shields.io/badge/License-MIT-lightgrey)]()
 
-## Project Structure
-```text
-Codovate/
-├── frontend/             # React application
-│   ├── src/
-│   ├── package.json
-│   └── .env.example      # Template for local env vars
-├── backend/              # Node.js application
-│   ├── routes/           # Express API endpoints
-│   ├── config/           # Firebase configuration
-│   ├── package.json
-│   └── .env.example      # Template for local env vars
-├── README.md             # This file
-└── CONTRIBUTING.md       # Guidelines for developers
+---
+
+## ?? About Codovate
+
+**We believe that talent is everywhere, but opportunities are not.**
+
+Codovate bridges the gap for students outside tier-1 colleges, providing the roadmaps, mentorship, and access you need to stand out globally. Land internships, win hackathons, and build your profile � all in one unified platform.
+
+---
+
+## ? The Advantage � Everything You Need to Accelerate Your Growth
+
+| Feature | Description |
+|---|---|
+| ?? **Structured Roadmaps** | Don't know what to learn? Step-by-step personalized roadmaps for your branch and goals. |
+| ?? **Opportunity Hub** | Never miss another elite hackathon, competition, or exclusive internship again. |
+| ?? **Expert Mentorship** | Get guidance from industry experts and alumni, regardless of your college. |
+| ?? **Team Builder** | Find the perfect, skilled teammates for your next big project or hackathon. |
+
+---
+
+## ??? Project Structure
+
+```
+Codovate_Prod/
++-- public/             # Static assets
++-- src/
+�   +-- components/     # Reusable UI components
+�   +-- pages/          # Application pages / routes
+�   +-- assets/         # Images, icons, fonts
+�   +-- styles/         # Global and component styles
+�   +-- utils/          # Helper functions and utilities
++-- README.md
++-- package.json
 ```
 
-## Installation Steps
+---
+
+## ??? Tech Stack
+
+- **Frontend** � React.js / Next.js
+- **Styling** � CSS Modules / Tailwind CSS
+- **Backend** � Node.js (planned)
+- **Database** � (TBD)
+- **Auth** � (TBD)
+- **Hosting** � (TBD)
+
+---
+
+## ?? Getting Started
+
 ### Prerequisites
-- Node.js (v18+)
-- NPM or Yarn
-- Git
 
-### 1. Clone the Repository
+- [Node.js](https://nodejs.org/) (v18+)
+- [Git](https://git-scm.com/)
+
+### Installation
+
 ```bash
-git clone <repository-url>
-cd codovate
-```
+# Clone the repository
+git clone https://github.com/RatiPatil/Codovate_Prod.git
 
-### 2. Move to the Developer Branch
-Never develop directly on `main`. Always switch to the `developer` branch.
-```bash
-git checkout developer
-git pull origin developer
-```
+# Navigate into the project directory
+cd Codovate_Prod
 
-### 3. Environment Setup
-You need separate `.env` files for the frontend and backend.
-- Copy `frontend/.env.example` to `frontend/.env`.
-- Copy `backend/.env.example` to `backend/.env`.
-- Obtain the necessary Firebase Development Keys and JWT secret from your Team Lead.
-
-*Ensure you have the `serviceAccountKey.json` inside the `backend/config/` directory. Do not commit this file!*
-
-### 4. Running the Project Locally
-Open two terminal windows.
-
-**Terminal 1 (Backend):**
-```bash
-cd backend
+# Install dependencies
 npm install
-npm run start
-```
-*The backend will run on http://localhost:5000*
 
-**Terminal 2 (Frontend):**
-```bash
-cd frontend
-npm install
+# Start the development server
 npm run dev
 ```
-*The frontend will run on http://localhost:5173*
 
-## Development Guidelines
-- Read `CONTRIBUTING.md` for branching, committing, and code review rules.
-- Connect exclusively to the **Development** Firebase database to avoid polluting production data.
-- If you make schema changes, communicate with the Team Lead.
+The app will be running at `http://localhost:3000` (or the configured port).
+
+---
+
+## ?? Branch Strategy
+
+| Branch | Purpose |
+|---|---|
+| `main` | Production-ready code |
+| `developer` | Active development branch |
+| `feature/*` | Feature-specific branches |
+
+> All contributions should be made via Pull Requests targeting the `developer` branch.
+
+---
+
+## ?? Contributing
+
+We welcome contributions from the community! Here's how to get involved:
+
+1. **Fork** the repository
+2. **Create** a feature branch: `git checkout -b feature/your-feature-name`
+3. **Commit** your changes: `git commit -m "feat: add your feature"`
+4. **Push** to your branch: `git push origin feature/your-feature-name`
+5. **Open** a Pull Request targeting the `developer` branch
+
+Please follow conventional commit messages (`feat:`, `fix:`, `docs:`, `chore:`, etc.).
+
+---
+
+## ?? Contact & Community
+
+Built with ?? for students who dare to dream bigger.
+
+- ?? Website: [codovate.com](#) *(coming soon)*
+- ?? Email: [contact@codovate.com](#)
+- ?? Twitter/X: [@Codovate](#)
+- ?? LinkedIn: [Codovate](#)
+
+---
+
+## ?? License
+
+This project is licensed under the **MIT License** � see the [LICENSE](LICENSE) file for details.
+
+---
+
+<p align="center">
+  <strong>� 2025 Codovate. Designed for builders.</strong>
+</p>
