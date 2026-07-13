@@ -1,0 +1,67 @@
+[
+  {
+    "id": 1,
+    "nameKey": "Puri Bhaji", 
+    "nameMr": "पुरी भाजी",
+    "price": 40,
+    "image": "/puribhaji.png", 
+    "popular": true
+  },
+  {
+    "id": 2,
+    "nameKey": "Pohe",
+    "nameMr": "पोहे",
+    "price": 30,
+    "image": "/pohe.png"
+  },
+  {
+    "id": 3,
+    "nameKey": "Vada Pav",
+    "nameMr": "वडापाव",
+    "price": 10,
+    "image": "/vadapav.png",
+    "popular": true
+  },
+  {
+    "id": 4,
+    "nameKey": "Special Tea",
+    "nameMr": "चहा",
+    "price": 10,
+    "image": "https://images.unsplash.com/photo-1576092762791-dd9e2220afa1?auto=format&fit=crop&w=500&q=80"
+  },
+  {
+    "id": 5,
+    "nameKey": "Kurkurit Kanda Bhaji",
+    "nameMr": "कुरकुरीत कांदा भजी",
+    "price": 30,
+    "image": "/kurkurit_kanda_bhaji.png"
+  },
+  {
+    "id": 6,
+    "nameKey": "Lamboti Mirchi Bhaji",
+    "nameMr": "लांबोटी मिरची भजी",
+    "price": 30,
+    "image": "/lamboti_mirchi_bhaji.png"
+  },
+  {
+    "id": 7,
+    "nameKey": "Gol Mirchi Bhaji",
+    "nameMr": "गोल मिरची भजी",
+    "price": 30,
+    "image": "/gol_mirchi_bhaji.png"
+  },
+  {
+    "id": 8,
+    "nameKey": "Gol Kanda Bhaji",
+    "nameMr": "गोल कांदा भजी",
+    "price": 30,
+    "image": "https://images.unsplash.com/photo-1604084666016-f3bfa86fb04a?auto=format&fit=crop&w=500&q=80"
+  },
+  {
+    "id": 9,
+    "nameKey": "Batata Bhaji",
+    "nameMr": "बटाटा भाजी प्लेट",
+    "price": 30,
+    "image": "https://images.unsplash.com/photo-1601050690117-94f5f6af8bd3?auto=format&fit=crop&w=500&q=80"
+  }
+]
