@@ -6,13 +6,13 @@ import { useAuth } from '../context/AuthContext';
 import { showAlert } from '../utils/uiUtils';
 
 import {
-  Step1Welcome, Step2BasicInfo, Step3CareerVision,
-  Step4Skills, Step5Interests, Step6Learning,
-  Step7Experience, Step8Links, LiveProfilePreview
+  Step1Welcome, Step2BasicInfo, Step3CareerVision, Step4DreamCompany,
+  Step5Skills, Step6Interests, Step7Learning,
+  Step8Experience, Step9Links, LiveProfilePreview
 } from '../components/onboarding/OnboardingSteps';
-import { Step9AIGeneration, Step10Success } from '../components/onboarding/OnboardingAdvancedSteps';
+import { Step10AIGeneration, Step11Success } from '../components/onboarding/OnboardingAdvancedSteps';
 
-const TOTAL_STEPS = 8; // Steps 1-8 are form steps, 9 is processing, 10 is success
+const TOTAL_STEPS = 9; // Steps 1-9 are form steps, 10 is processing, 11 is success
 
 export default function Onboarding() {
   const { completeOnboarding } = useAuth();
@@ -39,6 +39,10 @@ export default function Onboarding() {
   const cardRef = useRef(null);
   const contentRef = useRef(null);
 
+  const [toastMessage, setToastMessage] = useState(null);
+  const shownToasts = useRef(new Set());
+  const toastRef = useRef(null);
+
   // Load saved state
   useEffect(() => {
     const saved = localStorage.getItem('codovate_onboarding');
@@ -46,7 +50,7 @@ export default function Onboarding() {
       try {
         const parsed = JSON.parse(saved);
         if (parsed.data) setData(parsed.data);
-        if (parsed.step && parsed.step > 1 && parsed.step < 9) setStep(parsed.step);
+        if (parsed.step && parsed.step > 1 && parsed.step <= TOTAL_STEPS) setStep(parsed.step);
       } catch (e) {}
     }
     setIsLoaded(true);
@@ -54,12 +58,35 @@ export default function Onboarding() {
 
   // Auto save
   useEffect(() => {
-    if (isLoaded && step > 1 && step < 9) {
+    if (isLoaded && step > 1 && step <= TOTAL_STEPS) {
       localStorage.setItem('codovate_onboarding', JSON.stringify({ data, step }));
-    } else if (step >= 9) {
+    } else if (step > TOTAL_STEPS) {
       localStorage.removeItem('codovate_onboarding');
     }
   }, [data, step, isLoaded]);
+
+  // Toast Trigger logic
+  useEffect(() => {
+    const showToast = (msg) => {
+      if (shownToasts.current.has(msg)) return;
+      shownToasts.current.add(msg);
+      setToastMessage(msg);
+    };
+
+    if (data.skills.some(s => s.name?.toLowerCase() === 'java' || s === 'Java')) showToast('☕ Java Lover detected!');
+    if (data.career_goal === 'AI Engineer') showToast('🤖 Future AI Engineer loading...');
+    if (data.career_goal === 'Startup Founder') showToast('🚀 Future Unicorn Founder?');
+    if (step === Math.floor(TOTAL_STEPS / 2)) showToast('Halfway there 🎉');
+    if (step === TOTAL_STEPS) showToast('Almost done! 🚀');
+  }, [data, step]);
+
+  useEffect(() => {
+    if (toastMessage && toastRef.current) {
+      gsap.killTweensOf(toastRef.current);
+      gsap.fromTo(toastRef.current, { y: 50, opacity: 0, scale: 0.9 }, { y: 0, opacity: 1, scale: 1, duration: 0.5, ease: 'back.out(1.5)' });
+      gsap.to(toastRef.current, { y: 50, opacity: 0, scale: 0.9, duration: 0.5, delay: 3, onComplete: () => setToastMessage(null) });
+    }
+  }, [toastMessage]);
 
   useEffect(() => {
     if (step > 1 && step <= TOTAL_STEPS && cardRef.current) {
@@ -121,9 +148,9 @@ export default function Onboarding() {
       return;
     }
 
-    if (step < 10) {
+    if (step < TOTAL_STEPS + 2) {
       setIsTransitioning(true);
-      if (contentRef.current && step > 1 && step < 9) {
+      if (contentRef.current && step > 1 && step <= TOTAL_STEPS) {
         const tl = gsap.timeline();
         tl.to(contentRef.current, { x: -30, opacity: 0, duration: 0.2, ease: 'power2.in' })
           .call(() => {
@@ -140,7 +167,7 @@ export default function Onboarding() {
   };
 
   const handleBack = () => {
-    if (isTransitioning || step <= 1 || step >= 9) return;
+    if (isTransitioning || step <= 1 || step > TOTAL_STEPS) return;
     setIsTransitioning(true);
     if (contentRef.current) {
       const tl = gsap.timeline();
@@ -158,7 +185,7 @@ export default function Onboarding() {
     try {
       await api.post('/onboarding/save', { ...data, onboarding_completed: true });
       // Proceed to success screen
-      setStep(10);
+      setStep(TOTAL_STEPS + 2);
     } catch (err) {
       console.error(err);
       showAlert(err.response?.data?.message || 'Failed to save profile');
@@ -208,20 +235,30 @@ export default function Onboarding() {
              <div className="w-16" /> {/* Placeholder for flex balance */}
           </div>
           
-          {/* Node-based Progress */}
-          <div className="w-full max-w-2xl flex items-center justify-between relative px-2">
-             <div className="absolute left-0 top-1/2 -translate-y-1/2 h-0.5 bg-white/5 w-full z-0 rounded-full" />
-             <div className="absolute left-0 top-1/2 -translate-y-1/2 h-0.5 bg-primary z-0 rounded-full transition-all duration-700 ease-out shadow-[0_0_15px_rgba(32,21,255,0.6)]" style={{ width: `${((step - 1) / (TOTAL_STEPS - 1)) * 100}%` }} />
-             
-             {[...Array(TOTAL_STEPS - 1)].map((_, i) => {
-               const isActive = (step - 1) >= (i + 1);
-               const isCurrent = (step - 1) === (i + 1);
-               return (
-                 <div key={i} className={`relative z-10 w-2.5 h-2.5 rounded-full transition-all duration-500 ${isActive ? 'bg-primary shadow-[0_0_12px_rgba(32,21,255,0.8)]' : 'bg-[#1a1a1a] border border-white/20'} ${isCurrent ? 'scale-150 ring-4 ring-primary/20 bg-white' : ''}`} />
-               );
-             })}
+          {/* Text-based Progress Bar */}
+          <div className="w-full max-w-2xl flex flex-col items-center justify-center relative px-2 gap-3 mt-2">
+            <h3 className="text-white font-semibold text-sm">🚀 Building Your Career Workspace</h3>
+            <div className="w-full flex items-center gap-3">
+              <div className="flex-1 h-2 bg-white/10 rounded-full overflow-hidden">
+                <div className="h-full bg-primary transition-all duration-700 ease-out shadow-[0_0_10px_rgba(32,21,255,0.8)]" style={{ width: `${Math.round(((step - 1) / (TOTAL_STEPS - 1)) * 100)}%` }} />
+              </div>
+              <span className="text-primary font-bold text-xs">{Math.round(((step - 1) / (TOTAL_STEPS - 1)) * 100)}% Completed</span>
+            </div>
+            
+            {/* Checklist */}
+            <div className="hidden sm:flex items-center gap-6 text-xs text-gray-500 mt-2">
+              <span className={`transition-colors duration-300 ${step > 3 ? 'text-green-400 font-medium' : ''}`}>
+                {step > 3 ? '✔ Career Goal' : '○ Career Goal'}
+              </span>
+              <span className={`transition-colors duration-300 ${step > 5 ? 'text-green-400 font-medium' : ''}`}>
+                {step > 5 ? '✔ Skills' : '○ Skills'}
+              </span>
+              <span className={`transition-colors duration-300 ${step > 6 ? 'text-green-400 font-medium' : ''}`}>
+                {step > 6 ? '✔ Interests' : '○ Interests'}
+              </span>
+              <span className="animate-pulse text-primary font-medium">⏳ Preparing Dashboard</span>
+            </div>
           </div>
-          <p className="text-[10px] text-gray-500 mt-4 uppercase tracking-[0.2em] font-semibold">Step {step - 1} of {TOTAL_STEPS - 1}</p>
         </div>
       )}
 
@@ -249,32 +286,38 @@ export default function Onboarding() {
                 )}
                 {step === 4 && (
                   <>
-                    <h2 className="text-2xl font-bold text-white mb-6">Current Skills</h2>
-                    <Step4Skills data={data} update={update} />
+                    <h2 className="text-2xl font-bold text-white mb-6">Dream Company</h2>
+                    <Step4DreamCompany data={data} update={update} /> 
                   </>
                 )}
                 {step === 5 && (
                   <>
-                    <h2 className="text-2xl font-bold text-white mb-6">Interests</h2>
-                    <Step5Interests data={data} update={update} />
+                    <h2 className="text-2xl font-bold text-white mb-6">Current Skills</h2>
+                    <Step5Skills data={data} update={update} />
                   </>
                 )}
                 {step === 6 && (
                   <>
-                    <h2 className="text-2xl font-bold text-white mb-6">Learning Preferences</h2>
-                    <Step6Learning data={data} update={update} />
+                    <h2 className="text-2xl font-bold text-white mb-6">Interests</h2>
+                    <Step6Interests data={data} update={update} />
                   </>
                 )}
                 {step === 7 && (
                   <>
-                    <h2 className="text-2xl font-bold text-white mb-6">Experience</h2>
-                    <Step7Experience data={data} update={update} />
+                    <h2 className="text-2xl font-bold text-white mb-6">Learning Preferences</h2>
+                    <Step7Learning data={data} update={update} />
                   </>
                 )}
                 {step === 8 && (
                   <>
+                    <h2 className="text-2xl font-bold text-white mb-6">Experience</h2>
+                    <Step8Experience data={data} update={update} />
+                  </>
+                )}
+                {step === 9 && (
+                  <>
                     <h2 className="text-2xl font-bold text-white mb-6">Professional Links</h2>
-                    <Step8Links data={data} update={update} />
+                    <Step9Links data={data} update={update} />
                   </>
                 )}
                 
@@ -291,17 +334,26 @@ export default function Onboarding() {
             </div>
             
             {/* Live Profile Preview - Hidden on small screens */}
-            {step > 1 && step <= 8 && (
+            {step > 1 && step <= TOTAL_STEPS && (
               <div className="hidden lg:block w-full max-w-sm sticky top-8">
-                <LiveProfilePreview data={data} step={step} />
+                <LiveProfilePreview data={data} step={step} totalSteps={TOTAL_STEPS} />
               </div>
             )}
           </div>
         )}
 
-        {step === 9 && <Step9AIGeneration onComplete={submitProfile} />}
-        {step === 10 && <Step10Success data={data} onFinish={finishOnboarding} />}
+        {step === TOTAL_STEPS + 1 && <Step10AIGeneration onComplete={submitProfile} />}
+        {step === TOTAL_STEPS + 2 && <Step11Success data={data} onFinish={finishOnboarding} />}
 
+      </div>
+
+      {/* GSAP Toaster */}
+      <div 
+        ref={toastRef} 
+        className="fixed bottom-8 right-8 z-50 bg-[#0a0a0a]/90 backdrop-blur-xl border border-white/20 rounded-2xl px-6 py-4 shadow-[0_10px_40px_rgba(32,21,255,0.3)] pointer-events-none"
+        style={{ opacity: 0, transform: 'translateY(50px) scale(0.9)' }}
+      >
+        <span className="text-white font-bold text-sm tracking-wide">{toastMessage}</span>
       </div>
     </div>
   );

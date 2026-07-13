@@ -68,34 +68,37 @@ export const Step1Welcome = ({ onNext }) => {
     const tl = gsap.timeline();
     tl.fromTo(".welcome-title", { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" })
       .fromTo(".welcome-subtitle", { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, "-=0.4")
-      .fromTo(".welcome-desc", { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, "-=0.4")
       .fromTo(".welcome-benefit", { x: -20, opacity: 0 }, { x: 0, opacity: 1, stagger: 0.1, duration: 0.5, ease: "power2.out" }, "-=0.2")
       .fromTo(".welcome-btn", { scale: 0.9, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }, "-=0.2");
   }, []);
 
   return (
-    <div ref={containerRef} className="flex flex-col items-center justify-center text-center py-8">
-      <h1 className="welcome-title text-4xl font-bold text-white mb-2">Welcome to Codovate 👋</h1>
-      <h2 className="welcome-subtitle text-xl font-semibold text-primary mb-4">Your AI Career Operating System</h2>
-      <p className="welcome-desc text-gray-400 max-w-md mx-auto mb-8 text-sm">
-        We'll personalize your learning journey, career roadmap, opportunities and dashboard.
-      </p>
+    <div ref={containerRef} className="flex flex-col items-center justify-center text-center py-8 w-full">
+      <h1 className="welcome-title text-4xl sm:text-5xl font-bold text-white mb-2 tracking-tight">Let's build your AI Career Workspace.</h1>
+      <p className="welcome-subtitle text-gray-400 mt-4 text-lg">Your personalized ecosystem for learning, building, and getting hired.</p>
       
-      <div className="text-left space-y-3 mb-10">
-        {['Personalized Dashboard', 'AI Career Roadmap', 'Smart Recommendations', 'Coding Practice', 'Resume Insights', 'Internship Suggestions'].map((benefit, i) => (
-          <div key={i} className="welcome-benefit flex items-center gap-3 text-gray-300">
-            <div className="w-5 h-5 rounded-full bg-green-500/20 text-green-400 flex items-center justify-center shrink-0">
-              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-            <span className="text-sm font-medium">{benefit}</span>
+      <div className="text-left mt-10 mb-12 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 w-full max-w-2xl mx-auto">
+        {[
+          { label: 'AI Career Roadmap', icon: '🚀' },
+          { label: 'Coding Practice', icon: '💻' },
+          { label: 'Resume Builder', icon: '📄' },
+          { label: 'Placement Readiness', icon: '🎯' },
+          { label: 'Team Matching', icon: '👥' },
+          { label: 'Mentor Recommendations', icon: '🎓' },
+          { label: 'AI Career Coach', icon: '✨' }
+        ].map((benefit, i) => (
+          <div key={i} className="welcome-benefit flex items-center gap-4 text-gray-300 bg-white/5 px-5 py-4 rounded-2xl border border-white/10 hover:border-white/20 transition-all hover:-translate-y-1 hover:shadow-lg hover:shadow-white/5">
+            <span className="text-2xl">{benefit.icon}</span>
+            <span className="text-sm font-semibold">{benefit.label}</span>
           </div>
         ))}
       </div>
 
-      <button onClick={onNext} className="welcome-btn bg-primary hover:bg-primary-hover text-white font-bold py-4 px-10 rounded-xl transition-all shadow-lg shadow-primary/30 hover:shadow-primary/50 hover:scale-105 w-full sm:w-auto">
-        Let's Get Started
+      <button onClick={onNext} className="welcome-btn bg-primary hover:bg-primary-hover text-white font-bold py-4 px-12 rounded-xl transition-all shadow-[0_0_20px_rgba(32,21,255,0.4)] hover:shadow-[0_0_30px_rgba(32,21,255,0.6)] hover:scale-105 w-full sm:w-auto text-lg flex items-center justify-center gap-3">
+        Start My Journey
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+        </svg>
       </button>
     </div>
   );
@@ -103,38 +106,69 @@ export const Step1Welcome = ({ onNext }) => {
 
 // Screen 2: Basic Information
 export const Step2BasicInfo = ({ data, update, touched, handleBlur, errors }) => {
-  const handlePhotoUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      if (file.size > 2 * 1024 * 1024) {
-        alert('File size must be less than 2MB');
-        return;
-      }
-      const reader = new FileReader();
-      reader.onloadend = () => update('profile_photo', reader.result);
-      reader.readAsDataURL(file);
+  const fileInputRef = useRef(null);
+  const [dragActive, setDragActive] = useState(false);
+
+  const handleDrag = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") setDragActive(true);
+    else if (e.type === "dragleave") setDragActive(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleFile(e.dataTransfer.files[0]);
     }
   };
 
+  const handleChange = (e) => {
+    e.preventDefault();
+    if (e.target.files && e.target.files[0]) {
+      handleFile(e.target.files[0]);
+    }
+  };
+
+  const handleFile = (file) => {
+    if (file.size > 2 * 1024 * 1024) {
+      alert('File size must be less than 2MB');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onloadend = () => update('profile_photo', reader.result);
+    reader.readAsDataURL(file);
+  };
+
+  const removePhoto = () => update('profile_photo', null);
+
   return (
     <div className="space-y-4">
-      <div className="flex flex-col items-center mb-6">
-        <div className="relative group cursor-pointer mb-2">
-          <div className="w-24 h-24 rounded-full border-2 border-white/10 bg-[#0a0a0a] overflow-hidden flex items-center justify-center relative">
-            {data.profile_photo ? (
-              <img src={data.profile_photo} alt="Profile" className="w-full h-full object-cover" />
-            ) : (
-              <svg className="w-10 h-10 text-gray-600" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />
-              </svg>
-            )}
-            <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-              <span className="text-xs text-white font-medium">Upload</span>
+      <div className="flex flex-col items-center mb-8 w-full">
+        <div 
+          className={`relative group w-32 h-32 rounded-full border-4 flex items-center justify-center overflow-hidden transition-all duration-300 cursor-pointer ${dragActive ? 'border-primary bg-primary/10 scale-105' : 'border-white/10 bg-[#0a0a0a] hover:border-white/30'}`}
+          onDragEnter={handleDrag} onDragLeave={handleDrag} onDragOver={handleDrag} onDrop={handleDrop}
+          onClick={() => fileInputRef.current?.click()}
+        >
+          {data.profile_photo ? (
+            <img src={data.profile_photo} alt="Profile" className="w-full h-full object-cover" />
+          ) : (
+            <div className="text-center">
+              <span className="text-3xl block mb-1">📸</span>
+              <span className="text-[10px] text-gray-500 font-medium uppercase tracking-wider">Upload</span>
             </div>
-            <input type="file" accept="image/*" onChange={handlePhotoUpload} className="absolute inset-0 opacity-0 cursor-pointer" />
+          )}
+          <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+             <span className="text-white text-xs font-semibold">{data.profile_photo ? 'Change Photo' : 'Choose Photo'}</span>
+             <span className="text-gray-400 text-[10px] mt-1 hidden sm:block">or drag & drop</span>
           </div>
+          <input ref={fileInputRef} type="file" accept="image/*" onChange={handleChange} className="hidden" />
         </div>
-        <span className="text-xs text-gray-500">Profile Photo (Optional)</span>
+        {data.profile_photo && (
+          <button onClick={removePhoto} className="mt-3 text-xs text-red-400 hover:text-red-300 font-medium transition-colors">Remove Photo</button>
+        )}
       </div>
 
       <InputField label="Full Name" field="full_name" placeholder="John Doe" required data={data} update={update} handleBlur={handleBlur} touched={touched} errors={errors} />
@@ -168,47 +202,86 @@ export const Step2BasicInfo = ({ data, update, touched, handleBlur, errors }) =>
 // Screen 3: Career Vision
 export const Step3CareerVision = ({ data, update }) => {
   const CAREERS = [
-    { title: 'Backend Developer', icon: '⚙️', desc: 'Build APIs, databases, and server logic.' },
-    { title: 'Frontend Developer', icon: '🎨', desc: 'Create beautiful user interfaces.' },
-    { title: 'Full Stack', icon: '🥞', desc: 'Master both frontend and backend.' },
-    { title: 'AI Engineer', icon: '🧠', desc: 'Build machine learning models.' },
-    { title: 'Data Scientist', icon: '📊', desc: 'Extract insights from data.' },
-    { title: 'Cyber Security', icon: '🛡️', desc: 'Protect systems and networks.' },
-  ];
-  const PLACEMENTS = [
-    { title: '3 Months', icon: '🔥' },
-    { title: '6 Months', icon: '⚡' },
-    { title: '12 Months', icon: '🌱' },
-    { title: 'No Timeline', icon: '☕' }
+    { title: 'Backend Developer', icon: '⚙️', desc: 'Build APIs, databases, and server logic.', salary: '$120k+', trending: 'High Demand', demandIcon: '🔥' },
+    { title: 'Frontend Developer', icon: '🎨', desc: 'Create beautiful user interfaces.', salary: '$110k+', trending: 'Hot', demandIcon: '📈' },
+    { title: 'Full Stack', icon: '🥞', desc: 'Master both frontend and backend.', salary: '$130k+', trending: 'Very High', demandIcon: '🚀' },
+    { title: 'AI Engineer', icon: '🧠', desc: 'Build machine learning models.', salary: '$150k+', trending: 'Exploding', demandIcon: '💥' },
+    { title: 'Data Scientist', icon: '📊', desc: 'Extract insights from data.', salary: '$140k+', trending: 'High', demandIcon: '💹' },
+    { title: 'Cyber Security', icon: '🛡️', desc: 'Protect systems and networks.', salary: '$125k+', trending: 'Crucial', demandIcon: '🔒' },
+    { title: 'Startup Founder', icon: '🦄', desc: 'Build the next big thing.', salary: 'Limitless', trending: 'High Risk/Reward', demandIcon: '🚀' },
+    { title: 'Product Manager', icon: '📱', desc: 'Lead product strategy and vision.', salary: '$135k+', trending: 'High', demandIcon: '⭐' }
   ];
 
   return (
     <div className="space-y-8">
       <div>
-        <label className="block text-sm font-semibold text-white mb-4">What do you want to become?</label>
-        <div className="grid grid-cols-2 gap-4">
+        <label className="block text-sm font-semibold text-white mb-4">What do you dream of becoming?</label>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {CAREERS.map(c => (
-            <InteractiveCard 
+            <button 
               key={c.title} 
-              title={c.title} 
-              icon={c.icon} 
-              description={c.desc} 
-              selected={data.career_goal === c.title} 
+              type="button" 
               onClick={() => update('career_goal', c.title)} 
-            />
+              className={`group relative flex flex-col items-start p-5 rounded-2xl border text-left transition-all duration-300 overflow-hidden ${
+                data.career_goal === c.title 
+                  ? 'bg-primary/10 border-primary shadow-[0_0_20px_rgba(32,21,255,0.15)] scale-[1.02] z-10' 
+                  : 'bg-white/5 border-white/10 hover:border-white/30 hover:bg-white/10 hover:-translate-y-1'
+              }`}
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              
+              <div className="flex w-full justify-between items-start mb-3 relative z-10">
+                <div className={`text-3xl transition-transform duration-300 ${data.career_goal === c.title ? 'scale-110' : 'group-hover:scale-110'}`}>
+                  {c.icon}
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-green-400 bg-green-400/10 px-2 py-1 rounded-full flex items-center gap-1">
+                    {c.demandIcon} {c.trending}
+                  </span>
+                  <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-all duration-300 ${data.career_goal === c.title ? 'border-primary bg-primary scale-110' : 'border-white/20'}`}>
+                    {data.career_goal === c.title && <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>}
+                  </div>
+                </div>
+              </div>
+              
+              <h3 className={`font-semibold text-base mb-1 relative z-10 transition-colors duration-300 ${data.career_goal === c.title ? 'text-white' : 'text-gray-200 group-hover:text-white'}`}>{c.title}</h3>
+              <p className="text-xs text-gray-500 mb-3 relative z-10">{c.desc}</p>
+              <div className="text-xs font-medium text-gray-400 relative z-10 mt-auto">Avg. Salary: <span className="text-white">{c.salary}</span></div>
+            </button>
           ))}
         </div>
       </div>
+    </div>
+  );
+};
+
+// Screen 4: Dream Company
+export const Step4DreamCompany = ({ data, update }) => {
+  const COMPANIES = [
+    { title: 'Google', icon: 'G' },
+    { title: 'Microsoft', icon: 'M' },
+    { title: 'Amazon', icon: 'A' },
+    { title: 'Adobe', icon: 'Ad' },
+    { title: 'Netflix', icon: 'N' },
+    { title: 'Apple', icon: 'Ap' },
+    { title: 'OpenAI', icon: 'O' },
+    { title: 'Startup', icon: '🚀' },
+    { title: 'Own Startup', icon: '🦄' },
+    { title: 'Other', icon: '🏢' }
+  ];
+
+  return (
+    <div className="space-y-8">
       <div>
-        <label className="block text-sm font-semibold text-white mb-4">Placement Goal</label>
-        <div className="grid grid-cols-2 gap-4">
-          {PLACEMENTS.map(p => (
+        <label className="block text-sm font-semibold text-white mb-4">What is your dream company?</label>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+          {COMPANIES.map(c => (
             <InteractiveCard 
-              key={p.title} 
-              title={p.title} 
-              icon={p.icon} 
-              selected={data.placement_goal === p.title} 
-              onClick={() => update('placement_goal', p.title)} 
+              key={c.title} 
+              title={c.title} 
+              icon={<span className="text-xl font-bold bg-white/10 w-10 h-10 rounded-xl flex items-center justify-center text-white">{c.icon}</span>} 
+              selected={data.dream_company === c.title} 
+              onClick={() => update('dream_company', c.title)} 
             />
           ))}
         </div>
@@ -217,10 +290,11 @@ export const Step3CareerVision = ({ data, update }) => {
   );
 };
 
-// Screen 4: Current Skills
-export const Step4Skills = ({ data, update }) => {
-  const TECH = ['Java', 'Python', 'React', 'Node', 'SQL', 'Firebase', 'Spring Boot', 'Flutter', 'AWS', 'Docker', 'Git', 'MongoDB'];
+// Screen 5: Current Skills
+export const Step5Skills = ({ data, update }) => {
+  const TECH = ['Java', 'Python', 'React', 'Node', 'SQL', 'Firebase', 'Spring Boot', 'Flutter', 'AWS', 'Docker', 'Git', 'GitHub', 'Linux', 'Networking', 'Cyber Security', 'MongoDB'];
   const [customSkill, setCustomSkill] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
 
   const hasSkill = (name) => data.skills.some(s => s.name === name);
   const getSkillLevel = (name) => {
@@ -240,53 +314,93 @@ export const Step4Skills = ({ data, update }) => {
     update('skills', data.skills.map(s => s.name === name ? { ...s, level } : s));
   };
 
-  const addCustom = () => {
+  const addCustom = (e) => {
+    e?.preventDefault();
     if (customSkill.trim() && !hasSkill(customSkill.trim())) {
       update('skills', [...data.skills, { name: customSkill.trim(), level: 'Beginner' }]);
       setCustomSkill('');
     }
   };
 
+  const filteredTech = TECH.filter(t => t.toLowerCase().includes(searchTerm.toLowerCase()));
+
   return (
     <div className="space-y-6">
+      <div className="relative">
+        <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        <input 
+          type="text" 
+          value={searchTerm} 
+          onChange={e => setSearchTerm(e.target.value)} 
+          placeholder="Search technologies..." 
+          className="w-full bg-white/5 border border-white/10 rounded-xl pl-12 pr-4 py-3.5 text-white text-sm focus:outline-none focus:border-primary transition-colors"
+        />
+      </div>
+
       <div>
-        <label className="block text-sm font-semibold text-white mb-3">Which technologies do you already know?</label>
-        <div className="flex flex-wrap gap-2 mb-4">
-          {TECH.map(t => (
-            <button key={t} type="button" onClick={() => toggleSkill(t)} className={`px-4 py-2 rounded-full border text-sm transition-all ${hasSkill(t) ? 'bg-primary/20 border-primary text-white' : 'bg-white/5 border-white/10 text-gray-400'}`}>
+        <div className="flex flex-wrap gap-2.5 max-h-[200px] overflow-y-auto pr-2 custom-scrollbar">
+          {filteredTech.map(t => (
+            <button 
+              key={t} 
+              type="button" 
+              onClick={() => toggleSkill(t)} 
+              className={`px-4 py-2 rounded-full border text-sm font-medium transition-all duration-300 ${
+                hasSkill(t) 
+                  ? 'bg-primary border-primary text-white shadow-[0_0_15px_rgba(32,21,255,0.3)] scale-105' 
+                  : 'bg-white/5 border-white/10 text-gray-400 hover:border-white/30 hover:bg-white/10'
+              }`}
+            >
               {t} {hasSkill(t) && '✓'}
             </button>
           ))}
-        </div>
-        <div className="flex gap-2">
-          <input type="text" value={customSkill} onChange={e => setCustomSkill(e.target.value)} placeholder="Add custom skill" className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-primary" />
-          <button type="button" onClick={addCustom} className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl text-sm font-medium transition-all">Add</button>
+          {searchTerm && !filteredTech.length && (
+            <p className="text-sm text-gray-500 py-2">No predefined skills found.</p>
+          )}
         </div>
       </div>
+      
+      <form onSubmit={addCustom} className="flex gap-2">
+        <input type="text" value={customSkill} onChange={e => setCustomSkill(e.target.value)} placeholder="Add custom skill" className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-primary transition-colors" />
+        <button type="submit" className="bg-white/10 hover:bg-white/20 text-white px-6 py-3 rounded-xl text-sm font-medium transition-all hover:scale-105">Add</button>
+      </form>
 
       {data.skills.length > 0 && (
-        <div className="space-y-3 mt-6 p-4 bg-white/5 border border-white/10 rounded-xl">
+        <div className="mt-4 p-4 bg-primary/10 border border-primary/20 rounded-xl flex items-center gap-3">
+          <span className="text-2xl">🚀</span>
+          <div>
+            <p className="text-primary font-bold">Awesome!</p>
+            <p className="text-sm text-primary/80">You already know {data.skills.length} skill{data.skills.length > 1 ? 's' : ''}. Set their levels below.</p>
+          </div>
+        </div>
+      )}
+
+      {data.skills.length > 0 && (
+        <div className="space-y-3 mt-6">
           <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Proficiency Levels</label>
-          {data.skills.map(s => (
-            <div key={s.name} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-black/40 rounded-lg">
-              <span className="text-white font-medium">{s.name}</span>
-              <div className="flex bg-white/5 rounded-lg overflow-hidden border border-white/10">
-                {['Beginner', 'Intermediate', 'Advanced'].map(l => (
-                  <button key={l} type="button" onClick={() => setLevel(s.name, l)} className={`px-3 py-1.5 text-xs font-medium transition-all ${s.level === l ? 'bg-primary text-white' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}>
-                    {l}
-                  </button>
-                ))}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {data.skills.map(s => (
+              <div key={s.name} className="flex flex-col gap-2 p-4 bg-white/5 border border-white/10 rounded-xl transition-colors hover:border-white/20">
+                <span className="text-white font-semibold">{s.name}</span>
+                <div className="flex bg-black/40 rounded-lg p-1">
+                  {['Beginner', 'Intermediate', 'Advanced'].map(l => (
+                    <button key={l} type="button" onClick={() => setLevel(s.name, l)} className={`flex-1 px-2 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-md transition-all ${s.level === l ? 'bg-primary text-white shadow-md' : 'text-gray-500 hover:text-white hover:bg-white/10'}`}>
+                      {l}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       )}
     </div>
   );
 };
 
-// Screen 5: Interests
-export const Step5Interests = ({ data, update }) => {
+// Screen 6: Interests
+export const Step6Interests = ({ data, update }) => {
   const INTERESTS = [
     { title: 'Internship', icon: '🏢' },
     { title: 'Job', icon: '💼' },
@@ -319,8 +433,8 @@ export const Step5Interests = ({ data, update }) => {
   );
 };
 
-// Screen 6: Learning Preferences
-export const Step6Learning = ({ data, update }) => {
+// Screen 7: Learning Preferences
+export const Step7Learning = ({ data, update }) => {
   const STYLES = [
     { title: 'Videos', icon: '🎬' },
     { title: 'Projects', icon: '🛠️' },
@@ -333,11 +447,17 @@ export const Step6Learning = ({ data, update }) => {
     { title: '2 Hours', icon: '🕰️' },
     { title: '3+ Hours', icon: '🚀' }
   ];
+  const PLACEMENTS = [
+    { title: '3 Months', icon: '🔥' },
+    { title: '6 Months', icon: '⚡' },
+    { title: '12 Months', icon: '🌱' },
+    { title: 'No deadline', icon: '☕' }
+  ];
 
   return (
     <div className="space-y-8">
       <div>
-        <label className="block text-sm font-semibold text-white mb-4">Preferred Learning Style</label>
+        <label className="block text-sm font-semibold text-white mb-4">How do you love learning?</label>
         <div className="grid grid-cols-2 gap-4">
           {STYLES.map(s => (
             <InteractiveCard key={s.title} title={s.title} icon={s.icon} selected={data.learning_style === s.title} onClick={() => update('learning_style', s.title)} />
@@ -352,12 +472,26 @@ export const Step6Learning = ({ data, update }) => {
           ))}
         </div>
       </div>
+      <div>
+        <label className="block text-sm font-semibold text-white mb-4">Placement Goal</label>
+        <div className="grid grid-cols-2 gap-4">
+          {PLACEMENTS.map(p => (
+            <InteractiveCard 
+              key={p.title} 
+              title={p.title} 
+              icon={p.icon} 
+              selected={data.placement_goal === p.title} 
+              onClick={() => update('placement_goal', p.title)} 
+            />
+          ))}
+        </div>
+      </div>
     </div>
   );
 };
 
-// Screen 7: Experience
-export const Step7Experience = ({ data, update }) => {
+// Screen 8: Experience
+export const Step8Experience = ({ data, update }) => {
   const LEVELS = [
     { title: 'Beginner', icon: '👶', desc: 'Just starting out.' },
     { title: 'Intermediate', icon: '🧑‍💻', desc: 'Built a few things.' },
@@ -389,16 +523,17 @@ export const Step7Experience = ({ data, update }) => {
   );
 };
 
-// Screen 8: Professional Links
-export const Step8Links = ({ data, update }) => {
+// Screen 9: Professional Links
+export const Step9Links = ({ data, update }) => {
   return (
     <div className="space-y-4">
       <InputField label="GitHub URL" field="github_url" placeholder="https://github.com/..." optional data={data} update={update} touched={{}} errors={{}} />
       <InputField label="LinkedIn URL" field="linkedin_url" placeholder="https://linkedin.com/in/..." optional data={data} update={update} touched={{}} errors={{}} />
       <InputField label="Portfolio URL" field="portfolio_url" placeholder="https://yourwebsite.com" optional data={data} update={update} touched={{}} errors={{}} />
-      <div className="grid grid-cols-2 gap-4 pt-2">
-        <InputField label="LeetCode URL" field="leetcode_url" placeholder="https://leetcode.com/..." optional data={data} update={update} touched={{}} errors={{}} />
-        <InputField label="CodeChef URL" field="codechef_url" placeholder="https://codechef.com/..." optional data={data} update={update} touched={{}} errors={{}} />
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+        <InputField label="LeetCode" field="leetcode_url" placeholder="https://leetcode.com/..." optional data={data} update={update} touched={{}} errors={{}} />
+        <InputField label="CodeChef" field="codechef_url" placeholder="https://codechef.com/..." optional data={data} update={update} touched={{}} errors={{}} />
+        <InputField label="HackerRank" field="hackerrank_url" placeholder="https://hackerrank.com/..." optional data={data} update={update} touched={{}} errors={{}} />
       </div>
       <div className="pt-4 border-t border-white/10">
         <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">Resume Upload <span className="text-gray-500 font-normal normal-case">(Optional)</span></label>

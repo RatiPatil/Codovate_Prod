@@ -2,9 +2,10 @@ import React, { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import confetti from 'canvas-confetti';
 
-// Screen 9: AI Workspace Generation
-export const Step9AIGeneration = ({ onComplete }) => {
+// Screen 10: AI Workspace Generation
+export const Step10AIGeneration = ({ onComplete }) => {
   const listRef = useRef(null);
+  const containerRef = useRef(null);
 
   useEffect(() => {
     const items = listRef.current.children;
@@ -12,6 +13,24 @@ export const Step9AIGeneration = ({ onComplete }) => {
       onComplete: () => {
         setTimeout(onComplete, 1000);
       }
+    });
+
+    // Particle Animation
+    gsap.utils.toArray(".ai-particle").forEach(particle => {
+      gsap.fromTo(particle, 
+        { x: 0, y: 0, opacity: 0, scale: 0 },
+        {
+          x: () => (Math.random() * 300 - 150),
+          y: () => (Math.random() * 300 - 150),
+          opacity: () => Math.random() * 0.6 + 0.2,
+          scale: () => Math.random() * 2 + 0.5,
+          duration: () => Math.random() * 2 + 1.5,
+          ease: "power2.out",
+          repeat: -1,
+          yoyo: true,
+          delay: () => Math.random() * 2
+        }
+      );
     });
 
     tl.fromTo(".ai-title", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.5 })
@@ -38,10 +57,17 @@ export const Step9AIGeneration = ({ onComplete }) => {
   ];
 
   return (
-    <div className="flex flex-col items-center justify-center py-12">
-      <div className="ai-spinner w-16 h-16 rounded-full border-4 border-white/10 border-t-primary mb-6 animate-spin" />
-      <h2 className="ai-title text-2xl font-bold text-white mb-8">🧠 Building Your AI Career Workspace</h2>
-      <div ref={listRef} className="space-y-4 text-left w-full max-w-xs">
+    <div ref={containerRef} className="flex flex-col items-center justify-center py-12 relative w-full overflow-hidden">
+      {/* Particles Container */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        {[...Array(20)].map((_, i) => (
+          <div key={i} className="ai-particle absolute w-2 h-2 bg-primary rounded-full shadow-[0_0_10px_rgba(32,21,255,0.8)]" />
+        ))}
+      </div>
+
+      <div className="ai-spinner w-16 h-16 rounded-full border-4 border-white/10 border-t-primary mb-6 animate-spin relative z-10 bg-[#0a0a0a] shadow-[0_0_30px_rgba(32,21,255,0.3)]" />
+      <h2 className="ai-title text-2xl font-bold text-white mb-8 relative z-10">🧠 Building Your AI Career Workspace</h2>
+      <div ref={listRef} className="space-y-4 text-left w-full max-w-xs relative z-10 bg-[#0a0a0a]/80 backdrop-blur-sm p-4 rounded-xl border border-white/5">
         {tasks.map((t, i) => (
           <div key={i} className="flex items-center gap-3 opacity-0 -translate-x-4" style={{ transform: 'translateX(-16px)' }}>
             <div className="check-icon w-5 h-5 rounded-full bg-green-500/20 text-green-400 flex items-center justify-center shrink-0 scale-0 opacity-0">
@@ -53,13 +79,13 @@ export const Step9AIGeneration = ({ onComplete }) => {
           </div>
         ))}
       </div>
-      <p className="ai-almost text-primary font-semibold mt-8 text-sm">Almost Ready...</p>
+      <p className="ai-almost text-primary font-semibold mt-8 text-sm relative z-10">Almost Ready...</p>
     </div>
   );
 };
 
-// Screen 10: Success Screen
-export const Step10Success = ({ data, onFinish }) => {
+// Screen 11: Success Screen
+export const Step11Success = ({ data, onFinish }) => {
   const navigate = require('react-router-dom').useNavigate();
 
   useEffect(() => {
