@@ -110,13 +110,28 @@ export const Step10Success = ({ data, onFinish }) => {
           <span className="text-primary font-semibold text-sm">{todaysGoal}</span>
         </div>
         <div className="bg-primary/10 rounded-xl p-4 mt-2 border border-primary/20">
-          <p className="text-xs text-primary font-semibold uppercase tracking-wider mb-1">Suggested Learning Path</p>
+          <p className="text-xs text-primary font-semibold uppercase tracking-wider mb-2">Recommended Learning</p>
           <div className="flex items-center gap-2 text-sm text-white flex-wrap">
-            <span>{firstSkill}</span>
+            <span className="bg-black/30 px-2 py-1 rounded">{firstSkill}</span>
             <span className="text-gray-500">→</span>
-            <span>{data.skills?.[1]?.name || 'Advanced'}</span>
+            <span className="bg-black/30 px-2 py-1 rounded">{data.skills?.[1]?.name || 'Advanced'}</span>
             <span className="text-gray-500">→</span>
-            <span>Projects</span>
+            <span className="bg-black/30 px-2 py-1 rounded">Projects</span>
+          </div>
+        </div>
+
+        <div className="bg-white/5 rounded-xl p-4 mt-2 border border-white/10 space-y-3">
+          <div className="flex justify-between items-center">
+            <span className="text-gray-400 text-xs flex items-center gap-1.5"><span className="text-primary">💼</span> Suggested Opportunity</span>
+            <span className="text-white font-medium text-xs">{data.career_goal || 'Backend'} Internship</span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-gray-400 text-xs flex items-center gap-1.5"><span className="text-primary">🤝</span> Suggested Mentor</span>
+            <span className="text-white font-medium text-xs">{firstSkill} Expert</span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-gray-400 text-xs flex items-center gap-1.5"><span className="text-primary">👥</span> Suggested Team</span>
+            <span className="text-white font-medium text-xs">{data.career_goal?.split(' ')[0] || 'Tech'} Enthusiasts</span>
           </div>
         </div>
       </div>

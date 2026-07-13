@@ -177,36 +177,52 @@ export default function Onboarding() {
   // Render logic
   return (
     <div className="min-h-screen bg-black flex flex-col relative overflow-x-hidden overflow-y-auto">
-      {/* Background */}
-      <div className="absolute inset-0 pointer-events-none"
-        style={{ background: 'radial-gradient(ellipse at 50% 0%, rgba(32,21,255,0.10) 0%, transparent 60%)' }} />
-      <div className="absolute inset-0 pointer-events-none opacity-[0.07]"
-        style={{ backgroundImage: `linear-gradient(rgba(32,21,255,0.8) 1px, transparent 1px), linear-gradient(90deg, rgba(32,21,255,0.8) 1px, transparent 1px)`, backgroundSize: '50px 50px' }} />
+      {/* Background with CSS Animation */}
+      <style>{`
+        @keyframes slowGradient {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        .animated-bg {
+          background: linear-gradient(-45deg, rgba(32,21,255,0.05), rgba(10,10,30,0.8), rgba(0,0,0,1), rgba(32,21,255,0.08));
+          background-size: 400% 400%;
+          animation: slowGradient 20s ease infinite;
+        }
+      `}</style>
+      <div className="absolute inset-0 pointer-events-none animated-bg" />
+      <div className="absolute inset-0 pointer-events-none opacity-[0.05]"
+        style={{ backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`, backgroundSize: '60px 60px' }} />
 
       {/* Top Bar for Steps 2-8 */}
       {step > 1 && step <= TOTAL_STEPS && (
-        <>
-          <div className="relative z-10 flex items-center justify-between px-6 py-4 border-b border-white/5 bg-black/40 backdrop-blur-sm">
-            <div className="flex items-center gap-4">
-              <button onClick={handleBack} className="text-gray-400 hover:text-white transition-colors">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="relative z-20 px-6 py-5 border-b border-white/5 bg-black/40 backdrop-blur-xl flex flex-col items-center shadow-lg">
+          <div className="w-full max-w-5xl flex items-center justify-between mb-6">
+             <button onClick={handleBack} className="text-gray-400 hover:text-white transition-colors flex items-center gap-2 group">
+                <svg className="w-5 h-5 group-hover:-translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                 </svg>
-              </button>
-              <span className="text-white font-bold text-lg hidden sm:block">Codovate</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <span className="text-gray-500 text-sm hidden sm:block">AI Career Setup</span>
-              <div className="bg-white/5 border border-white/10 rounded-full px-3 py-1">
-                <span className="text-white text-xs font-bold">{step - 1}</span>
-                <span className="text-gray-500 text-xs">/{TOTAL_STEPS - 1}</span>
-              </div>
-            </div>
+                <span className="text-sm font-medium hidden sm:block">Back</span>
+             </button>
+             <span className="text-white font-bold text-xl tracking-wider">Codovate</span>
+             <div className="w-16" /> {/* Placeholder for flex balance */}
           </div>
-          <div className="relative z-10 h-0.5 bg-white/5">
-            <div className="h-full bg-primary transition-all duration-700 ease-out shadow-lg shadow-primary/50" style={{ width: `${((step - 1) / (TOTAL_STEPS - 1)) * 100}%` }} />
+          
+          {/* Node-based Progress */}
+          <div className="w-full max-w-2xl flex items-center justify-between relative px-2">
+             <div className="absolute left-0 top-1/2 -translate-y-1/2 h-0.5 bg-white/5 w-full z-0 rounded-full" />
+             <div className="absolute left-0 top-1/2 -translate-y-1/2 h-0.5 bg-primary z-0 rounded-full transition-all duration-700 ease-out shadow-[0_0_15px_rgba(32,21,255,0.6)]" style={{ width: `${((step - 1) / (TOTAL_STEPS - 1)) * 100}%` }} />
+             
+             {[...Array(TOTAL_STEPS - 1)].map((_, i) => {
+               const isActive = (step - 1) >= (i + 1);
+               const isCurrent = (step - 1) === (i + 1);
+               return (
+                 <div key={i} className={`relative z-10 w-2.5 h-2.5 rounded-full transition-all duration-500 ${isActive ? 'bg-primary shadow-[0_0_12px_rgba(32,21,255,0.8)]' : 'bg-[#1a1a1a] border border-white/20'} ${isCurrent ? 'scale-150 ring-4 ring-primary/20 bg-white' : ''}`} />
+               );
+             })}
           </div>
-        </>
+          <p className="text-[10px] text-gray-500 mt-4 uppercase tracking-[0.2em] font-semibold">Step {step - 1} of {TOTAL_STEPS - 1}</p>
+        </div>
       )}
 
       {/* Content Area */}

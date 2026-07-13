@@ -1,30 +1,63 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 
-// Shared Input Field
-export const InputField = ({ label, field, placeholder, type = 'text', required = false, optional = false, data, update, handleBlur, touched, errors }) => (
-  <div>
-    <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">
-      {label} {required && <span className="text-red-400">*</span>} {optional && <span className="text-gray-500 font-normal normal-case">(Optional)</span>}
-    </label>
-    <input
-      type={type}
-      value={data[field] || ''}
-      onChange={e => update(field, e.target.value)}
-      onBlur={() => handleBlur && handleBlur(field)}
-      placeholder={placeholder}
-      className={`w-full bg-white/5 border rounded-xl px-4 py-3.5 text-white placeholder-gray-600 text-sm focus:outline-none focus:ring-2 transition-all duration-200 ${
-        errors && errors[field] && touched && touched[field]
-          ? 'border-red-500/60 focus:ring-red-500/20 focus:border-red-500'
-          : 'border-white/10 focus:ring-primary/20 focus:border-primary'
-      }`}
-    />
-    {errors && errors[field] && touched && touched[field] && (
-      <p className="text-red-400 text-xs mt-1.5 flex items-center gap-1">
-        <span>⚠</span> {errors[field]}
-      </p>
-    )}
-  </div>
+// Shared Input Field with Floating Label
+export const InputField = ({ label, field, type = 'text', required = false, optional = false, data, update, handleBlur, touched, errors }) => {
+  const hasValue = data[field] && data[field].toString().length > 0;
+  const isError = errors && errors[field] && touched && touched[field];
+  
+  return (
+    <div className="relative group mb-5">
+      <input
+        type={type}
+        id={field}
+        value={data[field] || ''}
+        onChange={e => update(field, e.target.value)}
+        onBlur={() => handleBlur && handleBlur(field)}
+        className={`block w-full bg-white/5 border rounded-xl px-4 pt-5 pb-2 text-white text-sm focus:outline-none transition-all duration-300 peer ${
+          isError ? 'border-red-500/60 focus:border-red-500 focus:ring-1 focus:ring-red-500/20' : 'border-white/10 focus:border-primary focus:ring-1 focus:ring-primary/20 hover:border-white/20'
+        }`}
+        placeholder=" "
+      />
+      <label htmlFor={field} className={`absolute left-4 text-gray-500 transition-all duration-300 pointer-events-none ${
+        hasValue || type === 'date' ? 'top-2 text-[10px] uppercase tracking-wider font-semibold text-gray-400' : 'top-3.5 text-sm peer-focus:top-2 peer-focus:text-[10px] peer-focus:uppercase peer-focus:tracking-wider peer-focus:font-semibold peer-focus:text-primary'
+      }`}>
+        {label} {required && <span className="text-red-400">*</span>} {optional && <span className="text-gray-600 font-normal normal-case">(Optional)</span>}
+      </label>
+      {isError && (
+        <p className="text-red-400 text-xs mt-1 absolute -bottom-5 left-1">
+          {errors[field]}
+        </p>
+      )}
+    </div>
+  );
+};
+
+// Premium Interactive Card
+export const InteractiveCard = ({ title, description, icon, selected, onClick, className = '' }) => (
+  <button 
+    type="button" 
+    onClick={onClick} 
+    className={`group relative flex flex-col items-start p-4 rounded-2xl border text-left transition-all duration-300 overflow-hidden ${
+      selected 
+        ? 'bg-primary/10 border-primary shadow-[0_0_20px_rgba(32,21,255,0.15)] scale-[1.02] z-10' 
+        : 'bg-white/5 border-white/10 hover:border-white/30 hover:bg-white/10 hover:-translate-y-1'
+    } ${className}`}
+  >
+    <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+    
+    <div className="flex w-full justify-between items-start mb-3 relative z-10">
+      <div className={`text-2xl transition-transform duration-300 ${selected ? 'scale-110' : 'group-hover:scale-110'}`}>
+        {icon}
+      </div>
+      <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-all duration-300 ${selected ? 'border-primary bg-primary scale-110' : 'border-white/20'}`}>
+        {selected && <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>}
+      </div>
+    </div>
+    
+    <h3 className={`font-semibold text-sm mb-1 relative z-10 transition-colors duration-300 ${selected ? 'text-white' : 'text-gray-300 group-hover:text-white'}`}>{title}</h3>
+    {description && <p className="text-xs text-gray-500 line-clamp-2 relative z-10">{description}</p>}
+  </button>
 );
 
 // Screen 1: Welcome
@@ -134,39 +167,49 @@ export const Step2BasicInfo = ({ data, update, touched, handleBlur, errors }) =>
 
 // Screen 3: Career Vision
 export const Step3CareerVision = ({ data, update }) => {
-  const CAREERS = ['Backend Developer', 'Frontend Developer', 'Full Stack Developer', 'AI Engineer', 'Data Scientist', 'Cyber Security', 'Cloud Engineer', 'Flutter Developer', 'DevOps', 'UI/UX', 'Startup Founder', 'Other'];
-  const COMPANIES = ['Google', 'Microsoft', 'Amazon', 'Adobe', 'Netflix', 'Startup', 'Other'];
-  const PLACEMENTS = ['3 Months', '6 Months', '12 Months', 'No Timeline'];
+  const CAREERS = [
+    { title: 'Backend Developer', icon: '⚙️', desc: 'Build APIs, databases, and server logic.' },
+    { title: 'Frontend Developer', icon: '🎨', desc: 'Create beautiful user interfaces.' },
+    { title: 'Full Stack', icon: '🥞', desc: 'Master both frontend and backend.' },
+    { title: 'AI Engineer', icon: '🧠', desc: 'Build machine learning models.' },
+    { title: 'Data Scientist', icon: '📊', desc: 'Extract insights from data.' },
+    { title: 'Cyber Security', icon: '🛡️', desc: 'Protect systems and networks.' },
+  ];
+  const PLACEMENTS = [
+    { title: '3 Months', icon: '🔥' },
+    { title: '6 Months', icon: '⚡' },
+    { title: '12 Months', icon: '🌱' },
+    { title: 'No Timeline', icon: '☕' }
+  ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
-        <label className="block text-sm font-semibold text-white mb-3">What do you want to become?</label>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+        <label className="block text-sm font-semibold text-white mb-4">What do you want to become?</label>
+        <div className="grid grid-cols-2 gap-4">
           {CAREERS.map(c => (
-            <button key={c} type="button" onClick={() => update('career_goal', c)} className={`p-3 rounded-xl border text-sm font-medium transition-all ${data.career_goal === c ? 'bg-primary/20 border-primary text-white shadow-lg shadow-primary/20' : 'bg-white/5 border-white/10 text-gray-400 hover:border-white/30'}`}>
-              {c}
-            </button>
+            <InteractiveCard 
+              key={c.title} 
+              title={c.title} 
+              icon={c.icon} 
+              description={c.desc} 
+              selected={data.career_goal === c.title} 
+              onClick={() => update('career_goal', c.title)} 
+            />
           ))}
         </div>
       </div>
       <div>
-        <label className="block text-sm font-semibold text-white mb-3">Dream Company</label>
-        <div className="flex flex-wrap gap-2">
-          {COMPANIES.map(c => (
-            <button key={c} type="button" onClick={() => update('dream_company', c)} className={`px-4 py-2 rounded-full border text-sm transition-all ${data.dream_company === c ? 'bg-primary border-primary text-white' : 'bg-white/5 border-white/10 text-gray-400'}`}>
-              {c}
-            </button>
-          ))}
-        </div>
-      </div>
-      <div>
-        <label className="block text-sm font-semibold text-white mb-3">Placement Goal</label>
-        <div className="flex flex-wrap gap-2">
+        <label className="block text-sm font-semibold text-white mb-4">Placement Goal</label>
+        <div className="grid grid-cols-2 gap-4">
           {PLACEMENTS.map(p => (
-            <button key={p} type="button" onClick={() => update('placement_goal', p)} className={`px-4 py-2 rounded-full border text-sm transition-all ${data.placement_goal === p ? 'bg-primary border-primary text-white' : 'bg-white/5 border-white/10 text-gray-400'}`}>
-              {p}
-            </button>
+            <InteractiveCard 
+              key={p.title} 
+              title={p.title} 
+              icon={p.icon} 
+              selected={data.placement_goal === p.title} 
+              onClick={() => update('placement_goal', p.title)} 
+            />
           ))}
         </div>
       </div>
@@ -244,7 +287,14 @@ export const Step4Skills = ({ data, update }) => {
 
 // Screen 5: Interests
 export const Step5Interests = ({ data, update }) => {
-  const INTERESTS = ['Internship', 'Job', 'Hackathon', 'Research', 'Startup', 'Freelancing', 'Open Source', 'Competitive Programming', 'Networking'];
+  const INTERESTS = [
+    { title: 'Internship', icon: '🏢' },
+    { title: 'Job', icon: '💼' },
+    { title: 'Hackathon', icon: '🏆' },
+    { title: 'Research', icon: '🔬' },
+    { title: 'Startup', icon: '🚀' },
+    { title: 'Open Source', icon: '🌐' }
+  ];
   
   const toggle = (i) => {
     if (data.interests.includes(i)) update('interests', data.interests.filter(x => x !== i));
@@ -254,16 +304,15 @@ export const Step5Interests = ({ data, update }) => {
   return (
     <div>
       <label className="block text-sm font-semibold text-white mb-4">What are you interested in?</label>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-4">
         {INTERESTS.map(i => (
-          <button key={i} type="button" onClick={() => toggle(i)} className={`p-4 rounded-xl border text-left transition-all ${data.interests.includes(i) ? 'bg-primary/20 border-primary text-white shadow-lg shadow-primary/20' : 'bg-white/5 border-white/10 text-gray-400 hover:border-white/30'}`}>
-            <div className="flex items-center justify-between">
-              <span className="font-medium text-sm">{i}</span>
-              <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-all ${data.interests.includes(i) ? 'border-primary bg-primary' : 'border-white/20'}`}>
-                {data.interests.includes(i) && <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>}
-              </div>
-            </div>
-          </button>
+          <InteractiveCard 
+            key={i.title} 
+            title={i.title} 
+            icon={i.icon} 
+            selected={data.interests.includes(i.title)} 
+            onClick={() => toggle(i.title)} 
+          />
         ))}
       </div>
     </div>
@@ -272,28 +321,34 @@ export const Step5Interests = ({ data, update }) => {
 
 // Screen 6: Learning Preferences
 export const Step6Learning = ({ data, update }) => {
-  const STYLES = ['Videos', 'Projects', 'Reading', 'Mentorship', 'Practice'];
-  const TIMES = ['30 Minutes', '1 Hour', '2 Hours', '3+ Hours'];
+  const STYLES = [
+    { title: 'Videos', icon: '🎬' },
+    { title: 'Projects', icon: '🛠️' },
+    { title: 'Reading', icon: '📚' },
+    { title: 'Mentorship', icon: '🤝' }
+  ];
+  const TIMES = [
+    { title: '30 Minutes', icon: '⏱️' },
+    { title: '1 Hour', icon: '⏳' },
+    { title: '2 Hours', icon: '🕰️' },
+    { title: '3+ Hours', icon: '🚀' }
+  ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
-        <label className="block text-sm font-semibold text-white mb-3">Preferred Learning Style</label>
-        <div className="flex flex-wrap gap-2">
+        <label className="block text-sm font-semibold text-white mb-4">Preferred Learning Style</label>
+        <div className="grid grid-cols-2 gap-4">
           {STYLES.map(s => (
-            <button key={s} type="button" onClick={() => update('learning_style', s)} className={`px-4 py-2 rounded-full border text-sm transition-all ${data.learning_style === s ? 'bg-primary border-primary text-white' : 'bg-white/5 border-white/10 text-gray-400'}`}>
-              {s}
-            </button>
+            <InteractiveCard key={s.title} title={s.title} icon={s.icon} selected={data.learning_style === s.title} onClick={() => update('learning_style', s.title)} />
           ))}
         </div>
       </div>
       <div>
-        <label className="block text-sm font-semibold text-white mb-3">Daily Learning Time</label>
-        <div className="flex flex-wrap gap-2">
+        <label className="block text-sm font-semibold text-white mb-4">Daily Learning Time</label>
+        <div className="grid grid-cols-2 gap-4">
           {TIMES.map(t => (
-            <button key={t} type="button" onClick={() => update('daily_time', t)} className={`px-4 py-2 rounded-full border text-sm transition-all ${data.daily_time === t ? 'bg-primary border-primary text-white' : 'bg-white/5 border-white/10 text-gray-400'}`}>
-              {t}
-            </button>
+            <InteractiveCard key={t.title} title={t.title} icon={t.icon} selected={data.daily_time === t.title} onClick={() => update('daily_time', t.title)} />
           ))}
         </div>
       </div>
@@ -303,27 +358,29 @@ export const Step6Learning = ({ data, update }) => {
 
 // Screen 7: Experience
 export const Step7Experience = ({ data, update }) => {
-  const LEVELS = ['Beginner', 'Intermediate', 'Advanced'];
+  const LEVELS = [
+    { title: 'Beginner', icon: '👶', desc: 'Just starting out.' },
+    { title: 'Intermediate', icon: '🧑‍💻', desc: 'Built a few things.' },
+    { title: 'Advanced', icon: '🧙‍♂️', desc: 'Comfortable with complex logic.' }
+  ];
   const PROJECTS = ['None', '1–2', '3–5', '5+'];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
-        <label className="block text-sm font-semibold text-white mb-3">Current Level</label>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <label className="block text-sm font-semibold text-white mb-4">Current Level</label>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {LEVELS.map(l => (
-            <button key={l} type="button" onClick={() => update('experience_level', l)} className={`p-4 rounded-xl border text-center transition-all ${data.experience_level === l ? 'bg-primary/20 border-primary text-white' : 'bg-white/5 border-white/10 text-gray-400'}`}>
-              <span className="font-semibold">{l}</span>
-            </button>
+            <InteractiveCard key={l.title} title={l.title} icon={l.icon} description={l.desc} selected={data.experience_level === l.title} onClick={() => update('experience_level', l.title)} />
           ))}
         </div>
       </div>
       <div>
-        <label className="block text-sm font-semibold text-white mb-3">Projects Built</label>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <label className="block text-sm font-semibold text-white mb-4">Projects Built</label>
+        <div className="flex flex-wrap gap-3">
           {PROJECTS.map(p => (
-            <button key={p} type="button" onClick={() => update('projects_built', p)} className={`py-3 rounded-xl border text-center transition-all ${data.projects_built === p ? 'bg-primary border-primary text-white' : 'bg-white/5 border-white/10 text-gray-400'}`}>
-              <span className="font-semibold">{p}</span>
+            <button key={p} type="button" onClick={() => update('projects_built', p)} className={`px-6 py-3 rounded-xl border text-sm font-medium transition-all ${data.projects_built === p ? 'bg-primary border-primary text-white shadow-[0_0_15px_rgba(32,21,255,0.3)] scale-105' : 'bg-white/5 border-white/10 text-gray-400 hover:border-white/30 hover:bg-white/10'}`}>
+              {p}
             </button>
           ))}
         </div>
