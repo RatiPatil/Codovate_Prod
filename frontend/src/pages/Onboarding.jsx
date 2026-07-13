@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { locationData } from '../utils/locationData';
 import { MAHARASHTRA_COLLEGES } from '../utils/maharashtraColleges';
 import confetti from 'canvas-confetti';
-import { showAlert, showConfirm } from '../utils/uiUtils';
+import { showAlert } from '../utils/uiUtils';
 
 const STEPS = [
   { id: 1, title: 'Personal Info', icon: '👤', desc: 'Basic information about you' },
@@ -154,11 +154,11 @@ const validateStep = (step, data) => {
   if (step === 2) {
     if (!data.college || data.college.trim().length < 3)
       errors.college = 'Please enter your college name';
-    else if (!/^[A-Za-z\s\.,\-\(\)'&]+$/.test(data.college.trim()))
+    else if (!/^[A-Za-z\s.,\-()'&]+$/.test(data.college.trim()))
       errors.college = 'College name contains invalid characters';
     if (!data.branch || data.branch.trim().length < 2)
       errors.branch = 'Please enter your branch';
-    else if (!/^[A-Za-z\s\.,\-\(\)'&/]+$/.test(data.branch.trim()))
+    else if (!/^[A-Za-z\s.,\-()'&/]+$/.test(data.branch.trim()))
       errors.branch = 'Branch name contains invalid characters';
     if (!data.year)
       errors.year = 'Please select your year of study';

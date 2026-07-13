@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
-import { showAlert, showConfirm } from '../utils/uiUtils';
+import { showAlert } from '../utils/uiUtils';
 
 // ─── Print Styles ─────────────────────────────────────────────────────────────
 const PRINT_CSS = `
@@ -367,7 +367,6 @@ const GenerateStep = ({ data, onGenerate, aiLoading, aiResult }) => {
     return 'text-red-400';
   };
 
-  const isReady = true;
 
   return (
     <div className="space-y-6">
@@ -718,14 +717,14 @@ const ResumeBuilder = () => {
   const handlePrint = () => window.print();
 
   const STEP_COMPONENTS = [
-    <PersonalStep data={data} onChange={onChange} />,
-    <ObjectiveStep data={data} onChange={onChange} />,
-    <EducationStep data={data} onChange={onChange} />,
-    <ExperienceStep data={data} onChange={onChange} />,
-    <ProjectsStep data={data} onChange={onChange} />,
-    <SkillsStep data={data} onChange={onChange} />,
-    <CertificationsStep data={data} onChange={onChange} />,
-    <GenerateStep data={data} onGenerate={handleGenerate} aiLoading={aiLoading} aiResult={aiResult} />,
+    <PersonalStep key="personal" data={data} onChange={onChange} />,
+    <ObjectiveStep key="objective" data={data} onChange={onChange} />,
+    <EducationStep key="education" data={data} onChange={onChange} />,
+    <ExperienceStep key="experience" data={data} onChange={onChange} />,
+    <ProjectsStep key="projects" data={data} onChange={onChange} />,
+    <SkillsStep key="skills" data={data} onChange={onChange} />,
+    <CertificationsStep key="certifications" data={data} onChange={onChange} />,
+    <GenerateStep key="generate" data={data} onGenerate={handleGenerate} aiLoading={aiLoading} aiResult={aiResult} />,
   ];
 
   return (
