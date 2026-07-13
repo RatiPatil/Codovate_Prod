@@ -55,14 +55,14 @@ function App() {
     <ToastProvider>
       <AuthProvider>
         <SocketProvider>
-          <GlobalNotifications />
-          <Toaster position="top-right" toastOptions={{
-            style: {
-              background: '#333',
-              color: '#fff',
-            }
-          }} />
           <BrowserRouter>
+            <GlobalNotifications />
+            <Toaster position="top-right" toastOptions={{
+              style: {
+                background: '#333',
+                color: '#fff',
+              }
+            }} />
             <Suspense fallback={<GlobalLoader />}>
               <Routes>
                 <Route path="/" element={<Home />} />
