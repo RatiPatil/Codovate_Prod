@@ -20,20 +20,13 @@ router.get("/", auth, async (req, res) => {
     else if (filter === "monthly") sortField = "monthly_points";
 
     // Firestore requires an index if combining where and orderBy on different fields.
-    // If filters are applied, orderBy might fail without composite indexes.
-    // To gracefully degrade, if no filters, use native orderBy limit for instant performance.
-    // If filters are used, we fallback to memory sorting, BUT this will be rare.
-    let studentsSnapshot;
-    const hasFilters = college || course || skill;
-    
-    if (!hasFilters) {
-      // 🚀 FAST PATH: No filters, rely entirely on native indexing and limiting!
-      query = query.orderBy(sortField, "desc").limit(parseInt(limit));
-      studentsSnapshot = await query.get();
-    } else {
-      // 🐢 SLOW PATH: Filters applied, might need memory sort if composite indexes are missing
-      studentsSnapshot = await query.get();
-    }
+    // For simplicity, we fetch them and sort manually if there are many filters, 
+    // OR we use orderBy if it's just the basic query.
+    // Assuming we have basic indexes or we just sort in memory if the dataset isn't huge.
+    // To be perfectly robust for thousands without complex composite indexes on every combination, 
+    // we fetch filtered and sort in memory if filters are applied, or rely on orderBy if no filters.
+
+    const studentsSnapshot = await query.get();
 
     let students = studentsSnapshot.docs.map((doc) => {
       const s = doc.data();
@@ -64,19 +57,17 @@ router.get("/", auth, async (req, res) => {
       };
     });
 
-    if (hasFilters) {
-      // Sort in memory only if filters were applied
-      students.sort((a, b) => b.points - a.points);
-      students = students.slice(0, parseInt(limit));
-    }
+    // Sort by points DESC
+    students.sort((a, b) => b.points - a.points);
     
     // Assign ranks
     students = students.map((s, index) => ({ ...s, rank: index + 1 }));
 
+    // Return top N
+    const topStudents = students.slice(0, parseInt(limit));
+
     // Fetch counts for only the top N students (performance optimization)
-    // NOTE: Using Promise.all to fetch apps, projects, certs for Top 50 is okay, 
-    // but caching these on the student doc in the future would be even better.
-    const enrichedStudents = await Promise.all(students.map(async (s) => {
+    const enrichedStudents = await Promise.all(topStudents.map(async (s) => {
       const [appsSnap, projectsSnap, certsSnap] = await Promise.all([
         db.collection("applications").where("user_id", "==", s.id).get(),
         db.collection("projects").where("student_id", "==", s.id).get(),
@@ -90,51 +81,23 @@ router.get("/", auth, async (req, res) => {
       };
     }));
 
-    // Find current user's rank globally (not just in the Top 50)
-    let currentUser = enrichedStudents.find(s => s.id === req.user.id);
-    
-    if (!currentUser) {
-      // Current user is not in the Top 50, fetch them explicitly
-      const userDoc = await db.collection("students").doc(req.user.id).get();
-      if (userDoc.exists) {
-        const u = userDoc.data();
-        const uPoints = u[sortField] || 0;
-        
-        let uRank = '—';
-        try {
-          const higher = await db.collection("students")
-            .where("is_active", "==", true)
-            .where(sortField, ">", uPoints)
-            .count()
-            .get();
-          uRank = higher.data().count + 1;
-        } catch(e) {
-          // Ignore count error
-        }
-        
-        const [appsSnap, projectsSnap, certsSnap] = await Promise.all([
-          db.collection("applications").where("user_id", "==", req.user.id).get(),
-          db.collection("projects").where("student_id", "==", req.user.id).get(),
-          db.collection("certificates").where("student_id", "==", req.user.id).get()
-        ]);
-        
-        currentUser = {
-          id: req.user.id,
-          name: u.profile_data?.name || 'Anonymous Student',
-          points: uPoints,
-          total_points: u.total_points || 0,
-          rank: uRank,
-          applications_count: appsSnap.size,
-          projects_count: projectsSnap.size,
-          certificates_count: certsSnap.size
-        };
-      }
+    // Find current user's rank
+    let currentUser = students.find(s => s.id === req.user.id);
+    if (currentUser) {
+      const [appsSnap, projectsSnap, certsSnap] = await Promise.all([
+        db.collection("applications").where("user_id", "==", currentUser.id).get(),
+        db.collection("projects").where("student_id", "==", currentUser.id).get(),
+        db.collection("certificates").where("student_id", "==", currentUser.id).get()
+      ]);
+      currentUser.applications_count = appsSnap.size;
+      currentUser.projects_count = projectsSnap.size;
+      currentUser.certificates_count = certsSnap.size;
     }
 
     res.json({
       leaderboard: enrichedStudents,
       currentUser: currentUser || null,
-      totalStudents: enrichedStudents.length // Just return the loaded size to save a query
+      totalStudents: students.length
     });
 
   } catch (err) {

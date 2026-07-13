@@ -203,59 +203,51 @@ router.get("/stats", auth, async (req, res) => {
     const uid = req.user.id;
 
     const [appsSnap, teamsSnap, bookingsSnap, studentDoc] = await Promise.all([
-      db.collection("applications").where("student_id", "==", uid).get(), // wait, in applications.js the field is user_id. Let's fix that while we're here.
+      db.collection("applications").where("student_id", "==", uid).get(),
       db.collection("team_members").where("user_id", "==", uid).get(),
       db.collection("mentorSessions").where("student_id", "==", uid).get(),
       db.collection("students").doc(uid).get(),
     ]);
 
+    // Calculate leaderboard rank
+    const allStudentsSnap = await db.collection("students").where("is_active", "==", true).get();
     let userPoints = 0;
-    let rank = '—';
-    let joinedAt = new Date();
+    const allPoints = [];
 
-    if (studentDoc.exists) {
-      const s = studentDoc.data();
-      userPoints = s.total_points || 0;
-      
-      if (s.created_at) {
-        joinedAt = s.created_at.toDate ? s.created_at.toDate() : new Date(s.created_at);
-      }
-
-      // Calculate leaderboard rank natively (count how many students have more points)
-      try {
-        const higherScoringStudents = await db.collection("students")
-          .where("is_active", "==", true)
-          .where("total_points", ">", userPoints)
-          .count()
-          .get();
-        rank = higherScoringStudents.data().count + 1;
-      } catch (err) {
-        // Fallback if count() fails (e.g. older firebase-admin version or missing index)
-        // Just fetch the ids to count them
-        const higherScoringSnap = await db.collection("students")
-          .where("is_active", "==", true)
-          .where("total_points", ">", userPoints)
-          .select()
-          .get();
-        rank = higherScoringSnap.size + 1;
-      }
+    for (const doc of allStudentsSnap.docs) {
+      const s = doc.data();
+      const sp = s.profile_data || {};
+      const completionPts = (sp.profile_completion || 0) * 10;
+      const appsForUser = await db.collection("applications").where("student_id", "==", doc.id).get();
+      const appPts = appsForUser.size * 50;
+      const teamsForUser = await db.collection("team_members").where("user_id", "==", doc.id).get();
+      const teamPts = teamsForUser.size * 100;
+      const total = completionPts + appPts + teamPts + (sp.profile_score || 0);
+      allPoints.push({ id: doc.id, points: total });
+      if (doc.id === uid) userPoints = total;
     }
 
+    allPoints.sort((a, b) => b.points - a.points);
+    const rank = allPoints.findIndex(p => p.id === uid) + 1;
+
+    let joinedAt = new Date();
+    if (studentDoc.exists) {
+      const d = studentDoc.data();
+      if (d.created_at) {
+        joinedAt = d.created_at.toDate ? d.created_at.toDate() : new Date(d.created_at);
+      }
+    }
+    
     const daysOnPlatform = Math.max(1, Math.ceil((Date.now() - joinedAt.getTime()) / (1000 * 60 * 60 * 24)));
 
-    // Note: application user_id vs student_id mismatch. 
-    // In applications.js it's user_id. Let's fetch with user_id just in case, but keep both for backward compatibility if old data exists.
-    const realAppsSnap = await db.collection("applications").where("user_id", "==", uid).get();
-    const finalAppsSnap = realAppsSnap.size > appsSnap.size ? realAppsSnap : appsSnap;
-
     res.json({
-      applications: finalAppsSnap.size,
+      applications: appsSnap.size,
       teams: teamsSnap.size,
       mentorSessions: bookingsSnap.size,
-      rank: rank,
+      rank: rank || '—',
       points: userPoints,
       daysOnPlatform,
-      selected: finalAppsSnap.docs.filter(d => d.data().status === 'Selected').length,
+      selected: appsSnap.docs.filter(d => d.data().status === 'Selected').length,
     });
   } catch (err) {
     console.error("Stats error:", err.message);

@@ -115,11 +115,6 @@ router.post("/", auth, async (req, res) => {
       joined_at: new Date()
     });
 
-    // Scoring Engine Integration
-    const { awardPoints, updatePlacementScore } = require("../utils/scoring");
-    await awardPoints(req.user.id, `team_join_${team.id}`, 100, true);
-    await updatePlacementScore(req.user.id);
-
     res.json(team);
   } catch (err) {
     console.error("Create team error:", err.message);
@@ -166,11 +161,6 @@ router.post("/join", auth, async (req, res) => {
     if (teamData.capacity && membersSnapshot.size + 1 >= teamData.capacity) {
       await teamDoc.ref.update({ status: 'Full' });
     }
-
-    // Scoring Engine Integration
-    const { awardPoints, updatePlacementScore } = require("../utils/scoring");
-    await awardPoints(req.user.id, `team_join_${team_id}`, 100, true);
-    await updatePlacementScore(req.user.id);
 
     res.json({ message: "Successfully joined team!" });
   } catch (err) {
