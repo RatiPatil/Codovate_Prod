@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+﻿import { useEffect, useState, useCallback } from 'react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import ProfileReadOnlyView from '../components/ProfileReadOnlyView';
@@ -120,7 +120,7 @@ const Profile = () => {
     setSaving(true);
     try {
       await api.put('/students/profile', { ...form, skills, desired_roles: desiredRoles, achievements, seeking, passionate_about: passionateAbout });
-      showToast('Profile updated successfully! ✅', 'success');
+      showToast('Profile updated successfully! âœ…', 'success');
       fetchProfile();
     } catch (err) {
       showToast(err.response?.data?.message || 'Failed to save.', 'error');
@@ -133,7 +133,7 @@ const Profile = () => {
     setLinking(true);
     try {
       await linkGoogleAccount();
-      showToast('Google Account linked successfully! ✅', 'success');
+      showToast('Google Account linked successfully! âœ…', 'success');
       fetchProfile(); // refresh providers
     } catch (err) {
       // Check if it's because already linked to another account
@@ -178,8 +178,8 @@ const Profile = () => {
 
       <div className="mb-10 text-center md:text-left flex flex-col md:flex-row justify-between items-center gap-4">
         <div>
-          <h1 className="text-3xl md:text-4xl font-bold text-white flex items-center justify-center md:justify-start gap-3">
-            <span className="text-4xl">👤</span> <span className="text-gradient">My Profile</span>
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white flex items-center justify-center md:justify-start gap-3">
+            <span className="text-4xl">ðŸ‘¤</span> <span className="text-gradient">My Profile</span>
           </h1>
           <p className="text-gray-400 text-sm mt-2">Manage your Codovate identity and track your growth.</p>
         </div>
@@ -256,8 +256,8 @@ const Profile = () => {
         {/* Right Form */}
         <div className="lg:col-span-2" id="edit-profile-section">
           <div className="glass-panel rounded-2xl p-5 md:p-8 w-full">
-            <h3 className="text-white font-bold text-2xl mb-8 flex items-center gap-3">
-              <span className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary text-sm">✏️</span>
+            <h3 className="text-gray-900 dark:text-white font-bold text-2xl mb-8 flex items-center gap-3">
+              <span className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary text-sm">âœï¸</span>
               Edit Information
             </h3>
             <form onSubmit={handleSave} className="space-y-6">
@@ -323,7 +323,7 @@ const Profile = () => {
                       className={`py-2.5 rounded-xl text-xs font-bold border transition-all duration-200 ${
                         form.year === y || form.year === String(y)
                           ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20'
-                          : 'bg-white/5 border-white/10 text-gray-400 hover:border-primary/40 hover:text-white'
+                          : 'bg-white/5 border-white/10 text-gray-400 hover:border-primary/40 hover:text-primary dark:hover:text-white'
                       }`}
                     >
                       Year {y}
@@ -358,7 +358,7 @@ const Profile = () => {
                     <button
                       key={role} type="button"
                       onClick={() => setDesiredRoles(prev => [...prev, role])}
-                      className="px-3 py-1.5 rounded-full text-xs font-semibold border transition-all duration-200 bg-white/5 border-white/10 text-gray-400 hover:border-primary/40 hover:text-white"
+                      className="px-3 py-1.5 rounded-full text-xs font-semibold border transition-all duration-200 bg-white/5 border-white/10 text-gray-400 hover:border-primary/40 hover:text-primary dark:hover:text-white"
                     >
                       + {role}
                     </button>
@@ -382,7 +382,7 @@ const Profile = () => {
                       }
                     }}
                     placeholder="Add custom role..."
-                    className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+                    className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-600 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
                   />
                   <button
                     type="button"
@@ -412,7 +412,7 @@ const Profile = () => {
                   <div className="flex flex-wrap gap-2 mb-3">
                     {achievements.map(achievement => (
                       <span key={achievement} className="flex items-center gap-1.5 px-3 py-1.5 bg-yellow-500/10 border border-yellow-500/30 text-yellow-300 rounded-lg text-xs font-bold">
-                        🏅 {achievement}
+                        ðŸ… {achievement}
                         <button type="button" onClick={() => setAchievements(prev => prev.filter(a => a !== achievement))} className="hover:text-red-400 transition-colors ml-0.5">
                           <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" /></svg>
                         </button>
@@ -453,7 +453,7 @@ const Profile = () => {
                       }
                     }}
                     placeholder="Add custom achievement..."
-                    className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-yellow-500/50 focus:ring-1 focus:ring-yellow-500/20 transition-all"
+                    className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-600 text-sm focus:outline-none focus:border-yellow-500/50 focus:ring-1 focus:ring-yellow-500/20 transition-all"
                   />
                   <button
                     type="button"
@@ -483,7 +483,7 @@ const Profile = () => {
                   <div className="flex flex-wrap gap-2 mb-3">
                     {seeking.map(item => (
                       <span key={item} className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 rounded-lg text-xs font-bold">
-                        🤝 {item}
+                        ðŸ¤ {item}
                         <button type="button" onClick={() => setSeeking(prev => prev.filter(s => s !== item))} className="hover:text-red-400 transition-colors ml-0.5">
                           <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" /></svg>
                         </button>
@@ -524,7 +524,7 @@ const Profile = () => {
                       }
                     }}
                     placeholder="Add custom seeking..."
-                    className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/20 transition-all"
+                    className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-600 text-sm focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/20 transition-all"
                   />
                   <button
                     type="button"
@@ -554,7 +554,7 @@ const Profile = () => {
                   <div className="flex flex-wrap gap-2 mb-3">
                     {passionateAbout.map(item => (
                       <span key={item} className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-500/10 border border-rose-500/30 text-rose-300 rounded-lg text-xs font-bold">
-                        ❤️ {item}
+                        â¤ï¸ {item}
                         <button type="button" onClick={() => setPassionateAbout(prev => prev.filter(p => p !== item))} className="hover:text-red-400 transition-colors ml-0.5">
                           <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" /></svg>
                         </button>
@@ -595,7 +595,7 @@ const Profile = () => {
                       }
                     }}
                     placeholder="Add custom passion..."
-                    className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-rose-500/50 focus:ring-1 focus:ring-rose-500/20 transition-all"
+                    className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-600 text-sm focus:outline-none focus:border-rose-500/50 focus:ring-1 focus:ring-rose-500/20 transition-all"
                   />
                   <button
                     type="button"
@@ -640,7 +640,7 @@ const Profile = () => {
                     <button
                       key={skill} type="button"
                       onClick={() => toggleSkill(skill)}
-                      className="px-3 py-1.5 rounded-full text-xs font-semibold border transition-all duration-200 bg-white/5 border-white/10 text-gray-400 hover:border-primary/40 hover:text-white"
+                      className="px-3 py-1.5 rounded-full text-xs font-semibold border transition-all duration-200 bg-white/5 border-white/10 text-gray-400 hover:border-primary/40 hover:text-primary dark:hover:text-white"
                     >
                       + {skill}
                     </button>
@@ -655,7 +655,7 @@ const Profile = () => {
                     onChange={e => setCustomSkill(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addCustomSkill())}
                     placeholder="Add custom skill..."
-                    className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+                    className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-600 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
                   />
                   <button
                     type="button"
@@ -670,11 +670,11 @@ const Profile = () => {
 
               <div className="pt-6 mt-6 border-t border-white/10 space-y-6 relative">
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 -mt-[1px] w-1/3 h-[1px] bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
-                <h4 className="text-white font-bold text-lg">App Settings</h4>
+                <h4 className="text-gray-900 dark:text-white font-bold text-lg">App Settings</h4>
                 
                 <div className="flex items-center justify-between p-4 bg-white/5 border border-white/10 rounded-xl">
                   <div>
-                    <h5 className="text-white font-bold text-sm">Application Theme</h5>
+                    <h5 className="text-gray-900 dark:text-white font-bold text-sm">Application Theme</h5>
                     <p className="text-gray-400 text-xs mt-1">Choose your preferred appearance</p>
                   </div>
                   <button
@@ -683,7 +683,7 @@ const Profile = () => {
                     className={`relative w-16 h-8 rounded-full transition-colors duration-300 ${theme === 'light' ? 'bg-primary' : 'bg-gray-700'}`}
                   >
                     <div className={`absolute top-1 left-1 w-6 h-6 rounded-full bg-white flex items-center justify-center transition-transform duration-300 ${theme === 'light' ? 'translate-x-8' : 'translate-x-0'}`}>
-                      {theme === 'light' ? '☀️' : '🌙'}
+                      {theme === 'light' ? 'â˜€ï¸' : 'ðŸŒ™'}
                     </div>
                   </button>
                 </div>
@@ -691,7 +691,7 @@ const Profile = () => {
 
               <div className="pt-6 mt-6 border-t border-white/10 space-y-6 relative">
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 -mt-[1px] w-1/3 h-[1px] bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
-                <h4 className="text-white font-bold text-lg">External Links</h4>
+                <h4 className="text-gray-900 dark:text-white font-bold text-lg">External Links</h4>
                 <div>
                   <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2">Resume URL (Google Drive / Dropbox)</label>
                   <input type="url" value={form.resume_url} onChange={e => setForm({ ...form, resume_url: e.target.value })} placeholder="https://..." className="input-glass w-full" />

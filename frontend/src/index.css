@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700&display=swap');
+﻿@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -67,11 +67,11 @@ h1, h2, h3, h4, h5, h6 {
     @apply bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-300;
   }
   .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary via-primary-light to-white;
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary via-primary-light to-blue-400;
   }
 }
 
-/* ─── Toast Notifications ─────────────────────────────── */
+/* â”€â”€â”€ Toast Notifications â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @keyframes toast-slide-in {
   from { transform: translateX(100%); opacity: 0; }
   to   { transform: translateX(0); opacity: 1; }
@@ -91,14 +91,14 @@ h1, h2, h3, h4, h5, h6 {
   animation: toast-slide-out 0.3s cubic-bezier(0.06, 0.71, 0.55, 1) forwards;
 }
 
-/* ─── Password Strength Meter ─────────────────────────── */
+/* â”€â”€â”€ Password Strength Meter â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .strength-bar {
   height: 4px;
   border-radius: 9999px;
   transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.4s ease;
 }
 
-/* ─── Auth Form Micro-animations ──────────────────────── */
+/* â”€â”€â”€ Auth Form Micro-animations â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @keyframes auth-shake {
   0%, 100% { transform: translateX(0); }
   20%, 60% { transform: translateX(-6px); }
@@ -115,7 +115,7 @@ h1, h2, h3, h4, h5, h6 {
   animation: auth-fade-in 0.3s ease-out forwards;
 }
 
-/* ─── Light Theme Overrides ────────────────────────────── */
+/* â”€â”€â”€ Light Theme Overrides â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .light body {
   background-color: #f3f4f6;
   color: #111827;
@@ -172,4 +172,105 @@ h1, h2, h3, h4, h5, h6 {
 .light .bg-white\/5,
 .light .bg-white\/10 {
   background-color: rgba(0, 0, 0, 0.05) !important;
+}
+/* =====================================================
+   LIGHT THEME — Profile Page Visibility Fixes
+   Replace white text with dark/blue equivalents
+   ===================================================== */
+
+/* h3 headings in profile panels (text-white) */
+.light h2,
+.light h3,
+.light h4,
+.light h5 {
+  color: #111827 !important;
+}
+
+/* Stats numbers (text-white, text-2xl) */
+.light .text-2xl.font-black.text-white {
+  color: #111827 !important;
+}
+
+/* "Edit Picture" overlay text & similar inline text-white */
+.light .text-white {
+  color: #111827 !important;
+}
+
+/* Input and textarea text in light mode */
+.light input:not([type="file"]),
+.light textarea,
+.light select {
+  color: #111827 !important;
+}
+
+/* glass-panel headings / section titles */
+.light .glass-panel h3,
+.light .glass-panel h4,
+.light .glass-panel h5 {
+  color: #111827 !important;
+}
+
+/* Skill / chip / badge borders and text that use white/5 bg */
+.light .bg-white\/5 span,
+.light .bg-white\/10 span {
+  color: #374151;
+}
+
+/* Profile name (large heading in identity card) */
+.light .glass-panel h2 {
+  color: #111827 !important;
+}
+
+/* Education / location chips */
+.light .text-gray-200 {
+  color: #374151 !important;
+}
+
+/* "Edit Information" panel white heading */
+.light #edit-profile-section h3 {
+  color: #111827 !important;
+}
+
+/* Skill chip unselected state — was text-gray-400 hover:text-white */
+.light .hover\:text-white:hover {
+  color: #2015ff !important;
+}
+
+/* Quick-select skill chips bg */
+.light .bg-white\/5.border-white\/10.text-gray-400 {
+  background-color: rgba(0,0,0,0.04) !important;
+  border-color: rgba(0,0,0,0.1) !important;
+  color: #6b7280 !important;
+}
+
+/* Stats grid card text */
+.light .bg-white\/5.border-white\/10 p {
+  color: #111827;
+}
+
+/* App Settings / External Links section headings */
+.light .border-white\/10 h4,
+.light .border-white\/10 h5 {
+  color: #111827 !important;
+}
+
+/* Save Profile button — already using btn-primary (ok), border-t separator */
+.light .border-white\/5 {
+  border-color: rgba(0,0,0,0.08) !important;
+}
+
+/* Scrollbar for light mode */
+.light ::-webkit-scrollbar-track {
+  background: #e5e7eb;
+}
+.light ::-webkit-scrollbar-thumb {
+  background: #2015ff;
+}
+
+/* text-gradient fix for light mode — keep as blue gradient, not fading to white */
+.light .text-gradient {
+  background-image: linear-gradient(to right, #2015ff, #4035ff, #1d4ed8) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  color: transparent !important;
 }
