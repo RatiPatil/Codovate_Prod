@@ -253,6 +253,94 @@ router.get("/stats", auth, async (req, res) => {
     console.error("Stats error:", err.message);
     res.status(500).json({ message: "Server error." });
   }
+// ── Gamification: Daily Missions & XP ──────────────────────────────────────
+router.get("/mission", auth, async (req, res) => {
+  try {
+    const uid = req.user.id;
+    const studentRef = db.collection("students").doc(uid);
+    const studentDoc = await studentRef.get();
+    
+    if (!studentDoc.exists) return res.status(404).json({ message: "Student not found" });
+    
+    const sp = studentDoc.data().profile_data || {};
+    const today = new Date().toISOString().split('T')[0];
+    
+    // Check if mission exists for today
+    if (sp.daily_mission && sp.daily_mission.date === today) {
+      return res.json(sp.daily_mission);
+    }
+    
+    // Generate new mission
+    const firstSkill = sp.skills?.[0] || 'Basics';
+    const newMission = {
+      date: today,
+      tasks: [
+        { id: 'task1', title: `Practice ${firstSkill}`, completed: false, xp: 50 },
+        { id: 'task2', title: 'Solve 2 Coding Problems', completed: false, xp: 40 },
+        { id: 'task3', title: 'Upload Resume', completed: false, xp: 30 }
+      ],
+      completed: false
+    };
+    
+    await studentRef.update({
+      'profile_data.daily_mission': newMission,
+      'profile_data.xp': sp.xp || 0,
+      'profile_data.streak': sp.streak || 0,
+      'profile_data.level': sp.level || 1
+    });
+    
+    res.json(newMission);
+  } catch (err) {
+    console.error("Mission Get error:", err.message);
+    res.status(500).json({ message: "Server error." });
+  }
+});
+
+router.post("/mission/complete", auth, async (req, res) => {
+  try {
+    const { taskId } = req.body;
+    const uid = req.user.id;
+    const studentRef = db.collection("students").doc(uid);
+    const studentDoc = await studentRef.get();
+    
+    if (!studentDoc.exists) return res.status(404).json({ message: "Student not found" });
+    
+    const sp = studentDoc.data().profile_data || {};
+    const mission = sp.daily_mission;
+    
+    if (!mission) return res.status(400).json({ message: "No active mission" });
+    
+    const taskIndex = mission.tasks.findIndex(t => t.id === taskId);
+    if (taskIndex === -1 || mission.tasks[taskIndex].completed) {
+      return res.status(400).json({ message: "Task not found or already completed" });
+    }
+    
+    mission.tasks[taskIndex].completed = true;
+    const xpReward = mission.tasks[taskIndex].xp;
+    
+    let newXp = (sp.xp || 0) + xpReward;
+    let newLevel = Math.floor(newXp / 500) + 1;
+    let newStreak = sp.streak || 0;
+    
+    const allCompleted = mission.tasks.every(t => t.completed);
+    if (allCompleted && !mission.completed) {
+      mission.completed = true;
+      // Streak logic (basic)
+      newStreak += 1;
+    }
+    
+    await studentRef.update({
+      'profile_data.daily_mission': mission,
+      'profile_data.xp': newXp,
+      'profile_data.level': newLevel,
+      'profile_data.streak': newStreak
+    });
+    
+    res.json({ mission, xp: newXp, level: newLevel, streak: newStreak, awarded: xpReward });
+  } catch (err) {
+    console.error("Mission Complete error:", err.message);
+    res.status(500).json({ message: "Server error." });
+  }
 });
 
 module.exports = router;
