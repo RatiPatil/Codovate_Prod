@@ -51,12 +51,15 @@ export const InteractiveCard = ({ title, description, icon, selected, onClick, c
         {icon}
       </div>
       <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-all duration-300 ${selected ? 'border-primary bg-primary scale-110' : 'border-white/20'}`}>
-        {selected && <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>}
+        {selected && <svg className="w-3 h-3 text-white animate-pulse" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>}
       </div>
     </div>
     
     <h3 className={`font-semibold text-sm mb-1 relative z-10 transition-colors duration-300 ${selected ? 'text-white' : 'text-gray-300 group-hover:text-white'}`}>{title}</h3>
     {description && <p className="text-xs text-gray-500 line-clamp-2 relative z-10">{description}</p>}
+    
+    {/* Ripple Effect Element */}
+    {selected && <span className="absolute inset-0 bg-primary/20 animate-ping rounded-2xl pointer-events-none opacity-0" style={{ animationDuration: '0.8s' }}></span>}
   </button>
 );
 
@@ -110,6 +113,14 @@ export const Step2BasicInfo = ({ data, update, touched, handleBlur, errors }) =>
   const [dragActive, setDragActive] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [showSuccess, setShowSuccess] = useState(false);
+
+  const AVATARS = [
+    'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix',
+    'https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka',
+    'https://api.dicebear.com/7.x/avataaars/svg?seed=Jasper',
+    'https://api.dicebear.com/7.x/avataaars/svg?seed=Destiny'
+  ];
 
   const handleDrag = (e) => {
     e.preventDefault();
@@ -150,15 +161,22 @@ export const Step2BasicInfo = ({ data, update, touched, handleBlur, errors }) =>
           update('profile_photo', reader.result);
           setUploading(false);
           setUploadProgress(0);
+          setShowSuccess(true);
+          setTimeout(() => setShowSuccess(false), 2000);
         };
         reader.readAsDataURL(file);
       } else {
         setUploadProgress(progress);
       }
-    }, 150);
+    }, 100);
   };
 
   const removePhoto = () => update('profile_photo', null);
+  const selectAvatar = (url) => {
+    update('profile_photo', url);
+    setShowSuccess(true);
+    setTimeout(() => setShowSuccess(false), 2000);
+  };
 
   return (
     <div className="space-y-4">
@@ -191,9 +209,23 @@ export const Step2BasicInfo = ({ data, update, touched, handleBlur, errors }) =>
           )}
           <input ref={fileInputRef} type="file" accept="image/*" capture="user" onChange={handleChange} className="hidden" />
         </div>
-        {data.profile_photo && (
-          <button onClick={removePhoto} className="mt-3 text-xs text-red-400 hover:text-red-300 font-medium transition-colors">Remove Photo</button>
+        {showSuccess && (
+          <div className="absolute top-0 right-0 transform translate-x-1/4 -translate-y-1/4 bg-green-500 text-white rounded-full p-1 animate-bounce z-30">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+          </div>
         )}
+      </div>
+
+      {/* Choose Avatar Section */}
+      <div className="mb-8">
+        <p className="text-xs font-semibold text-gray-400 mb-3 uppercase tracking-wider text-center">Or Choose Avatar</p>
+        <div className="flex justify-center gap-4">
+          {AVATARS.map((av, idx) => (
+            <button key={idx} type="button" onClick={() => selectAvatar(av)} className={`w-12 h-12 rounded-full overflow-hidden border-2 transition-all hover:scale-110 ${data.profile_photo === av ? 'border-primary shadow-[0_0_15px_rgba(32,21,255,0.5)] scale-110' : 'border-white/10 hover:border-white/30'}`}>
+              <img src={av} alt="Avatar option" className="w-full h-full object-cover bg-white" />
+            </button>
+          ))}
+        </div>
       </div>
 
       <InputField label="Full Name" field="full_name" placeholder="John Doe" required data={data} update={update} handleBlur={handleBlur} touched={touched} errors={errors} />
@@ -300,33 +332,52 @@ export const Step3CareerVision = ({ data, update }) => {
 // Screen 4: Dream Company
 export const Step4DreamCompany = ({ data, update }) => {
   const COMPANIES = [
-    { title: 'Google', icon: 'G' },
-    { title: 'Microsoft', icon: 'M' },
-    { title: 'Amazon', icon: 'A' },
-    { title: 'Adobe', icon: 'Ad' },
-    { title: 'Netflix', icon: 'N' },
-    { title: 'Apple', icon: 'Ap' },
-    { title: 'OpenAI', icon: 'O' },
+    { title: 'Google', logo: 'https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg' },
+    { title: 'Microsoft', logo: 'https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg' },
+    { title: 'Amazon', logo: 'https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg' },
+    { title: 'Adobe', logo: 'https://upload.wikimedia.org/wikipedia/commons/8/8d/Adobe_Corporate_Logo.png' },
+    { title: 'Netflix', logo: 'https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg' },
+    { title: 'Apple', logo: 'https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg' },
+    { title: 'OpenAI', logo: 'https://upload.wikimedia.org/wikipedia/commons/0/04/ChatGPT_logo.svg' },
     { title: 'Startup', icon: '🚀' },
-    { title: 'Own Startup', icon: '🦄' },
-    { title: 'Other', icon: '🏢' }
+    { title: 'Own Startup', icon: '👑' },
+    { title: 'Other', icon: '✨' }
   ];
 
+  const handleSelect = (c) => update('dream_company', c.title);
+
   return (
-    <div className="space-y-8">
-      <div>
-        <label className="block text-sm font-semibold text-white mb-4">What is your dream company?</label>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-          {COMPANIES.map(c => (
-            <InteractiveCard 
-              key={c.title} 
-              title={c.title} 
-              icon={<span className="text-xl font-bold bg-white/10 w-10 h-10 rounded-xl flex items-center justify-center text-white">{c.icon}</span>} 
-              selected={data.dream_company === c.title} 
-              onClick={() => update('dream_company', c.title)} 
-            />
-          ))}
-        </div>
+    <div className="space-y-6 animate-fade-in">
+      <div className="text-center space-y-2 mb-8">
+        <h2 className="text-2xl font-bold text-white tracking-tight">Dream Company</h2>
+        <p className="text-sm text-gray-400">Where do you want to work?</p>
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+        {COMPANIES.map((c, i) => {
+          const selected = data.dream_company === c.title;
+          return (
+            <button
+              key={i}
+              onClick={() => handleSelect(c)}
+              className={`relative group p-4 rounded-xl border flex flex-col items-center justify-center gap-3 transition-all duration-300 ${
+                selected 
+                  ? 'border-primary bg-primary/10 shadow-[0_0_20px_rgba(32,21,255,0.2)]' 
+                  : 'border-white/5 bg-white/5 hover:border-white/20 hover:bg-white/10'
+              }`}
+            >
+              {c.logo ? (
+                <div className={`w-10 h-10 rounded-full bg-white flex items-center justify-center p-2 transition-transform duration-300 ${selected ? 'scale-110' : 'group-hover:scale-110'}`}>
+                   <img src={c.logo} alt={c.title} className="w-full h-full object-contain" />
+                </div>
+              ) : (
+                <span className={`text-2xl transition-transform duration-300 ${selected ? 'scale-110' : 'group-hover:scale-110'}`}>{c.icon}</span>
+              )}
+              <span className={`font-medium text-sm transition-colors duration-300 ${selected ? 'text-primary' : 'text-gray-300 group-hover:text-white'}`}>{c.title}</span>
+              {selected && <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-primary animate-ping"></div>}
+            </button>
+          );
+        })}
       </div>
     </div>
   );

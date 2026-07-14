@@ -247,16 +247,16 @@ export default function Onboarding() {
             
             {/* Checklist */}
             <div className="hidden sm:flex items-center gap-6 text-xs text-gray-500 mt-2">
-              <span className={`transition-colors duration-300 ${step > 3 ? 'text-green-400 font-medium' : ''}`}>
-                {step > 3 ? '✔ Career Goal' : '○ Career Goal'}
+              <span className={`transition-colors duration-300 ${step > 3 ? 'text-green-400 font-medium' : 'opacity-50'}`}>
+                ✔ Career Goal
               </span>
-              <span className={`transition-colors duration-300 ${step > 5 ? 'text-green-400 font-medium' : ''}`}>
-                {step > 5 ? '✔ Skills' : '○ Skills'}
+              <span className={`transition-colors duration-300 ${step > 5 ? 'text-green-400 font-medium' : 'opacity-50'}`}>
+                ✔ Skills
               </span>
-              <span className={`transition-colors duration-300 ${step > 6 ? 'text-green-400 font-medium' : ''}`}>
-                {step > 6 ? '✔ Interests' : '○ Interests'}
+              <span className={`transition-colors duration-300 ${step > 6 ? 'text-green-400 font-medium' : 'opacity-50'}`}>
+                ✔ Interests
               </span>
-              <span className="animate-pulse text-primary font-medium">⏳ Preparing Dashboard</span>
+              <span className="animate-pulse text-primary font-medium opacity-80">⏳ Preparing Dashboard</span>
             </div>
           </div>
         </div>

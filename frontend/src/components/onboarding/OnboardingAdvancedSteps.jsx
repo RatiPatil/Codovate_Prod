@@ -47,6 +47,9 @@ export const Step10AIGeneration = ({ onComplete }) => {
 
   const tasks = [
     'Analyzing your profile...',
+    '✓ Career Goal',
+    '✓ Skills',
+    '✓ Experience',
     'Generating AI Career Roadmap...',
     'Generating Dashboard...',
     'Finding Mentors...',
@@ -69,17 +72,22 @@ export const Step10AIGeneration = ({ onComplete }) => {
 
       <div className="ai-spinner w-16 h-16 rounded-full border-4 border-white/10 border-t-primary mb-6 animate-spin relative z-10 bg-[#0a0a0a] shadow-[0_0_30px_rgba(32,21,255,0.3)]" />
       <h2 className="ai-title text-2xl font-bold text-white mb-8 relative z-10">🧠 Building Your AI Career Workspace</h2>
-      <div ref={listRef} className="space-y-4 text-left w-full max-w-xs relative z-10 bg-[#0a0a0a]/80 backdrop-blur-sm p-4 rounded-xl border border-white/5">
-        {tasks.map((t, i) => (
-          <div key={i} className="flex items-center gap-3 opacity-0 -translate-x-4" style={{ transform: 'translateX(-16px)' }}>
-            <div className="check-icon w-5 h-5 rounded-full bg-green-500/20 text-green-400 flex items-center justify-center shrink-0 scale-0 opacity-0">
-              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-              </svg>
+      <div ref={listRef} className="space-y-3 text-left w-full max-w-xs relative z-10 bg-[#0a0a0a]/80 backdrop-blur-sm p-5 rounded-xl border border-white/5">
+        {tasks.map((t, i) => {
+          const isSubtask = t.startsWith('✓');
+          return (
+            <div key={i} className={`flex items-center gap-3 opacity-0 -translate-x-4 ${isSubtask ? 'pl-6' : ''}`} style={{ transform: 'translateX(-16px)' }}>
+              {!isSubtask && (
+                <div className="check-icon w-5 h-5 rounded-full bg-green-500/20 text-green-400 flex items-center justify-center shrink-0 scale-0 opacity-0">
+                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+              )}
+              <span className={`${isSubtask ? 'text-gray-400 text-xs' : 'text-gray-200 font-medium text-sm'}`}>{t}</span>
             </div>
-            <span className="text-gray-300 font-medium text-sm">{t}</span>
-          </div>
-        ))}
+          );
+        })}
       </div>
       <p className="ai-almost text-primary font-semibold mt-8 text-sm relative z-10">Almost Ready...</p>
     </div>
@@ -93,6 +101,17 @@ export const Step11Success = ({ data, onFinish }) => {
   useEffect(() => {
     gsap.fromTo(".success-card", { scale: 0.9, opacity: 0, y: 30 }, { scale: 1, opacity: 1, y: 0, duration: 0.8, ease: "elastic.out(1, 0.5)" });
     
+    // Count up animation for Profile Completion
+    gsap.to({ val: 0 }, {
+      val: 100,
+      duration: 2,
+      ease: 'power2.out',
+      onUpdate: function() {
+        const el = document.querySelector('.completion-stat');
+        if (el) el.innerText = Math.round(this.targets()[0].val) + '%';
+      }
+    });
+
     // Confetti
     const duration = 3000;
     const end = Date.now() + duration;
@@ -123,7 +142,7 @@ export const Step11Success = ({ data, onFinish }) => {
       <div className="success-card w-full max-w-sm bg-white/5 border border-white/10 rounded-2xl p-6 text-left mb-8 space-y-4">
         <div className="flex justify-between items-center border-b border-white/5 pb-3">
           <span className="text-gray-500 text-sm">Profile Completion</span>
-          <span className="text-primary font-bold text-sm">100%</span>
+          <span className="completion-stat text-primary font-bold text-sm">0%</span>
         </div>
         <div className="flex justify-between items-center border-b border-white/5 pb-3">
           <span className="text-gray-500 text-sm">Career Goal</span>
@@ -142,19 +161,15 @@ export const Step11Success = ({ data, onFinish }) => {
           <span className="text-white font-semibold text-sm">Apply to 5 Internships</span>
         </div>
         <div className="bg-primary/10 rounded-xl p-4 mt-2 border border-primary/20">
-          <p className="text-xs text-primary font-semibold uppercase tracking-wider mb-2">Recommended Learning</p>
+          <p className="text-xs text-primary font-semibold uppercase tracking-wider mb-2">Recommended Skill</p>
           <div className="flex items-center gap-2 text-sm text-white flex-wrap">
-            <span className="bg-black/30 px-2 py-1 rounded">{firstSkill}</span>
-            <span className="text-gray-500">→</span>
-            <span className="bg-black/30 px-2 py-1 rounded">{data.skills?.[1]?.name || 'Advanced'}</span>
-            <span className="text-gray-500">→</span>
-            <span className="bg-black/30 px-2 py-1 rounded">Projects</span>
+            <span className="bg-black/30 px-3 py-1.5 rounded-lg border border-primary/30">{data.skills?.[1]?.name || 'Spring Boot'}</span>
           </div>
         </div>
 
         <div className="bg-white/5 rounded-xl p-4 mt-2 border border-white/10 space-y-3">
           <div className="flex justify-between items-center">
-            <span className="text-gray-400 text-xs flex items-center gap-1.5"><span className="text-primary">💼</span> Suggested Opportunity</span>
+            <span className="text-gray-400 text-xs flex items-center gap-1.5"><span className="text-primary">💼</span> Recommended Opportunity</span>
             <span className="text-white font-medium text-xs">{data.career_goal || 'Backend'} Internship</span>
           </div>
           <div className="flex justify-between items-center">
@@ -163,7 +178,7 @@ export const Step11Success = ({ data, onFinish }) => {
           </div>
           <div className="flex justify-between items-center">
             <span className="text-gray-400 text-xs flex items-center gap-1.5"><span className="text-primary">👥</span> Suggested Team</span>
-            <span className="text-white font-medium text-xs">{data.career_goal?.split(' ')[0] || 'Tech'} Enthusiasts</span>
+            <span className="text-white font-medium text-xs">{data.career_goal?.split(' ')[0] || 'Backend'} Developers</span>
           </div>
         </div>
       </div>
