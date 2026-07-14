@@ -25,15 +25,49 @@ function setAuthData(token, user, rememberMe) {
   }
 }
 
+// ─── JWT Expiry Validation ────────────────────────────────
+function isTokenValid(token) {
+  if (!token) return false;
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    // Check if exp exists and is in the future (giving 5 min buffer)
+    if (payload.exp && payload.exp * 1000 < Date.now() + 5 * 60 * 1000) {
+      return false;
+    }
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
 function getAuthData() {
   // Check localStorage first (rememberMe), then sessionStorage
   const lsToken = localStorage.getItem('token');
   const lsUser = localStorage.getItem('user');
-  if (lsToken && lsUser) return { token: lsToken, user: JSON.parse(lsUser) };
+  
+  if (lsToken && lsUser) {
+    if (isTokenValid(lsToken)) {
+      return { token: lsToken, user: JSON.parse(lsUser) };
+    } else {
+      // Clear expired local session
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      localStorage.removeItem('rememberMe');
+    }
+  }
 
   const ssToken = sessionStorage.getItem('token');
   const ssUser = sessionStorage.getItem('user');
-  if (ssToken && ssUser) return { token: ssToken, user: JSON.parse(ssUser) };
+  
+  if (ssToken && ssUser) {
+    if (isTokenValid(ssToken)) {
+      return { token: ssToken, user: JSON.parse(ssUser) };
+    } else {
+      // Clear expired session storage
+      sessionStorage.removeItem('token');
+      sessionStorage.removeItem('user');
+    }
+  }
 
   return { token: null, user: null };
 }
@@ -45,6 +79,7 @@ function clearAuthData() {
   localStorage.removeItem('onboarding_completed');
   sessionStorage.removeItem('token');
   sessionStorage.removeItem('user');
+  sessionStorage.removeItem('onboarding_completed');
 }
 
 export const AuthProvider = ({ children }) => {
