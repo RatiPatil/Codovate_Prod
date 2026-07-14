@@ -103,7 +103,7 @@ export const Step11Success = ({ data, onFinish }) => {
     
     // Count up animation for Profile Completion
     gsap.to({ val: 0 }, {
-      val: 100,
+      val: 68,
       duration: 2,
       ease: 'power2.out',
       onUpdate: function() {
@@ -136,61 +136,48 @@ export const Step11Success = ({ data, onFinish }) => {
       <div className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center mb-6">
         <span className="text-4xl">🎉</span>
       </div>
-      <h1 className="text-3xl font-bold text-white mb-2">Congratulations {data.full_name?.split(' ')[0]}!</h1>
-      <p className="text-gray-400 mb-8">Your personalized workspace is ready.</p>
+      <h1 className="text-3xl font-bold text-white mb-2">Welcome {data.full_name?.split(' ')[0] || 'Student'}!</h1>
+      <p className="text-gray-400 mb-8">Your Career Workspace is Ready.</p>
 
       <div className="success-card w-full max-w-sm bg-white/5 border border-white/10 rounded-2xl p-6 text-left mb-8 space-y-4">
-        <div className="flex justify-between items-center border-b border-white/5 pb-3">
-          <span className="text-gray-500 text-sm">Profile Completion</span>
-          <span className="completion-stat text-primary font-bold text-sm">0%</span>
+        <div className="flex flex-col border-b border-white/5 pb-4">
+          <span className="text-gray-500 text-xs uppercase tracking-wider font-semibold mb-1">Career Goal</span>
+          <span className="text-white font-bold text-base">{data.career_goal || 'Backend Developer'}</span>
         </div>
-        <div className="flex justify-between items-center border-b border-white/5 pb-3">
-          <span className="text-gray-500 text-sm">Career Goal</span>
-          <span className="text-white font-semibold text-sm">{data.career_goal || 'Not specified'}</span>
+        <div className="flex flex-col border-b border-white/5 pb-4">
+          <span className="text-gray-500 text-xs uppercase tracking-wider font-semibold mb-1">Current Skill Level</span>
+          <span className="text-white font-bold text-base">{data.experience_level || 'Intermediate'}</span>
         </div>
-        <div className="flex justify-between items-center border-b border-white/5 pb-3">
-          <span className="text-gray-500 text-sm">Placement Target</span>
-          <span className="text-white font-semibold text-sm">{data.placement_goal || 'Not specified'}</span>
+        <div className="flex flex-col border-b border-white/5 pb-4">
+          <span className="text-gray-500 text-xs uppercase tracking-wider font-semibold mb-1">Placement Target</span>
+          <span className="text-white font-bold text-base">{data.placement_goal || '6 Months'}</span>
         </div>
-        <div className="flex justify-between items-center pb-3">
-          <span className="text-gray-500 text-sm">Today's Mission</span>
-          <span className="text-primary font-semibold text-sm">{todaysGoal}</span>
+        <div className="flex flex-col border-b border-white/5 pb-4">
+          <span className="text-gray-500 text-xs uppercase tracking-wider font-semibold mb-1">Current Profile Score</span>
+          <span className="completion-stat text-primary font-black text-2xl">0%</span>
         </div>
-        <div className="flex justify-between items-center pb-3">
-          <span className="text-gray-500 text-sm">Weekly Goal</span>
-          <span className="text-white font-semibold text-sm">Apply to 5 Internships</span>
-        </div>
-        <div className="bg-primary/10 rounded-xl p-4 mt-2 border border-primary/20">
-          <p className="text-xs text-primary font-semibold uppercase tracking-wider mb-2">Recommended Skill</p>
-          <div className="flex items-center gap-2 text-sm text-white flex-wrap">
-            <span className="bg-black/30 px-3 py-1.5 rounded-lg border border-primary/30">{data.skills?.[1]?.name || 'Spring Boot'}</span>
-          </div>
-        </div>
-
-        <div className="bg-white/5 rounded-xl p-4 mt-2 border border-white/10 space-y-3">
-          <div className="flex justify-between items-center">
-            <span className="text-gray-400 text-xs flex items-center gap-1.5"><span className="text-primary">💼</span> Recommended Opportunity</span>
-            <span className="text-white font-medium text-xs">{data.career_goal || 'Backend'} Internship</span>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="text-gray-400 text-xs flex items-center gap-1.5"><span className="text-primary">🤝</span> Suggested Mentor</span>
-            <span className="text-white font-medium text-xs">{firstSkill} Expert</span>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="text-gray-400 text-xs flex items-center gap-1.5"><span className="text-primary">👥</span> Suggested Team</span>
-            <span className="text-white font-medium text-xs">{data.career_goal?.split(' ')[0] || 'Backend'} Developers</span>
+        <div className="flex flex-col pt-2">
+          <span className="text-gray-500 text-xs uppercase tracking-wider font-semibold mb-4">Today's Mission</span>
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <span className="text-primary font-bold text-lg">✓</span>
+              <span className="text-white text-sm font-medium">{todaysGoal}</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-primary font-bold text-lg">✓</span>
+              <span className="text-white text-sm font-medium">Upload Resume</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-primary font-bold text-lg">✓</span>
+              <span className="text-white text-sm font-medium">Apply to one Internship</span>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
-        <button onClick={onFinish} className="bg-primary hover:bg-primary-hover text-white font-bold py-4 px-10 rounded-xl transition-all shadow-lg shadow-primary/30 hover:shadow-primary/50 hover:scale-105 w-full sm:w-auto">
-          Explore Dashboard
-        </button>
-        <button onClick={handleReviewProfile} className="bg-white/5 hover:bg-white/10 text-white font-bold py-4 px-10 rounded-xl border border-white/10 transition-all hover:border-white/30 hover:scale-105 w-full sm:w-auto">
-          Review Profile
-        </button>
-      </div>
+      <button onClick={onFinish} className="bg-primary hover:bg-primary-hover text-white font-bold py-4 px-12 rounded-xl transition-all shadow-lg shadow-primary/30 hover:shadow-primary/50 hover:scale-105 w-full sm:w-auto">
+        Explore Dashboard
+      </button>
     </div>
   );
 };

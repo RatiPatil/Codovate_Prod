@@ -57,10 +57,10 @@ const WelcomeExperience = () => {
         gsap.to(containerRef.current, {
           opacity: 0,
           duration: 0.5,
-          onComplete: () => navigate('/onboarding', { replace: true })
+          onComplete: () => navigate('/dashboard', { replace: true })
         });
       } else {
-        navigate('/onboarding', { replace: true });
+        navigate('/dashboard', { replace: true });
       }
     }, 4500);
 
