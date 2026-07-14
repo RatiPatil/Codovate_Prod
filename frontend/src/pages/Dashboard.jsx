@@ -1,161 +1,62 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
-import { gsap } from 'gsap';
+import { useState, useEffect } from 'react';
 import api from '../api/axios';
 import Loader from '../components/common/Loader';
+import ErrorState from '../components/common/ErrorState';
 
-// Components
-import DashboardHero from '../components/dashboard/DashboardHero';
-import TodaysMission from '../components/dashboard/TodaysMission';
-import AICareerCoach from '../components/dashboard/AICareerCoach';
-import CareerRoadmapCard from '../components/dashboard/CareerRoadmapCard';
-import LearningCard from '../components/dashboard/LearningCard';
-import CodingCard from '../components/dashboard/CodingCard';
-import ProfileCard from '../components/dashboard/ProfileCard';
-import ResumeCard from '../components/dashboard/ResumeCard';
-import PortfolioCard from '../components/dashboard/PortfolioCard';
-import RecommendedOpportunities from '../components/dashboard/RecommendedOpportunities';
-import MentorCard from '../components/dashboard/MentorCard';
-import TeamCard from '../components/dashboard/TeamCard';
-import UpcomingEvents from '../components/dashboard/UpcomingEvents';
-import Achievements from '../components/dashboard/Achievements';
-import GamificationCard from '../components/dashboard/GamificationCard';
-import NotificationsCard from '../components/dashboard/NotificationsCard';
+import HeroSection from '../components/dashboard/HeroSection';
+import TodaysFocusWidget from '../components/dashboard/TodaysFocusWidget';
+import ProgressOverview from '../components/dashboard/ProgressOverview';
+import AIRecommendations from '../components/dashboard/AIRecommendations';
 
 const Dashboard = () => {
-  const [profile, setProfile] = useState(null);
-  const [mission, setMission] = useState(null);
-  const [opps, setOpps] = useState([]);
+  const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
-  
-  const dashboardRef = useRef(null);
+  const [error, setError] = useState(null);
 
-  const fetchAll = useCallback(async () => {
-    try {
-      const [profileRes, missionRes, oppsRes] = await Promise.all([
-        api.get('/students/profile'),
-        api.get('/students/mission').catch(() => ({ data: null })),
-        api.get('/opportunities').catch(() => ({ data: [] }))
-      ]);
-      setProfile(profileRes.data);
-      setMission(missionRes.data);
-      setOpps(oppsRes.data);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
+  useEffect(() => {
+    const fetchWorkspace = async () => {
+      try {
+        setLoading(true);
+        // We will fetch all data in a single optimized request
+        const res = await api.get('/students/workspace');
+        setData(res.data);
+      } catch (err) {
+        console.error('Failed to load workspace data:', err);
+        setError('Failed to load your workspace.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchWorkspace();
   }, []);
 
-  useEffect(() => {
-    fetchAll();
-  }, [fetchAll]);
-
-  // Handle GSAP Entrance Animation
-  useEffect(() => {
-    if (!loading && dashboardRef.current) {
-      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      if (!prefersReducedMotion) {
-        gsap.fromTo(
-          gsap.utils.toArray('.stagger-card'),
-          { opacity: 0, y: 30, scale: 0.95 },
-          { opacity: 1, y: 0, scale: 1, duration: 0.6, stagger: 0.05, ease: 'back.out(1.2)' }
-        );
-      }
-    }
-  }, [loading]);
-
-  if (loading) {
-    return (
-      <div className="flex-1 overflow-y-auto">
-        <Loader fullScreen={false} message="Loading AI Career Workspace..." />
-      </div>
-    );
-  }
+  if (loading) return <Loader fullScreen />;
+  if (error) return <ErrorState message={error} />;
+  if (!data) return null;
 
   return (
-    <div ref={dashboardRef} className="p-6 md:p-8 max-w-[1600px] mx-auto relative z-10 space-y-6">
+    <div className="min-h-screen bg-[#050505] text-white p-4 md:p-8 pt-24 md:pt-32 max-w-7xl mx-auto space-y-12 pb-32">
       
-      {/* 1. Hero Section */}
-      <div className="stagger-card opacity-0">
-        <DashboardHero profile={profile} />
-      </div>
+      {/* SECTION 1: Hero Section */}
+      <section className="dashboard-section">
+        <HeroSection profile={data.profile} />
+      </section>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        
-        {/* Left Column (Mission, Roadmap, Learning) */}
-        <div className="col-span-1 lg:col-span-3 space-y-6">
-          <div className="stagger-card opacity-0">
-            <TodaysMission 
-              mission={mission} 
-              onMissionComplete={(data) => {
-                setProfile(prev => ({ ...prev, xp: data.xp, streak: data.streak, level: data.level }));
-              }} 
-            />
-          </div>
-          <div className="stagger-card opacity-0 h-[400px]">
-            <CareerRoadmapCard profile={profile} />
-          </div>
-          <div className="stagger-card opacity-0">
-            <AICareerCoach profile={profile} />
-          </div>
-        </div>
+      {/* SECTION 2: Today's Focus */}
+      <section className="dashboard-section">
+        <TodaysFocusWidget mission={data.mission} />
+      </section>
 
-        {/* Middle Column (Core Skills & Opportunities) */}
-        <div className="col-span-1 lg:col-span-6 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="stagger-card opacity-0 h-[300px]">
-              <LearningCard />
-            </div>
-            <div className="stagger-card opacity-0 h-[300px]">
-              <CodingCard />
-            </div>
-          </div>
+      {/* SECTION 3: Progress Overview */}
+      <section className="dashboard-section">
+        <ProgressOverview profile={data.profile} />
+      </section>
 
-          <div className="stagger-card opacity-0 h-[350px]">
-            <RecommendedOpportunities opportunities={opps} profile={profile} />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-[250px]">
-            <div className="stagger-card opacity-0 h-full">
-              <ProfileCard profile={profile} />
-            </div>
-            <div className="stagger-card opacity-0 h-full">
-              <ResumeCard />
-            </div>
-            <div className="stagger-card opacity-0 h-full">
-              <PortfolioCard />
-            </div>
-          </div>
-        </div>
-
-        {/* Right Column (Community, Events, Gamification) */}
-        <div className="col-span-1 lg:col-span-3 space-y-6">
-          <div className="stagger-card opacity-0 h-[220px]">
-            <GamificationCard profile={profile} />
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-[200px]">
-            <div className="stagger-card opacity-0 h-full">
-              <MentorCard profile={profile} />
-            </div>
-            <div className="stagger-card opacity-0 h-full">
-              <TeamCard />
-            </div>
-          </div>
-
-          <div className="stagger-card opacity-0 h-[220px]">
-            <UpcomingEvents />
-          </div>
-          
-          <div className="stagger-card opacity-0 h-[200px]">
-            <Achievements />
-          </div>
-
-          <div className="stagger-card opacity-0">
-            <NotificationsCard />
-          </div>
-        </div>
-      </div>
+      {/* SECTION 4: AI Recommendations */}
+      <section className="dashboard-section">
+        <AIRecommendations recommendations={data.recommendations} />
+      </section>
 
     </div>
   );

@@ -106,9 +106,9 @@ const FindTeammates = () => {
                   <div className="absolute -bottom-8 left-6">
                     <div className="w-16 h-16 rounded-full border-4 border-[#121212] bg-gray-800 flex items-center justify-center overflow-hidden">
                       {student.profile_photo ? (
-                        <img src={student.profile_photo} alt={student.name} className="w-full h-full object-cover" />
+                        <img src={student.profile_photo} alt={student.name || 'User'} className="w-full h-full object-cover" />
                       ) : (
-                        <span className="text-xl font-bold text-gray-400">{student.name.charAt(0).toUpperCase()}</span>
+                        <span className="text-xl font-bold text-gray-400">{student.name ? student.name.charAt(0).toUpperCase() : 'U'}</span>
                       )}
                     </div>
                   </div>
@@ -121,7 +121,7 @@ const FindTeammates = () => {
 
                 {/* Body */}
                 <div className="pt-10 px-6 pb-6 flex-1 flex flex-col">
-                  <h3 className="text-lg font-bold text-white leading-tight group-hover:text-primary transition-colors">{student.name}</h3>
+                  <h3 className="text-lg font-bold text-white leading-tight group-hover:text-primary transition-colors">{student.name || 'Anonymous User'}</h3>
                   <p className="text-sm text-gray-400 line-clamp-1 mb-3">{student.college || 'College not specified'}</p>
                   
                   <p className="text-gray-300 text-sm mb-4 line-clamp-2 min-h-[40px]">

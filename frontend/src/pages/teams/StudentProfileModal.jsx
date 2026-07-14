@@ -42,7 +42,7 @@ const StudentProfileModal = ({ student, onClose }) => {
             
             <div className="flex-1 pb-2">
               <div className="flex flex-wrap items-center gap-3 mb-1">
-                <h2 className="text-3xl font-bold text-white">{student.name}</h2>
+                <h2 className="text-3xl font-bold text-white">{student.name || 'Anonymous User'}</h2>
                 {student.profile_completion >= 80 && (
                   <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 flex items-center gap-1">
                     ⭐ Top Performer

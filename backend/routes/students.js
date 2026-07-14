@@ -253,6 +253,85 @@ router.get("/stats", auth, async (req, res) => {
     console.error("Stats error:", err.message);
     res.status(500).json({ message: "Server error." });
   }
+});
+
+// ── Dashboard V4 Workspace Data ──────────────────────────────────────
+router.get("/workspace", auth, async (req, res) => {
+  try {
+    const uid = req.user.id;
+    const studentRef = db.collection("students").doc(uid);
+    const studentDoc = await studentRef.get();
+    
+    if (!studentDoc.exists) {
+      return res.status(404).json({ message: "Student profile not found." });
+    }
+
+    const s = studentDoc.data();
+    const sp = s.profile_data || {};
+
+    // 1. Placement Readiness Calculation (Dynamic)
+    let placementReadiness = 0;
+    if (sp.profile_completion === 100) placementReadiness += 25;
+    else placementReadiness += (sp.profile_completion || 0) * 0.25;
+    if (sp.resume_url) placementReadiness += 25;
+    if (sp.skills && sp.skills.length > 3) placementReadiness += 25;
+    // Add logic for projects or learning if they exist later
+    placementReadiness += 10; // base score for being active
+    
+    // Cap at 100
+    placementReadiness = Math.min(100, Math.round(placementReadiness));
+
+    // 2. Daily Mission (Today's Focus)
+    const today = new Date().toISOString().split('T')[0];
+    let mission = sp.daily_mission;
+    if (!mission || mission.date !== today) {
+      // Generate new mission based on real data
+      const tasks = [];
+      if (!sp.resume_url) tasks.push({ id: 'resume', title: 'Upload Resume', completed: false, xp: 50, type: 'profile' });
+      if (sp.profile_completion < 100) tasks.push({ id: 'profile', title: 'Complete Profile', completed: false, xp: 50, type: 'profile' });
+      if (sp.skills && sp.skills.length > 0) tasks.push({ id: 'skill', title: `Practice ${sp.skills[0]}`, completed: false, xp: 30, type: 'learning' });
+      else tasks.push({ id: 'skill', title: 'Add your top skills', completed: false, xp: 30, type: 'profile' });
+      
+      // Pad with default task if less than 3
+      if (tasks.length < 3) {
+        tasks.push({ id: 'apply', title: 'Apply to one Internship', completed: false, xp: 40, type: 'action' });
+      }
+
+      mission = { date: today, tasks, completed: false };
+      await studentRef.update({ 'profile_data.daily_mission': mission });
+    }
+
+    // 3. AI Recommendations (Opportunities)
+    // For now, fetch top 2 opportunities as a mock "recommendation"
+    const oppsSnap = await db.collection("opportunities").where("status", "==", "Active").limit(2).get();
+    const recommendations = [];
+    oppsSnap.forEach(doc => recommendations.push({ id: doc.id, ...doc.data() }));
+
+    // Compile Dashboard V4 Data
+    res.json({
+      profile: {
+        id: uid,
+        name: sp.name || '',
+        career_goal: sp.career_goal || sp.desired_roles?.[0] || 'Software Engineer',
+        level: sp.level || 1,
+        xp: sp.xp || 0,
+        streak: sp.streak || 0,
+        profile_completion: sp.profile_completion || 0,
+        resume_score: sp.resume_url ? 85 : 0, // Mock ATS score based on presence
+        placement_readiness: placementReadiness,
+        learning_progress: 34, // Mock for now until learning module exists
+        roadmap_progress: 12, // Mock for now until roadmap module exists
+      },
+      mission,
+      recommendations
+    });
+
+  } catch (err) {
+    console.error("Workspace error:", err.message);
+    res.status(500).json({ message: "Server error." });
+  }
+});
+
 // ── Gamification: Daily Missions & XP ──────────────────────────────────────
 router.get("/mission", auth, async (req, res) => {
   try {
