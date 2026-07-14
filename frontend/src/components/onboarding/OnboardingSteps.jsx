@@ -186,10 +186,10 @@ export const Step2BasicInfo = ({ data, update, touched, handleBlur, errors }) =>
           {!uploading && (
             <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                <span className="text-white text-xs font-semibold">{data.profile_photo ? 'Change Photo' : 'Choose Photo'}</span>
-               <span className="text-gray-400 text-[10px] mt-1 hidden sm:block">or drag & drop</span>
+               <span className="text-gray-400 text-[10px] mt-1 hidden sm:block">drag & drop / take photo</span>
             </div>
           )}
-          <input ref={fileInputRef} type="file" accept="image/*" onChange={handleChange} className="hidden" />
+          <input ref={fileInputRef} type="file" accept="image/*" capture="user" onChange={handleChange} className="hidden" />
         </div>
         {data.profile_photo && (
           <button onClick={removePhoto} className="mt-3 text-xs text-red-400 hover:text-red-300 font-medium transition-colors">Remove Photo</button>
@@ -199,7 +199,7 @@ export const Step2BasicInfo = ({ data, update, touched, handleBlur, errors }) =>
       <InputField label="Full Name" field="full_name" placeholder="John Doe" required data={data} update={update} handleBlur={handleBlur} touched={touched} errors={errors} />
       <div className="grid grid-cols-2 gap-4">
         <InputField label="College" field="college" placeholder="Your College" required data={data} update={update} handleBlur={handleBlur} touched={touched} errors={errors} />
-        <InputField label="Course" field="course" placeholder="e.g. B.Tech" required data={data} update={update} handleBlur={handleBlur} touched={touched} errors={errors} />
+        <InputField label="Degree" field="degree" placeholder="e.g. B.Tech" required data={data} update={update} handleBlur={handleBlur} touched={touched} errors={errors} />
       </div>
       <div className="grid grid-cols-2 gap-4">
         <InputField label="Branch" field="branch" placeholder="e.g. CSE" required data={data} update={update} handleBlur={handleBlur} touched={touched} errors={errors} />
@@ -398,7 +398,7 @@ export const Step5Skills = ({ data, update }) => {
             </button>
           ))}
           {searchTerm && !filteredTech.length && (
-            <p className="text-sm text-gray-500 py-2">No predefined skills found.</p>
+            <p className="text-sm text-gray-500 py-2">Let's build something amazing. Add your custom skill below.</p>
           )}
         </div>
       </div>
@@ -484,19 +484,21 @@ export const Step7Learning = ({ data, update }) => {
   const STYLES = [
     { title: 'Videos', icon: '🎬' },
     { title: 'Projects', icon: '🛠️' },
+    { title: 'Practice', icon: '💻' },
     { title: 'Reading', icon: '📚' },
-    { title: 'Mentorship', icon: '🤝' }
+    { title: 'Mentor', icon: '🤝' },
+    { title: 'Live Classes', icon: '🎥' }
   ];
   const TIMES = [
-    { title: '30 Minutes', icon: '⏱️' },
-    { title: '1 Hour', icon: '⏳' },
-    { title: '2 Hours', icon: '🕰️' },
-    { title: '3+ Hours', icon: '🚀' }
+    { title: '30 mins', icon: '⏱️' },
+    { title: '1 hour', icon: '⏳' },
+    { title: '2 hours', icon: '🕰️' },
+    { title: '3+ hours', icon: '🚀' }
   ];
   const PLACEMENTS = [
-    { title: '3 Months', icon: '🔥' },
-    { title: '6 Months', icon: '⚡' },
-    { title: '12 Months', icon: '🌱' },
+    { title: '3 months', icon: '🔥' },
+    { title: '6 months', icon: '⚡' },
+    { title: '12 months', icon: '🌱' },
     { title: 'No deadline', icon: '☕' }
   ];
 
@@ -619,7 +621,7 @@ export const LiveProfilePreview = ({ data, step }) => {
         <div className="bg-white/5 rounded-xl p-3">
           <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Education</p>
           <p className="text-sm text-gray-200">{data.college || 'College Name'}</p>
-          <p className="text-xs text-gray-400">{data.course} {data.branch ? `- ${data.branch}` : ''} {data.year ? `(Year ${data.year})` : ''}</p>
+          <p className="text-xs text-gray-400">{data.degree} {data.branch ? `- ${data.branch}` : ''} {data.year ? `(Year ${data.year})` : ''}</p>
         </div>
 
         <div className="bg-white/5 rounded-xl p-3">

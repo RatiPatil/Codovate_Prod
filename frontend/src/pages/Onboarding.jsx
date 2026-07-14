@@ -23,7 +23,7 @@ export default function Onboarding() {
   const [isLoaded, setIsLoaded] = useState(false);
   
   const [data, setData] = useState({
-    full_name: '', college: '', course: '', branch: '', year: '', city: '', state: '', country: 'India', profile_photo: null,
+    full_name: '', college: '', degree: '', branch: '', year: '', city: '', state: '', country: 'India', profile_photo: null,
     career_goal: '', dream_company: '', placement_goal: '',
     skills: [], // array of { name, level }
     interests: [],
@@ -109,7 +109,7 @@ export default function Onboarding() {
     if (field === 'full_name' && (!value || value.trim().length < 3)) newErrors.full_name = 'Name must be at least 3 characters';
     else if (field === 'full_name') delete newErrors.full_name;
     
-    if (['college', 'course', 'branch', 'city', 'state', 'country'].includes(field)) {
+    if (['college', 'degree', 'branch', 'city', 'state', 'country'].includes(field)) {
       if (!value || value.trim().length < 2) newErrors[field] = `${field.charAt(0).toUpperCase() + field.slice(1)} is required`;
       else delete newErrors[field];
     }
@@ -125,7 +125,7 @@ export default function Onboarding() {
     if (currentStep === 2) {
       if (!data.full_name || data.full_name.trim().length < 3) stepErrors.full_name = 'Name must be at least 3 characters';
       if (!data.college) stepErrors.college = 'College is required';
-      if (!data.course) stepErrors.course = 'Course is required';
+      if (!data.degree) stepErrors.degree = 'Degree is required';
       if (!data.branch) stepErrors.branch = 'Branch is required';
       if (!data.year) stepErrors.year = 'Year is required';
       if (!data.city) stepErrors.city = 'City is required';
