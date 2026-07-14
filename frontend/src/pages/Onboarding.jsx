@@ -8,11 +8,11 @@ import { showAlert } from '../utils/uiUtils';
 import {
   Step1Welcome, Step2BasicInfo, Step3CareerVision, Step4DreamCompany,
   Step5Skills, Step6Interests, Step7Learning,
-  Step8Experience, Step9Links, LiveProfilePreview
+  Step8Experience, LiveProfilePreview
 } from '../components/onboarding/OnboardingSteps';
 import { Step10AIGeneration, Step11Success } from '../components/onboarding/OnboardingAdvancedSteps';
 
-const TOTAL_STEPS = 9; // Steps 1-9 are form steps, 10 is processing, 11 is success
+const TOTAL_STEPS = 8; // Steps 1-8 are form steps, 9 is processing, 10 is success
 
 export default function Onboarding() {
   const { completeOnboarding } = useAuth();
@@ -77,7 +77,7 @@ export default function Onboarding() {
     if (data.career_goal === 'AI Engineer') showToast('🤖 Future AI Engineer loading...');
     if (data.career_goal === 'Startup Founder') showToast('🚀 Future Unicorn Founder?');
     if (step === Math.floor(TOTAL_STEPS / 2)) showToast('Halfway there 🎉');
-    if (step === TOTAL_STEPS) showToast('Almost done! 🚀');
+    if (step === TOTAL_STEPS) showToast('Amazing! Your career journey starts now.');
   }, [data, step]);
 
   useEffect(() => {
@@ -310,14 +310,8 @@ export default function Onboarding() {
                 )}
                 {step === 8 && (
                   <>
-                    <h2 className="text-2xl font-bold text-white mb-6">Experience</h2>
+                    <h2 className="text-2xl font-bold text-white mb-6">Projects & Experience</h2>
                     <Step8Experience data={data} update={update} />
-                  </>
-                )}
-                {step === 9 && (
-                  <>
-                    <h2 className="text-2xl font-bold text-white mb-6">Professional Links</h2>
-                    <Step9Links data={data} update={update} />
                   </>
                 )}
                 

@@ -46,14 +46,16 @@ export const Step10AIGeneration = ({ onComplete }) => {
   }, [onComplete]);
 
   const tasks = [
-    'Creating Profile',
-    'Understanding Goals',
-    'Analyzing Skills',
-    'Preparing Dashboard',
-    'Generating Roadmap',
-    'Calculating Placement Readiness',
-    'Finding Opportunities',
-    'Preparing Recommendations'
+    'Analyzing your profile...',
+    'Generating AI Career Roadmap...',
+    'Generating Dashboard...',
+    'Finding Mentors...',
+    'Finding Opportunities...',
+    'Calculating Placement Readiness...',
+    'Preparing Recommendations...',
+    'Building Portfolio...',
+    'Creating Daily Goals...',
+    'Generating Weekly Mission...'
   ];
 
   return (
@@ -120,6 +122,10 @@ export const Step11Success = ({ data, onFinish }) => {
 
       <div className="success-card w-full max-w-sm bg-white/5 border border-white/10 rounded-2xl p-6 text-left mb-8 space-y-4">
         <div className="flex justify-between items-center border-b border-white/5 pb-3">
+          <span className="text-gray-500 text-sm">Profile Completion</span>
+          <span className="text-primary font-bold text-sm">100%</span>
+        </div>
+        <div className="flex justify-between items-center border-b border-white/5 pb-3">
           <span className="text-gray-500 text-sm">Career Goal</span>
           <span className="text-white font-semibold text-sm">{data.career_goal || 'Not specified'}</span>
         </div>
@@ -127,13 +133,13 @@ export const Step11Success = ({ data, onFinish }) => {
           <span className="text-gray-500 text-sm">Placement Target</span>
           <span className="text-white font-semibold text-sm">{data.placement_goal || 'Not specified'}</span>
         </div>
-        <div className="flex justify-between items-center border-b border-white/5 pb-3">
-          <span className="text-gray-500 text-sm">Current Skill Level</span>
-          <span className="text-white font-semibold text-sm">{data.experience_level || 'Beginner'}</span>
+        <div className="flex justify-between items-center pb-3">
+          <span className="text-gray-500 text-sm">Today's Mission</span>
+          <span className="text-primary font-semibold text-sm">{todaysGoal}</span>
         </div>
         <div className="flex justify-between items-center pb-3">
-          <span className="text-gray-500 text-sm">Today's Goal</span>
-          <span className="text-primary font-semibold text-sm">{todaysGoal}</span>
+          <span className="text-gray-500 text-sm">Weekly Goal</span>
+          <span className="text-white font-semibold text-sm">Apply to 5 Internships</span>
         </div>
         <div className="bg-primary/10 rounded-xl p-4 mt-2 border border-primary/20">
           <p className="text-xs text-primary font-semibold uppercase tracking-wider mb-2">Recommended Learning</p>
@@ -164,7 +170,7 @@ export const Step11Success = ({ data, onFinish }) => {
 
       <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
         <button onClick={onFinish} className="bg-primary hover:bg-primary-hover text-white font-bold py-4 px-10 rounded-xl transition-all shadow-lg shadow-primary/30 hover:shadow-primary/50 hover:scale-105 w-full sm:w-auto">
-          Continue to Dashboard
+          Explore Dashboard
         </button>
         <button onClick={handleReviewProfile} className="bg-white/5 hover:bg-white/10 text-white font-bold py-4 px-10 rounded-xl border border-white/10 transition-all hover:border-white/30 hover:scale-105 w-full sm:w-auto">
           Review Profile

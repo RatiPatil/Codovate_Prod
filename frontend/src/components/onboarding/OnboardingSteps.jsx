@@ -108,6 +108,8 @@ export const Step1Welcome = ({ onNext }) => {
 export const Step2BasicInfo = ({ data, update, touched, handleBlur, errors }) => {
   const fileInputRef = useRef(null);
   const [dragActive, setDragActive] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const handleDrag = (e) => {
     e.preventDefault();
@@ -137,9 +139,23 @@ export const Step2BasicInfo = ({ data, update, touched, handleBlur, errors }) =>
       alert('File size must be less than 2MB');
       return;
     }
-    const reader = new FileReader();
-    reader.onloadend = () => update('profile_photo', reader.result);
-    reader.readAsDataURL(file);
+    setUploading(true);
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += Math.random() * 30;
+      if (progress >= 100) {
+        clearInterval(interval);
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          update('profile_photo', reader.result);
+          setUploading(false);
+          setUploadProgress(0);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        setUploadProgress(progress);
+      }
+    }, 150);
   };
 
   const removePhoto = () => update('profile_photo', null);
@@ -152,7 +168,14 @@ export const Step2BasicInfo = ({ data, update, touched, handleBlur, errors }) =>
           onDragEnter={handleDrag} onDragLeave={handleDrag} onDragOver={handleDrag} onDrop={handleDrop}
           onClick={() => fileInputRef.current?.click()}
         >
-          {data.profile_photo ? (
+          {uploading ? (
+            <div className="flex flex-col items-center justify-center w-full h-full bg-black/80 absolute inset-0 z-20">
+              <span className="text-white text-[10px] font-bold mb-2">Cropping & Uploading</span>
+              <div className="w-16 h-1 bg-white/20 rounded-full overflow-hidden">
+                <div className="h-full bg-primary transition-all duration-200" style={{ width: `${Math.min(uploadProgress, 100)}%` }} />
+              </div>
+            </div>
+          ) : data.profile_photo ? (
             <img src={data.profile_photo} alt="Profile" className="w-full h-full object-cover" />
           ) : (
             <div className="text-center">
@@ -160,10 +183,12 @@ export const Step2BasicInfo = ({ data, update, touched, handleBlur, errors }) =>
               <span className="text-[10px] text-gray-500 font-medium uppercase tracking-wider">Upload</span>
             </div>
           )}
-          <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-             <span className="text-white text-xs font-semibold">{data.profile_photo ? 'Change Photo' : 'Choose Photo'}</span>
-             <span className="text-gray-400 text-[10px] mt-1 hidden sm:block">or drag & drop</span>
-          </div>
+          {!uploading && (
+            <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+               <span className="text-white text-xs font-semibold">{data.profile_photo ? 'Change Photo' : 'Choose Photo'}</span>
+               <span className="text-gray-400 text-[10px] mt-1 hidden sm:block">or drag & drop</span>
+            </div>
+          )}
           <input ref={fileInputRef} type="file" accept="image/*" onChange={handleChange} className="hidden" />
         </div>
         {data.profile_photo && (
@@ -195,6 +220,17 @@ export const Step2BasicInfo = ({ data, update, touched, handleBlur, errors }) =>
         <InputField label="State" field="state" placeholder="State" required data={data} update={update} handleBlur={handleBlur} touched={touched} errors={errors} />
         <InputField label="Country" field="country" placeholder="Country" required data={data} update={update} handleBlur={handleBlur} touched={touched} errors={errors} />
       </div>
+      <div className="grid grid-cols-2 gap-4">
+        <InputField label="Preferred Language" field="language" placeholder="e.g. English" optional data={data} update={update} handleBlur={handleBlur} touched={touched} errors={errors} />
+        <div>
+          <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">Dark Mode Pref</label>
+          <select value={data.dark_mode || 'System'} onChange={e => update('dark_mode', e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white text-sm focus:outline-none focus:border-primary appearance-none">
+            <option value="System" className="bg-[#0a0a0a]">System</option>
+            <option value="Dark" className="bg-[#0a0a0a]">Dark</option>
+            <option value="Light" className="bg-[#0a0a0a]">Light</option>
+          </select>
+        </div>
+      </div>
     </div>
   );
 };
@@ -206,10 +242,16 @@ export const Step3CareerVision = ({ data, update }) => {
     { title: 'Frontend Developer', icon: '🎨', desc: 'Create beautiful user interfaces.', salary: '$110k+', trending: 'Hot', demandIcon: '📈' },
     { title: 'Full Stack', icon: '🥞', desc: 'Master both frontend and backend.', salary: '$130k+', trending: 'Very High', demandIcon: '🚀' },
     { title: 'AI Engineer', icon: '🧠', desc: 'Build machine learning models.', salary: '$150k+', trending: 'Exploding', demandIcon: '💥' },
+    { title: 'Machine Learning Engineer', icon: '🤖', desc: 'Design intelligent systems.', salary: '$145k+', trending: 'High', demandIcon: '⚡' },
     { title: 'Data Scientist', icon: '📊', desc: 'Extract insights from data.', salary: '$140k+', trending: 'High', demandIcon: '💹' },
     { title: 'Cyber Security', icon: '🛡️', desc: 'Protect systems and networks.', salary: '$125k+', trending: 'Crucial', demandIcon: '🔒' },
+    { title: 'Cloud Engineer', icon: '☁️', desc: 'Design cloud infrastructure.', salary: '$130k+', trending: 'High', demandIcon: '🌐' },
+    { title: 'Flutter Developer', icon: '📱', desc: 'Build cross-platform mobile apps.', salary: '$115k+', trending: 'Steady', demandIcon: '📈' },
+    { title: 'DevOps', icon: '♾️', desc: 'Bridge development and operations.', salary: '$135k+', trending: 'High Demand', demandIcon: '🔥' },
+    { title: 'Game Developer', icon: '🎮', desc: 'Create interactive experiences.', salary: '$105k+', trending: 'Growing', demandIcon: '🕹️' },
     { title: 'Startup Founder', icon: '🦄', desc: 'Build the next big thing.', salary: 'Limitless', trending: 'High Risk/Reward', demandIcon: '🚀' },
-    { title: 'Product Manager', icon: '📱', desc: 'Lead product strategy and vision.', salary: '$135k+', trending: 'High', demandIcon: '⭐' }
+    { title: 'Product Manager', icon: '📋', desc: 'Lead product strategy and vision.', salary: '$135k+', trending: 'High', demandIcon: '⭐' },
+    { title: 'Other', icon: '✨', desc: 'Forging your own unique path.', salary: 'Varies', trending: 'Unique', demandIcon: '🌟' }
   ];
 
   return (
@@ -406,8 +448,12 @@ export const Step6Interests = ({ data, update }) => {
     { title: 'Job', icon: '💼' },
     { title: 'Hackathon', icon: '🏆' },
     { title: 'Research', icon: '🔬' },
+    { title: 'Freelancing', icon: '💻' },
+    { title: 'Competitive Programming', icon: '⚡' },
     { title: 'Startup', icon: '🚀' },
-    { title: 'Open Source', icon: '🌐' }
+    { title: 'Open Source', icon: '🌐' },
+    { title: 'Mentorship', icon: '🤝' },
+    { title: 'Networking', icon: '👥' }
   ];
   
   const toggle = (i) => {
@@ -490,14 +536,14 @@ export const Step7Learning = ({ data, update }) => {
   );
 };
 
-// Screen 8: Experience
+// Screen 8: Projects & Experience
 export const Step8Experience = ({ data, update }) => {
   const LEVELS = [
     { title: 'Beginner', icon: '👶', desc: 'Just starting out.' },
     { title: 'Intermediate', icon: '🧑‍💻', desc: 'Built a few things.' },
     { title: 'Advanced', icon: '🧙‍♂️', desc: 'Comfortable with complex logic.' }
   ];
-  const PROJECTS = ['None', '1–2', '3–5', '5+'];
+  const PROJECTS = ['0', '1-2', '3-5', '5+'];
 
   return (
     <div className="space-y-8">
@@ -510,8 +556,8 @@ export const Step8Experience = ({ data, update }) => {
         </div>
       </div>
       <div>
-        <label className="block text-sm font-semibold text-white mb-4">Projects Built</label>
-        <div className="flex flex-wrap gap-3">
+        <label className="block text-sm font-semibold text-white mb-4">How many projects have you built?</label>
+        <div className="flex flex-wrap gap-3 mb-8">
           {PROJECTS.map(p => (
             <button key={p} type="button" onClick={() => update('projects_built', p)} className={`px-6 py-3 rounded-xl border text-sm font-medium transition-all ${data.projects_built === p ? 'bg-primary border-primary text-white shadow-[0_0_15px_rgba(32,21,255,0.3)] scale-105' : 'bg-white/5 border-white/10 text-gray-400 hover:border-white/30 hover:bg-white/10'}`}>
               {p}
@@ -519,31 +565,28 @@ export const Step8Experience = ({ data, update }) => {
           ))}
         </div>
       </div>
-    </div>
-  );
-};
-
-// Screen 9: Professional Links
-export const Step9Links = ({ data, update }) => {
-  return (
-    <div className="space-y-4">
-      <InputField label="GitHub URL" field="github_url" placeholder="https://github.com/..." optional data={data} update={update} touched={{}} errors={{}} />
-      <InputField label="LinkedIn URL" field="linkedin_url" placeholder="https://linkedin.com/in/..." optional data={data} update={update} touched={{}} errors={{}} />
-      <InputField label="Portfolio URL" field="portfolio_url" placeholder="https://yourwebsite.com" optional data={data} update={update} touched={{}} errors={{}} />
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
-        <InputField label="LeetCode" field="leetcode_url" placeholder="https://leetcode.com/..." optional data={data} update={update} touched={{}} errors={{}} />
-        <InputField label="CodeChef" field="codechef_url" placeholder="https://codechef.com/..." optional data={data} update={update} touched={{}} errors={{}} />
-        <InputField label="HackerRank" field="hackerrank_url" placeholder="https://hackerrank.com/..." optional data={data} update={update} touched={{}} errors={{}} />
-      </div>
-      <div className="pt-4 border-t border-white/10">
-        <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">Resume Upload <span className="text-gray-500 font-normal normal-case">(Optional)</span></label>
-        <div className="border-2 border-dashed border-white/10 rounded-xl p-6 text-center hover:border-primary/50 transition-colors bg-white/5 relative group">
-          <input type="file" accept=".pdf" className="absolute inset-0 opacity-0 cursor-pointer" onChange={() => alert('Resume upload will be handled by Firebase Storage in full implementation.')} />
-          <svg className="w-8 h-8 mx-auto text-gray-500 mb-3 group-hover:text-primary transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-          </svg>
-          <span className="text-sm font-medium text-white block group-hover:text-primary transition-colors">Upload Resume (PDF)</span>
-          <span className="text-xs text-gray-500 mt-1 block">Drag and drop or click to browse</span>
+      <div>
+        <label className="block text-sm font-semibold text-white mb-4">Professional Links</label>
+        <div className="space-y-4">
+          <InputField label="GitHub URL" field="github_url" placeholder="https://github.com/..." optional data={data} update={update} touched={{}} errors={{}} />
+          <InputField label="LinkedIn URL" field="linkedin_url" placeholder="https://linkedin.com/in/..." optional data={data} update={update} touched={{}} errors={{}} />
+          <InputField label="Portfolio URL" field="portfolio_url" placeholder="https://yourwebsite.com" optional data={data} update={update} touched={{}} errors={{}} />
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+            <InputField label="LeetCode" field="leetcode_url" placeholder="https://leetcode.com/..." optional data={data} update={update} touched={{}} errors={{}} />
+            <InputField label="CodeChef" field="codechef_url" placeholder="https://codechef.com/..." optional data={data} update={update} touched={{}} errors={{}} />
+            <InputField label="HackerRank" field="hackerrank_url" placeholder="https://hackerrank.com/..." optional data={data} update={update} touched={{}} errors={{}} />
+          </div>
+          <div className="pt-4 border-t border-white/10">
+            <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">Resume Upload <span className="text-gray-500 font-normal normal-case">(Optional)</span></label>
+            <div className="border-2 border-dashed border-white/10 rounded-xl p-6 text-center hover:border-primary/50 transition-colors bg-white/5 relative group cursor-pointer">
+              <input type="file" accept=".pdf" className="absolute inset-0 opacity-0 cursor-pointer" onChange={() => alert('Resume upload will be handled by Firebase Storage in full implementation.')} />
+              <svg className="w-8 h-8 mx-auto text-gray-500 mb-3 group-hover:text-primary transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+              </svg>
+              <span className="text-sm font-medium text-white block group-hover:text-primary transition-colors">Upload Resume (PDF)</span>
+              <span className="text-xs text-gray-500 mt-1 block">Drag and drop or click to browse</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -600,10 +643,10 @@ export const LiveProfilePreview = ({ data, step }) => {
 
       <div className="mt-4 pt-4 border-t border-white/5 flex justify-between items-center text-xs text-gray-500">
         <span>Completion</span>
-        <span className="text-primary font-bold">{Math.round((step / 9) * 100)}%</span>
+        <span className="text-primary font-bold">{Math.round((step / 8) * 100)}%</span>
       </div>
       <div className="w-full h-1 bg-white/5 rounded-full mt-2 overflow-hidden">
-        <div className="h-full bg-primary transition-all duration-500" style={{ width: `${(step / 9) * 100}%` }} />
+        <div className="h-full bg-primary transition-all duration-500" style={{ width: `${(step / 8) * 100}%` }} />
       </div>
     </div>
   );
