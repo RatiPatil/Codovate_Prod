@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import api from '../../api/axios';
 import { showAlert } from '../../utils/uiUtils';
 import StudentProfileModal from './StudentProfileModal';
+import SkeletonLoader from '../../components/common/SkeletonLoader';
 
 const FindTeammates = () => {
   const [students, setStudents] = useState([]);
@@ -47,8 +48,8 @@ const FindTeammates = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+      <div className="h-full pt-4">
+        <SkeletonLoader type="card" count={4} />
       </div>
     );
   }
@@ -106,7 +107,7 @@ const FindTeammates = () => {
                   <div className="absolute -bottom-8 left-6">
                     <div className="w-16 h-16 rounded-full border-4 border-[#121212] bg-gray-800 flex items-center justify-center overflow-hidden">
                       {student.profile_photo ? (
-                        <img src={student.profile_photo} alt={student.name || 'User'} className="w-full h-full object-cover" />
+                        <img loading="lazy" decoding="async" src={student.profile_photo} alt={student.name || 'User'} className="w-full h-full object-cover" />
                       ) : (
                         <span className="text-xl font-bold text-gray-400">{student.name ? student.name.charAt(0).toUpperCase() : 'U'}</span>
                       )}

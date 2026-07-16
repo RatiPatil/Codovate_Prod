@@ -34,7 +34,7 @@ const StudentProfileModal = ({ student, onClose }) => {
           <div className="flex flex-col md:flex-row md:items-end gap-6 -mt-16 mb-8 relative z-10">
             <div className="w-32 h-32 rounded-full bg-[#1a1a1f] border-4 border-[#0f0f11] flex items-center justify-center overflow-hidden shrink-0 shadow-xl">
               {student.profile_photo || student.avatar ? (
-                <img src={student.profile_photo || student.avatar} alt="Profile" className="w-full h-full object-cover" />
+                <img loading="lazy" decoding="async" src={student.profile_photo || student.avatar} alt="Profile" className="w-full h-full object-cover" />
               ) : (
                 <span className="text-4xl font-bold text-gray-500">{student.name?.charAt(0).toUpperCase()}</span>
               )}

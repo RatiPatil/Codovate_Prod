@@ -1,19 +1,28 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import AdminDataTable from '../../components/common/AdminDataTable';
 import { formatDate } from '../../utils/dateUtils';
-
-// Mock Data for Audit Logs
-const MOCK_AUDIT_LOGS = [
-  { id: '1', admin_name: 'John Doe', admin_role: 'Super Admin', action: 'Suspended User', target: 'Alice Smith (alice@example.com)', created_at: new Date(Date.now() - 1000 * 60 * 30).toISOString() },
-  { id: '2', admin_name: 'Jane Smith', admin_role: 'Company Admin', action: 'Approved Job', target: 'Frontend Developer (Google)', created_at: new Date(Date.now() - 1000 * 60 * 120).toISOString() },
-  { id: '3', admin_name: 'Mark Tech', admin_role: 'College Admin', action: 'Verified Student', target: 'Bob Johnson (bob@mit.edu)', created_at: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString() },
-  { id: '4', admin_name: 'System', admin_role: 'System', action: 'Automated Backup', target: 'Database', created_at: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString() },
-  { id: '5', admin_name: 'John Doe', admin_role: 'Super Admin', action: 'Updated Settings', target: 'Global Application Settings', created_at: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString() },
-];
+import api from '../../api/axios';
 
 const SuperAdminAudit = () => {
-  const [logs] = useState(MOCK_AUDIT_LOGS);
+  const [logs, setLogs] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [filterTab, setFilterTab] = useState('all');
+
+  useEffect(() => {
+    const fetchLogs = async () => {
+      try {
+        const res = await api.get('/admin/audit-logs');
+        if (res.data.success) {
+          setLogs(res.data.logs);
+        }
+      } catch (err) {
+        console.error('Error fetching audit logs', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchLogs();
+  }, []);
 
   const filteredLogs = useMemo(() => {
     if (filterTab === 'system') return logs.filter(l => l.admin_role === 'System');
@@ -24,17 +33,20 @@ const SuperAdminAudit = () => {
   const columns = [
     { 
       header: 'Admin / Actor', 
-      render: (row) => (
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-[#2015FF]/10 text-[#2015FF] flex items-center justify-center font-bold text-xs border border-[#2015FF]/20">
-            {row.admin_name.charAt(0)}
+      render: (row) => {
+        const displayName = row.admin_name || row.admin_email || 'System';
+        return (
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-[#2015FF]/10 text-[#2015FF] flex items-center justify-center font-bold text-xs border border-[#2015FF]/20">
+              {displayName.charAt(0).toUpperCase()}
+            </div>
+            <div>
+              <p className="font-bold text-white">{displayName}</p>
+              <p className="text-[10px] text-gray-500 font-mono mt-0.5">{row.admin_role || 'System'}</p>
+            </div>
           </div>
-          <div>
-            <p className="font-bold text-white">{row.admin_name}</p>
-            <p className="text-[10px] text-gray-500 font-mono mt-0.5">{row.admin_role}</p>
-          </div>
-        </div>
-      )
+        );
+      }
     },
     { 
       header: 'Action Performed', 
@@ -54,7 +66,7 @@ const SuperAdminAudit = () => {
       header: 'Timestamp', 
       render: (row) => (
         <p className="text-xs text-gray-500 font-mono">
-          {formatDate(row.created_at, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+          {formatDate(row.timestamp || row.created_at, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
         </p>
       )
     }
@@ -96,7 +108,7 @@ const SuperAdminAudit = () => {
         title="Event History"
         data={filteredLogs}
         columns={columns}
-        loading={false}
+        loading={loading}
         searchPlaceholder="Search logs by action, actor, or target..."
         searchableKeys={['admin_name', 'action', 'target', 'admin_role']}
       />

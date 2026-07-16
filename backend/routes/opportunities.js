@@ -158,7 +158,7 @@ router.post(
     req.io.to("global").emit("new_opportunity", opp);
 
     // Send notification to all students
-    const studentsSnapshot = await db.collection("students").where("is_active", "==", true).get();
+    const studentsSnapshot = await db.collection("users").where("role", "==", "student").where("is_active", "==", true).get();
     for (const studentDoc of studentsSnapshot.docs) {
       const s = studentDoc.data();
       const notifRef = db.collection("notifications").doc();

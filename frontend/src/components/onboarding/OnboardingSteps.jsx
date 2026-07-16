@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
+import { uploadProfilePhoto, uploadResume } from '../../utils/storageUtils';
+import { auth } from '../../lib/firebase';
 
 // Shared Input Field with Floating Label
 export const InputField = ({ label, field, type = 'text', required = false, optional = false, data, update, handleBlur, touched, errors }) => {
@@ -145,30 +147,29 @@ export const Step2BasicInfo = ({ data, update, touched, handleBlur, errors }) =>
     }
   };
 
-  const handleFile = (file) => {
+  const handleFile = async (file) => {
     if (file.size > 2 * 1024 * 1024) {
       alert('File size must be less than 2MB');
       return;
     }
     setUploading(true);
-    let progress = 0;
-    const interval = setInterval(() => {
-      progress += Math.random() * 30;
-      if (progress >= 100) {
-        clearInterval(interval);
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          update('profile_photo', reader.result);
-          setUploading(false);
-          setUploadProgress(0);
-          setShowSuccess(true);
-          setTimeout(() => setShowSuccess(false), 2000);
-        };
-        reader.readAsDataURL(file);
-      } else {
+    setUploadProgress(0);
+    
+    try {
+      const uid = auth.currentUser?.uid || 'temp_user';
+      const downloadUrl = await uploadProfilePhoto(file, uid, (progress) => {
         setUploadProgress(progress);
-      }
-    }, 100);
+      });
+      update('profile_photo', downloadUrl);
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 2000);
+    } catch (err) {
+      console.error(err);
+      alert('Failed to upload photo');
+    } finally {
+      setUploading(false);
+      setUploadProgress(0);
+    }
   };
 
   const removePhoto = () => update('profile_photo', null);
@@ -194,7 +195,7 @@ export const Step2BasicInfo = ({ data, update, touched, handleBlur, errors }) =>
               </div>
             </div>
           ) : data.profile_photo ? (
-            <img src={data.profile_photo} alt="Profile" className="w-full h-full object-cover" />
+            <img loading="lazy" decoding="async" src={data.profile_photo} alt="Profile" className="w-full h-full object-cover" />
           ) : (
             <div className="text-center">
               <span className="text-3xl block mb-1">📸</span>
@@ -222,7 +223,7 @@ export const Step2BasicInfo = ({ data, update, touched, handleBlur, errors }) =>
         <div className="flex justify-center gap-4">
           {AVATARS.map((av, idx) => (
             <button key={idx} type="button" onClick={() => selectAvatar(av)} className={`w-12 h-12 rounded-full overflow-hidden border-2 transition-all hover:scale-110 ${data.profile_photo === av ? 'border-primary shadow-[0_0_15px_rgba(32,21,255,0.5)] scale-110' : 'border-white/10 hover:border-white/30'}`}>
-              <img src={av} alt="Avatar option" className="w-full h-full object-cover bg-white" />
+              <img loading="lazy" decoding="async" src={av} alt="Avatar option" className="w-full h-full object-cover bg-white" />
             </button>
           ))}
         </div>
@@ -368,7 +369,7 @@ export const Step4DreamCompany = ({ data, update }) => {
             >
               {c.logo ? (
                 <div className={`w-10 h-10 rounded-full bg-white flex items-center justify-center p-2 transition-transform duration-300 ${selected ? 'scale-110' : 'group-hover:scale-110'}`}>
-                   <img src={c.logo} alt={c.title} className="w-full h-full object-contain" />
+                   <img loading="lazy" decoding="async" src={c.logo} alt={c.title} className="w-full h-full object-contain" />
                 </div>
               ) : (
                 <span className={`text-2xl transition-transform duration-300 ${selected ? 'scale-110' : 'group-hover:scale-110'}`}>{c.icon}</span>
@@ -591,6 +592,33 @@ export const Step7Learning = ({ data, update }) => {
 
 // Screen 8: Projects & Experience
 export const Step8Experience = ({ data, update }) => {
+  const [uploadingResume, setUploadingResume] = useState(false);
+  const [resumeProgress, setResumeProgress] = useState(0);
+
+  const handleResumeUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Resume file size must be less than 5MB');
+      return;
+    }
+    
+    setUploadingResume(true);
+    setResumeProgress(0);
+    try {
+      const uid = auth.currentUser?.uid || 'temp_user';
+      const downloadUrl = await uploadResume(file, uid, (progress) => {
+        setResumeProgress(progress);
+      });
+      update('resume_url', downloadUrl);
+    } catch (err) {
+      console.error(err);
+      alert('Failed to upload resume');
+    } finally {
+      setUploadingResume(false);
+    }
+  };
+
   const LEVELS = [
     { title: 'Beginner', icon: '👶', desc: 'Just starting out.' },
     { title: 'Intermediate', icon: '🧑‍💻', desc: 'Built a few things.' },
@@ -632,12 +660,34 @@ export const Step8Experience = ({ data, update }) => {
           <div className="pt-4 border-t border-white/10">
             <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">Resume Upload <span className="text-gray-500 font-normal normal-case">(Optional)</span></label>
             <div className="border-2 border-dashed border-white/10 rounded-xl p-6 text-center hover:border-primary/50 transition-colors bg-white/5 relative group cursor-pointer">
-              <input type="file" accept=".pdf" className="absolute inset-0 opacity-0 cursor-pointer" onChange={() => alert('Resume upload will be handled by Firebase Storage in full implementation.')} />
-              <svg className="w-8 h-8 mx-auto text-gray-500 mb-3 group-hover:text-primary transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-              </svg>
-              <span className="text-sm font-medium text-white block group-hover:text-primary transition-colors">Upload Resume (PDF)</span>
-              <span className="text-xs text-gray-500 mt-1 block">Drag and drop or click to browse</span>
+              {uploadingResume ? (
+                <div className="flex flex-col items-center justify-center py-2">
+                  <span className="text-white text-[10px] font-bold mb-2">Uploading Resume... {Math.round(resumeProgress)}%</span>
+                  <div className="w-full max-w-[150px] h-1 bg-white/20 rounded-full overflow-hidden">
+                    <div className="h-full bg-primary transition-all duration-200" style={{ width: `${Math.min(resumeProgress, 100)}%` }} />
+                  </div>
+                </div>
+              ) : data.resume_url ? (
+                <div className="flex flex-col items-center justify-center py-2">
+                  <svg className="w-8 h-8 mx-auto text-green-500 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span className="text-sm font-medium text-green-400 block mb-1">Resume Uploaded Successfully!</span>
+                  <a href={data.resume_url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline z-10 relative">View Resume</a>
+                  
+                  {/* Provide a way to replace the resume */}
+                  <input type="file" accept=".pdf" className="absolute inset-0 opacity-0 cursor-pointer z-0" onChange={handleResumeUpload} />
+                </div>
+              ) : (
+                <>
+                  <input type="file" accept=".pdf" className="absolute inset-0 opacity-0 cursor-pointer z-10" onChange={handleResumeUpload} />
+                  <svg className="w-8 h-8 mx-auto text-gray-500 mb-3 group-hover:text-primary transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                  </svg>
+                  <span className="text-sm font-medium text-white block group-hover:text-primary transition-colors">Upload Resume (PDF)</span>
+                  <span className="text-xs text-gray-500 mt-1 block">Drag and drop or click to browse</span>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -653,7 +703,7 @@ export const LiveProfilePreview = ({ data, step }) => {
       <div className="flex items-center gap-4 mb-6">
         <div className="w-16 h-16 rounded-full bg-white/5 border border-white/10 overflow-hidden flex-shrink-0">
           {data.profile_photo ? (
-            <img src={data.profile_photo} alt="Avatar" className="w-full h-full object-cover" />
+            <img loading="lazy" decoding="async" src={data.profile_photo} alt="Avatar" className="w-full h-full object-cover" />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-gray-500">
               <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">

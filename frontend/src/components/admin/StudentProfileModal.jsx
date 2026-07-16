@@ -66,7 +66,7 @@ const StudentProfileModal = ({
           <div className="flex items-center gap-6">
             <div className="relative">
               {profile.avatar_url ? (
-                <img src={profile.avatar_url} alt="Profile" className="w-20 h-20 rounded-2xl object-cover border border-white/10" />
+                <img loading="lazy" decoding="async" src={profile.avatar_url} alt="Profile" className="w-20 h-20 rounded-2xl object-cover border border-white/10" />
               ) : (
                 <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#2015FF]/20 to-purple-500/20 flex items-center justify-center border border-white/10">
                   <span className="text-2xl font-black text-white">{(profile.name || student.name || 'S').substring(0, 2).toUpperCase()}</span>

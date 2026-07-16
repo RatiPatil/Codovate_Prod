@@ -81,9 +81,9 @@ const TeamDetailsModal = ({ team, onClose, onUpdate, currentUserRole }) => {
           <div className="flex flex-col md:flex-row md:items-end gap-6 -mt-16 mb-8 relative z-10">
             <div className="w-32 h-32 rounded-2xl bg-[#1a1a1f] border-4 border-[#0f0f11] flex items-center justify-center overflow-hidden shrink-0 shadow-xl">
               {team.logo ? (
-                <img src={team.logo} alt="Team Logo" className="w-full h-full object-cover" />
+                <img loading="lazy" decoding="async" src={team.logo} alt="Team Logo" className="w-full h-full object-cover" />
               ) : (
-                <span className="text-4xl font-bold text-gray-500">{team.name.charAt(0).toUpperCase()}</span>
+                <span className="text-4xl font-bold text-gray-500">{team.name?.charAt(0).toUpperCase() || 'T'}</span>
               )}
             </div>
             
@@ -192,7 +192,7 @@ const TeamDetailsModal = ({ team, onClose, onUpdate, currentUserRole }) => {
                     {members.map(m => (
                       <div key={m.id} className="flex items-center gap-3 p-3 bg-black/20 rounded-xl border border-white/5 group relative">
                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center font-bold text-white overflow-hidden shrink-0">
-                          {m.avatar ? <img src={m.avatar} alt={m.name} className="w-full h-full object-cover" /> : m.name?.charAt(0)}
+                          {m.avatar ? <img loading="lazy" decoding="async" src={m.avatar} alt={m.name} className="w-full h-full object-cover" /> : m.name?.charAt(0)}
                         </div>
                         <div className="min-w-0 flex-1">
                           <p className="text-white font-medium text-sm truncate flex items-center gap-1.5">

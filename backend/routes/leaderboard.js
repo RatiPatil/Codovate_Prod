@@ -7,54 +7,57 @@ router.get("/", auth, async (req, res) => {
   try {
     const { filter = 'overall', college, course, skill, limit = 50 } = req.query;
 
-    let query = db.collection("students").where("is_active", "==", true);
+    const [usersSnap, profilesSnap, analyticsSnap, careerSnap] = await Promise.all([
+      db.collection("users").where("role", "==", "student").where("is_active", "==", true).get(),
+      db.collection("profiles").get(),
+      db.collection("analytics").get(),
+      db.collection("careerProfiles").get()
+    ]);
 
-    // Apply filtering
-    if (college) query = query.where("profile_data.college", "==", college);
-    if (course) query = query.where("profile_data.branch", "==", course);
-    if (skill) query = query.where("profile_data.skills", "array-contains", skill);
+    // Build lookup maps
+    const profiles = {};
+    profilesSnap.docs.forEach(d => profiles[d.id] = d.data());
+    
+    const analytics = {};
+    analyticsSnap.docs.forEach(d => analytics[d.id] = d.data());
+    
+    const careers = {};
+    careerSnap.docs.forEach(d => careers[d.id] = d.data());
 
-    // Sort based on timeframe
-    let sortField = "total_points";
-    if (filter === "weekly") sortField = "weekly_points";
-    else if (filter === "monthly") sortField = "monthly_points";
+    let students = [];
+    usersSnap.docs.forEach((doc) => {
+      const u = doc.data();
+      const p = profiles[doc.id] || {};
+      const a = analytics[doc.id] || {};
+      const c = careers[doc.id] || {};
 
-    // Firestore requires an index if combining where and orderBy on different fields.
-    // For simplicity, we fetch them and sort manually if there are many filters, 
-    // OR we use orderBy if it's just the basic query.
-    // Assuming we have basic indexes or we just sort in memory if the dataset isn't huge.
-    // To be perfectly robust for thousands without complex composite indexes on every combination, 
-    // we fetch filtered and sort in memory if filters are applied, or rely on orderBy if no filters.
+      // Apply filtering
+      if (college && p.college !== college) return;
+      if (course && p.branch !== course) return;
+      if (skill && !(c.skills || []).includes(skill)) return;
 
-    const studentsSnapshot = await query.get();
-
-    let students = studentsSnapshot.docs.map((doc) => {
-      const s = doc.data();
-      const sp = s.profile_data || {};
-
-      const points = s[sortField] || 0;
+      const points = a.profile_score || 0; // Simplified for now
+      const profileCompletion = a.profile_completion || 0;
       
-      // Calculate dynamic badges based on existing scores
       const badges = [];
       if (points > 1000) badges.push({ name: '🏆 Top Performer', color: 'text-yellow-400 bg-yellow-500/10' });
-      if (s.placement_score >= 90) badges.push({ name: '🎯 Placement Ready', color: 'text-green-400 bg-green-500/10' });
-      if (sp.profile_completion === 100) badges.push({ name: '⭐ All-Star', color: 'text-blue-400 bg-blue-500/10' });
-      if (s.streak_count >= 7) badges.push({ name: '🔥 Consistency Star', color: 'text-orange-400 bg-orange-500/10' });
+      if (a.placement_score >= 90) badges.push({ name: '🎯 Placement Ready', color: 'text-green-400 bg-green-500/10' });
+      if (profileCompletion === 100) badges.push({ name: '⭐ All-Star', color: 'text-blue-400 bg-blue-500/10' });
 
-      return {
+      students.push({
         id: doc.id,
-        name: sp.name || 'Anonymous Student',
-        avatar_url: sp.avatar_url || null,
-        college: sp.college || 'Unknown College',
-        course: sp.branch || 'Unknown Course',
-        skills: sp.skills || [],
+        name: p.name || u.name || 'Anonymous Student',
+        avatar_url: p.avatar_url || null,
+        college: p.college || 'Unknown College',
+        course: p.branch || 'Unknown Course',
+        skills: c.skills || [],
         points: points,
-        total_points: s.total_points || 0,
-        placement_score: s.placement_score || 0,
-        profile_completion: sp.profile_completion || 0,
-        streak_count: s.streak_count || 0,
+        total_points: points,
+        placement_score: a.placement_score || 0,
+        profile_completion: profileCompletion,
+        streak_count: a.streak_count || 0,
         badges: badges
-      };
+      });
     });
 
     // Sort by points DESC
@@ -69,15 +72,15 @@ router.get("/", auth, async (req, res) => {
     // Fetch counts for only the top N students (performance optimization)
     const enrichedStudents = await Promise.all(topStudents.map(async (s) => {
       const [appsSnap, projectsSnap, certsSnap] = await Promise.all([
-        db.collection("applications").where("user_id", "==", s.id).get(),
-        db.collection("projects").where("student_id", "==", s.id).get(),
-        db.collection("certificates").where("student_id", "==", s.id).get()
+        db.collection("applications").where("user_id", "==", s.id).count().get(),
+        db.collection("projects").where("student_id", "==", s.id).count().get(),
+        db.collection("certificates").where("student_id", "==", s.id).count().get()
       ]);
       return {
         ...s,
-        applications_count: appsSnap.size,
-        projects_count: projectsSnap.size,
-        certificates_count: certsSnap.size
+        applications_count: appsSnap.data().count,
+        projects_count: projectsSnap.data().count,
+        certificates_count: certsSnap.data().count
       };
     }));
 
@@ -85,13 +88,13 @@ router.get("/", auth, async (req, res) => {
     let currentUser = students.find(s => s.id === req.user.id);
     if (currentUser) {
       const [appsSnap, projectsSnap, certsSnap] = await Promise.all([
-        db.collection("applications").where("user_id", "==", currentUser.id).get(),
-        db.collection("projects").where("student_id", "==", currentUser.id).get(),
-        db.collection("certificates").where("student_id", "==", currentUser.id).get()
+        db.collection("applications").where("user_id", "==", currentUser.id).count().get(),
+        db.collection("projects").where("student_id", "==", currentUser.id).count().get(),
+        db.collection("certificates").where("student_id", "==", currentUser.id).count().get()
       ]);
-      currentUser.applications_count = appsSnap.size;
-      currentUser.projects_count = projectsSnap.size;
-      currentUser.certificates_count = certsSnap.size;
+      currentUser.applications_count = appsSnap.data().count;
+      currentUser.projects_count = projectsSnap.data().count;
+      currentUser.certificates_count = certsSnap.data().count;
     }
 
     res.json({

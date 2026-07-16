@@ -44,14 +44,14 @@ const HeroSection = ({ profile }) => {
           </div>
 
           <div className="flex flex-wrap items-center gap-4 pt-4">
-            <Link to="/roadmap" className="bg-primary hover:bg-primary-dark text-white font-bold py-3 px-8 rounded-xl transition-all shadow-[0_0_20px_rgba(32,21,255,0.3)]">
-              Continue Learning
+            <Link to="/opportunities" className="bg-primary hover:bg-primary-dark text-white font-bold py-3 px-8 rounded-xl transition-all shadow-[0_0_20px_rgba(32,21,255,0.3)]">
+              Find Opportunities
             </Link>
             <div className="flex items-center gap-2 px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-sm font-bold text-gray-300">
-              🔥 <span className="text-white">{profile.streak} Day</span> Streak
+              ⭐ <span className="text-white">{profile.points || 0}</span> Profile Score
             </div>
             <div className="flex items-center gap-2 px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-sm font-bold text-gray-300">
-              ⭐ Level <span className="text-white">{profile.level}</span>
+              👋 Joined <span className="text-white">{new Date(profile.joinedAt).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}</span>
             </div>
           </div>
         </div>
@@ -59,33 +59,28 @@ const HeroSection = ({ profile }) => {
         {/* Right Side: Primary Stats */}
         <div className="w-full md:w-[350px] space-y-6 shrink-0">
           
-          {/* Placement Readiness */}
+          {/* Profile Completion */}
           <div className="bg-black/40 border border-white/5 rounded-2xl p-6 backdrop-blur-md">
             <div className="flex justify-between items-end mb-2">
-              <h3 className="text-gray-400 font-bold text-sm uppercase tracking-wider">Placement Readiness</h3>
-              <span className="text-2xl font-black text-white">{profile.placement_readiness}%</span>
+              <h3 className="text-gray-400 font-bold text-sm uppercase tracking-wider">Profile Completion</h3>
+              <span className="text-2xl font-black text-white">{profile.profile_completion || 0}%</span>
             </div>
             <div className="w-full bg-white/10 h-2 rounded-full overflow-hidden">
               <div 
-                className="h-full bg-gradient-to-r from-green-400 to-green-500 rounded-full" 
-                style={{ width: `${profile.placement_readiness}%` }}
+                className="h-full bg-gradient-to-r from-blue-400 to-blue-500 rounded-full" 
+                style={{ width: `${profile.profile_completion || 0}%` }}
               />
             </div>
-            <p className="text-xs text-gray-500 mt-3">Calculated from Resume, Profile, and Skills.</p>
+            <p className="text-xs text-gray-500 mt-3">Complete your profile to stand out to recruiters.</p>
           </div>
 
-          {/* Roadmap Progress */}
+          {/* Applications Submitted */}
           <div className="bg-black/40 border border-white/5 rounded-2xl p-6 backdrop-blur-md">
             <div className="flex justify-between items-end mb-2">
-              <h3 className="text-gray-400 font-bold text-sm uppercase tracking-wider">Roadmap Progress</h3>
-              <span className="text-2xl font-black text-white">{profile.roadmap_progress}%</span>
+              <h3 className="text-gray-400 font-bold text-sm uppercase tracking-wider">Total Applications</h3>
+              <span className="text-2xl font-black text-white">{profile.appsCount || 0}</span>
             </div>
-            <div className="w-full bg-white/10 h-2 rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-gradient-to-r from-primary to-purple-500 rounded-full" 
-                style={{ width: `${profile.roadmap_progress}%` }}
-              />
-            </div>
+            <p className="text-xs text-gray-500 mt-1">Keep applying to land your dream role.</p>
           </div>
 
         </div>

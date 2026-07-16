@@ -19,34 +19,38 @@ const ProgressOverview = ({ profile }) => {
     {
       title: 'Profile Completion',
       value: profile.profile_completion,
+      isPercentage: true,
       link: '/profile',
       color: 'bg-blue-500',
       emptyText: 'Complete your profile details.',
       icon: '👤'
     },
     {
-      title: 'Resume Score',
-      value: profile.resume_score,
-      link: '/profile',
+      title: 'Applications Submitted',
+      value: profile.appsCount,
+      isPercentage: false,
+      link: '/opportunities',
       color: 'bg-purple-500',
-      emptyText: 'Upload your resume to receive an ATS score.',
-      icon: '📄'
+      emptyText: 'Apply to your first opportunity.',
+      icon: '📨'
     },
     {
-      title: 'Roadmap Progress',
-      value: profile.roadmap_progress,
-      link: '/roadmap',
+      title: 'Teams Joined',
+      value: profile.teamsCount,
+      isPercentage: false,
+      link: '/teams',
       color: 'bg-yellow-500',
-      emptyText: 'Start your learning roadmap.',
-      icon: '🗺️'
+      emptyText: 'Find or create a team.',
+      icon: '🤝'
     },
     {
-      title: 'Learning Progress',
-      value: profile.learning_progress,
-      link: '/roadmap',
+      title: 'Mentor Sessions',
+      value: profile.mentorsCount,
+      isPercentage: false,
+      link: '/mentors',
       color: 'bg-green-500',
-      emptyText: 'Complete a learning module.',
-      icon: '🧠'
+      emptyText: 'Book a session with an expert.',
+      icon: '👨‍🏫'
     }
   ];
 
@@ -76,14 +80,18 @@ const ProgressOverview = ({ profile }) => {
               {card.value > 0 ? (
                 <div>
                   <div className="flex items-end justify-between mb-2">
-                    <span className="text-3xl font-black text-white">{card.value}%</span>
+                    <span className="text-3xl font-black text-white">
+                      {card.value}{card.isPercentage ? '%' : ''}
+                    </span>
                   </div>
-                  <div className="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
-                    <div 
-                      className={`h-full ${card.color} rounded-full`} 
-                      style={{ width: `${card.value}%` }}
-                    />
-                  </div>
+                  {card.isPercentage && (
+                    <div className="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
+                      <div 
+                        className={`h-full ${card.color} rounded-full`} 
+                        style={{ width: `${card.value}%` }}
+                      />
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="mt-4 pt-4 border-t border-white/5">

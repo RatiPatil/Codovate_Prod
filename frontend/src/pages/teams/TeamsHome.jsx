@@ -1,13 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { gsap } from 'gsap';
 import api from '../../api/axios';
 import { showAlert } from '../../utils/uiUtils';
 import TeamDetailsModal from './TeamDetailsModal';
-import Loader from '../../components/common/Loader';
+import SkeletonLoader from '../../components/common/SkeletonLoader';
 
 const TeamsHome = () => {
   const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedTeam, setSelectedTeam] = useState(null);
+  const listRef = useRef(null);
 
   useEffect(() => {
     fetchTeams();
@@ -25,6 +27,16 @@ const TeamsHome = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (!loading && teams.length > 0 && listRef.current) {
+      const cards = listRef.current.querySelectorAll('.team-card');
+      gsap.fromTo(cards, 
+        { y: 30, opacity: 0 }, 
+        { y: 0, opacity: 1, duration: 0.6, stagger: 0.1, ease: 'power3.out' }
+      );
+    }
+  }, [loading, teams]);
 
   const getStatusBadge = (status) => {
     const colors = {
@@ -49,8 +61,8 @@ const TeamsHome = () => {
 
   if (loading) {
     return (
-      <div className="flex-1 h-full overflow-y-auto">
-        <Loader fullScreen={false} message="Loading Teams..." />
+      <div className="flex-1 h-full overflow-y-auto pt-4">
+        <SkeletonLoader type="card" count={6} />
       </div>
     );
   }
@@ -72,11 +84,11 @@ const TeamsHome = () => {
 
   return (
     <div className="h-full overflow-y-auto pr-2 scrollbar-hide pb-20">
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+      <div ref={listRef} className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
         {teams.map((team) => (
           <div 
             key={team.id} 
-            className="glass-panel p-6 rounded-2xl border border-white/10 hover:border-primary/30 transition-all duration-300 group flex flex-col h-full relative overflow-hidden"
+            className="team-card glass-panel p-6 rounded-2xl border border-white/10 hover:border-primary/30 transition-all duration-300 group flex flex-col h-full relative overflow-hidden hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(32,21,255,0.2)]"
           >
             {/* Background Glow */}
             <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none transition-opacity opacity-0 group-hover:opacity-100" />
@@ -85,9 +97,9 @@ const TeamsHome = () => {
               <div className="flex gap-4">
                 <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary/20 to-purple-500/20 border border-white/10 flex items-center justify-center shrink-0 overflow-hidden shadow-inner">
                   {team.logo ? (
-                    <img src={team.logo} alt="Logo" className="w-full h-full object-cover" />
+                    <img loading="lazy" decoding="async" src={team.logo} alt="Logo" className="w-full h-full object-cover" />
                   ) : (
-                    <span className="text-2xl">{team.name.charAt(0).toUpperCase()}</span>
+                    <span className="text-2xl">{team.name?.charAt(0).toUpperCase() || 'T'}</span>
                   )}
                 </div>
                 <div>
@@ -125,7 +137,7 @@ const TeamsHome = () => {
 
               <button 
                 onClick={() => setSelectedTeam(team)}
-                className="w-full py-2.5 bg-white/5 hover:bg-primary/10 text-white hover:text-primary rounded-xl font-medium transition-colors border border-white/10 hover:border-primary/30"
+                className="w-full py-2.5 bg-white/5 hover:bg-primary/10 text-white hover:text-primary rounded-xl font-medium transition-all border border-white/10 hover:border-primary/30 active:scale-95"
               >
                 View Details
               </button>

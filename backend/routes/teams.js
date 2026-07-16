@@ -9,23 +9,26 @@ router.get("/my", auth, async (req, res) => {
   try {
     const tmSnapshot = await db.collection("team_members").where("user_id", "==", req.user.id).get();
     
-    let teams = [];
-    for (const doc of tmSnapshot.docs) {
+    let teams = await Promise.all(tmSnapshot.docs.map(async (doc) => {
       const tm = doc.data();
       const teamDoc = await db.collection("teams").doc(tm.team_id).get();
-      if (!teamDoc.exists) continue;
+      if (!teamDoc.exists) return null;
       const team = teamDoc.data();
       team.id = teamDoc.id;
       
-      const oppDoc = team.opportunity_id ? await db.collection("opportunities").doc(team.opportunity_id).get() : null;
-      team.opportunity_title = oppDoc && oppDoc.exists ? oppDoc.data().title : null;
+      const [oppDoc, membersSnapshot] = await Promise.all([
+        team.opportunity_id ? db.collection("opportunities").doc(team.opportunity_id).get() : Promise.resolve(null),
+        db.collection("team_members").where("team_id", "==", team.id).get()
+      ]);
       
-      const membersSnapshot = await db.collection("team_members").where("team_id", "==", team.id).get();
+      team.opportunity_title = oppDoc && oppDoc.exists ? oppDoc.data().title : null;
       team.member_count = membersSnapshot.size;
       team.my_role = tm.role || 'member';
       
-      teams.push(team);
-    }
+      return team;
+    }));
+    
+    teams = teams.filter(t => t !== null);
     
     teams.sort((a, b) => {
       const timeA = a.created_at?.toMillis ? a.created_at.toMillis() : new Date(a.created_at || 0).getTime();
@@ -45,22 +48,22 @@ router.get("/all", auth, async (req, res) => {
   try {
     const teamsSnapshot = await db.collection("teams").where("status", "==", "Recruiting").get();
     
-    let teams = [];
-    for (const doc of teamsSnapshot.docs) {
+    let teams = await Promise.all(teamsSnapshot.docs.map(async (doc) => {
       const team = doc.data();
       team.id = doc.id;
       
-      const membersSnapshot = await db.collection("team_members").where("team_id", "==", team.id).get();
-      team.member_count = membersSnapshot.size;
+      const [membersSnapshot, ownerDoc] = await Promise.all([
+        db.collection("team_members").where("team_id", "==", team.id).get(),
+        db.collection("profiles").doc(team.created_by).get()
+      ]);
       
-      // Get owner info
-      const ownerDoc = await db.collection("students").doc(team.created_by).get();
+      team.member_count = membersSnapshot.size;
       if (ownerDoc.exists) {
         team.owner_name = ownerDoc.data().name || ownerDoc.data().full_name || 'Anonymous';
       }
 
-      teams.push(team);
-    }
+      return team;
+    }));
     
     teams.sort((a, b) => {
       const timeA = a.created_at?.toMillis ? a.created_at.toMillis() : new Date(a.created_at || 0).getTime();
@@ -177,14 +180,17 @@ router.get("/:id/members", auth, async (req, res) => {
     let members = [];
     for (const doc of tmSnapshot.docs) {
       const tm = doc.data();
-      const studentDoc = await db.collection("students").doc(tm.user_id).get();
+      const studentDoc = await db.collection("profiles").doc(tm.user_id).get();
+      let name = 'Unknown User';
+      let email = '';
       if (studentDoc.exists) {
-        const s = studentDoc.data();
-        const sp = s.profile_data || {};
+        const pd = studentDoc.data();
+        name = pd.name || 'Anonymous Student';
+        email = pd.email || '';
         members.push({
           id: studentDoc.id,
-          name: sp.name || 'Anonymous Student',
-          email: s.email,
+          name: name,
+          email: email,
           role: tm.role || 'member',
           joined_at: tm.joined_at
         });
@@ -229,7 +235,7 @@ router.get("/discover", auth, async (req, res) => {
   try {
     const { skill, domain, experience, college } = req.query;
 
-    const studentsSnap = await db.collection("students")
+    const studentsSnap = await db.collection("profiles")
       .where("is_active", "==", true)
       .get();
 
@@ -300,10 +306,9 @@ router.post("/:id/discussions", auth, async (req, res) => {
       .get();
     if (memberCheck.empty) return res.status(403).json({ message: "You are not a member of this team." });
 
-    const studentDoc = await db.collection("students").doc(req.user.id).get();
+    const studentDoc = await db.collection("profiles").doc(req.user.id).get();
     const s = studentDoc.exists ? studentDoc.data() : {};
-    const sp = s.profile_data || {};
-    const userName = sp.name || 'Anonymous';
+    const userName = s.name || 'Anonymous';
 
     const msgRef = db.collection("team_discussions").doc();
     const msg = {

@@ -7,35 +7,50 @@ const { awardPoints, updatePlacementScore } = require("../utils/scoring");
 router.get("/", auth, async (req, res) => {
   if (!["admin", "super_admin", "college_admin", "company_admin"].includes(req.user.role)) return res.status(403).json({ message: "Admin only." });
   try {
-    const studentsSnapshot = await db.collection("students").where("is_active", "==", true).get();
-    
-    const students = studentsSnapshot.docs.map((doc) => {
-      const s = doc.data();
-      const sp = s.profile_data || {};
+    const [profilesSnap, usersSnap, analyticsSnap, careerSnap] = await Promise.all([
+      db.collection("profiles").get(),
+      db.collection("users").where("role", "==", "student").get(),
+      db.collection("analytics").get(),
+      db.collection("careerProfiles").get()
+    ]);
 
-      // Safely serialize Firestore Timestamp
+    const profiles = {};
+    profilesSnap.docs.forEach(d => profiles[d.id] = d.data());
+    
+    const analytics = {};
+    analyticsSnap.docs.forEach(d => analytics[d.id] = d.data());
+    
+    const careers = {};
+    careerSnap.docs.forEach(d => careers[d.id] = d.data());
+
+    const students = usersSnap.docs.map(doc => {
+      const u = doc.data();
+      const p = profiles[doc.id] || {};
+      const a = analytics[doc.id] || {};
+      const c = careers[doc.id] || {};
+
       let joinedAt = null;
-      if (s.created_at) {
-        if (typeof s.created_at.toDate === 'function') {
-          joinedAt = s.created_at.toDate().toISOString();
+      if (u.createdAt) {
+        if (typeof u.createdAt.toDate === 'function') {
+          joinedAt = u.createdAt.toDate().toISOString();
         } else {
-          joinedAt = new Date(s.created_at).toISOString();
+          joinedAt = new Date(u.createdAt).toISOString();
         }
       }
       
       return {
         id: doc.id,
-        name: sp.name || '',
-        email: s.email,
-        phone: s.phone || '',
+        name: p.name || u.name || '',
+        email: u.email || '',
+        phone: u.phone || '',
         created_at: joinedAt,
-        college: sp.college || null,
-        branch: sp.branch || null,
-        year: sp.year || null,
-        skills: sp.skills || [],
-        profile_completion: sp.profile_completion || 0,
-        onboarding_done: sp.onboarding_completed || false,
-        claimed: s.claimed || false
+        college: p.college || null,
+        branch: p.branch || null,
+        year: p.year || null,
+        skills: c.skills || [],
+        profile_completion: a.profile_completion || 0,
+        onboarding_done: a.onboarding_completed || false,
+        claimed: u.claimed || false
       };
     });
 
@@ -55,24 +70,37 @@ router.get("/", auth, async (req, res) => {
 
 router.get("/profile", auth, async (req, res) => {
   try {
-    const studentDoc = await db.collection("students").doc(req.user.id).get();
+    const uid = req.user.id;
+    const [userDoc, profileDoc, careerDoc, analyticsDoc] = await Promise.all([
+      db.collection("users").doc(uid).get(),
+      db.collection("profiles").doc(uid).get(),
+      db.collection("careerProfiles").doc(uid).get(),
+      db.collection("analytics").doc(uid).get()
+    ]);
     
-    if (!studentDoc.exists) {
-      return res.status(404).json({ message: "Student profile not found." });
+    if (!userDoc.exists) {
+      return res.status(404).json({ message: "User not found." });
     }
 
-    const s = studentDoc.data();
-    const sp = s.profile_data || {};
+    const u = userDoc.data();
+    const p = profileDoc.exists ? profileDoc.data() : {};
+    const c = careerDoc.exists ? careerDoc.data() : {};
+    const a = analyticsDoc.exists ? analyticsDoc.data() : {};
 
     res.json({
-      id: req.user.id,
-      email: s.email,
-      phone: s.phone,
-      role: s.role || 'student',
-      created_at: s.created_at,
-      claimed: s.claimed,
-      providers: s.providers,
-      ...sp // Spread all profile_data fields
+      id: uid,
+      email: u.email,
+      phone: u.phone,
+      role: u.role || 'student',
+      created_at: u.createdAt,
+      claimed: u.claimed,
+      providers: u.providers,
+      // Spread profile and career data
+      ...p,
+      ...c,
+      // Specific analytics
+      profile_completion: a.profile_completion || 0,
+      profile_score: a.profile_score || 0
     });
   } catch (err) {
     console.error("Get profile error:", err.message);
@@ -81,66 +109,89 @@ router.get("/profile", auth, async (req, res) => {
 });
 
 router.put("/profile", auth, async (req, res) => {
-  const { name, college, branch, year, skills, bio, resume_url, github_url, linkedin_url, avatar_url, desired_roles, achievements, seeking, passionate_about } = req.body;
+  const { name, college, branch, year, bio, resume_url, github_url, linkedin_url, avatar_url, skills, desired_roles, achievements, seeking, passionate_about, projects, certificates } = req.body;
 
   try {
-    const studentRef = db.collection("students").doc(req.user.id);
-    const studentDoc = await studentRef.get();
-    if (!studentDoc.exists) return res.status(404).json({ message: "Student record not found." });
-
-    const currentProfileData = studentDoc.data().profile_data || {};
+    const uid = req.user.id;
+    const profileRef = db.collection("profiles").doc(uid);
+    const careerRef = db.collection("careerProfiles").doc(uid);
+    const analyticsRef = db.collection("analytics").doc(uid);
+    
+    const [profileDoc, careerDoc, analyticsDoc] = await Promise.all([
+      profileRef.get(),
+      careerRef.get(),
+      analyticsRef.get()
+    ]);
+    
+    const currentProfile = profileDoc.exists ? profileDoc.data() : {};
+    const currentCareer = careerDoc.exists ? careerDoc.data() : {};
+    
+    // Group fields for profiles
+    const profileUpdates = {
+      name: name !== undefined ? name.trim().toUpperCase() : currentProfile.name,
+      college: college !== undefined ? college : currentProfile.college,
+      branch: branch !== undefined ? branch : currentProfile.branch,
+      year: year !== undefined ? year : currentProfile.year,
+      bio: bio !== undefined ? bio : currentProfile.bio,
+      resume_url: resume_url !== undefined ? resume_url : currentProfile.resume_url,
+      github_url: github_url !== undefined ? github_url : currentProfile.github_url,
+      linkedin_url: linkedin_url !== undefined ? linkedin_url : currentProfile.linkedin_url,
+      avatar_url: avatar_url !== undefined ? avatar_url : currentProfile.avatar_url
+    };
+    
+    // Group fields for careerProfiles
+    const careerUpdates = {
+      skills: skills !== undefined ? skills : currentCareer.skills,
+      desired_roles: desired_roles !== undefined ? desired_roles : currentCareer.desired_roles,
+      achievements: achievements !== undefined ? achievements : currentCareer.achievements,
+      seeking: seeking !== undefined ? seeking : currentCareer.seeking,
+      passionate_about: passionate_about !== undefined ? passionate_about : currentCareer.passionate_about,
+      projects: projects !== undefined ? projects : currentCareer.projects,
+      certificates: certificates !== undefined ? certificates : currentCareer.certificates
+    };
+    
+    // Remove undefined fields
+    Object.keys(profileUpdates).forEach(key => profileUpdates[key] === undefined && delete profileUpdates[key]);
+    Object.keys(careerUpdates).forEach(key => careerUpdates[key] === undefined && delete careerUpdates[key]);
 
     // Calculate basic profile completion on backend
     let completedFields = 0;
-    const totalFields = 8;
-    if (name || currentProfileData.name) completedFields++;
-    if (college || currentProfileData.college) completedFields++;
-    if (branch || currentProfileData.branch) completedFields++;
-    if (year || currentProfileData.year) completedFields++;
-    if ((skills && skills.length > 0) || (currentProfileData.skills && currentProfileData.skills.length > 0)) completedFields++;
-    if (bio || currentProfileData.bio) completedFields++;
-    if (resume_url || currentProfileData.resume_url) completedFields++;
-    if (github_url || linkedin_url || currentProfileData.github_url || currentProfileData.linkedin_url) completedFields++;
+    const totalFields = 10;
+    if (profileUpdates.name) completedFields++;
+    if (profileUpdates.college) completedFields++;
+    if (profileUpdates.branch) completedFields++;
+    if (profileUpdates.year) completedFields++;
+    if (careerUpdates.skills && careerUpdates.skills.length > 0) completedFields++;
+    if (profileUpdates.bio) completedFields++;
+    if (profileUpdates.resume_url) completedFields++;
+    if (profileUpdates.github_url || profileUpdates.linkedin_url) completedFields++;
+    if (careerUpdates.projects && careerUpdates.projects.length > 0) completedFields++;
+    if (careerUpdates.certificates && careerUpdates.certificates.length > 0) completedFields++;
     
     const profile_completion = Math.round((completedFields / totalFields) * 100);
 
-    const updateData = {
-      name: name !== undefined ? name.trim().toUpperCase() : currentProfileData.name,
-      college: college !== undefined ? college : currentProfileData.college,
-      branch: branch !== undefined ? branch : currentProfileData.branch,
-      year: year !== undefined ? year : currentProfileData.year,
-      skills: skills !== undefined ? skills : currentProfileData.skills,
-      bio: bio !== undefined ? bio : currentProfileData.bio,
-      resume_url: resume_url !== undefined ? resume_url : currentProfileData.resume_url,
-      github_url: github_url !== undefined ? github_url : currentProfileData.github_url,
-      linkedin_url: linkedin_url !== undefined ? linkedin_url : currentProfileData.linkedin_url,
-      avatar_url: avatar_url !== undefined ? avatar_url : currentProfileData.avatar_url,
-      desired_roles: desired_roles !== undefined ? desired_roles : currentProfileData.desired_roles,
-      achievements: achievements !== undefined ? achievements : currentProfileData.achievements,
-      seeking: seeking !== undefined ? seeking : currentProfileData.seeking,
-      passionate_about: passionate_about !== undefined ? passionate_about : currentProfileData.passionate_about,
-      profile_completion
-    };
-
-    // Remove undefined fields
-    Object.keys(updateData).forEach(key => {
-      if (updateData[key] === undefined) {
-        delete updateData[key];
-      }
-    });
-
-    await studentRef.set({ profile_data: updateData }, { merge: true });
+    const batch = db.batch();
+    batch.set(profileRef, profileUpdates, { merge: true });
+    batch.set(careerRef, careerUpdates, { merge: true });
+    batch.set(analyticsRef, { profile_completion }, { merge: true });
+    
+    // Check if name changed to sync with users
+    if (name !== undefined && name.trim().toUpperCase() !== currentProfile.name) {
+      batch.update(db.collection("users").doc(uid), { name: name.trim().toUpperCase() });
+    }
+    
+    await batch.commit();
 
     // Scoring Engine Integration
     if (profile_completion === 100) {
-      await awardPoints(req.user.id, 'profile_complete', 100);
+      await awardPoints(uid, 'profile_complete', 100);
     }
-    if (updateData.resume_url) {
-      await awardPoints(req.user.id, 'resume_upload', 50);
+    if (profileUpdates.resume_url && !currentProfile.resume_url) {
+      await awardPoints(uid, 'resume_upload', 50);
     }
     
     // Update Placement Score
-    await updatePlacementScore(req.user.id);
+    await updatePlacementScore(uid);
 
     res.json({ message: "Profile updated successfully." });
   } catch (err) {
@@ -202,27 +253,29 @@ router.get("/stats", auth, async (req, res) => {
   try {
     const uid = req.user.id;
 
-    const [appsSnap, teamsSnap, bookingsSnap, studentDoc] = await Promise.all([
+    const [appsSnap, teamsSnap, bookingsSnap, userDoc, analyticsDoc] = await Promise.all([
       db.collection("applications").where("student_id", "==", uid).get(),
       db.collection("team_members").where("user_id", "==", uid).get(),
       db.collection("mentorSessions").where("student_id", "==", uid).get(),
-      db.collection("students").doc(uid).get(),
+      db.collection("users").doc(uid).get(),
+      db.collection("analytics").doc(uid).get()
     ]);
 
     // Calculate leaderboard rank
-    const allStudentsSnap = await db.collection("students").where("is_active", "==", true).get();
+    const allUsersSnap = await db.collection("users").where("role", "==", "student").where("is_active", "==", true).get();
     let userPoints = 0;
     const allPoints = [];
 
-    for (const doc of allStudentsSnap.docs) {
-      const s = doc.data();
-      const sp = s.profile_data || {};
-      const completionPts = (sp.profile_completion || 0) * 10;
+    for (const doc of allUsersSnap.docs) {
+      const aDoc = await db.collection("analytics").doc(doc.id).get();
+      const a = aDoc.exists ? aDoc.data() : {};
+      
+      const completionPts = (a.profile_completion || 0) * 10;
       const appsForUser = await db.collection("applications").where("student_id", "==", doc.id).get();
       const appPts = appsForUser.size * 50;
       const teamsForUser = await db.collection("team_members").where("user_id", "==", doc.id).get();
       const teamPts = teamsForUser.size * 100;
-      const total = completionPts + appPts + teamPts + (sp.profile_score || 0);
+      const total = completionPts + appPts + teamPts + (a.profile_score || 0);
       allPoints.push({ id: doc.id, points: total });
       if (doc.id === uid) userPoints = total;
     }
@@ -231,10 +284,10 @@ router.get("/stats", auth, async (req, res) => {
     const rank = allPoints.findIndex(p => p.id === uid) + 1;
 
     let joinedAt = new Date();
-    if (studentDoc.exists) {
-      const d = studentDoc.data();
-      if (d.created_at) {
-        joinedAt = d.created_at.toDate ? d.created_at.toDate() : new Date(d.created_at);
+    if (userDoc.exists) {
+      const d = userDoc.data();
+      if (d.createdAt) {
+        joinedAt = d.createdAt.toDate ? d.createdAt.toDate() : new Date(d.createdAt);
       }
     }
     
@@ -259,68 +312,78 @@ router.get("/stats", auth, async (req, res) => {
 router.get("/workspace", auth, async (req, res) => {
   try {
     const uid = req.user.id;
-    const studentRef = db.collection("students").doc(uid);
-    const studentDoc = await studentRef.get();
     
-    if (!studentDoc.exists) {
-      return res.status(404).json({ message: "Student profile not found." });
+    const [userDoc, profileDoc, careerDoc, analyticsDoc] = await Promise.all([
+      db.collection("users").doc(uid).get(),
+      db.collection("profiles").doc(uid).get(),
+      db.collection("careerProfiles").doc(uid).get(),
+      db.collection("analytics").doc(uid).get()
+    ]);
+    
+    if (!userDoc.exists) {
+      return res.status(404).json({ message: "User not found." });
     }
 
-    const s = studentDoc.data();
-    const sp = s.profile_data || {};
+    const u = userDoc.data();
+    const p = profileDoc.exists ? profileDoc.data() : {};
+    const c = careerDoc.exists ? careerDoc.data() : {};
+    const a = analyticsDoc.exists ? analyticsDoc.data() : {};
 
-    // 1. Placement Readiness Calculation (Dynamic)
-    let placementReadiness = 0;
-    if (sp.profile_completion === 100) placementReadiness += 25;
-    else placementReadiness += (sp.profile_completion || 0) * 0.25;
-    if (sp.resume_url) placementReadiness += 25;
-    if (sp.skills && sp.skills.length > 3) placementReadiness += 25;
-    // Add logic for projects or learning if they exist later
-    placementReadiness += 10; // base score for being active
-    
-    // Cap at 100
-    placementReadiness = Math.min(100, Math.round(placementReadiness));
+    // 1. Fetch Real Data Counts
+    const [appsSnap, teamsSnap, bookingsSnap] = await Promise.all([
+      db.collection("applications").where("student_id", "==", uid).get(),
+      db.collection("team_members").where("user_id", "==", uid).get(),
+      db.collection("mentorSessions").where("student_id", "==", uid).get(),
+    ]);
 
-    // 2. Daily Mission (Today's Focus)
-    const today = new Date().toISOString().split('T')[0];
-    let mission = sp.daily_mission;
-    if (!mission || mission.date !== today) {
-      // Generate new mission based on real data
-      const tasks = [];
-      if (!sp.resume_url) tasks.push({ id: 'resume', title: 'Upload Resume', completed: false, xp: 50, type: 'profile' });
-      if (sp.profile_completion < 100) tasks.push({ id: 'profile', title: 'Complete Profile', completed: false, xp: 50, type: 'profile' });
-      if (sp.skills && sp.skills.length > 0) tasks.push({ id: 'skill', title: `Practice ${sp.skills[0]}`, completed: false, xp: 30, type: 'learning' });
-      else tasks.push({ id: 'skill', title: 'Add your top skills', completed: false, xp: 30, type: 'profile' });
-      
-      // Pad with default task if less than 3
-      if (tasks.length < 3) {
-        tasks.push({ id: 'apply', title: 'Apply to one Internship', completed: false, xp: 40, type: 'action' });
-      }
+    const appsCount = appsSnap.size;
+    const teamsCount = teamsSnap.size;
+    const mentorsCount = bookingsSnap.size;
 
-      mission = { date: today, tasks, completed: false };
-      await studentRef.update({ 'profile_data.daily_mission': mission });
+    // Calculate real points based on stats
+    const profilePoints = (a.profile_completion || 0) * 10;
+    const appPoints = appsCount * 50;
+    const teamPoints = teamsCount * 100;
+    const totalPoints = profilePoints + appPoints + teamPoints + (a.profile_score || 0);
+
+    // 2. Real Actionable Tasks (Today's Focus)
+    const tasks = [];
+    if (!p.resume_url) {
+      tasks.push({ id: 'resume', title: 'Upload Resume', type: 'profile', actionUrl: '/profile' });
     }
+    if ((a.profile_completion || 0) < 100) {
+      tasks.push({ id: 'profile', title: 'Complete Profile Details', type: 'profile', actionUrl: '/profile' });
+    }
+    if (appsCount === 0) {
+      tasks.push({ id: 'apply', title: 'Apply to an Opportunity', type: 'action', actionUrl: '/opportunities' });
+    }
+    
+    const mission = { tasks };
 
     // 3. AI Recommendations (Opportunities)
-    // For now, fetch top 2 opportunities as a mock "recommendation"
     const oppsSnap = await db.collection("opportunities").where("status", "==", "Active").limit(2).get();
     const recommendations = [];
     oppsSnap.forEach(doc => recommendations.push({ id: doc.id, ...doc.data() }));
 
-    // Compile Dashboard V4 Data
+    // Resolve Joined Date
+    let joinedAt = new Date();
+    if (u.createdAt) {
+      joinedAt = u.createdAt.toDate ? u.createdAt.toDate() : new Date(u.createdAt);
+    }
+
+    // Compile Dashboard Data
     res.json({
       profile: {
         id: uid,
-        name: sp.name || '',
-        career_goal: sp.career_goal || sp.desired_roles?.[0] || 'Software Engineer',
-        level: sp.level || 1,
-        xp: sp.xp || 0,
-        streak: sp.streak || 0,
-        profile_completion: sp.profile_completion || 0,
-        resume_score: sp.resume_url ? 85 : 0, // Mock ATS score based on presence
-        placement_readiness: placementReadiness,
-        learning_progress: 34, // Mock for now until learning module exists
-        roadmap_progress: 12, // Mock for now until roadmap module exists
+        name: p.name || u.name || '',
+        career_goal: c.desired_roles?.[0] || 'Software Engineer',
+        profile_completion: a.profile_completion || 0,
+        has_resume: !!p.resume_url,
+        points: totalPoints,
+        appsCount,
+        teamsCount,
+        mentorsCount,
+        joinedAt: joinedAt.toISOString(),
       },
       mission,
       recommendations
@@ -334,92 +397,11 @@ router.get("/workspace", auth, async (req, res) => {
 
 // ── Gamification: Daily Missions & XP ──────────────────────────────────────
 router.get("/mission", auth, async (req, res) => {
-  try {
-    const uid = req.user.id;
-    const studentRef = db.collection("students").doc(uid);
-    const studentDoc = await studentRef.get();
-    
-    if (!studentDoc.exists) return res.status(404).json({ message: "Student not found" });
-    
-    const sp = studentDoc.data().profile_data || {};
-    const today = new Date().toISOString().split('T')[0];
-    
-    // Check if mission exists for today
-    if (sp.daily_mission && sp.daily_mission.date === today) {
-      return res.json(sp.daily_mission);
-    }
-    
-    // Generate new mission
-    const firstSkill = sp.skills?.[0] || 'Basics';
-    const newMission = {
-      date: today,
-      tasks: [
-        { id: 'task1', title: `Practice ${firstSkill}`, completed: false, xp: 50 },
-        { id: 'task2', title: 'Solve 2 Coding Problems', completed: false, xp: 40 },
-        { id: 'task3', title: 'Upload Resume', completed: false, xp: 30 }
-      ],
-      completed: false
-    };
-    
-    await studentRef.update({
-      'profile_data.daily_mission': newMission,
-      'profile_data.xp': sp.xp || 0,
-      'profile_data.streak': sp.streak || 0,
-      'profile_data.level': sp.level || 1
-    });
-    
-    res.json(newMission);
-  } catch (err) {
-    console.error("Mission Get error:", err.message);
-    res.status(500).json({ message: "Server error." });
-  }
+  res.json({ date: new Date().toISOString().split('T')[0], tasks: [], completed: false });
 });
 
 router.post("/mission/complete", auth, async (req, res) => {
-  try {
-    const { taskId } = req.body;
-    const uid = req.user.id;
-    const studentRef = db.collection("students").doc(uid);
-    const studentDoc = await studentRef.get();
-    
-    if (!studentDoc.exists) return res.status(404).json({ message: "Student not found" });
-    
-    const sp = studentDoc.data().profile_data || {};
-    const mission = sp.daily_mission;
-    
-    if (!mission) return res.status(400).json({ message: "No active mission" });
-    
-    const taskIndex = mission.tasks.findIndex(t => t.id === taskId);
-    if (taskIndex === -1 || mission.tasks[taskIndex].completed) {
-      return res.status(400).json({ message: "Task not found or already completed" });
-    }
-    
-    mission.tasks[taskIndex].completed = true;
-    const xpReward = mission.tasks[taskIndex].xp;
-    
-    let newXp = (sp.xp || 0) + xpReward;
-    let newLevel = Math.floor(newXp / 500) + 1;
-    let newStreak = sp.streak || 0;
-    
-    const allCompleted = mission.tasks.every(t => t.completed);
-    if (allCompleted && !mission.completed) {
-      mission.completed = true;
-      // Streak logic (basic)
-      newStreak += 1;
-    }
-    
-    await studentRef.update({
-      'profile_data.daily_mission': mission,
-      'profile_data.xp': newXp,
-      'profile_data.level': newLevel,
-      'profile_data.streak': newStreak
-    });
-    
-    res.json({ mission, xp: newXp, level: newLevel, streak: newStreak, awarded: xpReward });
-  } catch (err) {
-    console.error("Mission Complete error:", err.message);
-    res.status(500).json({ message: "Server error." });
-  }
+  res.json({ message: "Gamification disabled in V4" });
 });
 
 module.exports = router;

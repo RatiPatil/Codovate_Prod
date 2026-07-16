@@ -29,7 +29,7 @@ router.post("/save", auth, async (req, res) => {
     if (phone) {
       const digitsOnly = phone.replace(/[^0-9]/g, '');
       if (digitsOnly.length < 10 || digitsOnly.length > 15) errors.phone = 'Phone must be 10-15 digits';
-      const phoneCheck = await db.collection("students").where("phone", "==", phone).get();
+      const phoneCheck = await db.collection("users").where("phone", "==", phone).get();
       const isDuplicate = phoneCheck.docs.some(doc => doc.id !== req.user.id);
       if (isDuplicate) errors.phone = 'This phone number is already registered';
     }
@@ -139,17 +139,24 @@ router.post("/save", auth, async (req, res) => {
 
     // ── Firestore Batch Write ───────────────────────────────────────────
     const batch = db.batch();
-    const studentRef = db.collection("students").doc(req.user.id);
+    const profileRef = db.collection("profiles").doc(req.user.id);
     const careerProfileRef = db.collection("careerProfiles").doc(req.user.id);
-    const learningProfileRef = db.collection("learningProfiles").doc(req.user.id);
+    const preferenceRef = db.collection("preferences").doc(req.user.id);
+    const analyticsRef = db.collection("analytics").doc(req.user.id);
 
-    const topLevelUpdates = {};
-    if (phone) topLevelUpdates.phone = phone;
-    if (trimmedName) topLevelUpdates.name = trimmedName;
+    const userUpdates = {};
+    if (phone) userUpdates.phone = phone;
+    if (trimmedName) userUpdates.name = trimmedName;
 
-    batch.set(studentRef, { ...topLevelUpdates, profile_data: profileData }, { merge: true });
+    if (Object.keys(userUpdates).length > 0) {
+      batch.update(db.collection("users").doc(req.user.id), userUpdates);
+    }
+
+    // Module 2 New Schema
+    batch.set(profileRef, profileData, { merge: true });
     batch.set(careerProfileRef, careerProfileData, { merge: true });
-    batch.set(learningProfileRef, learningProfileData, { merge: true });
+    batch.set(preferenceRef, learningProfileData, { merge: true });
+    batch.set(analyticsRef, { profile_completion, onboarding_completed }, { merge: true });
 
     await batch.commit();
 
@@ -173,7 +180,7 @@ router.post("/check-phone", auth, async (req, res) => {
       return res.json({ available: false, reason: "Phone must be 10-15 digits" });
     }
 
-    const snapshot = await db.collection("students")
+    const snapshot = await db.collection("users")
       .where("phone", "==", phone).get();
 
     const isDuplicate = snapshot.docs.some(doc => doc.id !== req.user.id);
@@ -186,36 +193,27 @@ router.post("/check-phone", auth, async (req, res) => {
 
 router.get("/status", auth, async (req, res) => {
   try {
-    const studentDoc = await db.collection("students").doc(req.user.id).get();
-
-    if (!studentDoc.exists) {
-      const legacyProfile = await db.collection("student_profiles").doc(req.user.id).get();
-      if (legacyProfile.exists && (legacyProfile.data().onboarding_completed === true || legacyProfile.data().onboarding_completed === "true")) {
-        return res.json({ 
-          onboarding_completed: true, 
-          profile_completion: legacyProfile.data().profile_completion || 100 
-        });
-      }
-      return res.json({ onboarding_completed: false, profile_completion: 0 });
-    }
-
-    const s = studentDoc.data();
-    const sp = s.profile_data || {};
-
-    let isCompleted = sp.onboarding_completed === true || sp.onboarding_completed === "true";
+    const analyticsDoc = await db.collection("analytics").doc(req.user.id).get();
+    const userDoc = await db.collection("users").doc(req.user.id).get();
     
-    if (!isCompleted) {
-      const legacyProfile = await db.collection("student_profiles").doc(req.user.id).get();
-      if (legacyProfile.exists && (legacyProfile.data().onboarding_completed === true || legacyProfile.data().onboarding_completed === "true")) {
-        isCompleted = true;
-      }
+    let isCompleted = false;
+    let completionScore = 0;
+
+    if (analyticsDoc.exists) {
+      const a = analyticsDoc.data();
+      isCompleted = a.onboarding_completed === true || a.onboarding_completed === "true";
+      completionScore = a.profile_completion || 0;
     }
+    
+    // Fallback logic could go here if we were migrating data.
+    
+    const u = userDoc.exists ? userDoc.data() : {};
 
     res.json({
       onboarding_completed: isCompleted,
-      profile_completion: sp.profile_completion || 0,
-      name: sp.name || s.name,
-      email: s.email
+      profile_completion: completionScore,
+      name: u.name,
+      email: u.email
     });
   } catch (err) {
     console.error("❌ Status error:", err.message);

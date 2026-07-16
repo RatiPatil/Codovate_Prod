@@ -3,6 +3,8 @@ import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import Loader from '../components/common/Loader';
+import SkeletonLoader from '../components/common/SkeletonLoader';
+import { gsap } from 'gsap';
 
 const Leaderboard = () => {
   const { user: currentUser } = useAuth();
@@ -13,6 +15,7 @@ const Leaderboard = () => {
   const [collegeFilter, setCollegeFilter] = useState('All');
   const [courseFilter, setCourseFilter] = useState('All');
   const [activeTab, setActiveTab] = useState('Overall');
+  const tableRef = useRef(null);
 
   const tabs = ['Overall', 'Weekly', 'Monthly', 'College Wise', 'Course Wise', 'Skill Wise'];
 
@@ -22,8 +25,6 @@ const Leaderboard = () => {
     
     if (activeTab === 'Weekly') queryParams.append('filter', 'weekly');
     if (activeTab === 'Monthly') queryParams.append('filter', 'monthly');
-    // If college wise, maybe we pass the filter, but we handle it client-side for simplicity if we fetch 50
-    // Actually, backend supports `?college=` and `?course=`
     if (activeTab === 'College Wise' && collegeFilter !== 'All') queryParams.append('college', collegeFilter);
     if (activeTab === 'Course Wise' && courseFilter !== 'All') queryParams.append('course', courseFilter);
 
@@ -39,12 +40,21 @@ const Leaderboard = () => {
   const filtered = useMemo(() => {
     return students.filter(s => {
       const matchesSearch = !search || s.name?.toLowerCase().includes(search.toLowerCase()) || s.college?.toLowerCase().includes(search.toLowerCase());
-      // Client-side fallback if backend doesn't filter perfectly
       const matchesCollege = (activeTab !== 'College Wise' || collegeFilter === 'All') ? true : s.college === collegeFilter;
       const matchesCourse = (activeTab !== 'Course Wise' || courseFilter === 'All') ? true : s.course === courseFilter;
       return matchesSearch && matchesCollege && matchesCourse;
     });
   }, [students, search, collegeFilter, courseFilter, activeTab]);
+
+  useEffect(() => {
+    if (!loading && filtered.length > 0 && tableRef.current) {
+      const rows = tableRef.current.querySelectorAll('.leaderboard-row');
+      gsap.fromTo(rows, 
+        { x: -20, opacity: 0 }, 
+        { x: 0, opacity: 1, duration: 0.5, stagger: 0.05, ease: 'power2.out' }
+      );
+    }
+  }, [loading, filtered]);
 
   // Extract unique colleges/courses for dropdowns based on students fetched or pre-defined lists
   const colleges = useMemo(() => ['All', ...new Set(students.map(s => s.college).filter(Boolean))].sort(), [students]);
@@ -118,8 +128,8 @@ const Leaderboard = () => {
       </div>
 
       {loading ? (
-        <div className="flex-1 overflow-y-auto">
-          <Loader fullScreen={false} message="Loading Leaderboard..." />
+        <div className="flex-1 w-full mt-4">
+          <SkeletonLoader type="list" count={10} />
         </div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-24 glass-card border-dashed rounded-3xl">
@@ -136,9 +146,9 @@ const Leaderboard = () => {
               <div className="flex-1 max-w-[200px] flex flex-col items-center group relative w-full transform transition-transform hover:-translate-y-2">
                 <div className="absolute inset-0 bg-blue-400/20 blur-[50px] pointer-events-none rounded-full" />
                 <div className="w-20 h-20 rounded-full bg-slate-800 border-4 border-slate-400 flex items-center justify-center mb-3 z-10 shadow-[0_0_20px_rgba(148,163,184,0.4)] overflow-hidden">
-                  {top3[1].avatar_url ? <img src={top3[1].avatar_url} className="w-full h-full object-cover" alt="" /> : <span className="text-3xl font-bold text-slate-300">{top3[1].name.charAt(0)}</span>}
+                  {top3[1].avatar_url ? <img loading="lazy" decoding="async" src={top3[1].avatar_url} className="w-full h-full object-cover" alt="" /> : <span className="text-3xl font-bold text-slate-300">{top3[1].name?.charAt(0) || 'U'}</span>}
                 </div>
-                <p className="font-bold text-base text-center mb-1 text-slate-200 line-clamp-1">{top3[1].name}</p>
+                <p className="font-bold text-base text-center mb-1 text-slate-200 line-clamp-1">{top3[1].name || 'Unknown'}</p>
                 <p className="text-slate-300 text-xs font-black tracking-widest bg-slate-400/10 px-3 py-1 rounded-full mb-4">{top3[1].points} PTS</p>
                 <div className="w-full h-28 bg-gradient-to-t from-slate-900/60 to-slate-500/20 border-t-2 border-slate-400/50 rounded-t-xl flex flex-col items-center justify-start pt-4 relative">
                   <span className="text-4xl drop-shadow-md mb-1">🥈</span>
@@ -150,9 +160,9 @@ const Leaderboard = () => {
               <div className="flex-1 max-w-[240px] flex flex-col items-center group relative w-full -mt-8 order-first md:order-none transform transition-transform hover:-translate-y-3 z-20">
                 <div className="absolute inset-0 bg-yellow-500/30 blur-[60px] pointer-events-none rounded-full" />
                 <div className="w-28 h-28 rounded-full bg-yellow-900 border-4 border-yellow-400 flex items-center justify-center mb-4 z-10 shadow-[0_0_35px_rgba(234,179,8,0.5)] overflow-hidden">
-                  {top3[0].avatar_url ? <img src={top3[0].avatar_url} className="w-full h-full object-cover" alt="" /> : <span className="text-5xl font-bold text-yellow-400">{top3[0].name.charAt(0)}</span>}
+                  {top3[0].avatar_url ? <img loading="lazy" decoding="async" src={top3[0].avatar_url} className="w-full h-full object-cover" alt="" /> : <span className="text-5xl font-bold text-yellow-400">{top3[0].name?.charAt(0) || 'U'}</span>}
                 </div>
-                <p className="font-bold text-xl text-center mb-1 text-yellow-100 line-clamp-1">{top3[0].name}</p>
+                <p className="font-bold text-xl text-center mb-1 text-yellow-100 line-clamp-1">{top3[0].name || 'Unknown'}</p>
                 <p className="text-yellow-400 text-sm font-black tracking-widest bg-yellow-500/20 border border-yellow-500/30 px-4 py-1.5 rounded-full mb-5 shadow-inner">{top3[0].points} PTS</p>
                 <div className="w-full h-40 bg-gradient-to-t from-yellow-900/60 to-yellow-500/20 border-t-2 border-yellow-400/60 rounded-t-xl flex flex-col items-center justify-start pt-5 relative">
                   <span className="text-5xl drop-shadow-lg mb-2 animate-bounce">🥇</span>
@@ -164,9 +174,9 @@ const Leaderboard = () => {
               <div className="flex-1 max-w-[200px] flex flex-col items-center group relative w-full transform transition-transform hover:-translate-y-2">
                 <div className="absolute inset-0 bg-orange-500/20 blur-[50px] pointer-events-none rounded-full" />
                 <div className="w-20 h-20 rounded-full bg-orange-900/50 border-4 border-orange-500/80 flex items-center justify-center mb-3 z-10 shadow-[0_0_20px_rgba(249,115,22,0.3)] overflow-hidden">
-                  {top3[2].avatar_url ? <img src={top3[2].avatar_url} className="w-full h-full object-cover" alt="" /> : <span className="text-3xl font-bold text-orange-400">{top3[2].name.charAt(0)}</span>}
+                  {top3[2].avatar_url ? <img loading="lazy" decoding="async" src={top3[2].avatar_url} className="w-full h-full object-cover" alt="" /> : <span className="text-3xl font-bold text-orange-400">{top3[2].name?.charAt(0) || 'U'}</span>}
                 </div>
-                <p className="font-bold text-base text-center mb-1 text-orange-100 line-clamp-1">{top3[2].name}</p>
+                <p className="font-bold text-base text-center mb-1 text-orange-100 line-clamp-1">{top3[2].name || 'Unknown'}</p>
                 <p className="text-orange-400 text-xs font-black tracking-widest bg-orange-500/10 px-3 py-1 rounded-full mb-4">{top3[2].points} PTS</p>
                 <div className="w-full h-24 bg-gradient-to-t from-orange-900/60 to-orange-500/20 border-t-2 border-orange-500/50 rounded-t-xl flex flex-col items-center justify-start pt-4 relative">
                   <span className="text-4xl drop-shadow-md mb-1">🥉</span>
@@ -228,11 +238,11 @@ const Leaderboard = () => {
                     <th className="px-6 py-4 whitespace-nowrap text-right w-32">Total Points</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/5">
+                <tbody ref={tableRef} className="divide-y divide-white/5">
                   {filtered.map((s) => {
                     const isMe = me && s.id === me.id;
                     return (
-                      <tr key={s.id} className={`transition-colors group/row ${isMe ? 'bg-primary/5 hover:bg-primary/10' : 'hover:bg-white/5'}`}>
+                      <tr key={s.id} className={`leaderboard-row transition-colors group/row ${isMe ? 'bg-primary/5 hover:bg-primary/10' : 'hover:bg-white/5'}`}>
                         {/* Rank */}
                         <td className="px-6 py-4 text-center font-bold text-gray-400">
                           {s.rank === 1 ? <span className="text-2xl">🥇</span> :
@@ -248,7 +258,7 @@ const Leaderboard = () => {
                               <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm shrink-0 border overflow-hidden ${
                                 isMe ? 'bg-primary/20 text-primary border-primary/50' : 'bg-white/5 text-gray-300 border-white/10'
                               }`}>
-                                {s.avatar_url ? <img src={s.avatar_url} className="w-full h-full object-cover" alt="" /> : s.name?.charAt(0).toUpperCase()}
+                                {s.avatar_url ? <img loading="lazy" decoding="async" src={s.avatar_url} className="w-full h-full object-cover" alt="" /> : s.name?.charAt(0).toUpperCase()}
                               </div>
                               {isMe && <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-primary rounded-full border-2 border-[#0a0a0f]" title="You" />}
                             </div>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../api/axios';
+import SkeletonLoader from '../components/common/SkeletonLoader';
 
 const Notifications = () => {
   const [notifications, setNotifications] = useState([]);
@@ -31,13 +32,19 @@ const Notifications = () => {
       </div>
       
       {loading ? (
-        <div className="flex justify-center py-12">
-          <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+        <div className="w-full pt-4">
+          <SkeletonLoader type="list" count={5} />
         </div>
       ) : notifications.length === 0 ? (
-        <div className="text-gray-400 text-center py-16 bg-white/5 rounded-2xl border border-white/10">
-          <span className="text-4xl mb-4 block">📭</span>
-          <p>No notifications yet.</p>
+        <div className="glass-panel p-12 rounded-3xl relative overflow-hidden text-center flex flex-col items-center justify-center min-h-[350px]">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-primary/10 rounded-full blur-[80px] pointer-events-none" />
+          <div className="w-20 h-20 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center text-4xl mb-6 shadow-xl relative z-10 transform transition-transform hover:scale-105">
+            📭
+          </div>
+          <h3 className="text-xl font-bold text-white mb-2 relative z-10">All Caught Up</h3>
+          <p className="text-gray-400 text-sm mb-4 max-w-md mx-auto relative z-10">
+            You don't have any new notifications. We'll alert you here when there are updates to your applications or new opportunities.
+          </p>
         </div>
       ) : (
         <div className="space-y-4">

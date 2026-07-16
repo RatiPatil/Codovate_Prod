@@ -32,6 +32,8 @@ const Notifications = lazy(() => import('./pages/Notifications'));
 const DashboardRouter = lazy(() => import('./components/DashboardRouter'));
 const MentorRouter = lazy(() => import('./components/MentorRouter'));
 
+import GlobalErrorBoundary from './components/common/GlobalErrorBoundary';
+
 const GlobalLoader = () => (
   <div className="flex items-center justify-center h-screen bg-[#050510]">
     <div className="w-8 h-8 border-2 border-[#2015FF] border-t-transparent rounded-full animate-spin" />
@@ -51,109 +53,111 @@ function App() {
   }, []);
 
   return (
-    <ToastProvider>
-      <AuthProvider>
-        <SocketProvider>
-          <GlobalNotifications />
-          <Toaster position="top-right" toastOptions={{
-            style: {
-              background: '#333',
-              color: '#fff',
-            }
-          }} />
-          <BrowserRouter>
-            <Suspense fallback={<GlobalLoader />}>
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/admin-login" element={<AdminLogin />} />
-                <Route path="/signup" element={<Signup />} />
-                <Route path="/forgot-password" element={<ForgotPassword />} />
+    <GlobalErrorBoundary>
+      <ToastProvider>
+        <AuthProvider>
+          <SocketProvider>
+            <GlobalNotifications />
+            <Toaster position="top-right" toastOptions={{
+              style: {
+                background: '#333',
+                color: '#fff',
+              }
+            }} />
+            <BrowserRouter>
+              <Suspense fallback={<GlobalLoader />}>
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/admin-login" element={<AdminLogin />} />
+                  <Route path="/signup" element={<Signup />} />
+                  <Route path="/forgot-password" element={<ForgotPassword />} />
 
-                <Route path="/onboarding" element={
-                  <ProtectedRoute requireOnboarding={false}>
-                    <Onboarding />
-                  </ProtectedRoute>
-                } />
+                  <Route path="/onboarding" element={
+                    <ProtectedRoute requireOnboarding={false}>
+                      <Onboarding />
+                    </ProtectedRoute>
+                  } />
 
-                <Route path="/onboarding-success" element={
-                  <ProtectedRoute requireOnboarding={false}>
-                    <OnboardingSuccess />
-                  </ProtectedRoute>
-                } />
+                  <Route path="/onboarding-success" element={
+                    <ProtectedRoute requireOnboarding={false}>
+                      <OnboardingSuccess />
+                    </ProtectedRoute>
+                  } />
 
-                <Route path="/welcome" element={
-                  <ProtectedRoute requireOnboarding={false}>
-                    <WelcomeExperience />
-                  </ProtectedRoute>
-                } />
+                  <Route path="/welcome" element={
+                    <ProtectedRoute requireOnboarding={false}>
+                      <WelcomeExperience />
+                    </ProtectedRoute>
+                  } />
 
-                <Route path="/dashboard" element={
-                  <ProtectedRoute>
-                    <Layout><Dashboard /></Layout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/opportunities" element={
-                  <ProtectedRoute>
-                    <Layout><Opportunities /></Layout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/applications" element={
-                  <ProtectedRoute>
-                    <Layout><Applications /></Layout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/profile" element={
-                  <ProtectedRoute>
-                    <Layout><Profile /></Layout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/teams" element={
-                  <ProtectedRoute>
-                    <Layout><TeamsLayout /></Layout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/mentors" element={
-                  <ProtectedRoute>
-                    <Layout><Mentors /></Layout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/leaderboard" element={
-                  <ProtectedRoute>
-                    <Layout><Leaderboard /></Layout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/resume" element={
-                  <ProtectedRoute>
-                    <Layout><ResumeBuilder /></Layout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/notifications" element={
-                  <ProtectedRoute>
-                    <Layout><Notifications /></Layout>
-                  </ProtectedRoute>
-                } />
+                  <Route path="/dashboard" element={
+                    <ProtectedRoute>
+                      <Layout><Dashboard /></Layout>
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/opportunities" element={
+                    <ProtectedRoute>
+                      <Layout><Opportunities /></Layout>
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/applications" element={
+                    <ProtectedRoute>
+                      <Layout><Applications /></Layout>
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/profile" element={
+                    <ProtectedRoute>
+                      <Layout><Profile /></Layout>
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/teams" element={
+                    <ProtectedRoute>
+                      <Layout><TeamsLayout /></Layout>
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/mentors" element={
+                    <ProtectedRoute>
+                      <Layout><Mentors /></Layout>
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/leaderboard" element={
+                    <ProtectedRoute>
+                      <Layout><Leaderboard /></Layout>
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/resume" element={
+                    <ProtectedRoute>
+                      <Layout><ResumeBuilder /></Layout>
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/notifications" element={
+                    <ProtectedRoute>
+                      <Layout><Notifications /></Layout>
+                    </ProtectedRoute>
+                  } />
 
-                <Route path="/admin/*" element={
-                  <ProtectedRoute requireOnboarding={false}>
-                    <DashboardRouter />
-                  </ProtectedRoute>
-                } />
+                  <Route path="/admin/*" element={
+                    <ProtectedRoute requireOnboarding={false}>
+                      <DashboardRouter />
+                    </ProtectedRoute>
+                  } />
 
-                <Route path="/mentor/login" element={<MentorLogin />} />
-                <Route path="/mentor/*" element={
-                  <ProtectedRoute requireOnboarding={false}>
-                    <MentorRouter />
-                  </ProtectedRoute>
-                } />
+                  <Route path="/mentor/login" element={<MentorLogin />} />
+                  <Route path="/mentor/*" element={
+                    <ProtectedRoute requireOnboarding={false}>
+                      <MentorRouter />
+                    </ProtectedRoute>
+                  } />
 
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
-            </Suspense>
-          </BrowserRouter>
-        </SocketProvider>
-      </AuthProvider>
-    </ToastProvider>
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+              </Suspense>
+            </BrowserRouter>
+          </SocketProvider>
+        </AuthProvider>
+      </ToastProvider>
+    </GlobalErrorBoundary>
   );
 }
 

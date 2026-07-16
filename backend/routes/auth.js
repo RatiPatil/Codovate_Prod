@@ -37,35 +37,35 @@ router.post("/google", async (req, res) => {
         authUid: uid,
         providers: ['google'],
         claimed: true,
-        created_at: new Date(),
-        last_login_at: new Date()
+        onboardingCompleted: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        lastLogin: new Date()
       };
       
       const batch = db.batch();
       batch.set(newUserRef, user);
       
-      // Create unified students record immediately preventing orphaned data
-      batch.set(db.collection('students').doc(newUserRef.id), {
+      batch.set(db.collection('profiles').doc(newUserRef.id), {
         id: newUserRef.id,
         email: email.toLowerCase(),
-        authUid: uid,
-        providers: ['google'],
-        claimed: true,
-        is_active: true,
-        role: 'student',
-        created_at: new Date(),
-        profile_data: {
-          name: (name || 'Google User').trim().toUpperCase(),
-          avatar: picture || '',
-          profile_completion: 0,
-          onboarding_completed: false
-        }
+        name: (name || 'Google User').trim().toUpperCase(),
+        avatar: picture || ''
       });
       
-      batch.set(db.collection('platform_events').doc(), {
+      batch.set(db.collection('careerProfiles').doc(newUserRef.id), { id: newUserRef.id });
+      batch.set(db.collection('preferences').doc(newUserRef.id), { id: newUserRef.id });
+      batch.set(db.collection('analytics').doc(newUserRef.id), {
+        id: newUserRef.id,
+        profile_completion: 0,
+        onboarding_completed: false,
+        profile_score: 0
+      });
+      
+      batch.set(db.collection('activityLogs').doc(), {
         actor_id: newUserRef.id,
         event_type: 'user_signup',
-        entity_type: 'student',
+        entity_type: 'user',
         entity_id: newUserRef.id,
         metadata: { provider: 'google', email },
         created_at: new Date()
@@ -88,14 +88,15 @@ router.post("/google", async (req, res) => {
         authUid: uid,
         providers: providers,
         claimed: true,
-        last_login_at: new Date() 
+        lastLogin: new Date(),
+        updatedAt: new Date()
       });
 
       // Log event
-      batch.set(db.collection('platform_events').doc(), {
+      batch.set(db.collection('activityLogs').doc(), {
         actor_id: userDoc.id,
         event_type: 'user_login',
-        entity_type: 'student',
+        entity_type: 'user',
         entity_id: userDoc.id,
         metadata: { provider: 'google', email },
         created_at: new Date()
@@ -153,33 +154,34 @@ router.post("/phone", async (req, res) => {
         authUid: uid,
         providers: ['phone'],
         claimed: true,
-        created_at: new Date(),
-        last_login_at: new Date()
+        onboardingCompleted: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        lastLogin: new Date()
       };
       
       const batch = db.batch();
       batch.set(newUserRef, user);
       
-      batch.set(db.collection('students').doc(newUserRef.id), {
+      batch.set(db.collection('profiles').doc(newUserRef.id), {
         id: newUserRef.id,
         phone: phone_number,
-        authUid: uid,
-        providers: ['phone'],
-        claimed: true,
-        is_active: true,
-        role: 'student',
-        created_at: new Date(),
-        profile_data: {
-          name: 'Student',
-          profile_completion: 0,
-          onboarding_completed: false
-        }
+        name: 'Student'
       });
       
-      batch.set(db.collection('platform_events').doc(), {
+      batch.set(db.collection('careerProfiles').doc(newUserRef.id), { id: newUserRef.id });
+      batch.set(db.collection('preferences').doc(newUserRef.id), { id: newUserRef.id });
+      batch.set(db.collection('analytics').doc(newUserRef.id), {
+        id: newUserRef.id,
+        profile_completion: 0,
+        onboarding_completed: false,
+        profile_score: 0
+      });
+      
+      batch.set(db.collection('activityLogs').doc(), {
         actor_id: newUserRef.id,
         event_type: 'user_signup',
-        entity_type: 'student',
+        entity_type: 'user',
         entity_id: newUserRef.id,
         metadata: { provider: 'phone', phone: phone_number },
         created_at: new Date()
@@ -218,13 +220,14 @@ router.post("/phone", async (req, res) => {
         batch.update(userDoc.ref, { 
           providers: providers,
           claimed: true,
-          last_login_at: new Date() 
+          lastLogin: new Date(),
+          updatedAt: new Date()
         });
 
-        batch.set(db.collection('platform_events').doc(), {
+        batch.set(db.collection('activityLogs').doc(), {
           actor_id: userDoc.id,
           event_type: 'user_login',
-          entity_type: 'student',
+          entity_type: 'user',
           entity_id: userDoc.id,
           metadata: { provider: 'phone', phone: phone_number, merged_into: user.authUid },
           created_at: new Date()
@@ -256,13 +259,14 @@ router.post("/phone", async (req, res) => {
         authUid: uid,
         providers: providers,
         claimed: true,
-        last_login_at: new Date() 
+        lastLogin: new Date(),
+        updatedAt: new Date()
       });
 
-      batch.set(db.collection('platform_events').doc(), {
+      batch.set(db.collection('activityLogs').doc(), {
         actor_id: userDoc.id,
         event_type: 'user_login',
-        entity_type: 'student',
+        entity_type: 'user',
         entity_id: userDoc.id,
         metadata: { provider: 'phone', phone: phone_number },
         created_at: new Date()
@@ -299,11 +303,11 @@ router.post("/sync-providers", authMiddleware, async (req, res) => {
     const { providers } = req.body;
     if (!providers || !Array.isArray(providers)) return res.status(400).json({ message: "Invalid providers array." });
 
-    const studentRef = db.collection('students').doc(req.user.id);
-    const doc = await studentRef.get();
+    const userRef = db.collection('users').doc(req.user.id);
+    const doc = await userRef.get();
     
     if (doc.exists) {
-      await studentRef.update({ providers, updated_at: new Date() });
+      await userRef.update({ providers, updatedAt: new Date() });
       return res.json({ message: "Providers synced successfully." });
     }
     
@@ -407,31 +411,32 @@ router.post("/signup", async (req, res) => {
       is_active: true,
       authUid: firebaseAuthUid,
       providers: ['local'],
-      created_at: new Date()
+      onboardingCompleted: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      lastLogin: new Date()
     };
     
     const batch = db.batch();
     batch.set(newUserRef, userData);
 
-    // Create unified students record
-    batch.set(db.collection('students').doc(newUserRef.id), {
+    batch.set(db.collection('profiles').doc(newUserRef.id), {
       id: newUserRef.id,
       email: email.toLowerCase(),
-      authUid: firebaseAuthUid,
-      providers: ['local'],
-      claimed: true,
-      is_active: true,
-      role: 'student',
-      created_at: new Date(),
-      profile_data: {
-        name: name.trim().toUpperCase(),
-        profile_completion: 0,
-        onboarding_completed: false
-      }
+      name: name.trim().toUpperCase()
+    });
+
+    batch.set(db.collection('careerProfiles').doc(newUserRef.id), { id: newUserRef.id });
+    batch.set(db.collection('preferences').doc(newUserRef.id), { id: newUserRef.id });
+    batch.set(db.collection('analytics').doc(newUserRef.id), {
+      id: newUserRef.id,
+      profile_completion: 0,
+      onboarding_completed: false,
+      profile_score: 0
     });
 
     // Log platform event
-    batch.set(db.collection('platform_events').doc(), {
+    batch.set(db.collection('activityLogs').doc(), {
       actor_id: newUserRef.id,
       event_type: 'user_signup',
       entity_type: 'user',
@@ -493,6 +498,20 @@ router.post("/login", async (req, res) => {
     if (!user.is_active)
       return res.status(403).json({ message: "Your account has been suspended. Please contact the administrator." });
 
+    if (!user.is_verified) {
+      try {
+        const fbUser = await getAuth().getUserByEmail(user.email);
+        if (fbUser.emailVerified) {
+          await usersRef.doc(user.id).update({ is_verified: true, updatedAt: new Date() });
+          user.is_verified = true;
+        } else {
+          return res.status(403).json({ message: "Please verify your email address before logging in. Check your inbox for the verification link." });
+        }
+      } catch (e) {
+        return res.status(403).json({ message: "Please verify your email address before logging in. Check your inbox for the verification link." });
+      }
+    }
+
     // AUTH-002 FIX: Return provider-specific error message
     if (!user.password_hash) {
       const providers = user.providers || [];
@@ -508,9 +527,9 @@ router.post("/login", async (req, res) => {
 
     // Use batch for fast login updates
     const batch = db.batch();
-    batch.update(usersRef.doc(user.id), { last_login_at: new Date() });
+    batch.update(usersRef.doc(user.id), { lastLogin: new Date(), updatedAt: new Date() });
     
-    batch.set(db.collection('platform_events').doc(), {
+    batch.set(db.collection('activityLogs').doc(), {
       actor_id: user.id,
       event_type: 'user_login',
       entity_type: 'user',
@@ -589,7 +608,7 @@ router.post("/admin-login", async (req, res) => {
     if (!match)
       return res.status(401).json({ message: "Invalid email or password." });
 
-    await usersRef.doc(user.id).update({ last_login_at: new Date() });
+    await usersRef.doc(user.id).update({ lastLogin: new Date(), updatedAt: new Date() });
 
     await db.collection('audit_logs').add({
       actor_id: user.id,

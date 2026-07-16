@@ -5,7 +5,8 @@ import { useSocket } from '../context/SocketContext';
 import { formatDate } from '../utils/dateUtils';
 import { showConfirm } from '../utils/uiUtils';
 import Loader from '../components/common/Loader';
-
+import SkeletonLoader from '../components/common/SkeletonLoader';
+import { gsap } from 'gsap';
 const typeColors = {
   Internship: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
   Hackathon: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
@@ -163,6 +164,7 @@ const Opportunities = () => {
   const [toast, setToast] = useState('');
   const [selectedOpp, setSelectedOpp] = useState(null);
   const { socket } = useSocket();
+  const listRef = useRef(null);
 
   const types = ['All', 'Internship', 'Hackathon', 'Competition'];
 
@@ -237,10 +239,21 @@ const Opportunities = () => {
     return true;
   });
 
+  useEffect(() => {
+    if (!loading && filtered.length > 0 && listRef.current) {
+      const cards = listRef.current.querySelectorAll('.opp-card');
+      gsap.fromTo(cards, 
+        { y: 30, opacity: 0 }, 
+        { y: 0, opacity: 1, duration: 0.6, stagger: 0.1, ease: 'power3.out' }
+      );
+    }
+  }, [loading, filtered]);
+
+
   if (loading) {
     return (
-      <div className="flex-1 overflow-y-auto">
-        <Loader fullScreen={false} message="Loading Opportunities..." />
+      <div className="p-6 md:p-8 max-w-7xl mx-auto relative z-10 w-full h-full">
+        <SkeletonLoader type="card" count={6} />
       </div>
     );
   }
@@ -327,7 +340,7 @@ const Opportunities = () => {
           </p>
         </div>
       ) : (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 relative z-10">
+        <div ref={listRef} className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 relative z-10">
           {filtered.map(opp => {
             const isApplied = appliedIds.has(opp.id);
             const isApplying = applying === opp.id;
@@ -335,7 +348,7 @@ const Opportunities = () => {
               <div
                 key={opp.id}
                 onClick={() => setSelectedOpp(opp)}
-                className="glass-card p-6 flex flex-col h-full group relative overflow-hidden"
+                className="opp-card glass-card p-6 flex flex-col h-full group relative overflow-hidden hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(32,21,255,0.2)] transition-all duration-300 cursor-pointer"
               >
                 <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-bl-full pointer-events-none transition-transform group-hover:scale-110" />
 

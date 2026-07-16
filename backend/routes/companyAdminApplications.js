@@ -32,17 +32,18 @@ router.get('/', companyAdminOnly, async (req, res) => {
       const app = doc.data();
       app.id = doc.id;
       
-      const studentDoc = await db.collection("students").doc(app.user_id).get();
+      const studentDoc = await db.collection("profiles").doc(app.user_id).get();
       const s = studentDoc.exists ? studentDoc.data() : {};
-      const sp = s.profile_data || {};
+      const userDoc = await db.collection("users").doc(app.user_id).get();
+      const u = userDoc.exists ? userDoc.data() : {};
       
       const oppDoc = await db.collection("opportunities").doc(app.opportunity_id).get();
       const o = oppDoc.exists ? oppDoc.data() : {};
       
       apps.push({
         ...app,
-        student_name: sp.name || "Unknown",
-        student_email: s.email || "Unknown",
+        student_name: s.name || u.name || "Unknown",
+        student_email: u.email || "Unknown",
         opportunity_title: o.title || "Unknown"
       });
     }

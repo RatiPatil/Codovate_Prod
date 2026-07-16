@@ -56,4 +56,43 @@ router.get('/stats', async (req, res) => {
   }
 });
 
+// Fetch Audit Logs
+router.get('/audit-logs', async (req, res) => {
+  try {
+    const logsSnap = await db.collection('audit_logs')
+      .orderBy('timestamp', 'desc')
+      .limit(100)
+      .get();
+      
+    const logs = [];
+    logsSnap.forEach(doc => {
+      logs.push({ id: doc.id, ...doc.data() });
+    });
+    
+    res.json({ success: true, logs });
+  } catch (error) {
+    console.error('Error fetching audit logs:', error);
+    res.status(500).json({ success: false, message: 'Server error fetching audit logs.' });
+  }
+});
+
+// Fetch Platform Content
+router.get('/content', async (req, res) => {
+  try {
+    const contentSnap = await db.collection('platform_content')
+      .orderBy('updated_at', 'desc')
+      .get();
+      
+    const content = [];
+    contentSnap.forEach(doc => {
+      content.push({ id: doc.id, ...doc.data() });
+    });
+    
+    res.json({ success: true, content });
+  } catch (error) {
+    console.error('Error fetching platform content:', error);
+    res.status(500).json({ success: false, message: 'Server error fetching content.' });
+  }
+});
+
 module.exports = router;

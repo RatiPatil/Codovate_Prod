@@ -14,17 +14,19 @@ router.get("/", auth, async (req, res) => {
       const app = doc.data();
       app.id = doc.id;
       
-      const studentDoc = await db.collection("students").doc(app.user_id).get();
+      const studentDoc = await db.collection("profiles").doc(app.user_id).get();
       const s = studentDoc.exists ? studentDoc.data() : {};
-      const sp = s.profile_data || {};
+      
+      const userDoc = await db.collection("users").doc(app.user_id).get();
+      const u = userDoc.exists ? userDoc.data() : {};
       
       const oppDoc = await db.collection("opportunities").doc(app.opportunity_id).get();
       const o = oppDoc.exists ? oppDoc.data() : {};
       
       applications.push({
         ...app,
-        student_name: sp.name || "Unknown",
-        student_email: s.email || "Unknown",
+        student_name: s.name || u.name || "Unknown",
+        student_email: u.email || "Unknown",
         opportunity_title: o.title || "Unknown",
         company: o.company || "Unknown"
       });
@@ -75,10 +77,9 @@ router.post("/", auth, async (req, res) => {
     if (!existingApps.empty)
       return res.status(409).json({ message: "You already applied to this opportunity." });
 
-    // Get student details
-    const studentDoc = await db.collection("students").doc(req.user.id).get();
+    // Get student details (Not explicitly needed for the app object anymore, but keeping for checks if needed)
+    const studentDoc = await db.collection("profiles").doc(req.user.id).get();
     const student = studentDoc.exists ? studentDoc.data() : {};
-    const sp = student.profile_data || {};
 
     // Create application
     const newAppRef = db.collection("applications").doc();
@@ -186,8 +187,8 @@ router.post("/external", auth, async (req, res) => {
     }
 
     // Fetch Student Name
-    const studentDoc = await db.collection("students").doc(req.user.id).get();
-    const studentName = studentDoc.exists ? (studentDoc.data().profile_data?.name || 'Unknown Student') : 'Unknown Student';
+    const studentDoc = await db.collection("profiles").doc(req.user.id).get();
+    const studentName = studentDoc.exists ? (studentDoc.data().name || 'Unknown Student') : 'Unknown Student';
 
     const newAppRef = db.collection("applications").doc();
     const application = {

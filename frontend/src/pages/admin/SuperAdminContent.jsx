@@ -1,19 +1,28 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import AdminDataTable from '../../components/common/AdminDataTable';
 import { formatDate } from '../../utils/dateUtils';
-
-// Mock Data for Content
-const MOCK_CONTENT = [
-  { id: '1', title: 'Terms of Service', type: 'Legal', status: 'Published', author: 'System', updated_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30).toISOString() },
-  { id: '2', title: 'Privacy Policy', type: 'Legal', status: 'Published', author: 'System', updated_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 15).toISOString() },
-  { id: '3', title: 'Welcome Banner 2026', type: 'Banner', status: 'Active', author: 'Marketing Team', updated_at: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString() },
-  { id: '4', title: 'How to use Codovate (Student Guide)', type: 'FAQ', status: 'Draft', author: 'Support', updated_at: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString() },
-  { id: '5', title: 'Mentorship Guidelines', type: 'Resource', status: 'Archived', author: 'John Doe', updated_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 100).toISOString() },
-];
+import api from '../../api/axios';
 
 const SuperAdminContent = () => {
-  const [content] = useState(MOCK_CONTENT);
+  const [content, setContent] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [filterTab, setFilterTab] = useState('all');
+
+  useEffect(() => {
+    const fetchContent = async () => {
+      try {
+        const res = await api.get('/admin/content');
+        if (res.data.success) {
+          setContent(res.data.content);
+        }
+      } catch (err) {
+        console.error('Error fetching content:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchContent();
+  }, []);
 
   const filteredContent = useMemo(() => {
     if (filterTab === 'published') return content.filter(c => c.status === 'Published' || c.status === 'Active');
@@ -113,7 +122,7 @@ const SuperAdminContent = () => {
         title="Published Pages & Resources"
         data={filteredContent}
         columns={columns}
-        loading={false}
+        loading={loading}
         searchPlaceholder="Search by title, author, or type..."
         searchableKeys={['title', 'author', 'type']}
       />

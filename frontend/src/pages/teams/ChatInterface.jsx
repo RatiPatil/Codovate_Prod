@@ -151,13 +151,13 @@ const ChatInterface = ({ initialChatId, onChatSelect }) => {
   const renderChatAvatar = (chat) => {
     if (chat.type === 'team') {
       return chat.logo ? (
-        <img src={chat.logo} alt={chat.name} className="w-full h-full object-cover" />
+        <img loading="lazy" decoding="async" src={chat.logo} alt={chat.name} className="w-full h-full object-cover" />
       ) : (
         <span className="text-sm font-bold text-gray-300">{chat.name?.charAt(0)}</span>
       );
     } else {
       return chat.peer?.avatar ? (
-        <img src={chat.peer.avatar} alt={chat.peer.name} className="w-full h-full object-cover" />
+        <img loading="lazy" decoding="async" src={chat.peer.avatar} alt={chat.peer.name} className="w-full h-full object-cover" />
       ) : (
         <span className="text-sm font-bold text-gray-300">{chat.peer?.name?.charAt(0)}</span>
       );

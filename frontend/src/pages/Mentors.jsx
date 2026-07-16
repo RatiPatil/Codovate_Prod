@@ -29,7 +29,7 @@ const BookingModal = ({ mentor, onClose, onConfirm }) => {
       <form onSubmit={handleSubmit} className="relative z-10 w-full max-w-md glass-panel rounded-2xl p-8 shadow-2xl max-h-[90vh] overflow-y-auto mx-4">
         <div className="flex items-center gap-4 mb-6">
           <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center font-black text-xl border border-primary/20">
-            {mentor.name.charAt(0)}
+            {mentor.name?.charAt(0) || 'M'}
           </div>
           <div>
             <h3 className="text-white font-bold text-xl">Book a Session</h3>
@@ -494,7 +494,7 @@ const Mentors = () => {
 
                 <div className="flex items-center gap-4 mb-4 relative z-10">
                   <div className="w-14 h-14 rounded-full bg-primary/10 text-primary flex items-center justify-center font-black text-2xl border border-primary/20 shadow-lg backdrop-blur-sm group-hover:scale-110 transition-transform shrink-0">
-                    {m.profile_photo ? <img src={m.profile_photo} alt={m.name} className="w-full h-full object-cover rounded-full" /> : m.name.charAt(0)}
+                    {m.profile_photo ? <img loading="lazy" decoding="async" src={m.profile_photo} alt={m.name} className="w-full h-full object-cover rounded-full" /> : m.name?.charAt(0) || 'M'}
                   </div>
                   <div>
                     <h2 className="text-xl font-bold leading-tight group-hover:text-primary transition-colors">{m.name}</h2>

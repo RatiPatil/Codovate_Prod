@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import api from '../../api/axios';
 import { showAlert } from '../../utils/uiUtils';
 import TeamDetailsModal from './TeamDetailsModal';
+import SkeletonLoader from '../../components/common/SkeletonLoader';
 
 const MyTeams = () => {
   const [teams, setTeams] = useState([]);
@@ -50,8 +51,8 @@ const MyTeams = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+      <div className="h-full pt-4">
+        <SkeletonLoader type="card" count={3} />
       </div>
     );
   }

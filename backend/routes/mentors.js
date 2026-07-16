@@ -106,13 +106,14 @@ router.get("/requests", auth, async (req, res) => {
 
     const requests = await Promise.all(snapshot.docs.map(async (doc) => {
       const data = doc.data();
-      const studentDoc = await db.collection("students").doc(data.student_id).get();
+      const studentDoc = await db.collection("profiles").doc(data.student_id).get();
       const s = studentDoc.exists ? studentDoc.data() : {};
-      const sp = s.profile_data || {};
+      const userDoc = await db.collection("users").doc(data.student_id).get();
+      const u = userDoc.exists ? userDoc.data() : {};
       return {
         id: doc.id,
         ...data,
-        studentName: sp.name || "Unknown Student"
+        studentName: s.name || u.name || "Unknown Student"
       };
     }));
 

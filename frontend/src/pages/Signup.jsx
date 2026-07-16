@@ -6,9 +6,12 @@ import { gsap } from 'gsap';
 import api from '../api/axios';
 import { validateUsername, validateEmail, validatePassword, validateConfirmPassword } from '../utils/validators';
 import { getFirebaseErrorMessage } from '../utils/firebaseErrors';
+import { signInWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
+import { auth } from '../lib/firebase';
 import AuthInput from '../components/auth/AuthInput';
 import PasswordStrengthMeter from '../components/auth/PasswordStrengthMeter';
 import GoogleButton from '../components/auth/GoogleButton';
+import PhoneLoginModal from '../components/auth/PhoneLoginModal';
 
 const Signup = () => {
   const [form, setForm] = useState({ fullName: '', username: '', email: '', password: '', confirmPassword: '' });
@@ -16,9 +19,11 @@ const Signup = () => {
   const [touched, setTouched] = useState({});
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [isPhoneModalOpen, setIsPhoneModalOpen] = useState(false);
   const [formShake, setFormShake] = useState(false);
   const [usernameChecking, setUsernameChecking] = useState(false);
   const [usernameAvailable, setUsernameAvailable] = useState(null); // null | true | false
+  const [isSignupComplete, setIsSignupComplete] = useState(false);
 
   const { login, loginWithGoogle, user } = useAuth();
   const { addToast } = useToast();
@@ -134,10 +139,19 @@ const Signup = () => {
         email: form.email.trim().toLowerCase(),
         password: form.password,
       });
-      const { token, user: userData } = res.data;
-      login(token, userData, true);
-      addToast({ type: 'success', title: 'Account Created!', message: 'Welcome to Codovate. Let\'s get started!' });
-      navigate('/dashboard');
+      
+      // Attempt to sign in locally and send verification email
+      try {
+        await signInWithEmailAndPassword(auth, form.email.trim().toLowerCase(), form.password);
+        if (auth.currentUser) {
+          await sendEmailVerification(auth.currentUser);
+        }
+      } catch (fbErr) {
+        console.warn("Could not sign in to Firebase to send verification:", fbErr);
+      }
+
+      setIsSignupComplete(true);
+      addToast({ type: 'success', title: 'Account Created!', message: 'Please check your email to verify your account.' });
     } catch (err) {
       const msg = getFirebaseErrorMessage(err);
       setErrors({ form: msg });
@@ -220,7 +234,7 @@ const Signup = () => {
             <div className="flex -space-x-3">
               {[5,6,7,8].map(i => (
                 <div key={i} className="w-10 h-10 rounded-full border-2 border-black bg-gray-800 flex items-center justify-center overflow-hidden">
-                  <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${i+20}`} alt="student" className="w-full h-full object-cover" />
+                  <img loading="lazy" decoding="async" src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${i+20}`} alt="student" className="w-full h-full object-cover" />
                 </div>
               ))}
             </div>
@@ -242,15 +256,35 @@ const Signup = () => {
 
         <div ref={formRef} className="w-full max-w-md mt-16 lg:mt-0">
           <div ref={headingRef} className="mb-8 text-center lg:text-left">
-            <h2 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 mb-3 drop-shadow-md">Create Account</h2>
-            <p className="text-gray-400 text-base font-medium tracking-wide">Start your career journey with <span className="text-primary font-bold">Codovate</span></p>
+            <h2 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 mb-3 drop-shadow-md">
+              {isSignupComplete ? 'Check your email' : 'Create Account'}
+            </h2>
+            <p className="text-gray-400 text-base font-medium tracking-wide">
+              {isSignupComplete ? 'We have sent a verification link to your email.' : <span>Start your career journey with <span className="text-primary font-bold">Codovate</span></span>}
+            </p>
           </div>
 
           <div className={`glass-panel p-6 sm:p-8 rounded-2xl relative overflow-hidden ${formShake ? 'auth-shake' : ''}`}>
             <div className="absolute top-[-50px] right-[-50px] w-32 h-32 bg-primary/20 blur-[50px] rounded-full pointer-events-none" />
             
-            {/* Global form error */}
-            {errors.form && (
+            {isSignupComplete ? (
+              <div className="relative z-10 flex flex-col items-center justify-center text-center space-y-6 py-4">
+                <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center">
+                  <svg className="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <p className="text-gray-300 text-sm">
+                  Please click the link in the email we sent to <strong>{form.email}</strong> to verify your account.
+                </p>
+                <Link to="/login" className="btn-primary w-full py-3.5 mt-4 text-sm font-bold tracking-wide shadow-lg shadow-primary/20 block">
+                  Go to Login
+                </Link>
+              </div>
+            ) : (
+              <>
+                {/* Global form error */}
+                {errors.form && (
               <div className="mb-5 p-3.5 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm flex items-center gap-3 font-semibold auth-fade-in" role="alert">
                 <span>⚠️</span> {errors.form}
               </div>
@@ -358,14 +392,27 @@ const Signup = () => {
               <div className="flex-1 h-px bg-white/10" />
             </div>
 
-            <div className="relative z-10">
+            <div className="relative z-10 flex flex-col gap-3">
               <GoogleButton
                 onClick={handleGoogleSignup}
                 loading={googleLoading}
                 disabled={loading}
                 label="Continue with Google"
               />
+              <button
+                type="button"
+                onClick={() => setIsPhoneModalOpen(true)}
+                disabled={loading}
+                className="w-full flex items-center justify-center gap-3 bg-white/5 hover:bg-white/10 border border-white/10 text-white py-3 rounded-xl font-bold transition-all disabled:opacity-50"
+              >
+                <svg className="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                </svg>
+                Continue with Phone
+              </button>
             </div>
+              </>
+            )}
           </div>
 
           <p className="text-center text-gray-500 text-sm mt-8">
@@ -374,6 +421,8 @@ const Signup = () => {
           </p>
         </div>
       </div>
+      
+      <PhoneLoginModal isOpen={isPhoneModalOpen} onClose={() => setIsPhoneModalOpen(false)} />
     </div>
   );
 };

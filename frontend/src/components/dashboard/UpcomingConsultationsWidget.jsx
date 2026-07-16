@@ -20,7 +20,7 @@ const UpcomingConsultationsWidget = ({ sessions }) => {
           <div key={session._id} className="bg-white/[0.02] border border-white/5 p-5 rounded-xl">
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center gap-3">
-                <img 
+                <img loading="lazy" decoding="async" 
                   src={session.mentorId?.profilePicture || `https://ui-avatars.com/api/?name=${encodeURIComponent(session.mentorId?.name || 'M')}&background=random`} 
                   alt={session.mentorId?.name} 
                   className="w-10 h-10 rounded-full bg-black"

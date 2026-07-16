@@ -54,7 +54,7 @@ const MyConnections = ({ onOpenChat }) => {
         <div className="flex items-center gap-4 min-w-0">
           <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold overflow-hidden shrink-0 border border-primary/20">
             {peer.profile_photo ? (
-              <img src={peer.profile_photo} alt={peer.name} className="w-full h-full object-cover" />
+              <img loading="lazy" decoding="async" src={peer.profile_photo} alt={peer.name} className="w-full h-full object-cover" />
             ) : (
               peer.name?.charAt(0).toUpperCase()
             )}

@@ -34,7 +34,7 @@ const ProfileReadOnlyView = ({
           <label htmlFor="avatar-upload">
             <div className="w-24 h-24 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center mx-auto mb-5 shadow-[0_0_20px_rgba(32,21,255,0.2)] backdrop-blur-md relative z-10 overflow-hidden cursor-pointer group">
               {user.avatar_url ? (
-                <img src={user.avatar_url} alt="Profile" className="w-full h-full object-cover group-hover:opacity-50 transition-all" />
+                <img loading="lazy" decoding="async" src={user.avatar_url} alt="Profile" className="w-full h-full object-cover group-hover:opacity-50 transition-all" />
               ) : (
                 <span className="text-4xl font-bold text-primary group-hover:opacity-50 transition-all">{user.name ? user.name.charAt(0).toUpperCase() : 'U'}</span>
               )}
@@ -46,7 +46,7 @@ const ProfileReadOnlyView = ({
         ) : (
           <div className="w-24 h-24 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center mx-auto mb-5 shadow-[0_0_20px_rgba(32,21,255,0.2)] backdrop-blur-md relative z-10 overflow-hidden">
             {user.avatar_url ? (
-              <img src={user.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+              <img loading="lazy" decoding="async" src={user.avatar_url} alt="Profile" className="w-full h-full object-cover" />
             ) : (
               <span className="text-4xl font-bold text-primary">{user.name ? user.name.charAt(0).toUpperCase() : 'ðŸ‘¤'}</span>
             )}
@@ -159,39 +159,6 @@ const ProfileReadOnlyView = ({
         </div>
       )}
 
-      {/* Achievements & Badges */}
-      {((user.achievements && user.achievements.length > 0) || (user.badges && user.badges.length > 0)) && (
-        <div className="glass-panel rounded-2xl p-6 relative overflow-hidden w-full">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/10 rounded-bl-[100px] pointer-events-none" />
-          <h3 className="text-gray-900 dark:text-white font-bold mb-4 flex items-center gap-2 relative z-10"><span className="text-xl">ðŸ†</span> Achievements & Badges</h3>
-          
-          {user.achievements && user.achievements.length > 0 && (
-            <div className="flex flex-wrap gap-2 relative z-10 mb-4">
-              {user.achievements.map(achievement => (
-                <span key={achievement} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-yellow-500/10 border border-yellow-500/25 text-yellow-300 rounded-xl text-xs font-bold">
-                  <span>ðŸ…</span>
-                  {achievement}
-                </span>
-              ))}
-            </div>
-          )}
-          
-          {user.badges && user.badges.length > 0 && (
-            <>
-              <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-2 mb-2">Platform Badges</p>
-              <div className="flex flex-wrap gap-2 relative z-10">
-                {user.badges.map(badge => (
-                  <div key={badge} className="flex items-center gap-2 bg-yellow-500/10 border border-yellow-500/20 px-3 py-1.5 rounded-xl">
-                    <span className="text-sm">ðŸ†</span>
-                    <span className="text-xs font-bold text-yellow-400">{badge}</span>
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-        </div>
-      )}
-
       {/* Seeking */}
       {user.seeking && user.seeking.length > 0 && (
         <div className="glass-panel rounded-2xl p-6 relative overflow-hidden w-full">
@@ -278,7 +245,7 @@ const ProfileReadOnlyView = ({
                 {user.providers?.includes('google') ? (
                   <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
                     <div className="flex items-center gap-3">
-                      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5" />
+                      <img loading="lazy" decoding="async" src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5" />
                       <span className="text-gray-700 dark:text-gray-200 text-sm font-medium">Google Connected</span>
                     </div>
                     <span className="text-green-400 text-xs font-bold bg-green-500/10 px-2 py-1 rounded">Linked</span>
@@ -290,7 +257,7 @@ const ProfileReadOnlyView = ({
                     disabled={linking}
                     className="w-full flex items-center justify-center gap-3 p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed relative z-20"
                   >
-                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5" />
+                    <img loading="lazy" decoding="async" src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5" />
                     <span className="text-gray-700 dark:text-gray-200 text-sm font-medium">{linking ? 'Linking...' : 'Link Google Account'}</span>
                   </button>
                 )}

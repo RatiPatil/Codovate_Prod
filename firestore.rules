@@ -24,7 +24,35 @@ service cloud.firestore {
 
     // 1. Users collection: Protect private data
     match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+    }
+    
+    // New Collections
+    match /profiles/{userId} {
+      allow read: if isAuthenticated(); // Publicly readable by other students for teams, leaderboard
+      allow write: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+    }
+    match /careerProfiles/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+    }
+    match /preferences/{userId} {
       allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      allow write: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+    }
+    match /analytics/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+    }
+    match /activityLogs/{logId} {
+      allow read: if isAuthenticated() && (resource.data.user_id == request.auth.uid || isAdmin());
+      allow write: if isAuthenticated();
+    }
+    
+    // Legacy Students Collection
+    match /students/{userId} {
+      allow read: if isAuthenticated();
       allow write: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
     }
 

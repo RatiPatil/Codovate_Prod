@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { gsap } from 'gsap';
+import confetti from 'canvas-confetti';
 import { useAuth } from '../context/AuthContext';
 
 const OnboardingSuccess = () => {
@@ -22,6 +23,14 @@ const OnboardingSuccess = () => {
       gsap.set(contentRef.current.children, { y: 20, opacity: 0 });
       gsap.set(ringRef.current, { scale: 0, opacity: 0 });
       gsap.set(checkmarkRef.current, { scale: 0, opacity: 0 });
+
+      // Confetti burst
+      confetti({
+        particleCount: 150,
+        spread: 100,
+        origin: { y: 0.6 },
+        colors: ['#22c55e', '#3b82f6', '#eab308']
+      });
 
       // Animate checkmark
       tl.to(ringRef.current, { scale: 1, opacity: 1, duration: 0.6, ease: 'back.out(1.5)' })

@@ -4,7 +4,7 @@ import api from '../api/axios';
 import { useSocket } from '../context/SocketContext';
 import { formatDate } from '../utils/dateUtils';
 import { showAlert, showConfirm } from '../utils/uiUtils';
-import Loader from '../components/common/Loader';
+import SkeletonLoader from '../components/common/SkeletonLoader';
 
 const statusStyles = {
   Applied: 'bg-primary/10 text-primary border-primary/20',
@@ -84,8 +84,8 @@ const Applications = () => {
 
   if (loading) {
     return (
-      <div className="flex-1 overflow-y-auto">
-        <Loader fullScreen={false} message="Loading Applications..." />
+      <div className="p-6 md:p-8 max-w-7xl mx-auto relative z-10 w-full pt-4">
+        <SkeletonLoader type="list" count={5} />
       </div>
     );
   }
