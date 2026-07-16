@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { db } = require('../config/firebase');
+const { runDailyPipeline } = require('../jobs/automation');
 
 // Super Admin Stats Endpoint
 router.get('/stats', async (req, res) => {
@@ -92,6 +93,21 @@ router.get('/content', async (req, res) => {
   } catch (error) {
     console.error('Error fetching platform content:', error);
     res.status(500).json({ success: false, message: 'Server error fetching content.' });
+  }
+});
+
+// Trigger Background Pipeline Manually
+router.post('/trigger-pipeline', async (req, res) => {
+  try {
+    const result = await runDailyPipeline();
+    if (result.success) {
+      res.json({ success: true, message: `Pipeline completed. Processed ${result.usersProcessed} users in ${result.executionTime}ms.` });
+    } else {
+      res.status(500).json({ success: false, message: result.error });
+    }
+  } catch (error) {
+    console.error('Error triggering pipeline:', error);
+    res.status(500).json({ success: false, message: 'Server error triggering pipeline.' });
   }
 });
 

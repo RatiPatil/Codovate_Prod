@@ -42,11 +42,15 @@ const AIRecommendations = ({ recommendations }) => {
               <div className="relative z-10 flex flex-col h-full justify-between">
                 <div>
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
-                      {rec.type === 'job' ? '🏢' : '🎯'}
+                    <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0 text-xl">
+                      {rec.type === 'job' ? '🏢' : 
+                       rec.type === 'learning' ? '📚' : 
+                       rec.type === 'project' ? '💻' :
+                       rec.type === 'mentor' ? '👨‍🏫' :
+                       rec.type === 'team' ? '🤝' : '🎯'}
                     </div>
                     <div>
-                      <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{rec.company || 'Recommendation'}</span>
+                      <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{rec.type}</span>
                       <h3 className="text-lg font-bold text-white leading-tight">{rec.title}</h3>
                     </div>
                   </div>
@@ -64,7 +68,7 @@ const AIRecommendations = ({ recommendations }) => {
                     ))}
                   </div>
                   <Link 
-                    to={`/opportunities/${rec.id}`} 
+                    to={rec.linkUrl || `/opportunities/${rec.id}`} 
                     className="flex items-center gap-2 text-sm font-bold text-primary group-hover:text-primary-light transition-colors"
                   >
                     View Details

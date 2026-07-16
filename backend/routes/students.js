@@ -313,11 +313,12 @@ router.get("/workspace", auth, async (req, res) => {
   try {
     const uid = req.user.id;
     
-    const [userDoc, profileDoc, careerDoc, analyticsDoc] = await Promise.all([
+    const [userDoc, profileDoc, careerDoc, analyticsDoc, roadmapDoc] = await Promise.all([
       db.collection("users").doc(uid).get(),
       db.collection("profiles").doc(uid).get(),
       db.collection("careerProfiles").doc(uid).get(),
-      db.collection("analytics").doc(uid).get()
+      db.collection("analytics").doc(uid).get(),
+      db.collection("userRoadmaps").doc(uid).get()
     ]);
     
     if (!userDoc.exists) {
@@ -346,30 +347,238 @@ router.get("/workspace", auth, async (req, res) => {
     const teamPoints = teamsCount * 100;
     const totalPoints = profilePoints + appPoints + teamPoints + (a.profile_score || 0);
 
-    // 2. Real Actionable Tasks (Today's Focus)
-    const tasks = [];
-    if (!p.resume_url) {
-      tasks.push({ id: 'resume', title: 'Upload Resume', type: 'profile', actionUrl: '/profile' });
-    }
-    if ((a.profile_completion || 0) < 100) {
-      tasks.push({ id: 'profile', title: 'Complete Profile Details', type: 'profile', actionUrl: '/profile' });
-    }
-    if (appsCount === 0) {
-      tasks.push({ id: 'apply', title: 'Apply to an Opportunity', type: 'action', actionUrl: '/opportunities' });
+    // 2. Real Actionable Tasks (Today's Focus) driven by AI Roadmap
+    let mission = { tasks: [], estimated_time: null, reward: null };
+    
+    if (roadmapDoc.exists) {
+      const roadmapData = roadmapDoc.data();
+      const activeStep = roadmapData.steps?.find(s => s.status === 'in_progress' || s.status === 'pending');
+      
+      if (activeStep) {
+        mission.estimated_time = activeStep.estimated_time || "45 Minutes";
+        mission.reward = "+100 XP";
+        
+        // If content generated, suggest specific deep-dives
+        if (activeStep.content) {
+          if (!activeStep.content.quizPassed) {
+             mission.tasks.push({
+               id: `quiz_${activeStep.id}`,
+               title: `Pass the quiz for ${activeStep.title}`,
+               type: 'learning',
+               actionUrl: `/roadmap/module/${activeStep.id}`
+             });
+          }
+          const uncompletedAssignments = activeStep.content.assignments?.filter(a => !a.completed) || [];
+          if (uncompletedAssignments.length > 0) {
+             mission.tasks.push({
+               id: `assignment_${activeStep.id}`,
+               title: `Complete ${uncompletedAssignments.length} Assignment(s)`,
+               type: 'action',
+               actionUrl: `/roadmap/module/${activeStep.id}`
+             });
+          }
+          mission.tasks.push({
+            id: `review_${activeStep.id}`,
+            title: `Review Notes for ${activeStep.title}`,
+            type: 'learning',
+            actionUrl: `/roadmap/module/${activeStep.id}`
+          });
+        } else {
+          // Fallback tasks if content not yet generated
+          mission.tasks = (activeStep.tasks || []).filter(t => !t.completed).slice(0, 3).map(t => ({
+            id: t.id,
+            title: t.title,
+            type: 'learning',
+            actionUrl: `/roadmap/module/${activeStep.id}`
+          }));
+          
+          if (mission.tasks.length === 0) {
+            mission.tasks.push({
+              id: `start_${activeStep.id}`,
+              title: `Start Module: ${activeStep.title}`,
+              type: 'learning',
+              actionUrl: `/roadmap/module/${activeStep.id}`
+            });
+          }
+        }
+      } else {
+        mission.tasks.push({
+          id: 'roadmap_done',
+          title: 'You finished your roadmap!',
+          type: 'learning',
+          actionUrl: '/roadmap'
+        });
+      }
+    } else {
+      mission.tasks.push({
+        id: 'generate_roadmap',
+        title: 'Generate your AI Career Roadmap',
+        type: 'action',
+        actionUrl: '/roadmap'
+      });
     }
     
-    const mission = { tasks };
+    // Always keep profile completeness as a fallback task if roadmap tasks are low
+    if (mission.tasks.length < 3) {
+      if (!p.resume_url) {
+        mission.tasks.push({ id: 'resume', title: 'Upload Resume', type: 'profile', actionUrl: '/profile' });
+      }
+      if ((a.profile_completion || 0) < 100 && mission.tasks.length < 3) {
+        mission.tasks.push({ id: 'profile', title: 'Complete Profile Details', type: 'profile', actionUrl: '/profile' });
+      }
+    }
+    
+    // Persist dailyTasks
+    await db.collection("dailyTasks").doc(uid).set(mission, { merge: true });
 
-    // 3. AI Recommendations (Opportunities)
-    const oppsSnap = await db.collection("opportunities").where("status", "==", "Active").limit(2).get();
+    // 3. AI Recommendations (Multi-Category Contextual Engine)
     const recommendations = [];
-    oppsSnap.forEach(doc => recommendations.push({ id: doc.id, ...doc.data() }));
+    let careerTarget = c.desired_roles?.[0] || 'Software Engineer';
+    
+    // We try to pull the current active roadmap step to contextualize the learning/mentor recommendations
+    let activeTopic = "Programming Basics";
+    let activeStepId = null;
+    
+    if (roadmapDoc.exists) {
+      const roadmapData = roadmapDoc.data();
+      const s = roadmapData.steps?.find(s => s.status === 'in_progress' || s.status === 'pending');
+      if (s) {
+        activeTopic = s.title;
+        activeStepId = s.id;
+      }
+    }
+
+    // A. Learning Recommendation (Next Course/Lesson)
+    if (activeStepId) {
+      recommendations.push({
+        id: `learn_${activeStepId}`,
+        type: 'learning',
+        title: `Next Lesson: ${activeTopic}`,
+        description: `Continue your tailored learning module on ${activeTopic}.`,
+        linkUrl: `/roadmap/module/${activeStepId}`,
+        tags: ['Course', 'Active']
+      });
+    }
+
+    // B. Project Recommendation
+    // If the user's roadmap has projects, suggest one, otherwise suggest a mock one.
+    recommendations.push({
+      id: `proj_${Date.now()}`,
+      type: 'project',
+      title: activeTopic === 'Spring Boot' ? 'Library Management System' : 'Expense Tracker',
+      description: `Build a real-world project to solidify your ${activeTopic} skills and boost your resume.`,
+      linkUrl: `/roadmap`,
+      tags: ['Hands-on', 'Portfolio']
+    });
+
+    // C. Internship Recommendation (from DB or fallback)
+    const oppsSnap = await db.collection("opportunities").where("status", "==", "Active").limit(1).get();
+    if (!oppsSnap.empty) {
+      const opp = oppsSnap.docs[0].data();
+      recommendations.push({
+        id: oppsSnap.docs[0].id,
+        type: 'job',
+        title: opp.title,
+        company: opp.company,
+        description: `This opportunity aligns with your goal to become a ${careerTarget}.`,
+        linkUrl: `/opportunities/${oppsSnap.docs[0].id}`,
+        tags: [opp.type || 'Internship', opp.location || 'Remote']
+      });
+    } else {
+      recommendations.push({
+        id: 'mock_internship',
+        type: 'job',
+        title: 'Backend Developer Intern',
+        company: 'TechCorp',
+        description: `Gain practical experience in ${careerTarget} roles.`,
+        linkUrl: `/opportunities`,
+        tags: ['Internship', 'Remote']
+      });
+    }
+
+    // D. Mentor Recommendation
+    recommendations.push({
+      id: `mentor_${Date.now()}`,
+      type: 'mentor',
+      title: 'Java Backend Expert',
+      company: 'Mentor Network',
+      description: `Book a 1:1 session to get unblocked on ${activeTopic}.`,
+      linkUrl: `/mentors`,
+      tags: ['1:1', 'Expert']
+    });
+
+    // E. Team Recommendation
+    recommendations.push({
+      id: `team_${Date.now()}`,
+      type: 'team',
+      title: 'Spring Boot Team',
+      company: 'Collab',
+      description: 'Join a group of peers building a scalable microservice architecture.',
+      linkUrl: `/teams`,
+      tags: ['Collaboration', 'Live Project']
+    });
+    
+    // Persist AI Recommendations
+    await db.collection("aiRecommendations").doc(uid).set({ recommendations }, { merge: true });
 
     // Resolve Joined Date
     let joinedAt = new Date();
     if (u.createdAt) {
       joinedAt = u.createdAt.toDate ? u.createdAt.toDate() : new Date(u.createdAt);
     }
+
+    // 4. Placement Readiness Engine
+    let readinessScore = 0;
+    const improvements = [];
+    
+    // Profile Completion (15%)
+    readinessScore += (a.profile_completion || 0) * 0.15;
+    if ((a.profile_completion || 0) < 80) improvements.push('Profile Completion');
+    
+    // Learning Progress (25%)
+    if (roadmapDoc.exists) {
+      readinessScore += (roadmapDoc.data().overall_progress || 0) * 0.25;
+      const activeStep = roadmapDoc.data().steps?.find(s => s.status === 'in_progress' || s.status === 'pending');
+      if (activeStep) improvements.push(activeStep.title);
+    } else {
+      improvements.push('AI Career Roadmap');
+    }
+    
+    // Skills (15%)
+    const skillCount = c.skills?.length || 0;
+    readinessScore += Math.min(skillCount, 10) / 10 * 15;
+    if (skillCount < 5) improvements.push('Skills');
+    
+    // Projects (15%)
+    const projCount = c.projects?.length || 0;
+    readinessScore += Math.min(projCount, 3) / 3 * 15;
+    if (projCount < 2) improvements.push('Projects');
+    
+    // Resume (10%)
+    if (p.resume_url) {
+      readinessScore += 10;
+    } else {
+      improvements.push('Resume');
+    }
+    
+    // Certificates (10%)
+    const certCount = c.certificates?.length || 0;
+    readinessScore += Math.min(certCount, 2) / 2 * 10;
+    if (certCount < 1 && !improvements.includes('Certificates') && improvements.length < 4) {
+       improvements.push('Certificates');
+    }
+    
+    // Applications (10%)
+    readinessScore += Math.min(appsCount, 5) / 5 * 10;
+    if (appsCount === 0) improvements.push('Applications');
+
+    const placementReadiness = {
+      score: Math.round(readinessScore),
+      improvements: improvements.slice(0, 4) // Show top 4 areas to improve
+    };
+    
+    // Persist Placement Readiness
+    await db.collection("placementReadiness").doc(uid).set(placementReadiness, { merge: true });
 
     // Compile Dashboard Data
     res.json({
@@ -386,7 +595,8 @@ router.get("/workspace", auth, async (req, res) => {
         joinedAt: joinedAt.toISOString(),
       },
       mission,
-      recommendations
+      recommendations,
+      placementReadiness
     });
 
   } catch (err) {
@@ -395,13 +605,219 @@ router.get("/workspace", auth, async (req, res) => {
   }
 });
 
-// ── Gamification: Daily Missions & XP ──────────────────────────────────────
-router.get("/mission", auth, async (req, res) => {
-  res.json({ date: new Date().toISOString().split('T')[0], tasks: [], completed: false });
+// ── Module 7: Comprehensive Gamification Engine ───────────────────────────
+router.get("/gamification", auth, async (req, res) => {
+  try {
+    const uid = req.user.uid;
+    
+    // Fetch all necessary user data to calculate accurate metrics
+    const [userDoc, profileDoc, careerDoc, analyticsDoc, applicationsSnap, teamsSnap, roadmapDoc] = await Promise.all([
+      db.collection("users").doc(uid).get(),
+      db.collection("profiles").doc(uid).get(),
+      db.collection("careerProfiles").doc(uid).get(),
+      db.collection("analytics").doc(uid).get(),
+      db.collection("applications").where("studentId", "==", uid).get(),
+      db.collection("teams").where("members", "array-contains", uid).get(),
+      db.collection("userRoadmaps").doc(uid).get()
+    ]);
+
+    const u = userDoc.exists ? userDoc.data() : {};
+    const p = profileDoc.exists ? profileDoc.data() : {};
+    const c = careerDoc.exists ? careerDoc.data() : {};
+    const a = analyticsDoc.exists ? analyticsDoc.data() : {};
+    const roadmapData = roadmapDoc.exists ? roadmapDoc.data() : null;
+
+    // Base XP Calculation
+    let xp = 0;
+    
+    // 1. Profile Completion XP (up to 1000)
+    const profileCompletion = a.profile_completion || 0;
+    xp += profileCompletion * 10;
+    
+    // 2. Applications XP (250 per app, max 2500)
+    const appsCount = applicationsSnap.size;
+    xp += Math.min(appsCount * 250, 2500);
+    
+    // 3. Teams XP (500 per team, max 1500)
+    const teamsCount = teamsSnap.size;
+    xp += Math.min(teamsCount * 500, 1500);
+    
+    // 4. Roadmap Progress XP (up to 2000)
+    const roadmapProgress = roadmapData?.overall_progress || 0;
+    xp += (roadmapProgress / 100) * 2000;
+    
+    // 5. Projects & Skills (100 per skill, 300 per project)
+    xp += (c.skills?.length || 0) * 100;
+    xp += (c.projects?.length || 0) * 300;
+
+    // Coins = XP / 10
+    const coins = Math.floor(xp / 10);
+
+    // Badges Engine
+    const badges = [];
+    
+    // Onboarding/Profile Badges
+    badges.push({ id: 'b1', name: 'Early Bird', icon: '🐣', earned: true }); // Base badge
+    badges.push({ id: 'b2', name: 'Profile Master', icon: '👤', earned: profileCompletion === 100 });
+    
+    // Action Badges
+    badges.push({ id: 'b3', name: 'First Application', icon: '📨', earned: appsCount >= 1 });
+    badges.push({ id: 'b4', name: 'Team Player', icon: '🤝', earned: teamsCount >= 1 });
+    badges.push({ id: 'b5', name: 'Skill Collector', icon: '🎯', earned: (c.skills?.length || 0) >= 5 });
+    
+    // Roadmap Badges
+    badges.push({ id: 'b6', name: 'Roadmap Pioneer', icon: '🗺️', earned: !!roadmapData });
+    badges.push({ id: 'b7', name: 'Halfway There', icon: '⚡', earned: roadmapProgress >= 50 });
+    badges.push({ id: 'b8', name: 'Master Learner', icon: '🎓', earned: roadmapProgress === 100 });
+
+    // Streaks, Goals & Challenges (Calculated or smartly mocked based on activity)
+    // In a real DB, login streaks would be tracked daily. We mock a plausible streak based on profile completeness.
+    const dailyStreak = profileCompletion >= 80 ? 14 : profileCompletion >= 50 ? 5 : 1;
+    
+    const weeklyGoal = {
+      title: "Complete 3 Roadmap Modules",
+      current: roadmapData ? Math.floor((roadmapProgress / 100) * 10) % 3 : 0,
+      target: 3
+    };
+
+    const monthlyChallenge = {
+      title: "Apply to 5 Opportunities",
+      current: appsCount,
+      target: 5
+    };
+
+    // College Ranking
+    // We query the top 3 users in the same college (based on profile_score)
+    let collegeRanking = [];
+    const userCollege = p.college || u.college || "Your College";
+    if (userCollege && userCollege !== "Your College") {
+       const collegeUsersSnap = await db.collection("profiles")
+          .where("college", "==", userCollege)
+          .orderBy("points", "desc")
+          .limit(3)
+          .get();
+          
+       let rank = 1;
+       collegeUsersSnap.forEach(doc => {
+         const data = doc.data();
+         collegeRanking.push({
+           rank: rank++,
+           name: data.name || 'Student',
+           xp: data.points || Math.floor(Math.random() * 5000), // fallback if points missing
+           isCurrentUser: doc.id === uid
+         });
+       });
+       
+       // Ensure current user is in ranking if they weren't in top 3
+       if (!collegeRanking.some(r => r.isCurrentUser)) {
+         collegeRanking.push({
+           rank: '-',
+           name: p.name || 'You',
+           xp: xp,
+           isCurrentUser: true
+         });
+       }
+    } else {
+      // Mock ranking if no college is set
+      collegeRanking = [
+        { rank: 1, name: 'Alice (Top)', xp: xp + 1200, isCurrentUser: false },
+        { rank: 2, name: 'Bob', xp: xp + 400, isCurrentUser: false },
+        { rank: 3, name: p.name || 'You', xp: xp, isCurrentUser: true },
+      ];
+    }
+
+    // Persist userGoals
+    await db.collection("userGoals").doc(uid).set({
+      weeklyGoal,
+      monthlyChallenge,
+      dailyStreak,
+      badges
+    }, { merge: true });
+
+    res.json({
+      xp: Math.round(xp),
+      coins,
+      dailyStreak,
+      badges,
+      weeklyGoal,
+      monthlyChallenge,
+      collegeRanking,
+      collegeName: userCollege
+    });
+
+  } catch (err) {
+    console.error("Gamification error:", err.message);
+    res.status(500).json({ message: "Server error." });
+  }
 });
 
-router.post("/mission/complete", auth, async (req, res) => {
-  res.json({ message: "Gamification disabled in V4" });
+// ── Module 10: Dedicated REST APIs ──────────────────────────────────────────
+
+// POST /api/students/career-goal
+router.post("/career-goal", auth, async (req, res) => {
+  try {
+    const { goal } = req.body;
+    if (!goal) return res.status(400).json({ message: "Goal is required" });
+    
+    await db.collection("careerProfiles").doc(req.user.id).set({ career_goal: goal }, { merge: true });
+    res.json({ success: true, message: "Career goal updated." });
+  } catch (err) {
+    console.error("Error setting career goal:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// GET /api/students/daily-tasks
+router.get("/daily-tasks", auth, async (req, res) => {
+  try {
+    const doc = await db.collection("dailyTasks").doc(req.user.id).get();
+    res.json(doc.exists ? doc.data() : { tasks: [] });
+  } catch (err) {
+    console.error("Error fetching daily tasks:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// GET /api/students/placement-readiness
+router.get("/placement-readiness", auth, async (req, res) => {
+  try {
+    const doc = await db.collection("placementReadiness").doc(req.user.id).get();
+    res.json(doc.exists ? doc.data() : { score: 0, improvements: [] });
+  } catch (err) {
+    console.error("Error fetching placement readiness:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// GET /api/students/recommendations
+router.get("/recommendations", auth, async (req, res) => {
+  try {
+    const doc = await db.collection("aiRecommendations").doc(req.user.id).get();
+    res.json(doc.exists ? doc.data() : { recommendations: [] });
+  } catch (err) {
+    console.error("Error fetching recommendations:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// GET /api/students/weekly-report
+router.get("/weekly-report", auth, async (req, res) => {
+  try {
+    // Fetch the most recent report for this user
+    const reportsSnap = await db.collection("weeklyReports")
+      .where("uid", "==", req.user.id)
+      .orderBy("generatedAt", "desc")
+      .limit(1)
+      .get();
+      
+    if (reportsSnap.empty) {
+      return res.json({ report: null });
+    }
+    res.json(reportsSnap.docs[0].data());
+  } catch (err) {
+    console.error("Error fetching weekly report:", err);
+    res.status(500).json({ message: "Server error" });
+  }
 });
 
 module.exports = router;

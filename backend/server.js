@@ -98,6 +98,8 @@ app.use("/api/mentor-queries", require("./routes/mentorQueries"));
 app.use("/api/networking",    require("./routes/networking"));
 app.use("/api/leaderboard",   require("./routes/leaderboard"));
 app.use("/api/chat",          require("./routes/chat"));
+app.use("/api/roadmap",       require("./routes/roadmap"));
+app.use("/api/ai",            require("./routes/ai"));
 app.use("/api/resume",        require("./routes/resume"));
 app.use("/api/colleges",      require("./routes/colleges"));
 app.use("/api/companies",     require("./routes/companies"));
@@ -207,7 +209,10 @@ io.on("connection", (socket) => {
 });
 
 const PORT = process.env.PORT || 5000;
+const { startAutomationJobs } = require('./jobs/automation');
+
 server.listen(PORT, () => {
   console.log(`✅ Server running on http://localhost:${PORT}`);
   console.log(`⚡ Socket.io real-time enabled`);
+  startAutomationJobs();
 });

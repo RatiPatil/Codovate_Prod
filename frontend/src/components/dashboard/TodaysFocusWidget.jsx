@@ -28,11 +28,24 @@ const TodaysFocusWidget = ({ mission }) => {
 
   return (
     <div ref={containerRef} className="w-full">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
         <div>
           <h2 className="text-2xl font-bold text-white tracking-tight">Today's Focus</h2>
           <p className="text-gray-400 text-sm mt-1">Complete these tasks to move closer to your goal.</p>
         </div>
+        {mission?.estimated_time && (
+          <div className="flex items-center gap-4 bg-white/5 border border-white/10 px-4 py-2 rounded-xl">
+            <div className="flex items-center gap-2 text-sm">
+              <span className="text-xl">⏱️</span>
+              <span className="font-bold text-gray-300">{mission.estimated_time}</span>
+            </div>
+            <div className="w-px h-6 bg-white/10"></div>
+            <div className="flex items-center gap-2 text-sm">
+              <span className="text-xl">✨</span>
+              <span className="font-bold text-yellow-400">{mission.reward || '+100 XP'}</span>
+            </div>
+          </div>
+        )}
       </div>
 
       {tasks.length === 0 ? (

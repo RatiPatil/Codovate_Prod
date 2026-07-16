@@ -1,0 +1,184 @@
+import { useState, useEffect, useRef } from 'react';
+import { gsap } from 'gsap';
+import api from '../api/axios';
+import Loader from '../components/common/Loader';
+import ErrorState from '../components/common/ErrorState';
+
+const Gamification = () => {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    const fetchGamification = async () => {
+      try {
+        const res = await api.get('/students/gamification');
+        setData(res.data);
+      } catch (err) {
+        console.error("Failed to load gamification data", err);
+        setError("Could not load your rewards.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchGamification();
+  }, []);
+
+  useEffect(() => {
+    if (!loading && data && containerRef.current) {
+      const elements = containerRef.current.querySelectorAll('.stagger-item');
+      gsap.fromTo(elements,
+        { opacity: 0, y: 30 },
+        { opacity: 1, y: 0, duration: 0.6, stagger: 0.1, ease: 'power3.out' }
+      );
+    }
+  }, [loading, data]);
+
+  if (loading) return <Loader fullScreen />;
+  if (error) return <ErrorState message={error} />;
+  if (!data) return null;
+
+  return (
+    <div ref={containerRef} className="min-h-screen bg-[#050505] text-white p-4 md:p-8 pt-24 md:pt-32 max-w-7xl mx-auto space-y-8 pb-32 overflow-hidden">
+      
+      {/* HEADER SECTION */}
+      <div className="stagger-item text-center max-w-3xl mx-auto mb-12 relative">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-primary/20 rounded-full blur-[120px] pointer-events-none" />
+        <h1 className="text-4xl md:text-6xl font-black mb-4 tracking-tight relative z-10 text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-200 to-gray-500">
+          Rewards & Progress
+        </h1>
+        <p className="text-gray-400 relative z-10">Track your learning journey, earn badges, and climb the ranks.</p>
+      </div>
+
+      {/* TOP STATS: XP, COINS, STREAK */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        
+        {/* XP Card */}
+        <div className="stagger-item group bg-[#0a0a0c] border border-white/10 rounded-3xl p-8 relative overflow-hidden flex flex-col items-center justify-center text-center">
+          <div className="absolute inset-0 bg-blue-500/5 group-hover:bg-blue-500/10 transition-colors duration-500" />
+          <span className="text-5xl mb-4 animate-bounce">⚡</span>
+          <h3 className="text-gray-400 text-sm font-bold uppercase tracking-widest mb-1">Total XP</h3>
+          <p className="text-5xl font-black text-white">{data.xp.toLocaleString()}</p>
+        </div>
+
+        {/* Coins Card */}
+        <div className="stagger-item group bg-[#0a0a0c] border border-white/10 rounded-3xl p-8 relative overflow-hidden flex flex-col items-center justify-center text-center">
+          <div className="absolute inset-0 bg-yellow-500/5 group-hover:bg-yellow-500/10 transition-colors duration-500" />
+          <span className="text-5xl mb-4 animate-[spin_4s_linear_infinite]">🪙</span>
+          <h3 className="text-gray-400 text-sm font-bold uppercase tracking-widest mb-1">Codovate Coins</h3>
+          <p className="text-5xl font-black text-yellow-400">{data.coins.toLocaleString()}</p>
+        </div>
+
+        {/* Streak Card */}
+        <div className="stagger-item group bg-[#0a0a0c] border border-white/10 rounded-3xl p-8 relative overflow-hidden flex flex-col items-center justify-center text-center">
+          <div className="absolute inset-0 bg-orange-500/5 group-hover:bg-orange-500/10 transition-colors duration-500" />
+          <span className="text-5xl mb-4 animate-pulse">🔥</span>
+          <h3 className="text-gray-400 text-sm font-bold uppercase tracking-widest mb-1">Daily Streak</h3>
+          <p className="text-5xl font-black text-orange-500">{data.dailyStreak} <span className="text-2xl text-orange-500/50">Days</span></p>
+        </div>
+
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+        
+        {/* LEFT COL: Goals & Challenges */}
+        <div className="space-y-8">
+          
+          {/* Weekly Goal */}
+          <div className="stagger-item bg-[#0a0a0c] border border-white/10 rounded-3xl p-6 md:p-8">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold flex items-center gap-2"><span>🎯</span> Weekly Goal</h2>
+              <span className="bg-primary/20 text-primary text-xs font-bold px-3 py-1 rounded-full border border-primary/30">
+                {data.weeklyGoal.current} / {data.weeklyGoal.target}
+              </span>
+            </div>
+            <p className="text-gray-300 font-medium mb-4">{data.weeklyGoal.title}</p>
+            <div className="w-full bg-white/5 h-3 rounded-full overflow-hidden">
+              <div 
+                className="bg-gradient-to-r from-primary to-purple-500 h-full rounded-full transition-all duration-1000" 
+                style={{ width: `${(data.weeklyGoal.current / data.weeklyGoal.target) * 100}%` }} 
+              />
+            </div>
+          </div>
+
+          {/* Monthly Challenge */}
+          <div className="stagger-item bg-[#0a0a0c] border border-white/10 rounded-3xl p-6 md:p-8">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold flex items-center gap-2"><span>⚔️</span> Monthly Challenge</h2>
+              <span className="bg-pink-500/20 text-pink-400 text-xs font-bold px-3 py-1 rounded-full border border-pink-500/30">
+                {data.monthlyChallenge.current} / {data.monthlyChallenge.target}
+              </span>
+            </div>
+            <p className="text-gray-300 font-medium mb-4">{data.monthlyChallenge.title}</p>
+            <div className="w-full bg-white/5 h-3 rounded-full overflow-hidden">
+              <div 
+                className="bg-gradient-to-r from-pink-500 to-orange-500 h-full rounded-full transition-all duration-1000" 
+                style={{ width: `${Math.min((data.monthlyChallenge.current / data.monthlyChallenge.target) * 100, 100)}%` }} 
+              />
+            </div>
+          </div>
+
+          {/* College Ranking Mini-Leaderboard */}
+          <div className="stagger-item bg-[#0a0a0c] border border-white/10 rounded-3xl p-6 md:p-8">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold flex items-center gap-2"><span>🏛️</span> College Ranking</h2>
+              <span className="text-xs text-gray-500 font-bold uppercase tracking-widest">{data.collegeName}</span>
+            </div>
+            
+            <div className="space-y-3">
+              {data.collegeRanking.map((user, idx) => (
+                <div 
+                  key={idx} 
+                  className={`flex items-center justify-between p-4 rounded-xl border ${user.isCurrentUser ? 'bg-primary/10 border-primary/30' : 'bg-white/5 border-white/5'}`}
+                >
+                  <div className="flex items-center gap-4">
+                    <span className={`w-8 text-center font-black ${user.rank === 1 ? 'text-yellow-500 text-xl' : user.rank === 2 ? 'text-gray-400' : user.rank === 3 ? 'text-orange-400' : 'text-gray-600'}`}>
+                      {user.rank === 1 ? '🥇' : user.rank === 2 ? '🥈' : user.rank === 3 ? '🥉' : `#${user.rank}`}
+                    </span>
+                    <span className={`font-bold ${user.isCurrentUser ? 'text-white' : 'text-gray-300'}`}>
+                      {user.name}
+                      {user.isCurrentUser && <span className="ml-2 text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full">You</span>}
+                    </span>
+                  </div>
+                  <span className="font-bold text-gray-400 text-sm">{user.xp} XP</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+        </div>
+
+        {/* RIGHT COL: Badges Array */}
+        <div className="stagger-item bg-[#0a0a0c] border border-white/10 rounded-3xl p-6 md:p-8 h-fit">
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-xl font-bold flex items-center gap-2"><span>🎖️</span> Your Badges</h2>
+            <span className="text-gray-400 text-sm font-bold">
+              {data.badges.filter(b => b.earned).length} / {data.badges.length}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+            {data.badges.map((badge) => (
+              <div 
+                key={badge.id}
+                className={`group flex flex-col items-center justify-center p-6 rounded-2xl border transition-all duration-300 ${
+                  badge.earned 
+                    ? 'bg-gradient-to-b from-white/10 to-white/5 border-white/20 shadow-[0_4px_20px_rgba(255,255,255,0.05)] hover:-translate-y-1' 
+                    : 'bg-black/40 border-white/5 grayscale opacity-40 hover:grayscale-0 hover:opacity-100'
+                }`}
+              >
+                <span className="text-4xl mb-3 drop-shadow-lg">{badge.icon}</span>
+                <span className="text-xs font-bold text-center text-gray-300 leading-tight">{badge.name}</span>
+                {!badge.earned && <span className="mt-2 text-[10px] text-gray-500 uppercase tracking-widest font-bold">Locked</span>}
+              </div>
+            ))}
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+};
+
+export default Gamification;

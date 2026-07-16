@@ -11,8 +11,11 @@ const navItems = [
   { path: '/teams', label: 'Teams', icon: '🤝' },
   { path: '/mentors', label: 'Mentors', icon: '👨‍🏫' },
   { path: '/leaderboard', label: 'Leaderboard', icon: '🏆' },
+  { path: '/rewards', label: 'Rewards', icon: '💎' },
   { path: '/resume', label: 'Resume Builder', icon: '📄' },
   { path: '/notifications', label: 'Notifications', icon: '🔔' },
+  { path: '/roadmap', label: 'AI Roadmap', icon: '🗺️' },
+  { path: '/coach', label: 'Career Coach', icon: '🤖' },
   { path: '/profile', label: 'Profile', icon: '👤' },
 ];
 

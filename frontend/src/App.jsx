@@ -27,8 +27,11 @@ const AdminLogin = lazy(() => import('./pages/AdminLogin'));
 const TeamsLayout = lazy(() => import('./pages/teams/TeamsLayout'));
 const Mentors = lazy(() => import('./pages/Mentors'));
 const Leaderboard = lazy(() => import('./pages/Leaderboard'));
+const Gamification = lazy(() => import('./pages/Gamification'));
 const ResumeBuilder = lazy(() => import('./pages/ResumeBuilder'));
 const Notifications = lazy(() => import('./pages/Notifications'));
+const Roadmap = lazy(() => import('./pages/Roadmap'));
+const CareerCoach = lazy(() => import('./pages/CareerCoach'));
 const DashboardRouter = lazy(() => import('./components/DashboardRouter'));
 const MentorRouter = lazy(() => import('./components/MentorRouter'));
 
@@ -126,6 +129,11 @@ function App() {
                       <Layout><Leaderboard /></Layout>
                     </ProtectedRoute>
                   } />
+                  <Route path="/rewards" element={
+                    <ProtectedRoute>
+                      <Layout><Gamification /></Layout>
+                    </ProtectedRoute>
+                  } />
                   <Route path="/resume" element={
                     <ProtectedRoute>
                       <Layout><ResumeBuilder /></Layout>
@@ -134,6 +142,16 @@ function App() {
                   <Route path="/notifications" element={
                     <ProtectedRoute>
                       <Layout><Notifications /></Layout>
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/roadmap" element={
+                    <ProtectedRoute>
+                      <Layout><Roadmap /></Layout>
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/coach" element={
+                    <ProtectedRoute>
+                      <Layout><CareerCoach /></Layout>
                     </ProtectedRoute>
                   } />
 
