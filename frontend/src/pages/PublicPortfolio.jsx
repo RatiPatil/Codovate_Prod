@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import api from '../api/axios';
-import { Mail, Github, Linkedin, ExternalLink, MapPin, Briefcase, GraduationCap, Award, CheckCircle, Code, ChevronRight } from 'lucide-react';
+import { Mail, User, ExternalLink, MapPin, Briefcase, GraduationCap, Award, CheckCircle, Code, ChevronRight } from 'lucide-react';
 
 const PublicPortfolio = () => {
   const { username } = useParams();
@@ -74,13 +74,13 @@ const PublicPortfolio = () => {
           )}
           {contact?.github && (
             <a href={contact.github} target="_blank" rel="noreferrer" className="flex items-center gap-2 px-5 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full text-sm font-medium transition-all">
-              <Github size={16} className="text-gray-400" />
+              <Code size={16} className="text-gray-400" />
               <span>GitHub</span>
             </a>
           )}
           {contact?.linkedin && (
             <a href={contact.linkedin} target="_blank" rel="noreferrer" className="flex items-center gap-2 px-5 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full text-sm font-medium transition-all">
-              <Linkedin size={16} className="text-gray-400" />
+              <User size={16} className="text-gray-400" />
               <span>LinkedIn</span>
             </a>
           )}

@@ -23,7 +23,7 @@ const Events = () => {
   };
 
   const handleRSVP = (eventId) => {
-    toast.success('Successfully RSVP\\'d for this event!');
+    toast.success("Successfully RSVP'd for this event!");
   };
 
   return (
