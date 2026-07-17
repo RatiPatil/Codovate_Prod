@@ -42,7 +42,7 @@ router.get('/', companyAdminOnly, async (req, res) => {
       
       apps.push({
         ...app,
-        student_name: s.name || u.name || "Unknown",
+        student_name: s.personalInfo?.name || u.name || "Unknown",
         student_email: u.email || "Unknown",
         opportunity_title: o.title || "Unknown"
       });

@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const { db } = require('../config/firebase');
 const auth = require('../middleware/auth');
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 // Helper: No longer expiring chats
 async function checkExpiredChats(connectionId = null) {
@@ -121,6 +123,84 @@ router.get('/discover', auth, async (req, res) => {
     res.json({ data: students, nextCursor, hasMore });
   } catch (err) {
     console.error("Discover error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// GET: AI Team Matching
+router.get('/ai-match', auth, async (req, res) => {
+  try {
+    // 1. Fetch current user
+    const currentUserDoc = await db.collection('students').doc(req.user.id).get();
+    if (!currentUserDoc.exists) return res.status(404).json({ message: "User not found" });
+    const userData = currentUserDoc.data();
+    const userProfile = {
+      skills: userData.skills || [],
+      goals: userData.career_goal || '',
+      interests: userData.passionate_about || []
+    };
+
+    // 2. Fetch all other active students (simplified for MVP: top 50)
+    const snapshot = await db.collection('students').limit(50).get();
+    let candidates = [];
+    
+    snapshot.forEach(doc => {
+      if (doc.id === req.user.id) return;
+      const data = doc.data();
+      candidates.push({
+        id: doc.id,
+        name: data.name || data.full_name || 'Anonymous',
+        skills: data.skills || [],
+        goals: data.career_goal || '',
+        college: data.college || ''
+      });
+    });
+
+    if (candidates.length === 0) return res.json({ matches: [] });
+
+    // 3. Ask Gemini to find the top 5 matches based on complementary skills
+    const prompt = `
+You are an expert team matchmaker for a student coding platform.
+The current user is looking for teammates with complementary skills (e.g., frontend matching with backend).
+
+Current User Profile:
+- Skills: ${userProfile.skills.join(', ')}
+- Goal: ${userProfile.goals}
+- Interests: ${userProfile.interests.join(', ')}
+
+Available Candidates (JSON):
+${JSON.stringify(candidates.map(c => ({ id: c.id, skills: c.skills, goals: c.goals })))}
+
+Select the top 5 candidates that best complement the user's skills for a hackathon team. 
+Return ONLY a JSON array of objects with the exact structure:
+[
+  { "id": "candidate_id", "synergy_score": 95, "reason": "Short 1-sentence reason why they match" }
+]
+`;
+
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const result = await model.generateContent(prompt);
+    let text = result.response.text().trim();
+    if (text.startsWith('\`\`\`json')) text = text.slice(7);
+    if (text.startsWith('\`\`\`')) text = text.slice(3);
+    if (text.endsWith('\`\`\`')) text = text.slice(0, -3);
+    text = text.trim();
+
+    const aiMatches = JSON.parse(text);
+
+    // 4. Map the AI results back to the full candidate profiles
+    const finalMatches = aiMatches.map(match => {
+      const fullProfile = candidates.find(c => c.id === match.id);
+      return {
+        ...fullProfile,
+        synergy_score: match.synergy_score,
+        match_reason: match.reason
+      };
+    }).filter(m => m.name !== undefined); // Filter out if AI hallucinated an ID
+
+    res.json({ matches: finalMatches });
+  } catch (err) {
+    console.error("AI Match error:", err);
     res.status(500).json({ message: "Server error" });
   }
 });

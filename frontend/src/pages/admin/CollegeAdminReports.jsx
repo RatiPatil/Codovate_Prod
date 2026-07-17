@@ -1,11 +1,29 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import api from '../../api/axios';
 import { showAlert, showConfirm } from '../../utils/uiUtils';
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 
 const CollegeAdminReports = () => {
+  const [analytics, setAnalytics] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchAnalytics();
+  }, []);
+
+  const fetchAnalytics = async () => {
+    try {
+      const res = await api.get('/college-admin/reports/analytics');
+      setAnalytics(res.data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleGenerateCSV = async () => {
     try {
-      // In a real app, you would probably trigger a blob download from the API
       const response = await api.get('/college-admin/reports/csv', { responseType: 'blob' });
       
       const url = window.URL.createObjectURL(new Blob([response.data]));
@@ -20,37 +38,100 @@ const CollegeAdminReports = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-full min-h-[50vh]">
+        <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
   return (
-    <div className="p-8 h-[calc(100vh-80px)] overflow-y-auto">
-      <div className="bg-[#080812] border border-white/5 rounded-3xl p-8 max-w-2xl">
-        <h2 className="text-2xl font-black text-white mb-2">College Data Reports</h2>
-        <p className="text-gray-500 mb-8">Export comprehensive data on your students' performance, project submissions, and certifications.</p>
-        
-        <div className="space-y-4">
+    <div className="p-8 h-[calc(100vh-80px)] overflow-y-auto space-y-8">
+      <div>
+        <h2 className="text-3xl font-black text-white tracking-tight">College Data & Reports</h2>
+        <p className="text-gray-400 mt-1">Export comprehensive data and view performance analytics for your students.</p>
+      </div>
+
+      <div className="bg-[#080812] border border-white/5 rounded-3xl p-8">
+        <h3 className="text-xl font-bold text-white mb-6">Export Data</h3>
+        <div className="space-y-4 max-w-2xl">
           <div className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/10 hover:border-emerald-500/50 transition-colors">
             <div>
               <h3 className="text-lg font-bold text-white">Student Outcomes Report</h3>
-              <p className="text-sm text-gray-400">Includes student status, registered emails, and basic metrics.</p>
+              <p className="text-sm text-gray-400">Includes student skills, profile scores, and application statuses.</p>
             </div>
             <button 
               onClick={handleGenerateCSV}
-              className="px-4 py-2 bg-emerald-500 text-white font-bold rounded-lg hover:bg-emerald-600 transition-colors"
+              className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-lg transition-colors"
             >
               Download CSV
             </button>
           </div>
-          
-          <div className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/10 opacity-50">
-            <div>
-              <h3 className="text-lg font-bold text-white">Placement Readiness Export</h3>
-              <p className="text-sm text-gray-400">Detailed AI evaluation metrics. (Coming Soon)</p>
-            </div>
-            <button disabled className="px-4 py-2 bg-gray-500 text-white font-bold rounded-lg cursor-not-allowed">
-              Locked
-            </button>
-          </div>
         </div>
       </div>
+
+      {analytics && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          
+          {/* Top Skills Chart */}
+          <div className="bg-[#080812] border border-white/5 rounded-3xl p-6">
+            <h3 className="text-lg font-bold text-white mb-6">Top Student Skills</h3>
+            <div className="h-[300px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={analytics.skills} layout="vertical">
+                  <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" horizontal={false} />
+                  <XAxis type="number" stroke="#ffffff50" axisLine={false} tickLine={false} />
+                  <YAxis dataKey="name" type="category" stroke="#ffffff50" axisLine={false} tickLine={false} width={80} />
+                  <Tooltip cursor={{ fill: '#ffffff05' }} contentStyle={{ backgroundColor: '#0f0f1a', border: '1px solid #ffffff10', borderRadius: '12px' }} />
+                  <Bar dataKey="count" fill="#10B981" radius={[0, 4, 4, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Placement Pipeline */}
+          <div className="bg-[#080812] border border-white/5 rounded-3xl p-6">
+            <h3 className="text-lg font-bold text-white mb-6">Placement Pipeline</h3>
+            <div className="h-[300px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={analytics.placements}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" vertical={false} />
+                  <XAxis dataKey="month" stroke="#ffffff50" axisLine={false} tickLine={false} />
+                  <YAxis stroke="#ffffff50" axisLine={false} tickLine={false} />
+                  <Tooltip contentStyle={{ backgroundColor: '#0f0f1a', border: '1px solid #ffffff10', borderRadius: '12px' }} />
+                  <Line type="monotone" dataKey="applied" stroke="#3B82F6" strokeWidth={2} name="Applied" />
+                  <Line type="monotone" dataKey="interviewed" stroke="#F59E0B" strokeWidth={2} name="Interviewed" />
+                  <Line type="monotone" dataKey="hired" stroke="#10B981" strokeWidth={3} name="Hired" />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Internships Over Time */}
+          <div className="bg-[#080812] border border-white/5 rounded-3xl p-6 lg:col-span-2">
+            <h3 className="text-lg font-bold text-white mb-6">Internships Secured</h3>
+            <div className="h-[300px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={analytics.internships}>
+                  <defs>
+                    <linearGradient id="colorIntern" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#8B5CF6" stopOpacity={0.8}/>
+                      <stop offset="95%" stopColor="#8B5CF6" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" vertical={false} />
+                  <XAxis dataKey="month" stroke="#ffffff50" axisLine={false} tickLine={false} />
+                  <YAxis stroke="#ffffff50" axisLine={false} tickLine={false} />
+                  <Tooltip contentStyle={{ backgroundColor: '#0f0f1a', border: '1px solid #ffffff10', borderRadius: '12px' }} />
+                  <Area type="monotone" dataKey="count" stroke="#8B5CF6" strokeWidth={3} fillOpacity={1} fill="url(#colorIntern)" name="Internships" />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+        </div>
+      )}
     </div>
   );
 };

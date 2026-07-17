@@ -101,6 +101,41 @@ const SuperAdminAnalytics = () => {
             </ResponsiveContainer>
           </div>
         </div>
+
+        {/* Revenue Chart */}
+        <div className="bg-[#080812] border border-white/5 rounded-3xl p-6 lg:col-span-2 mt-4">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-xl font-bold text-white">Platform Revenue (MRR)</h3>
+            <span className="text-xs font-bold bg-amber-500/10 text-amber-500 px-3 py-1 rounded-full border border-amber-500/20">
+              B2B SaaS + Job Postings
+            </span>
+          </div>
+          <div className="h-[350px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={stats.charts.revenue}>
+                <defs>
+                  <linearGradient id="colorMrr" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#F59E0B" stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor="#F59E0B" stopOpacity={0}/>
+                  </linearGradient>
+                  <linearGradient id="colorJobs" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor="#3B82F6" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" vertical={false} />
+                <XAxis dataKey="name" stroke="#ffffff50" axisLine={false} tickLine={false} />
+                <YAxis stroke="#ffffff50" axisLine={false} tickLine={false} tickFormatter={(val) => `$${val/1000}k`} />
+                <Tooltip 
+                  contentStyle={{ backgroundColor: '#0f0f1a', border: '1px solid #ffffff10', borderRadius: '12px' }}
+                  formatter={(value) => `$${value.toLocaleString()}`}
+                />
+                <Area type="monotone" dataKey="mrr" stroke="#F59E0B" strokeWidth={3} fillOpacity={1} fill="url(#colorMrr)" name="College SaaS MRR" />
+                <Area type="monotone" dataKey="jobs" stroke="#3B82F6" strokeWidth={3} fillOpacity={1} fill="url(#colorJobs)" name="Job Posting Fees" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
       </div>
 
     </div>

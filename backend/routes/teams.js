@@ -59,7 +59,7 @@ router.get("/all", auth, async (req, res) => {
       
       team.member_count = membersSnapshot.size;
       if (ownerDoc.exists) {
-        team.owner_name = ownerDoc.data().name || ownerDoc.data().full_name || 'Anonymous';
+        team.owner_name = ownerDoc.data().personalInfo?.name || 'Anonymous';
       }
 
       return team;
@@ -185,8 +185,8 @@ router.get("/:id/members", auth, async (req, res) => {
       let email = '';
       if (studentDoc.exists) {
         const pd = studentDoc.data();
-        name = pd.name || 'Anonymous Student';
-        email = pd.email || '';
+        name = pd.personalInfo?.name || 'Anonymous Student';
+        email = pd.personalInfo?.email || '';
         members.push({
           id: studentDoc.id,
           name: name,
@@ -244,22 +244,22 @@ router.get("/discover", auth, async (req, res) => {
       const s = doc.data();
       if (doc.id === req.user.id) continue; // Exclude self
 
-      const sp = s.profile_data || {};
+      const sp = s || {};
 
       students.push({
         id: doc.id,
-        name: sp.name || 'Anonymous Student',
-        email: s.email,
-        college: sp.college || null,
-        branch: sp.branch || null,
+        name: sp.personalInfo?.name || 'Anonymous Student',
+        email: sp.personalInfo?.email || s.email,
+        college: sp.education?.college || null,
+        branch: sp.education?.branch || null,
         skills: sp.skills || [],
-        career_goal: sp.career_goal || null,
-        career_interests: sp.career_interests || [],
-        experience_level: sp.experience_level || null,
+        career_goal: sp.careerGoal || null,
+        career_interests: sp.interests || [],
+        experience_level: sp.experienceLevel || null,
         bio: sp.bio || null,
-        github_url: sp.github_url || null,
-        linkedin_url: sp.linkedin_url || null,
-        profile_completion: sp.profile_completion || 0,
+        github_url: sp.socialLinks?.github || null,
+        linkedin_url: sp.socialLinks?.linkedin || null,
+        profile_completion: sp.profileCompletion || 0,
       });
     }
 
@@ -308,7 +308,7 @@ router.post("/:id/discussions", auth, async (req, res) => {
 
     const studentDoc = await db.collection("profiles").doc(req.user.id).get();
     const s = studentDoc.exists ? studentDoc.data() : {};
-    const userName = s.name || 'Anonymous';
+    const userName = s.personalInfo?.name || 'Anonymous';
 
     const msgRef = db.collection("team_discussions").doc();
     const msg = {

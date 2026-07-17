@@ -35,21 +35,28 @@ router.get("/", auth, async (req, res) => {
         if (!matchesTitle && !matchesCompany) continue;
       }
       
-      // Calculate Match Score
       let match_score = 0;
+      let missing_skills = [];
       if (opp.required_skills && opp.required_skills.length > 0) {
         if (userSkills.length > 0) {
           const reqSkills = opp.required_skills.map(s => s.toLowerCase());
           let matchCount = 0;
           reqSkills.forEach(reqSkill => {
-            if (userSkills.some(us => us.includes(reqSkill) || reqSkill.includes(us))) matchCount++;
+            if (userSkills.some(us => us.includes(reqSkill) || reqSkill.includes(us))) {
+              matchCount++;
+            } else {
+              missing_skills.push(opp.required_skills[reqSkills.indexOf(reqSkill)]); // Original case
+            }
           });
           match_score = Math.round((matchCount / reqSkills.length) * 100);
+        } else {
+          missing_skills = opp.required_skills; // No skills = all missing
         }
       } else {
         match_score = 100; // Defaults to 100% if no skills are explicitly required
       }
       opp.match_score = match_score;
+      opp.missing_skills = missing_skills;
 
       // Get application count
       const appsSnapshot = await db.collection("applications").where("opportunity_id", "==", opp.id).get();
@@ -107,6 +114,56 @@ router.get("/:id", auth, async (req, res) => {
   }
 });
 
+// GET bookmarks
+router.get("/bookmarks/my", auth, async (req, res) => {
+  try {
+    const snapshot = await db.collection("bookmarks").where("user_id", "==", req.user.id).get();
+    const bookmarks = snapshot.docs.map(doc => doc.data().opportunity_id);
+    res.json(bookmarks);
+  } catch (err) {
+    console.error("Get bookmarks error:", err.message);
+    res.status(500).json({ message: "Server error." });
+  }
+});
+
+// POST toggle bookmark
+router.post("/:id/bookmark", auth, async (req, res) => {
+  try {
+    const { id: opportunity_id } = req.params;
+    const user_id = req.user.id;
+    
+    // Check if opp exists
+    const oppDoc = await db.collection("opportunities").doc(opportunity_id).get();
+    if (!oppDoc.exists) return res.status(404).json({ message: "Opportunity not found" });
+
+    // Find existing bookmark
+    const snapshot = await db.collection("bookmarks")
+      .where("user_id", "==", user_id)
+      .where("opportunity_id", "==", opportunity_id)
+      .get();
+
+    if (snapshot.empty) {
+      // Add bookmark
+      const ref = db.collection("bookmarks").doc();
+      await ref.set({
+        id: ref.id,
+        user_id,
+        opportunity_id,
+        created_at: new Date()
+      });
+      res.json({ bookmarked: true });
+    } else {
+      // Remove bookmark
+      const docId = snapshot.docs[0].id;
+      await db.collection("bookmarks").doc(docId).delete();
+      res.json({ bookmarked: false });
+    }
+  } catch (err) {
+    console.error("Bookmark error:", err.message);
+    res.status(500).json({ message: "Server error." });
+  }
+});
+
 const { body, validationResult } = require("express-validator");
 
 // POST add opportunity (admin only) — triggers real-time
@@ -115,7 +172,7 @@ router.post(
   auth,
   [
     body("title").notEmpty().withMessage("Title is required.").trim().escape(),
-    body("type").isIn(["Internship", "Hackathon", "Competition"]).withMessage("Invalid type."),
+    body("type").isIn(["Internship", "Hackathon", "Competition", "Job"]).withMessage("Invalid type."),
     body("company").notEmpty().withMessage("Company is required.").trim().escape(),
     body("registration_link").optional({ checkFalsy: true }).isURL().withMessage("Must be a valid URL."),
   ],

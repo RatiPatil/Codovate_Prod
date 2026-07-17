@@ -3,6 +3,7 @@ const router = express.Router();
 const { db } = require("../config/firebase");
 const auth = require("../middleware/auth");
 const { awardPoints, updatePlacementScore } = require("../utils/scoring");
+const eventBus = require("../events/eventBus");
 
 router.get("/", auth, async (req, res) => {
   if (!["admin", "super_admin", "college_admin", "company_admin"].includes(req.user.role)) return res.status(403).json({ message: "Admin only." });
@@ -26,8 +27,6 @@ router.get("/", auth, async (req, res) => {
     const students = usersSnap.docs.map(doc => {
       const u = doc.data();
       const p = profiles[doc.id] || {};
-      const a = analytics[doc.id] || {};
-      const c = careers[doc.id] || {};
 
       let joinedAt = null;
       if (u.createdAt) {
@@ -40,16 +39,16 @@ router.get("/", auth, async (req, res) => {
       
       return {
         id: doc.id,
-        name: p.name || u.name || '',
+        name: p.personalInfo?.name || u.name || '',
         email: u.email || '',
         phone: u.phone || '',
         created_at: joinedAt,
-        college: p.college || null,
-        branch: p.branch || null,
-        year: p.year || null,
-        skills: c.skills || [],
-        profile_completion: a.profile_completion || 0,
-        onboarding_done: a.onboarding_completed || false,
+        college: p.education?.college || null,
+        branch: p.education?.branch || null,
+        year: p.education?.year || null,
+        skills: p.skills || [],
+        profile_completion: u.profileCompleted || p.profileCompletion || 0,
+        onboarding_done: u.onboardingCompleted || false,
         claimed: u.claimed || false
       };
     });
@@ -71,11 +70,9 @@ router.get("/", auth, async (req, res) => {
 router.get("/profile", auth, async (req, res) => {
   try {
     const uid = req.user.id;
-    const [userDoc, profileDoc, careerDoc, analyticsDoc] = await Promise.all([
+    const [userDoc, profileDoc] = await Promise.all([
       db.collection("users").doc(uid).get(),
-      db.collection("profiles").doc(uid).get(),
-      db.collection("careerProfiles").doc(uid).get(),
-      db.collection("analytics").doc(uid).get()
+      db.collection("profiles").doc(uid).get()
     ]);
     
     if (!userDoc.exists) {
@@ -84,9 +81,8 @@ router.get("/profile", auth, async (req, res) => {
 
     const u = userDoc.data();
     const p = profileDoc.exists ? profileDoc.data() : {};
-    const c = careerDoc.exists ? careerDoc.data() : {};
-    const a = analyticsDoc.exists ? analyticsDoc.data() : {};
 
+    // Flatten Phase 3 Schema for Frontend Compatibility
     res.json({
       id: uid,
       email: u.email,
@@ -95,12 +91,18 @@ router.get("/profile", auth, async (req, res) => {
       created_at: u.createdAt,
       claimed: u.claimed,
       providers: u.providers,
-      // Spread profile and career data
-      ...p,
-      ...c,
-      // Specific analytics
-      profile_completion: a.profile_completion || 0,
-      profile_score: a.profile_score || 0
+      name: p.personalInfo?.name || u.name,
+      college: p.education?.college || null,
+      branch: p.education?.branch || null,
+      year: p.education?.year || null,
+      bio: p.bio || null,
+      resume_url: p.socialLinks?.resume || null,
+      github_url: p.socialLinks?.github || null,
+      linkedin_url: p.socialLinks?.linkedin || null,
+      avatar_url: p.profileImage || null,
+      skills: p.skills || [],
+      desired_roles: p.careerGoal ? [p.careerGoal] : [],
+      profile_completion: u.profileCompleted || p.profileCompletion || 0,
     });
   } catch (err) {
     console.error("Get profile error:", err.message);
@@ -114,71 +116,69 @@ router.put("/profile", auth, async (req, res) => {
   try {
     const uid = req.user.id;
     const profileRef = db.collection("profiles").doc(uid);
-    const careerRef = db.collection("careerProfiles").doc(uid);
-    const analyticsRef = db.collection("analytics").doc(uid);
-    
-    const [profileDoc, careerDoc, analyticsDoc] = await Promise.all([
-      profileRef.get(),
-      careerRef.get(),
-      analyticsRef.get()
-    ]);
+    const profileDoc = await profileRef.get();
     
     const currentProfile = profileDoc.exists ? profileDoc.data() : {};
-    const currentCareer = careerDoc.exists ? careerDoc.data() : {};
     
-    // Group fields for profiles
+    // Group fields for Phase 3 Profile Schema
     const profileUpdates = {
-      name: name !== undefined ? name.trim().toUpperCase() : currentProfile.name,
-      college: college !== undefined ? college : currentProfile.college,
-      branch: branch !== undefined ? branch : currentProfile.branch,
-      year: year !== undefined ? year : currentProfile.year,
+      personalInfo: {
+        ...(currentProfile.personalInfo || {}),
+        name: name !== undefined ? name.trim().toUpperCase() : currentProfile.personalInfo?.name,
+      },
+      education: {
+        ...(currentProfile.education || {}),
+        college: college !== undefined ? college : currentProfile.education?.college,
+        branch: branch !== undefined ? branch : currentProfile.education?.branch,
+        year: year !== undefined ? year : currentProfile.education?.year,
+      },
+      socialLinks: {
+        ...(currentProfile.socialLinks || {}),
+        resume: resume_url !== undefined ? resume_url : currentProfile.socialLinks?.resume,
+        github: github_url !== undefined ? github_url : currentProfile.socialLinks?.github,
+        linkedin: linkedin_url !== undefined ? linkedin_url : currentProfile.socialLinks?.linkedin,
+      },
       bio: bio !== undefined ? bio : currentProfile.bio,
-      resume_url: resume_url !== undefined ? resume_url : currentProfile.resume_url,
-      github_url: github_url !== undefined ? github_url : currentProfile.github_url,
-      linkedin_url: linkedin_url !== undefined ? linkedin_url : currentProfile.linkedin_url,
-      avatar_url: avatar_url !== undefined ? avatar_url : currentProfile.avatar_url
+      profileImage: avatar_url !== undefined ? avatar_url : currentProfile.profileImage,
+      skills: skills !== undefined ? skills : currentProfile.skills,
+      careerGoal: desired_roles && desired_roles.length > 0 ? desired_roles[0] : currentProfile.careerGoal,
+      updatedAt: new Date()
     };
     
-    // Group fields for careerProfiles
-    const careerUpdates = {
-      skills: skills !== undefined ? skills : currentCareer.skills,
-      desired_roles: desired_roles !== undefined ? desired_roles : currentCareer.desired_roles,
-      achievements: achievements !== undefined ? achievements : currentCareer.achievements,
-      seeking: seeking !== undefined ? seeking : currentCareer.seeking,
-      passionate_about: passionate_about !== undefined ? passionate_about : currentCareer.passionate_about,
-      projects: projects !== undefined ? projects : currentCareer.projects,
-      certificates: certificates !== undefined ? certificates : currentCareer.certificates
-    };
-    
-    // Remove undefined fields
-    Object.keys(profileUpdates).forEach(key => profileUpdates[key] === undefined && delete profileUpdates[key]);
-    Object.keys(careerUpdates).forEach(key => careerUpdates[key] === undefined && delete careerUpdates[key]);
+    // Clean nested undefined
+    Object.keys(profileUpdates).forEach(k => {
+      if (typeof profileUpdates[k] === 'object' && !Array.isArray(profileUpdates[k])) {
+        Object.keys(profileUpdates[k]).forEach(sub => {
+          if (profileUpdates[k][sub] === undefined) delete profileUpdates[k][sub];
+        });
+      } else if (profileUpdates[k] === undefined) {
+        delete profileUpdates[k];
+      }
+    });
 
     // Calculate basic profile completion on backend
     let completedFields = 0;
     const totalFields = 10;
-    if (profileUpdates.name) completedFields++;
-    if (profileUpdates.college) completedFields++;
-    if (profileUpdates.branch) completedFields++;
-    if (profileUpdates.year) completedFields++;
-    if (careerUpdates.skills && careerUpdates.skills.length > 0) completedFields++;
+    if (profileUpdates.personalInfo?.name) completedFields++;
+    if (profileUpdates.education?.college) completedFields++;
+    if (profileUpdates.education?.branch) completedFields++;
+    if (profileUpdates.education?.year) completedFields++;
+    if (profileUpdates.skills && profileUpdates.skills.length > 0) completedFields++;
     if (profileUpdates.bio) completedFields++;
-    if (profileUpdates.resume_url) completedFields++;
-    if (profileUpdates.github_url || profileUpdates.linkedin_url) completedFields++;
-    if (careerUpdates.projects && careerUpdates.projects.length > 0) completedFields++;
-    if (careerUpdates.certificates && careerUpdates.certificates.length > 0) completedFields++;
+    if (profileUpdates.socialLinks?.resume) completedFields++;
+    if (profileUpdates.socialLinks?.github || profileUpdates.socialLinks?.linkedin) completedFields++;
     
     const profile_completion = Math.round((completedFields / totalFields) * 100);
+    profileUpdates.profileCompletion = profile_completion;
 
     const batch = db.batch();
     batch.set(profileRef, profileUpdates, { merge: true });
-    batch.set(careerRef, careerUpdates, { merge: true });
-    batch.set(analyticsRef, { profile_completion }, { merge: true });
     
-    // Check if name changed to sync with users
-    if (name !== undefined && name.trim().toUpperCase() !== currentProfile.name) {
-      batch.update(db.collection("users").doc(uid), { name: name.trim().toUpperCase() });
+    const userUpdates = { profileCompleted: profile_completion };
+    if (name !== undefined && name.trim().toUpperCase() !== currentProfile.personalInfo?.name) {
+      userUpdates.name = name.trim().toUpperCase();
     }
+    batch.update(db.collection("users").doc(uid), userUpdates);
     
     await batch.commit();
 
@@ -186,12 +186,15 @@ router.put("/profile", auth, async (req, res) => {
     if (profile_completion === 100) {
       await awardPoints(uid, 'profile_complete', 100);
     }
-    if (profileUpdates.resume_url && !currentProfile.resume_url) {
+    if (profileUpdates.socialLinks?.resume && !currentProfile.socialLinks?.resume) {
       await awardPoints(uid, 'resume_upload', 50);
     }
     
     // Update Placement Score
     await updatePlacementScore(uid);
+
+    // Emit event
+    eventBus.emit("PROFILE_UPDATED", { uid, profileData: profileUpdates });
 
     res.json({ message: "Profile updated successfully." });
   } catch (err) {
@@ -253,12 +256,11 @@ router.get("/stats", auth, async (req, res) => {
   try {
     const uid = req.user.id;
 
-    const [appsSnap, teamsSnap, bookingsSnap, userDoc, analyticsDoc] = await Promise.all([
+    const [appsSnap, teamsSnap, bookingsSnap, userDoc] = await Promise.all([
       db.collection("applications").where("student_id", "==", uid).get(),
       db.collection("team_members").where("user_id", "==", uid).get(),
       db.collection("mentorSessions").where("student_id", "==", uid).get(),
-      db.collection("users").doc(uid).get(),
-      db.collection("analytics").doc(uid).get()
+      db.collection("users").doc(uid).get()
     ]);
 
     // Calculate leaderboard rank
@@ -267,15 +269,13 @@ router.get("/stats", auth, async (req, res) => {
     const allPoints = [];
 
     for (const doc of allUsersSnap.docs) {
-      const aDoc = await db.collection("analytics").doc(doc.id).get();
-      const a = aDoc.exists ? aDoc.data() : {};
-      
-      const completionPts = (a.profile_completion || 0) * 10;
+      const u = doc.data();
+      const completionPts = (u.profileCompleted || 0) * 10;
       const appsForUser = await db.collection("applications").where("student_id", "==", doc.id).get();
       const appPts = appsForUser.size * 50;
       const teamsForUser = await db.collection("team_members").where("user_id", "==", doc.id).get();
       const teamPts = teamsForUser.size * 100;
-      const total = completionPts + appPts + teamPts + (a.profile_score || 0);
+      const total = completionPts + appPts + teamPts;
       allPoints.push({ id: doc.id, points: total });
       if (doc.id === uid) userPoints = total;
     }
@@ -313,11 +313,9 @@ router.get("/workspace", auth, async (req, res) => {
   try {
     const uid = req.user.id;
     
-    const [userDoc, profileDoc, careerDoc, analyticsDoc, roadmapDoc] = await Promise.all([
+    const [userDoc, profileDoc, roadmapDoc] = await Promise.all([
       db.collection("users").doc(uid).get(),
       db.collection("profiles").doc(uid).get(),
-      db.collection("careerProfiles").doc(uid).get(),
-      db.collection("analytics").doc(uid).get(),
       db.collection("userRoadmaps").doc(uid).get()
     ]);
     
@@ -327,8 +325,6 @@ router.get("/workspace", auth, async (req, res) => {
 
     const u = userDoc.data();
     const p = profileDoc.exists ? profileDoc.data() : {};
-    const c = careerDoc.exists ? careerDoc.data() : {};
-    const a = analyticsDoc.exists ? analyticsDoc.data() : {};
 
     // 1. Fetch Real Data Counts
     const [appsSnap, teamsSnap, bookingsSnap] = await Promise.all([
@@ -342,10 +338,10 @@ router.get("/workspace", auth, async (req, res) => {
     const mentorsCount = bookingsSnap.size;
 
     // Calculate real points based on stats
-    const profilePoints = (a.profile_completion || 0) * 10;
+    const profilePoints = (u.profileCompleted || p.profileCompletion || 0) * 10;
     const appPoints = appsCount * 50;
     const teamPoints = teamsCount * 100;
-    const totalPoints = profilePoints + appPoints + teamPoints + (a.profile_score || 0);
+    const totalPoints = profilePoints + appPoints + teamPoints;
 
     // 2. Real Actionable Tasks (Today's Focus) driven by AI Roadmap
     let mission = { tasks: [], estimated_time: null, reward: null };
@@ -420,10 +416,10 @@ router.get("/workspace", auth, async (req, res) => {
     
     // Always keep profile completeness as a fallback task if roadmap tasks are low
     if (mission.tasks.length < 3) {
-      if (!p.resume_url) {
+      if (!p.socialLinks?.resume) {
         mission.tasks.push({ id: 'resume', title: 'Upload Resume', type: 'profile', actionUrl: '/profile' });
       }
-      if ((a.profile_completion || 0) < 100 && mission.tasks.length < 3) {
+      if ((u.profileCompleted || p.profileCompletion || 0) < 100 && mission.tasks.length < 3) {
         mission.tasks.push({ id: 'profile', title: 'Complete Profile Details', type: 'profile', actionUrl: '/profile' });
       }
     }
@@ -433,7 +429,7 @@ router.get("/workspace", auth, async (req, res) => {
 
     // 3. AI Recommendations (Multi-Category Contextual Engine)
     const recommendations = [];
-    let careerTarget = c.desired_roles?.[0] || 'Software Engineer';
+    let careerTarget = p.careerGoal || 'Software Engineer';
     
     // We try to pull the current active roadmap step to contextualize the learning/mentor recommendations
     let activeTopic = "Programming Basics";
@@ -611,11 +607,9 @@ router.get("/gamification", auth, async (req, res) => {
     const uid = req.user.uid;
     
     // Fetch all necessary user data to calculate accurate metrics
-    const [userDoc, profileDoc, careerDoc, analyticsDoc, applicationsSnap, teamsSnap, roadmapDoc] = await Promise.all([
+    const [userDoc, profileDoc, applicationsSnap, teamsSnap, roadmapDoc] = await Promise.all([
       db.collection("users").doc(uid).get(),
       db.collection("profiles").doc(uid).get(),
-      db.collection("careerProfiles").doc(uid).get(),
-      db.collection("analytics").doc(uid).get(),
       db.collection("applications").where("studentId", "==", uid).get(),
       db.collection("teams").where("members", "array-contains", uid).get(),
       db.collection("userRoadmaps").doc(uid).get()
@@ -623,15 +617,13 @@ router.get("/gamification", auth, async (req, res) => {
 
     const u = userDoc.exists ? userDoc.data() : {};
     const p = profileDoc.exists ? profileDoc.data() : {};
-    const c = careerDoc.exists ? careerDoc.data() : {};
-    const a = analyticsDoc.exists ? analyticsDoc.data() : {};
     const roadmapData = roadmapDoc.exists ? roadmapDoc.data() : null;
 
     // Base XP Calculation
     let xp = 0;
     
     // 1. Profile Completion XP (up to 1000)
-    const profileCompletion = a.profile_completion || 0;
+    const profileCompletion = u.profileCompleted || p.profileCompletion || 0;
     xp += profileCompletion * 10;
     
     // 2. Applications XP (250 per app, max 2500)
@@ -647,8 +639,8 @@ router.get("/gamification", auth, async (req, res) => {
     xp += (roadmapProgress / 100) * 2000;
     
     // 5. Projects & Skills (100 per skill, 300 per project)
-    xp += (c.skills?.length || 0) * 100;
-    xp += (c.projects?.length || 0) * 300;
+    xp += (p.skills?.length || 0) * 100;
+    xp += (p.projects?.length || 0) * 300;
 
     // Coins = XP / 10
     const coins = Math.floor(xp / 10);
@@ -663,7 +655,7 @@ router.get("/gamification", auth, async (req, res) => {
     // Action Badges
     badges.push({ id: 'b3', name: 'First Application', icon: '📨', earned: appsCount >= 1 });
     badges.push({ id: 'b4', name: 'Team Player', icon: '🤝', earned: teamsCount >= 1 });
-    badges.push({ id: 'b5', name: 'Skill Collector', icon: '🎯', earned: (c.skills?.length || 0) >= 5 });
+    badges.push({ id: 'b5', name: 'Skill Collector', icon: '🎯', earned: (p.skills?.length || 0) >= 5 });
     
     // Roadmap Badges
     badges.push({ id: 'b6', name: 'Roadmap Pioneer', icon: '🗺️', earned: !!roadmapData });

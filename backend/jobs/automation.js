@@ -2,26 +2,26 @@ const cron = require("node-cron");
 const { db, admin } = require("../config/firebase");
 
 // Utility to calculate Placement Readiness
-const calculatePlacementReadiness = async (uid, p, c, a, appsCount) => {
+const calculatePlacementReadiness = async (uid, u, p, appsCount) => {
   let readinessScore = 0;
   let improvements = [];
 
   // Profile (20%)
-  const profileCompletion = a.profile_completion || 0;
+  const profileCompletion = u.profileCompleted || p.profileCompletion || 0;
   readinessScore += (profileCompletion / 100) * 20;
   if (profileCompletion < 80) improvements.push('Profile completeness');
 
   // Resume (15%)
-  if (p.resume_url) readinessScore += 15;
+  if (p.socialLinks?.resume) readinessScore += 15;
   else improvements.push('Resume missing');
 
   // Skills (15%)
-  const skillsCount = c.skills?.length || 0;
+  const skillsCount = p.skills?.length || 0;
   readinessScore += Math.min(skillsCount, 10) / 10 * 15;
   if (skillsCount < 3) improvements.push('Skills');
 
   // Projects (20%)
-  const projectsCount = c.projects?.length || 0;
+  const projectsCount = p.projects?.length || 0;
   readinessScore += Math.min(projectsCount, 3) / 3 * 20;
   if (projectsCount === 0) improvements.push('Projects');
 
@@ -59,16 +59,13 @@ const runDailyPipeline = async () => {
       const uid = userDoc.id;
 
       try {
-        const [profileDoc, careerDoc, analyticsDoc, appsSnap] = await Promise.all([
+        const [profileDoc, appsSnap] = await Promise.all([
           db.collection("profiles").doc(uid).get(),
-          db.collection("careerProfiles").doc(uid).get(),
-          db.collection("analytics").doc(uid).get(),
           db.collection("applications").where("studentId", "==", uid).get(),
         ]);
 
         const p = profileDoc.exists ? profileDoc.data() : {};
-        const c = careerDoc.exists ? careerDoc.data() : {};
-        const a = analyticsDoc.exists ? analyticsDoc.data() : {};
+        const u = userDoc.data();
         const appsCount = appsSnap.size;
 
         // --- STEP 1 & 2: Roadmap Check & Generate Daily Tasks ---
@@ -106,13 +103,13 @@ const runDailyPipeline = async () => {
         }
         
         if (mission.tasks.length < 3) {
-          if (!p.resume_url) mission.tasks.push({ id: 'resume', title: 'Upload Resume', type: 'profile', actionUrl: '/profile' });
-          if ((a.profile_completion || 0) < 100 && mission.tasks.length < 3) mission.tasks.push({ id: 'profile', title: 'Complete Profile Details', type: 'profile', actionUrl: '/profile' });
+          if (!p.socialLinks?.resume) mission.tasks.push({ id: 'resume', title: 'Upload Resume', type: 'profile', actionUrl: '/profile' });
+          if ((u.profileCompleted || p.profileCompletion || 0) < 100 && mission.tasks.length < 3) mission.tasks.push({ id: 'profile', title: 'Complete Profile Details', type: 'profile', actionUrl: '/profile' });
         }
         await db.collection("dailyTasks").doc(uid).set(mission, { merge: true });
 
         // --- STEP 3: Calculate Placement Readiness ---
-        const readiness = await calculatePlacementReadiness(uid, p, c, a, appsCount);
+        const readiness = await calculatePlacementReadiness(uid, u, p, appsCount);
         await db.collection("placementReadiness").doc(uid).set(readiness, { merge: true });
 
         // --- STEP 4: Generate AI Recommendations ---
@@ -158,19 +155,19 @@ const runDailyPipeline = async () => {
         }
 
         // --- STEP 6: Award XP & Goals ---
-        let xp = (a.profile_completion || 0) * 10;
+        let xp = (u.profileCompleted || p.profileCompletion || 0) * 10;
         xp += appsCount * 250;
         const teamsSnap = await db.collection("teams").where("members", "array-contains", uid).get();
         xp += teamsSnap.size * 500;
-        xp += (c.skills?.length || 0) * 100;
-        xp += (c.projects?.length || 0) * 300;
+        xp += (p.skills?.length || 0) * 100;
+        xp += (p.projects?.length || 0) * 300;
         
         if (roadmapDoc.exists) xp += (roadmapDoc.data().overall_progress || 0) * 20;
 
         await db.collection("userGoals").doc(uid).set({
           weeklyGoal: { title: "Complete 3 Roadmap Modules", current: roadmapDoc.exists ? Math.floor(((roadmapDoc.data().overall_progress || 0) / 100) * 10) % 3 : 0, target: 3 },
           monthlyChallenge: { title: "Apply to 5 Opportunities", current: appsCount, target: 5 },
-          dailyStreak: (a.profile_completion || 0) >= 80 ? 14 : 1,
+          dailyStreak: (u.profileCompleted || p.profileCompletion || 0) >= 80 ? 14 : 1,
           totalXP: Math.round(xp),
           coins: Math.floor(xp / 10)
         }, { merge: true });

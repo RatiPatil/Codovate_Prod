@@ -25,7 +25,7 @@ router.get("/", auth, async (req, res) => {
       
       applications.push({
         ...app,
-        student_name: s.name || u.name || "Unknown",
+        student_name: s.personalInfo?.name || u.name || "Unknown",
         student_email: u.email || "Unknown",
         opportunity_title: o.title || "Unknown",
         company: o.company || "Unknown"
@@ -137,20 +137,20 @@ router.post("/", auth, async (req, res) => {
     // 🔴 REAL-TIME: Emit stats to global
     req.io.to("global").emit("stats_update", {
       type: "new_application",
-      user: sp.name || 'Anonymous',
+      user: student.personalInfo?.name || 'Anonymous',
       opportunity: opp.title,
     });
 
     // 🔴 REAL-TIME: Emit full application to Admin Room
     req.io.to("admin_room").emit("admin_new_application", {
       ...application,
-      student_name: sp.name || "Unknown",
-      student_email: student.email || "Unknown",
+      student_name: student.personalInfo?.name || "Unknown",
+      student_email: student.personalInfo?.email || "Unknown",
       opportunity_title: opp.title || "Unknown",
       company: opp.company || "Unknown"
     });
 
-    console.log(`✅ ${sp.name || 'Student'} applied to ${opp.title}`);
+    console.log(`✅ ${student.personalInfo?.name || 'Student'} applied to ${opp.title}`);
     res.status(201).json(application);
 
   } catch (err) {
@@ -188,7 +188,7 @@ router.post("/external", auth, async (req, res) => {
 
     // Fetch Student Name
     const studentDoc = await db.collection("profiles").doc(req.user.id).get();
-    const studentName = studentDoc.exists ? (studentDoc.data().name || 'Unknown Student') : 'Unknown Student';
+    const studentName = studentDoc.exists ? (studentDoc.data().personalInfo?.name || 'Unknown Student') : 'Unknown Student';
 
     const newAppRef = db.collection("applications").doc();
     const application = {

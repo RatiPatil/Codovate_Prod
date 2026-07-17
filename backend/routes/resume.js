@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const auth = require("../middleware/auth");
 const { db } = require("../config/firebase");
+const { syncDashboard } = require("../services/dashboardService");
 require("dotenv").config();
 
 // ─── Gemini AI Client ─────────────────────────────────────────────────────────
@@ -44,14 +45,20 @@ const enhanceBulletFallback = (text, context) => {
   }).join('\n');
 };
 
-// ─── POST /resume/ai-generate ─────────────────────────────────────────────────
-router.post("/ai-generate", auth, async (req, res) => {
-  const {
-    personalInfo, education, experience, projects,
-    skills, certifications, achievements, targetRole
-  } = req.body;
-
+// ─── POST /api/resume/generate ─────────────────────────────────────────────────
+router.post("/generate", auth, async (req, res) => {
   try {
+    const profileDoc = await db.collection("profiles").doc(req.user.id).get();
+    const p = profileDoc.exists ? profileDoc.data() : {};
+
+    const personalInfo = req.body.personalInfo || p.personalInfo || {};
+    const education = req.body.education || p.education || [];
+    const experience = req.body.experience || p.experience || [];
+    const projects = req.body.projects || p.projects || [];
+    const skills = req.body.skills || p.skills || [];
+    const certifications = req.body.certifications || p.certifications || [];
+    const achievements = req.body.achievements || p.achievements || '';
+    const targetRole = req.body.targetRole || p.careerGoal || 'Software Engineer';
     let professionalSummary = "";
     let enhancedExperience = experience || [];
     let enhancedProjects = projects || [];
@@ -164,15 +171,42 @@ Respond with ONLY valid JSON, no markdown, no explanation.
   }
 });
 
-// ─── POST /resume/save ────────────────────────────────────────────────────────
-router.post("/save", auth, async (req, res) => {
+// ─── PUT /api/resume ────────────────────────────────────────────────────────
+router.put("/", auth, async (req, res) => {
   try {
+    const {
+      activeTemplate,
+      currentVersion,
+      atsScore,
+      grammarScore,
+      keywordScore,
+      resumeUrl
+    } = req.body;
+
     const resumeRef = db.collection("resumes").doc(req.user.id);
-    await resumeRef.set({
-      user_id: req.user.id,
-      ...req.body,
-      updated_at: new Date()
-    }, { merge: true });
+    const doc = await resumeRef.get();
+
+    const data = {
+      uid: req.user.id,
+      activeTemplate: activeTemplate || 'default',
+      currentVersion: currentVersion || 1,
+      atsScore: atsScore || 0,
+      grammarScore: grammarScore || 0,
+      keywordScore: keywordScore || 0,
+      resumeUrl: resumeUrl || null,
+      lastGenerated: new Date(),
+      updatedAt: new Date()
+    };
+
+    if (!doc.exists) {
+      data.createdAt = new Date();
+    }
+
+    await resumeRef.set(data, { merge: true });
+    
+    // Asynchronously trigger dashboard sync
+    syncDashboard(req.user.id);
+    
     res.json({ message: "Resume saved successfully." });
   } catch (err) {
     console.error("Resume save error:", err.message);
@@ -188,6 +222,86 @@ router.get("/", auth, async (req, res) => {
     res.json(doc.data());
   } catch (err) {
     res.status(500).json({ message: "Load failed." });
+  }
+});
+
+// ─── POST /resume/versions ──────────────────────────────────────────────────
+router.post("/versions", auth, async (req, res) => {
+  try {
+    const { versionName, templateId, pdfUrl } = req.body;
+    if (!versionName) return res.status(400).json({ message: "versionName required." });
+    
+    const versionRef = db.collection("resumeVersions").doc();
+    await versionRef.set({
+      versionId: versionRef.id,
+      uid: req.user.id,
+      versionName,
+      templateId: templateId || 'default',
+      pdfUrl: pdfUrl || null,
+      createdAt: new Date()
+    });
+    res.json({ message: "Version saved successfully.", id: versionRef.id });
+  } catch (err) {
+    console.error("Save version error:", err.message);
+    res.status(500).json({ message: "Failed to save version." });
+  }
+});
+
+// ─── GET /api/resume ───────────────────────────────────────────────────
+router.get("/", auth, async (req, res) => {
+  try {
+    const doc = await db.collection("resumes").doc(req.user.id).get();
+    if (!doc.exists) return res.json(null);
+    res.json(doc.data());
+  } catch (err) {
+    res.status(500).json({ message: "Failed to load resume." });
+  }
+});
+
+// ─── GET /api/resume/versions ──────────────────────────────────────────────────
+router.get("/versions", auth, async (req, res) => {
+  try {
+    const snapshot = await db.collection("resumeVersions")
+      .where("uid", "==", req.user.id)
+      .orderBy("createdAt", "desc")
+      .get();
+      
+    const versions = snapshot.docs.map(doc => {
+      const data = doc.data();
+      return { id: doc.id, versionName: data.versionName, pdfUrl: data.pdfUrl, templateId: data.templateId, createdAt: data.createdAt?.toDate() };
+    });
+    res.json(versions);
+  } catch (err) {
+    console.error("Load versions error:", err.message);
+    res.status(500).json({ message: "Failed to load versions." });
+  }
+});
+
+// ─── GET /resume/versions/:id ───────────────────────────────────────────────
+router.get("/versions/:id", auth, async (req, res) => {
+  try {
+    const doc = await db.collection("resumeVersions").doc(req.params.id).get();
+    if (!doc.exists || doc.data().uid !== req.user.id) {
+      return res.status(404).json({ message: "Version not found." });
+    }
+    res.json(doc.data());
+  } catch (err) {
+    res.status(500).json({ message: "Failed to load version." });
+  }
+});
+
+// ─── DELETE /resume/versions/:id ────────────────────────────────────────────
+router.delete("/versions/:id", auth, async (req, res) => {
+  try {
+    const docRef = db.collection("resumeVersions").doc(req.params.id);
+    const doc = await docRef.get();
+    if (!doc.exists || doc.data().uid !== req.user.id) {
+      return res.status(404).json({ message: "Version not found." });
+    }
+    await docRef.delete();
+    res.json({ message: "Version deleted." });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to delete version." });
   }
 });
 

@@ -12,6 +12,8 @@ const FindTeammates = () => {
   // Filters
   const [skillFilter, setSkillFilter] = useState('');
   const [roleFilter, setRoleFilter] = useState('');
+  const [aiLoading, setAiLoading] = useState(false);
+  const [isAiMode, setIsAiMode] = useState(false);
 
   useEffect(() => {
     fetchStudents();
@@ -20,6 +22,7 @@ const FindTeammates = () => {
   const fetchStudents = async () => {
     try {
       setLoading(true);
+      setIsAiMode(false);
       const res = await api.get('/networking/discover', {
         params: {
           skill: skillFilter || undefined,
@@ -32,6 +35,20 @@ const FindTeammates = () => {
       showAlert('Failed to load teammates');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchAiMatches = async () => {
+    try {
+      setAiLoading(true);
+      setIsAiMode(true);
+      const res = await api.get('/networking/ai-match');
+      setStudents(res.data.matches || []);
+    } catch (err) {
+      console.error(err);
+      showAlert('AI Match failed. Please try again.');
+    } finally {
+      setAiLoading(false);
     }
   };
 
@@ -82,7 +99,24 @@ const FindTeammates = () => {
         >
           Search
         </button>
+        <button 
+          onClick={fetchAiMatches}
+          disabled={aiLoading}
+          className="ml-auto bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-bold px-5 py-2 rounded-xl transition-all shadow-[0_0_15px_rgba(168,85,247,0.4)] flex items-center gap-2"
+        >
+          {aiLoading ? (
+             <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Analyzing...</>
+          ) : (
+             <>🪄 AI Matchmaker</>
+          )}
+        </button>
       </div>
+
+      {isAiMode && students.length > 0 && (
+        <div className="mb-6 p-4 bg-purple-500/10 border border-purple-500/20 rounded-xl text-purple-200 text-sm">
+          <strong>AI Matchmaker Active:</strong> Showing candidates with complementary skills tailored to your profile.
+        </div>
+      )}
 
       {students.length === 0 ? (
         <div className="flex flex-col items-center justify-center flex-1 text-center max-w-md mx-auto">
@@ -142,6 +176,16 @@ const FindTeammates = () => {
                     )}
                   </div>
                   
+                  {isAiMode && student.synergy_score && (
+                    <div className="mb-4 bg-purple-500/10 border border-purple-500/20 rounded-lg p-3">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-xs font-bold text-purple-400 uppercase">Synergy</span>
+                        <span className="text-sm font-black text-purple-300">{student.synergy_score}%</span>
+                      </div>
+                      <p className="text-[10px] text-purple-200/70 leading-snug">{student.match_reason}</p>
+                    </div>
+                  )}
+
                   {/* Progress Bar */}
                   <div className="w-full bg-black/50 rounded-full h-1.5 mb-4">
                     <div className="bg-primary h-1.5 rounded-full" style={{ width: `${student.profile_completion || 0}%` }}></div>

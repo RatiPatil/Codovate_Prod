@@ -113,7 +113,7 @@ router.get("/requests", auth, async (req, res) => {
       return {
         id: doc.id,
         ...data,
-        studentName: s.name || u.name || "Unknown Student"
+        studentName: s.personalInfo?.name || u.name || "Unknown Student"
       };
     }));
 

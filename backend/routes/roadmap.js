@@ -83,17 +83,10 @@ router.post("/generate", auth, async (req, res) => {
     const uid = req.user.id;
     
     // Fetch user context
-    const [profileDoc, careerDoc, prefDoc] = await Promise.all([
-      db.collection("profiles").doc(uid).get(),
-      db.collection("careerProfiles").doc(uid).get(),
-      db.collection("preferences").doc(uid).get()
-    ]);
+    const profileDoc = await db.collection("profiles").doc(uid).get();
     
     const p = profileDoc.data() || {};
-    const c = careerDoc.data() || {};
-    const pref = prefDoc.data() || {};
-    
-    const goal = c.career_goal || p.career_goal || "Software Engineer";
+    const goal = p.careerGoal || "Software Engineer";
     
     let roadmapData = null;
     
@@ -104,11 +97,11 @@ router.post("/generate", auth, async (req, res) => {
       You are an expert career advisor. Generate a highly personalized learning roadmap for a student aiming to become a ${goal}.
       
       Student Context:
-      - Current Skills: ${(c.skills || []).join(", ") || "Beginner"}
-      - Experience Level: ${c.experience_level || "Beginner"}
-      - Daily Learning Time: ${pref.daily_learning_time || "2 hours"}
-      - Target Placement: ${pref.placement_timeline || "6 months"}
-      - Interests: ${(pref.interests || []).join(", ") || "General Tech"}
+      - Current Skills: ${(p.skills || []).join(", ") || "Beginner"}
+      - Experience Level: ${p.experienceLevel || "Beginner"}
+      - Daily Learning Time: 2 hours
+      - Target Placement: 6 months
+      - Interests: ${(p.interests || []).join(", ") || "General Tech"}
       
       Output the roadmap STRICTLY in the following JSON format. Do not use Markdown formatting or code blocks. Just output raw JSON.
       {

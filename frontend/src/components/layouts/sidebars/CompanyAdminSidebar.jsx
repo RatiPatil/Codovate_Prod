@@ -16,6 +16,7 @@ const CompanyAdminSidebar = ({ mobileOpen, setMobileOpen }) => {
     { label: 'Internships', path: '/admin/internships', icon: '🚀' },
     { label: 'Applications', path: '/admin/applications', icon: '📥' },
     { label: 'Candidates', path: '/admin/candidates', icon: '👥' },
+    { label: 'Talent Search', path: '/admin/talent', icon: '🔎' },
     { label: 'Interviews', path: '/admin/interviews', icon: '📅' },
     { label: 'Hiring Analytics', path: '/admin/hiring', icon: '📈' },
     { label: 'Notifications', path: '/admin/notifications', icon: '🔔' },

@@ -2,6 +2,9 @@ import { useState, useEffect, useCallback } from 'react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { showAlert } from '../utils/uiUtils';
+import TemplateClassic from '../components/resume/templates/TemplateClassic';
+import TemplateModern from '../components/resume/templates/TemplateModern';
+import TemplateCreative from '../components/resume/templates/TemplateCreative';
 
 // ─── Print Styles ─────────────────────────────────────────────────────────────
 const PRINT_CSS = `
@@ -626,6 +629,74 @@ const ResumeBuilder = () => {
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState('');
   const [showPreview, setShowPreview] = useState(false);
+  const [templateId, setTemplateId] = useState('classic');
+  const [versions, setVersions] = useState([]);
+  const [showVersionsModal, setShowVersionsModal] = useState(false);
+  const [versionName, setVersionName] = useState('');
+  const [versionLoading, setVersionLoading] = useState(false);
+
+  const fetchVersions = useCallback(async () => {
+    try {
+      const res = await api.get('/resume/versions');
+      setVersions(res.data);
+    } catch (err) {
+      console.error('Failed to load versions');
+    }
+  }, []);
+
+  useEffect(() => {
+    if (showVersionsModal) fetchVersions();
+  }, [showVersionsModal, fetchVersions]);
+
+  const handleSaveVersion = async () => {
+    if (!versionName.trim()) return showAlert('Please enter a version name');
+    setVersionLoading(true);
+    try {
+      await api.post('/resume/versions', { name: versionName, data: { ...data, templateId } });
+      setVersionName('');
+      fetchVersions();
+      showAlert('Version saved!');
+    } catch (err) {
+      showAlert('Failed to save version');
+    } finally {
+      setVersionLoading(false);
+    }
+  };
+
+  const handleLoadVersion = async (id) => {
+    try {
+      const res = await api.get(`/resume/versions/${id}`);
+      if (res.data && res.data.data) {
+        setData(res.data.data);
+        if (res.data.data.templateId) setTemplateId(res.data.data.templateId);
+        setShowVersionsModal(false);
+        showAlert('Version loaded!');
+      }
+    } catch (err) {
+      showAlert('Failed to load version');
+    }
+  };
+
+  const handleDeleteVersion = async (id) => {
+    if (!window.confirm('Delete this version?')) return;
+    try {
+      await api.delete(`/resume/versions/${id}`);
+      fetchVersions();
+    } catch (err) {
+      showAlert('Failed to delete version');
+    }
+  };
+
+  const renderTemplate = () => {
+    const props = { data };
+    switch (templateId) {
+      case 'modern': return <TemplateModern {...props} />;
+      case 'creative': return <TemplateCreative {...props} />;
+      case 'classic':
+      default: return <TemplateClassic {...props} />;
+    }
+  };
+
 
 
   // Load saved resume
@@ -748,6 +819,10 @@ const ResumeBuilder = () => {
                 className="px-3 sm:px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-xs font-bold text-gray-400 hover:text-white hover:bg-white/10 transition-all disabled:opacity-40">
                 {saving ? '💾 ...' : '💾 Save'}
               </button>
+              <button onClick={() => setShowVersionsModal(true)}
+                className="px-3 sm:px-4 py-2 bg-purple-500/10 border border-purple-500/20 rounded-xl text-xs font-bold text-purple-400 hover:bg-purple-500 hover:text-white transition-all">
+                🕒 Versions
+              </button>
               <button onClick={() => setShowPreview(p => !p)}
                 className="px-3 sm:px-4 py-2 bg-[#2015FF]/10 border border-[#2015FF]/20 rounded-xl text-xs font-bold text-[#6060FF] hover:bg-[#2015FF] hover:text-white transition-all">
                 {showPreview ? '← Hide' : '👁️ Preview'}
@@ -846,6 +921,14 @@ const ResumeBuilder = () => {
             <div className="sticky top-24">
               <div className="mb-3 flex items-center justify-between">
                 <h3 className="text-sm font-black text-white">Live Preview</h3>
+                <div className="flex bg-white/5 border border-white/10 rounded-lg overflow-hidden ml-4">
+                  {['classic', 'modern', 'creative'].map(t => (
+                    <button key={t} onClick={() => setTemplateId(t)}
+                      className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider ${templateId === t ? 'bg-[#2015FF] text-white' : 'text-gray-400 hover:text-white'}`}>
+                      {t}
+                    </button>
+                  ))}
+                </div>
                 {data.atsScore && (
                   <span className={`text-sm font-black ${data.atsScore >= 80 ? 'text-green-400' : data.atsScore >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
                     ATS: {data.atsScore}/100
@@ -854,7 +937,7 @@ const ResumeBuilder = () => {
               </div>
               <div className="bg-white rounded-xl shadow-2xl overflow-hidden border border-gray-200" style={{ aspectRatio: '210/297', maxHeight: '80vh' }}>
                 <div style={{ transform: 'scale(0.7)', transformOrigin: 'top left', width: '142.86%', height: '142.86%' }}>
-                  <ResumePreview data={data} />
+                  {renderTemplate()}
                 </div>
               </div>
             </div>
@@ -864,7 +947,7 @@ const ResumeBuilder = () => {
 
       {/* Printable Resume (hidden, only shows on print) */}
       <div className="hidden print:block" style={{ width: '210mm', minHeight: '297mm' }}>
-        <ResumePreview data={data} />
+        {renderTemplate()}
       </div>
     </>
   );

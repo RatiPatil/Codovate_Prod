@@ -11,9 +11,10 @@ const typeColors = {
   Internship: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
   Hackathon: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
   Competition: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
+  Job: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
 };
 
-const OppDetailModal = ({ opp, isApplied, isApplying, onApply, onClose }) => {
+const OppDetailModal = ({ opp, isApplied, isApplying, onApply, isBookmarked, onBookmark, onClose }) => {
   if (!opp) return null;
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -35,9 +36,24 @@ const OppDetailModal = ({ opp, isApplied, isApplying, onApply, onClose }) => {
               <h2 className="text-2xl font-bold text-white">{opp.title}</h2>
               <p className="text-primary text-sm font-semibold mt-1">{opp.company}</p>
             </div>
-            <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors bg-white/5 hover:bg-white/10 p-2 rounded-full shrink-0">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-            </button>
+            <div className="flex items-center gap-3 shrink-0">
+              <button 
+                onClick={(e) => { e.stopPropagation(); onBookmark(opp.id); }}
+                className={`p-2 rounded-xl transition-all ${
+                  isBookmarked 
+                    ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/50 hover:bg-yellow-500/30' 
+                    : 'bg-white/5 text-gray-400 border border-white/10 hover:text-white hover:bg-white/10'
+                }`}
+                title={isBookmarked ? "Remove Bookmark" : "Save Opportunity"}
+              >
+                <svg className="w-5 h-5" fill={isBookmarked ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                </svg>
+              </button>
+              <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors bg-white/5 hover:bg-white/10 p-2 rounded-xl border border-white/10">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
           </div>
 
           <div className="grid sm:grid-cols-3 gap-4 mb-6">
@@ -71,9 +87,21 @@ const OppDetailModal = ({ opp, isApplied, isApplying, onApply, onClose }) => {
             <div className="mb-6">
               <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-2">Required Skills</p>
               <div className="flex flex-wrap gap-2">
-                {opp.required_skills.map(skill => (
-                  <span key={skill} className="px-3 py-1 bg-primary/10 border border-primary/20 text-primary rounded-lg text-xs font-bold">{skill}</span>
-                ))}
+                {opp.required_skills.map(skill => {
+                  const isMissing = opp.missing_skills?.includes(skill);
+                  return (
+                    <span 
+                      key={skill} 
+                      className={`px-3 py-1 rounded-lg text-xs font-bold border ${
+                        isMissing 
+                          ? 'bg-red-500/10 border-red-500/20 text-red-400' 
+                          : 'bg-primary/10 border-primary/20 text-primary'
+                      }`}
+                    >
+                      {skill} {isMissing && <span className="ml-1 opacity-70" title="Missing from your profile">⚠️</span>}
+                    </span>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -156,6 +184,7 @@ const OppDetailModal = ({ opp, isApplied, isApplying, onApply, onClose }) => {
 const Opportunities = () => {
   const [opps, setOpps] = useState([]);
   const [appliedIds, setAppliedIds] = useState(new Set());
+  const [bookmarkedIds, setBookmarkedIds] = useState(new Set());
   const [filter, setFilter] = useState('All');
   const [search, setSearch] = useState('');
   const [showRecommended, setShowRecommended] = useState(false);
@@ -166,7 +195,7 @@ const Opportunities = () => {
   const { socket } = useSocket();
   const listRef = useRef(null);
 
-  const types = ['All', 'Internship', 'Hackathon', 'Competition'];
+  const types = ['All', 'Saved', 'Internship', 'Job', 'Hackathon', 'Competition'];
 
   const showToast = (msg) => {
     setToast(msg);
@@ -175,12 +204,14 @@ const Opportunities = () => {
 
   const fetchData = useCallback(async () => {
     try {
-      const [oppsRes, appsRes] = await Promise.all([
+      const [oppsRes, appsRes, bookRes] = await Promise.all([
         api.get('/opportunities'),
         api.get('/applications/my'),
+        api.get('/opportunities/bookmarks/my')
       ]);
       setOpps(oppsRes.data);
       setAppliedIds(new Set(appsRes.data.map(a => a.opportunity_id)));
+      setBookmarkedIds(new Set(bookRes.data));
     } catch (err) {
       console.error(err);
     } finally {
@@ -229,8 +260,24 @@ const Opportunities = () => {
     }
   };
 
+  const handleBookmark = async (id) => {
+    try {
+      const res = await api.post(`/opportunities/${id}/bookmark`);
+      setBookmarkedIds(prev => {
+        const newSet = new Set(prev);
+        if (res.data.bookmarked) newSet.add(id);
+        else newSet.delete(id);
+        return newSet;
+      });
+      showToast(res.data.bookmarked ? 'Saved to Bookmarks 🔖' : 'Removed from Bookmarks');
+    } catch (err) {
+      showToast('Failed to save opportunity');
+    }
+  };
+
   const filtered = opps.filter(o => {
-    if (filter !== 'All' && o.type !== filter) return false;
+    if (filter === 'Saved' && !bookmarkedIds.has(o.id)) return false;
+    if (filter !== 'All' && filter !== 'Saved' && o.type !== filter) return false;
     if (showRecommended && (o.match_score === undefined || o.match_score < 30)) return false;
     if (search) {
       const q = search.toLowerCase();
@@ -271,7 +318,9 @@ const Opportunities = () => {
           opp={selectedOpp}
           isApplied={appliedIds.has(selectedOpp.id)}
           isApplying={applying === selectedOpp.id}
+          isBookmarked={bookmarkedIds.has(selectedOpp.id)}
           onApply={handleApply}
+          onBookmark={handleBookmark}
           onClose={() => setSelectedOpp(null)}
         />
       )}
@@ -344,6 +393,7 @@ const Opportunities = () => {
           {filtered.map(opp => {
             const isApplied = appliedIds.has(opp.id);
             const isApplying = applying === opp.id;
+            const isBookmarked = bookmarkedIds.has(opp.id);
             return (
               <div
                 key={opp.id}
@@ -352,8 +402,21 @@ const Opportunities = () => {
               >
                 <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-bl-full pointer-events-none transition-transform group-hover:scale-110" />
 
+                <button 
+                  onClick={(e) => { e.stopPropagation(); handleBookmark(opp.id); }}
+                  className={`absolute top-4 right-4 z-20 p-2 rounded-xl transition-all ${
+                    isBookmarked 
+                      ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/50 hover:bg-yellow-500/30' 
+                      : 'bg-white/5 text-gray-400 border border-white/10 hover:text-white hover:bg-white/10'
+                  }`}
+                >
+                  <svg className="w-4 h-4" fill={isBookmarked ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                  </svg>
+                </button>
+
                 <div className="flex-1 flex flex-col gap-4 relative z-10">
-                  <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-start justify-between gap-3 pr-10">
                     <h3 className="text-white font-bold text-lg leading-snug group-hover:text-primary transition-colors">
                       {opp.title}
                     </h3>

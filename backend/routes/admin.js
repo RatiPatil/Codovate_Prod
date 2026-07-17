@@ -41,13 +41,23 @@ router.get('/stats', async (req, res) => {
       }));
     };
 
+    // Mock Revenue Data for B2B SaaS Subscriptions + Job Posting Fees
+    const mockRevenue = [
+      { name: 'Jan', mrr: 12000, jobs: 4000 },
+      { name: 'Feb', mrr: 15000, jobs: 5200 },
+      { name: 'Mar', mrr: 19500, jobs: 8100 },
+      { name: 'Apr', mrr: 24000, jobs: 10500 },
+      { name: 'May', mrr: 31000, jobs: 14200 },
+      { name: 'Jun', mrr: 42000, jobs: 21000 },
+    ];
+
     res.json({
       success: true,
       data: stats,
       charts: {
-        activeUsers: generateChartData('Day', 7),
-        registrations: generateChartData('Month', 6),
-        revenue: generateChartData('Q', 4)
+        activeUsers: generateChartData('Day', 7).map((d, i) => ({ ...d, uv: Math.floor(Math.random() * 500) + 100 })),
+        registrations: generateChartData('Month', 6).map((d, i) => ({ ...d, pv: Math.floor(Math.random() * 1000) + 200 })),
+        revenue: mockRevenue
       }
     });
 

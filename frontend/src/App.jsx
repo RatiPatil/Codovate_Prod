@@ -32,8 +32,14 @@ const ResumeBuilder = lazy(() => import('./pages/ResumeBuilder'));
 const Notifications = lazy(() => import('./pages/Notifications'));
 const Roadmap = lazy(() => import('./pages/Roadmap'));
 const CareerCoach = lazy(() => import('./pages/CareerCoach'));
+const ProjectHub = lazy(() => import('./pages/ProjectHub'));
 const DashboardRouter = lazy(() => import('./components/DashboardRouter'));
 const MentorRouter = lazy(() => import('./components/MentorRouter'));
+const PublicPortfolio = lazy(() => import('./pages/PublicPortfolio'));
+const PlacementHub = lazy(() => import('./pages/PlacementHub'));
+const CodingPractice = lazy(() => import('./pages/CodingPractice'));
+const Events = lazy(() => import('./pages/Events'));
+const CollegeCommunity = lazy(() => import('./pages/CollegeCommunity'));
 
 import GlobalErrorBoundary from './components/common/GlobalErrorBoundary';
 
@@ -114,6 +120,11 @@ function App() {
                       <Layout><Profile /></Layout>
                     </ProtectedRoute>
                   } />
+                  <Route path="/projects" element={
+                    <ProtectedRoute>
+                      <Layout><ProjectHub /></Layout>
+                    </ProtectedRoute>
+                  } />
                   <Route path="/teams" element={
                     <ProtectedRoute>
                       <Layout><TeamsLayout /></Layout>
@@ -122,6 +133,16 @@ function App() {
                   <Route path="/mentors" element={
                     <ProtectedRoute>
                       <Layout><Mentors /></Layout>
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/events" element={
+                    <ProtectedRoute>
+                      <Layout><Events /></Layout>
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/community" element={
+                    <ProtectedRoute>
+                      <Layout><CollegeCommunity /></Layout>
                     </ProtectedRoute>
                   } />
                   <Route path="/leaderboard" element={
@@ -154,6 +175,18 @@ function App() {
                       <Layout><CareerCoach /></Layout>
                     </ProtectedRoute>
                   } />
+                  
+                  {/* Placement Hub & Modules */}
+                  <Route path="/placement" element={
+                    <ProtectedRoute>
+                      <Layout><PlacementHub /></Layout>
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/placement/coding" element={
+                    <ProtectedRoute>
+                      <Layout><CodingPractice /></Layout>
+                    </ProtectedRoute>
+                  } />
 
                   <Route path="/admin/*" element={
                     <ProtectedRoute requireOnboarding={false}>
@@ -167,6 +200,8 @@ function App() {
                       <MentorRouter />
                     </ProtectedRoute>
                   } />
+                  
+                  <Route path="/p/:username" element={<PublicPortfolio />} />
 
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>

@@ -10,6 +10,7 @@ const CompanyAdminCandidates = lazy(() => import('../pages/admin/CompanyAdminCan
 const CompanyAdminInterviews = lazy(() => import('../pages/admin/CompanyAdminInterviews'));
 const CompanyAdminHiring = lazy(() => import('../pages/admin/CompanyAdminHiring'));
 const CompanyAdminNotifications = lazy(() => import('../pages/admin/CompanyAdminNotifications'));
+const CompanyAdminTalent = lazy(() => import('../pages/admin/CompanyAdminTalent'));
 
 const Loader = () => (
   <div className="flex items-center justify-center h-full min-h-[50vh] bg-transparent">
@@ -30,6 +31,7 @@ const CompanyAdminRouter = () => {
           <Route path="interviews" element={<CompanyAdminInterviews />} />
           <Route path="hiring" element={<CompanyAdminHiring />} />
           <Route path="notifications" element={<CompanyAdminNotifications />} />
+          <Route path="talent" element={<CompanyAdminTalent />} />
         </Routes>
       </Suspense>
     </CompanyAdminLayout>

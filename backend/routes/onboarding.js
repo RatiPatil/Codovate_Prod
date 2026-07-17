@@ -78,85 +78,65 @@ router.post("/save", auth, async (req, res) => {
     const profile_completion = Math.min(100, completion);
 
     // ── Data Construction ───────────────────────────────────────────────
-    // 1. Profile Data (Legacy / Merged)
+    // 1. Consolidated Profile Data
     const profileData = {
-      name: trimmedName || null,
-      full_name: trimmedName || null,
-      phone: phone || null,
-      city: city || null,
-      country: country || null,
-      state: state || null,
-      college: college?.trim() || null,
-      course: finalDegree?.trim() || null, // Keeping for backward compatibility
-      degree: finalDegree?.trim() || null,
-      branch: branch?.trim() || null,
-      year: cleanYear,
-      career_goal: career_goal || null,
-      career_interests: cleanInterests, // backward compat
-      interests: cleanInterests,
-      experience_level: experience_level || null,
-      skills: cleanSkills,
-      portfolio_url: portfolio_url || null,
-      github_url: github_url || null,
-      linkedin_url: linkedin_url || null,
-      resume_url: resume_url || null,
-      profile_completion,
-      onboarding_completed: onboarding_completed !== undefined ? onboarding_completed : null,
-      profile_photo: profile_photo || null
-    };
-
-    // 2. Career Profile
-    const careerProfileData = {
-      career_goal: career_goal || null,
-      dream_company: dream_company || null,
-      placement_goal: placement_goal || null,
-      experience_level: experience_level || null,
-      projects_built: projects_built || null,
-      resume_url: resume_url || null,
-      updated_at: new Date()
-    };
-
-    // 3. Learning Profile
-    const learningProfileData = {
-      skills: cleanSkills,
-      interests: cleanInterests,
-      learning_style: learning_style || null,
-      daily_time: daily_time || null,
-      coding_profiles: {
-        leetcode: leetcode_url || null,
-        codechef: codechef_url || null,
-        hackerrank: hackerrank_url || null
+      personalInfo: {
+        name: trimmedName || null,
+        email: req.user.email || null, // Best effort fallback
+        phone: phone || null,
+        city: city || null,
+        country: country || null,
+        state: state || null,
       },
-      updated_at: new Date()
+      education: {
+        college: college?.trim() || null,
+        degree: finalDegree?.trim() || null,
+        branch: branch?.trim() || null,
+        year: cleanYear,
+      },
+      socialLinks: {
+        github: github_url || null,
+        linkedin: linkedin_url || null,
+        portfolio: portfolio_url || null,
+        resume: resume_url || null,
+      },
+      careerGoal: career_goal || null,
+      experienceLevel: experience_level || null,
+      profileImage: profile_photo || null,
+      headline: null,
+      bio: null,
+      skills: cleanSkills,
+      interests: cleanInterests,
+      profileCompletion: profile_completion,
+      visibility: 'public',
+      updatedAt: new Date()
     };
 
-    // Clean objects
-    [profileData, careerProfileData, learningProfileData].forEach(obj => {
-      Object.keys(obj).forEach(k => {
-        if (obj[k] === undefined || obj[k] === null) delete obj[k];
-      });
+    // Clean undefined values inside nested objects
+    Object.keys(profileData).forEach(key => {
+      if (typeof profileData[key] === 'object' && profileData[key] !== null && !Array.isArray(profileData[key])) {
+        Object.keys(profileData[key]).forEach(subKey => {
+          if (profileData[key][subKey] === undefined) profileData[key][subKey] = null;
+        });
+      }
     });
 
     // ── Firestore Batch Write ───────────────────────────────────────────
     const batch = db.batch();
     const profileRef = db.collection("profiles").doc(req.user.id);
-    const careerProfileRef = db.collection("careerProfiles").doc(req.user.id);
-    const preferenceRef = db.collection("preferences").doc(req.user.id);
-    const analyticsRef = db.collection("analytics").doc(req.user.id);
 
     const userUpdates = {};
     if (phone) userUpdates.phone = phone;
     if (trimmedName) userUpdates.name = trimmedName;
+    if (onboarding_completed !== undefined) userUpdates.onboardingCompleted = onboarding_completed;
+    userUpdates.profileCompleted = profile_completion;
 
     if (Object.keys(userUpdates).length > 0) {
       batch.update(db.collection("users").doc(req.user.id), userUpdates);
     }
 
-    // Module 2 New Schema
+    // Phase 3 Schema Update
     batch.set(profileRef, profileData, { merge: true });
-    batch.set(careerProfileRef, careerProfileData, { merge: true });
-    batch.set(preferenceRef, learningProfileData, { merge: true });
-    batch.set(analyticsRef, { profile_completion, onboarding_completed }, { merge: true });
 
     await batch.commit();
 
@@ -193,16 +173,15 @@ router.post("/check-phone", auth, async (req, res) => {
 
 router.get("/status", auth, async (req, res) => {
   try {
-    const analyticsDoc = await db.collection("analytics").doc(req.user.id).get();
     const userDoc = await db.collection("users").doc(req.user.id).get();
     
     let isCompleted = false;
     let completionScore = 0;
 
-    if (analyticsDoc.exists) {
-      const a = analyticsDoc.data();
-      isCompleted = a.onboarding_completed === true || a.onboarding_completed === "true";
-      completionScore = a.profile_completion || 0;
+    if (userDoc.exists) {
+      const u = userDoc.data();
+      isCompleted = u.onboardingCompleted === true || u.onboardingCompleted === "true";
+      completionScore = u.profileCompleted || 0;
     }
     
     // Fallback logic could go here if we were migrating data.

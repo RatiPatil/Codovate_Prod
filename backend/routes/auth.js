@@ -46,21 +46,26 @@ router.post("/google", async (req, res) => {
       const batch = db.batch();
       batch.set(newUserRef, user);
       
-      batch.set(db.collection('profiles').doc(newUserRef.id), {
-        id: newUserRef.id,
-        email: email.toLowerCase(),
-        name: (name || 'Google User').trim().toUpperCase(),
-        avatar: picture || ''
-      });
+      const profileData = {
+        personalInfo: {
+          name: (name || 'Google User').trim().toUpperCase(),
+          email: email.toLowerCase(),
+          phone: null
+        },
+        education: { college: null, degree: null, branch: null, year: null },
+        socialLinks: { github: null, linkedin: null, portfolio: null, resume: null },
+        careerGoal: null,
+        experienceLevel: null,
+        profileImage: picture || '',
+        headline: null,
+        bio: null,
+        profileCompletion: 0,
+        visibility: 'public',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
       
-      batch.set(db.collection('careerProfiles').doc(newUserRef.id), { id: newUserRef.id });
-      batch.set(db.collection('preferences').doc(newUserRef.id), { id: newUserRef.id });
-      batch.set(db.collection('analytics').doc(newUserRef.id), {
-        id: newUserRef.id,
-        profile_completion: 0,
-        onboarding_completed: false,
-        profile_score: 0
-      });
+      batch.set(db.collection('profiles').doc(newUserRef.id), profileData);
       
       batch.set(db.collection('activityLogs').doc(), {
         actor_id: newUserRef.id,
@@ -163,20 +168,26 @@ router.post("/phone", async (req, res) => {
       const batch = db.batch();
       batch.set(newUserRef, user);
       
-      batch.set(db.collection('profiles').doc(newUserRef.id), {
-        id: newUserRef.id,
-        phone: phone_number,
-        name: 'Student'
-      });
+      const profileData = {
+        personalInfo: {
+          name: 'Student',
+          email: null,
+          phone: phone_number
+        },
+        education: { college: null, degree: null, branch: null, year: null },
+        socialLinks: { github: null, linkedin: null, portfolio: null, resume: null },
+        careerGoal: null,
+        experienceLevel: null,
+        profileImage: '',
+        headline: null,
+        bio: null,
+        profileCompletion: 0,
+        visibility: 'public',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
       
-      batch.set(db.collection('careerProfiles').doc(newUserRef.id), { id: newUserRef.id });
-      batch.set(db.collection('preferences').doc(newUserRef.id), { id: newUserRef.id });
-      batch.set(db.collection('analytics').doc(newUserRef.id), {
-        id: newUserRef.id,
-        profile_completion: 0,
-        onboarding_completed: false,
-        profile_score: 0
-      });
+      batch.set(db.collection('profiles').doc(newUserRef.id), profileData);
       
       batch.set(db.collection('activityLogs').doc(), {
         actor_id: newUserRef.id,
@@ -420,20 +431,26 @@ router.post("/signup", async (req, res) => {
     const batch = db.batch();
     batch.set(newUserRef, userData);
 
-    batch.set(db.collection('profiles').doc(newUserRef.id), {
-      id: newUserRef.id,
-      email: email.toLowerCase(),
-      name: name.trim().toUpperCase()
-    });
-
-    batch.set(db.collection('careerProfiles').doc(newUserRef.id), { id: newUserRef.id });
-    batch.set(db.collection('preferences').doc(newUserRef.id), { id: newUserRef.id });
-    batch.set(db.collection('analytics').doc(newUserRef.id), {
-      id: newUserRef.id,
-      profile_completion: 0,
-      onboarding_completed: false,
-      profile_score: 0
-    });
+    const profileData = {
+      personalInfo: {
+        name: name.trim().toUpperCase(),
+        email: email.toLowerCase(),
+        phone: null
+      },
+      education: { college: null, degree: null, branch: null, year: null },
+      socialLinks: { github: null, linkedin: null, portfolio: null, resume: null },
+      careerGoal: null,
+      experienceLevel: null,
+      profileImage: '',
+      headline: null,
+      bio: null,
+      profileCompletion: 0,
+      visibility: 'public',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    
+    batch.set(db.collection('profiles').doc(newUserRef.id), profileData);
 
     // Log platform event
     batch.set(db.collection('activityLogs').doc(), {

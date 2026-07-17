@@ -5,6 +5,7 @@ const cors = require("cors");
 const http = require("http");
 const { Server } = require("socket.io");
 const { initializeAdminRealtime } = require("./services/adminRealtime");
+require("./events/eventHandlers");
 const rateLimit = require("express-rate-limit");
 require("dotenv").config();
 
@@ -84,6 +85,7 @@ app.use("/api/company-admin/opportunities", protect, require("./routes/companyAd
 app.use("/api/company-admin/applications", protect, require("./routes/companyAdminApplications"));
 app.use("/api/company-admin/interviews", protect, require("./routes/companyAdminInterviews"));
 app.use("/api/company-admin/notifications", protect, require("./routes/companyAdminNotifications"));
+app.use("/api/company-admin/talent", protect, require("./routes/companyAdminTalent"));
 app.use("/api/students",      require("./routes/students"));
 app.use("/api/opportunities", require("./routes/opportunities"));
 app.use("/api/applications",  require("./routes/applications"));
@@ -104,6 +106,15 @@ app.use("/api/resume",        require("./routes/resume"));
 app.use("/api/colleges",      require("./routes/colleges"));
 app.use("/api/companies",     require("./routes/companies"));
 app.use("/api/projects",      require("./routes/projects"));
+app.use("/api/portfolio",     require("./routes/portfolio"));
+app.use("/api/certificates",  require("./routes/certificates"));
+app.use("/api/skills",        require("./routes/skills"));
+app.use("/api/achievements",  require("./routes/achievements"));
+app.use("/api/activity",      require("./routes/activity"));
+app.use("/api/dashboard",     require("./routes/dashboard"));
+app.use("/api/coding",        require("./routes/coding"));
+app.use("/api/events",        require("./routes/events"));
+app.use("/api/community",     require("./routes/community"));
 
 app.get("/", (req, res) => {
   res.json({ message: "Codovate API running 🚀", realtime: true });
