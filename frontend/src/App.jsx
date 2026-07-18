@@ -38,6 +38,9 @@ const MentorRouter = lazy(() => import('./components/MentorRouter'));
 const PublicPortfolio = lazy(() => import('./pages/PublicPortfolio'));
 const PlacementHub = lazy(() => import('./pages/PlacementHub'));
 const CodingPractice = lazy(() => import('./pages/CodingPractice'));
+const SkillAssessments = lazy(() => import('./pages/SkillAssessments'));
+const ResumeReview = lazy(() => import('./pages/ResumeReview'));
+const MockInterview = lazy(() => import('./pages/MockInterview'));
 const Events = lazy(() => import('./pages/Events'));
 const CollegeCommunity = lazy(() => import('./pages/CollegeCommunity'));
 
@@ -185,6 +188,21 @@ function App() {
                   <Route path="/placement/coding" element={
                     <ProtectedRoute>
                       <Layout><CodingPractice /></Layout>
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/placement/assessments" element={
+                    <ProtectedRoute>
+                      <Layout><SkillAssessments /></Layout>
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/placement/resume-review" element={
+                    <ProtectedRoute>
+                      <Layout><ResumeReview /></Layout>
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/placement/interview" element={
+                    <ProtectedRoute>
+                      <Layout><MockInterview /></Layout>
                     </ProtectedRoute>
                   } />
 

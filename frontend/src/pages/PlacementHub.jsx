@@ -19,7 +19,7 @@ const PlacementHub = () => {
       title: "Skill Assessment",
       description: "Take AI-generated quizzes tailored to your target role to identify knowledge gaps.",
       icon: <BrainCircuit size={32} className="text-purple-400" />,
-      route: "/placement/assessment",
+      route: "/placement/assessments",
       bg: "bg-purple-500/10",
       border: "border-purple-500/20",
       hover: "hover:border-purple-500/50 hover:bg-purple-500/20"
@@ -28,7 +28,7 @@ const PlacementHub = () => {
       title: "AI Resume Review",
       description: "Get instant ATS scoring and actionable feedback on your resume format and content.",
       icon: <FileText size={32} className="text-emerald-400" />,
-      route: "/resume", // Routes to Resume Builder
+      route: "/placement/resume-review",
       bg: "bg-emerald-500/10",
       border: "border-emerald-500/20",
       hover: "hover:border-emerald-500/50 hover:bg-emerald-500/20"

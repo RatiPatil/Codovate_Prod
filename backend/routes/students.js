@@ -763,7 +763,20 @@ router.post("/career-goal", auth, async (req, res) => {
 router.get("/daily-tasks", auth, async (req, res) => {
   try {
     const doc = await db.collection("dailyTasks").doc(req.user.id).get();
-    res.json(doc.exists ? doc.data() : { tasks: [] });
+    const data = doc.exists ? doc.data() : { tasks: [] };
+    
+    // Always append a daily coding challenge task
+    data.tasks.unshift({
+      id: "daily_coding",
+      title: "Complete Today's Coding Challenge",
+      type: "action",
+      actionUrl: "/coding"
+    });
+    
+    if (!data.estimated_time) data.estimated_time = "30 Minutes";
+    if (!data.reward) data.reward = "+50 XP";
+
+    res.json(data);
   } catch (err) {
     console.error("Error fetching daily tasks:", err);
     res.status(500).json({ message: "Server error" });

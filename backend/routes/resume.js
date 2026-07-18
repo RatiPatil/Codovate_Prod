@@ -1,9 +1,14 @@
 const express = require("express");
 const router = express.Router();
 const auth = require("../middleware/auth");
-const { db } = require("../config/firebase");
+const { db, admin } = require("../config/firebase");
 const { syncDashboard } = require("../services/dashboardService");
+const multer = require("multer");
+const pdfParse = require("pdf-parse");
 require("dotenv").config();
+
+// Configure multer for memory storage (we just need the buffer to parse text)
+const upload = multer({ storage: multer.memoryStorage() });
 
 // ─── Gemini AI Client ─────────────────────────────────────────────────────────
 let genAI = null;
@@ -302,6 +307,89 @@ router.delete("/versions/:id", auth, async (req, res) => {
     res.json({ message: "Version deleted." });
   } catch (err) {
     res.status(500).json({ message: "Failed to delete version." });
+  }
+});
+
+// ─── GET /api/resume/reviews ────────────────────────────────────────────────
+router.get("/reviews", auth, async (req, res) => {
+  try {
+    const snapshot = await db.collection("resumeReviews").where("uid", "==", req.user.id).orderBy("createdAt", "desc").get();
+    const reviews = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    res.json(reviews);
+  } catch (err) {
+    console.error("Load reviews error:", err.message);
+    res.status(500).json({ message: "Failed to load reviews." });
+  }
+});
+
+// ─── POST /api/resume/review ──────────────────────────────────────────────────
+router.post("/review", auth, upload.single("resume"), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ message: "No resume file uploaded." });
+    if (!model) return res.status(500).json({ message: "AI is not configured." });
+
+    const targetRole = req.body.targetRole || "Software Engineer";
+
+    // Extract text from PDF buffer
+    let pdfText = "";
+    try {
+      const pdfData = await pdfParse(req.file.buffer);
+      pdfText = pdfData.text;
+    } catch (parseErr) {
+      console.error("PDF Parse Error:", parseErr);
+      return res.status(400).json({ message: "Failed to parse the PDF. Ensure it is a valid text-based PDF." });
+    }
+
+    if (!pdfText.trim()) {
+      return res.status(400).json({ message: "No readable text found in the PDF." });
+    }
+
+    const prompt = `
+You are an expert tech recruiter and ATS (Applicant Tracking System) simulator. 
+Review the following resume for the target role of "${targetRole}".
+
+Resume Text:
+${pdfText.substring(0, 5000)} // Limit to ~5000 chars
+
+Provide a detailed evaluation in exactly this JSON format:
+{
+  "atsScore": 85, // Number between 0-100
+  "missingKeywords": ["keyword1", "keyword2"], // 3-5 missing important keywords for this role
+  "grammar": "Feedback on grammar, spelling, and active verbs",
+  "formatting": "Feedback on structure, readability, and ATS-friendliness",
+  "skillsGap": "Identify skills missing from the resume that are crucial for ${targetRole}",
+  "suggestions": [
+    "Specific actionable tip 1",
+    "Specific actionable tip 2",
+    "Specific actionable tip 3"
+  ]
+}
+Respond ONLY with valid JSON.
+`;
+
+    const result = await model.generateContent(prompt);
+    let jsonStr = result.response.text().trim();
+    if (jsonStr.startsWith('\`\`\`json')) jsonStr = jsonStr.slice(7);
+    if (jsonStr.startsWith('\`\`\`')) jsonStr = jsonStr.slice(3);
+    if (jsonStr.endsWith('\`\`\`')) jsonStr = jsonStr.slice(0, -3);
+    jsonStr = jsonStr.trim();
+
+    const analysis = JSON.parse(jsonStr);
+
+    // Save to Firestore
+    const reviewRef = db.collection("resumeReviews").doc();
+    const finalResult = {
+      uid: req.user.id,
+      targetRole,
+      ...analysis,
+      createdAt: admin.firestore.FieldValue.serverTimestamp()
+    };
+    await reviewRef.set(finalResult);
+
+    res.json({ id: reviewRef.id, ...finalResult });
+  } catch (err) {
+    console.error("Resume Review error:", err);
+    res.status(500).json({ message: "Failed to review resume" });
   }
 });
 

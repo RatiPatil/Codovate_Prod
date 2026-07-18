@@ -6,7 +6,8 @@ const PlacementReadinessWidget = ({ readiness }) => {
   const containerRef = useRef(null);
   const circleRef = useRef(null);
 
-  const score = readiness?.score || 0;
+  const score = readiness?.readinessScore || readiness?.score || 0;
+  const details = readiness?.details || { codingScore: 0, assessmentScore: 0, resumeScore: 0, interviewScore: 0 };
   const improvements = readiness?.improvements || [];
 
   useEffect(() => {
@@ -89,31 +90,31 @@ const PlacementReadinessWidget = ({ readiness }) => {
           </div>
         </div>
 
-        {/* Actionable Insights */}
+        {/* Breakdown insights */}
         <div className="flex-1 w-full relative z-10">
-          <h3 className="text-lg font-bold text-white mb-4">Areas to Improve</h3>
-          {improvements.length > 0 ? (
-            <div className="flex flex-wrap gap-3">
-              {improvements.map((item, idx) => (
-                <div 
-                  key={idx}
-                  className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-sm font-semibold text-gray-300 flex items-center gap-2 hover:border-primary/50 hover:bg-white/10 transition-colors cursor-default"
-                >
-                  <span className="w-2 h-2 rounded-full bg-yellow-500 animate-pulse"></span>
-                  {item}
-                </div>
-              ))}
+          <h3 className="text-xl font-bold text-white mb-4 border-b border-white/10 pb-2">Readiness Breakdown</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-white/5 p-4 rounded-2xl border border-white/10">
+              <div className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Coding Stats</div>
+              <div className="text-xl font-black text-blue-400">{Math.round(details.codingScore)} <span className="text-sm text-gray-500 font-medium">/ 25</span></div>
             </div>
-          ) : (
-            <div className="px-4 py-3 rounded-xl bg-green-500/10 border border-green-500/20 text-green-400 font-bold flex items-center gap-2 w-fit">
-              <span>🚀</span> You are highly prepared! Keep applying.
+            <div className="bg-white/5 p-4 rounded-2xl border border-white/10">
+              <div className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Skill Assessments</div>
+              <div className="text-xl font-black text-purple-400">{Math.round(details.assessmentScore)} <span className="text-sm text-gray-500 font-medium">/ 25</span></div>
             </div>
-          )}
+            <div className="bg-white/5 p-4 rounded-2xl border border-white/10">
+              <div className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Resume Score</div>
+              <div className="text-xl font-black text-emerald-400">{Math.round(details.resumeScore)} <span className="text-sm text-gray-500 font-medium">/ 25</span></div>
+            </div>
+            <div className="bg-white/5 p-4 rounded-2xl border border-white/10">
+              <div className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Mock Interviews</div>
+              <div className="text-xl font-black text-orange-400">{Math.round(details.interviewScore)} <span className="text-sm text-gray-500 font-medium">/ 25</span></div>
+            </div>
+          </div>
           
-          <div className="mt-6">
-            <Link to="/roadmap" className="text-primary hover:text-primary-light font-bold text-sm flex items-center gap-1 transition-colors w-fit">
-              Continue your roadmap to boost your score 
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+          <div className="mt-6 flex gap-4">
+            <Link to="/placement" className="px-4 py-2 bg-primary/20 text-primary border border-primary/50 rounded-xl hover:bg-primary hover:text-white font-bold text-sm transition-colors">
+              Improve Scores
             </Link>
           </div>
         </div>

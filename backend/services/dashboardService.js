@@ -1,4 +1,4 @@
-const { db } = require("../config/firebase");
+const { db, admin } = require("../config/firebase");
 
 /**
  * Calculates a lightweight aggregate of the user's dashboard data
@@ -65,9 +65,85 @@ async function syncDashboard(uid) {
 
     await db.collection("dashboard").doc(uid).set(dashboardData, { merge: true });
     
+    // Calculate and Sync Placement Readiness
+    await syncPlacementReadiness(uid);
+    
   } catch (err) {
     console.error(`Failed to sync dashboard for ${uid}:`, err);
   }
 }
 
-module.exports = { syncDashboard };
+/**
+ * Calculates overall placement readiness based on coding stats, assessments, resume, and interviews.
+ */
+async function syncPlacementReadiness(uid) {
+  try {
+    const [
+      codingStatsDoc,
+      assessmentsSnap,
+      resumeReviewsSnap,
+      mockInterviewsSnap
+    ] = await Promise.all([
+      db.collection("codingStats").doc(uid).get(),
+      db.collection("skillAssessments").where("uid", "==", uid).get(),
+      db.collection("resumeReviews").where("uid", "==", uid).orderBy("createdAt", "desc").limit(1).get(),
+      db.collection("mockInterviews").where("uid", "==", uid).orderBy("createdAt", "desc").limit(5).get()
+    ]);
+
+    let readinessScore = 0;
+    const details = {
+      codingScore: 0,
+      assessmentScore: 0,
+      resumeScore: 0,
+      interviewScore: 0
+    };
+
+    // 1. Coding Score (max 25)
+    if (codingStatsDoc.exists) {
+      const stats = codingStatsDoc.data();
+      details.codingScore = Math.min(25, (stats.completedCount || 0) * 0.5 + (stats.streak || 0) * 1);
+    }
+
+    // 2. Assessment Score (max 25)
+    if (!assessmentsSnap.empty) {
+      let totalAssessment = 0;
+      assessmentsSnap.forEach(doc => {
+        totalAssessment += (doc.data().score || 0);
+      });
+      const avg = totalAssessment / assessmentsSnap.size;
+      details.assessmentScore = Math.min(25, (avg / 100) * 25);
+    }
+
+    // 3. Resume Score (max 25)
+    if (!resumeReviewsSnap.empty) {
+      const latestResume = resumeReviewsSnap.docs[0].data();
+      details.resumeScore = Math.min(25, ((latestResume.atsScore || 0) / 100) * 25);
+    }
+
+    // 4. Interview Score (max 25)
+    if (!mockInterviewsSnap.empty) {
+      let totalInt = 0;
+      mockInterviewsSnap.forEach(doc => {
+        const data = doc.data();
+        const avgScore = ((data.confidenceScore || 0) + (data.communicationScore || 0) + (data.technicalAccuracy || 0)) / 3;
+        totalInt += avgScore;
+      });
+      const avg = totalInt / mockInterviewsSnap.size;
+      details.interviewScore = Math.min(25, (avg / 100) * 25);
+    }
+
+    readinessScore = Math.round(details.codingScore + details.assessmentScore + details.resumeScore + details.interviewScore);
+
+    await db.collection("placementReadiness").doc(uid).set({
+      uid,
+      readinessScore,
+      details,
+      lastCalculated: admin.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+
+  } catch (err) {
+    console.error(`Failed to sync placementReadiness for ${uid}:`, err);
+  }
+}
+
+module.exports = { syncDashboard, syncPlacementReadiness };

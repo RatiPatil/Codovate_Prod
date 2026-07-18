@@ -8,6 +8,7 @@ const { initializeAdminRealtime } = require("./services/adminRealtime");
 require("./events/eventHandlers");
 const rateLimit = require("express-rate-limit");
 require("dotenv").config();
+const { startWeeklyReportJob } = require("./jobs/weeklyReportJob");
 
 // ─── SECURITY: Fail fast if JWT_SECRET is missing ───
 if (!process.env.JWT_SECRET) {
@@ -113,6 +114,8 @@ app.use("/api/achievements",  require("./routes/achievements"));
 app.use("/api/activity",      require("./routes/activity"));
 app.use("/api/dashboard",     require("./routes/dashboard"));
 app.use("/api/coding",        require("./routes/coding"));
+app.use("/api/assessments",   require("./routes/assessments"));
+app.use("/api/interviews",    require("./routes/interviews"));
 app.use("/api/events",        require("./routes/events"));
 app.use("/api/community",     require("./routes/community"));
 
@@ -226,4 +229,5 @@ server.listen(PORT, () => {
   console.log(`✅ Server running on http://localhost:${PORT}`);
   console.log(`⚡ Socket.io real-time enabled`);
   startAutomationJobs();
+  startWeeklyReportJob();
 });
