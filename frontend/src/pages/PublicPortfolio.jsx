@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import api from '../api/axios';
-import { Mail, User, ExternalLink, MapPin, Briefcase, GraduationCap, Award, CheckCircle, Code, ChevronRight } from 'lucide-react';
+import { Mail, User, ExternalLink, MapPin, Briefcase, GraduationCap, Award, CheckCircle, Code, ChevronRight, MessageSquare, Star } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { toast } from 'react-hot-toast';
 
 const PublicPortfolio = () => {
   const { username } = useParams();
+  const { user } = useAuth();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -22,6 +25,25 @@ const PublicPortfolio = () => {
     };
     if (username) fetchPortfolio();
   }, [username]);
+
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewFeedback, setReviewFeedback] = useState('');
+  const [submittingReview, setSubmittingReview] = useState(false);
+
+  const handleSubmitReview = async () => {
+    if (!reviewFeedback) return toast.error('Feedback is required.');
+    setSubmittingReview(true);
+    try {
+      await api.post(`/mentor-reviews/${data.id}`, { rating: reviewRating, feedback: reviewFeedback });
+      toast.success('Review submitted successfully!');
+      setReviewModalOpen(false);
+    } catch (err) {
+      toast.error('Failed to submit review.');
+    } finally {
+      setSubmittingReview(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -92,6 +114,48 @@ const PublicPortfolio = () => {
           )}
         </div>
       </header>
+
+      {/* Mentor Review Action Bar */}
+      {user?.role === 'mentor' && (
+        <div className="max-w-4xl mx-auto px-6 mb-12">
+          <div className="bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-500/20 rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div>
+              <h3 className="text-xl font-bold text-white flex items-center gap-2"><Star className="text-yellow-400" size={20} fill="currentColor" /> Mentor Action Center</h3>
+              <p className="text-gray-400 text-sm mt-1">Leave feedback on {name}'s resume, projects, and portfolio.</p>
+            </div>
+            <button onClick={() => setReviewModalOpen(true)} className="px-6 py-3 bg-purple-500 hover:bg-purple-600 text-white font-bold rounded-xl transition-colors shadow-lg shadow-purple-500/20 flex items-center gap-2">
+              <MessageSquare size={18} />
+              Leave Review
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Review Modal */}
+      {reviewModalOpen && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-[#0f0f15] border border-white/10 p-8 rounded-3xl w-full max-w-lg relative">
+            <h2 className="text-2xl font-bold mb-6">Review Portfolio & Resume</h2>
+            <div className="space-y-6">
+              <div>
+                <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Overall Rating</label>
+                <input type="range" min="1" max="5" step="0.5" value={reviewRating} onChange={e => setReviewRating(e.target.value)} className="w-full" />
+                <div className="text-center text-xl font-black text-yellow-400 mt-2">{reviewRating} ⭐</div>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Detailed Feedback</label>
+                <textarea rows={5} value={reviewFeedback} onChange={e => setReviewFeedback(e.target.value)} placeholder="Provide actionable feedback on their projects, coding profile, and resume..." className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 resize-none"></textarea>
+              </div>
+            </div>
+            <div className="flex gap-4 mt-8">
+              <button onClick={() => setReviewModalOpen(false)} className="flex-1 py-3 bg-white/5 hover:bg-white/10 font-bold rounded-xl transition-colors">Cancel</button>
+              <button onClick={handleSubmitReview} disabled={submittingReview} className="flex-1 py-3 bg-purple-500 hover:bg-purple-600 text-white font-bold rounded-xl transition-colors disabled:opacity-50">
+                {submittingReview ? 'Submitting...' : 'Submit Review'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <main className="max-w-4xl mx-auto px-6 space-y-24">
         

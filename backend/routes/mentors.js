@@ -37,6 +37,71 @@ router.get("/", auth, async (req, res) => {
   }
 });
 
+// AI Mentor Recommendation
+router.get("/ai-recommend", auth, async (req, res) => {
+  try {
+    // Get student profile
+    const studentDoc = await db.collection("students").doc(req.user.id).get();
+    if (!studentDoc.exists) return res.status(404).json({ message: "Student profile not found" });
+    const studentData = studentDoc.data();
+    const currentSkills = studentData.skills || [];
+    const careerGoal = studentData.career_goal || '';
+
+    // Fetch active mentors
+    const mentorsSnapshot = await db.collection("mentors").get();
+    const activeDocs = mentorsSnapshot.docs.filter(doc => doc.data().is_active === true || doc.data().status === 'active');
+    
+    if (activeDocs.length === 0) return res.json({ recommended: null });
+
+    const mentors = await Promise.all(activeDocs.map(async (doc) => {
+      const m = doc.data();
+      m.id = doc.id;
+      const userDoc = await db.collection("users").doc(m.user_id).get();
+      if (userDoc.exists) {
+        m.name = userDoc.data().name;
+      }
+      return m;
+    }));
+
+    // Define AI payload
+    const { model } = require("../utils/aiConfig");
+    const prompt = `
+    You are an AI Mentor Matchmaker.
+    Student Profile:
+    - Career Goal: ${careerGoal}
+    - Current Skills: ${currentSkills.join(', ')}
+
+    Available Mentors:
+    ${JSON.stringify(mentors.map(m => ({ id: m.id, name: m.name, expertise: m.expertise, years_of_experience: m.years_of_experience, rating: m.rating, company: m.company, designation: m.designation })), null, 2)}
+
+    Based on what the student is learning and their career goal, pick the SINGLE best mentor for them.
+    Return ONLY a valid JSON object in this exact shape:
+    {
+      "mentor_id": "mentor_id_string",
+      "reasoning": "You are learning [Skill]. We recommend [Mentor Name] because [reason]."
+    }
+    `;
+
+    const result = await model.generateContent(prompt);
+    let text = result.response.text().trim();
+    if (text.startsWith("\`\`\`json")) text = text.slice(7, -3);
+    else if (text.startsWith("\`\`\`")) text = text.slice(3, -3);
+
+    const aiMatch = JSON.parse(text);
+    const recommendedMentor = mentors.find(m => m.id === aiMatch.mentor_id);
+    
+    if (recommendedMentor) {
+      recommendedMentor.ai_reasoning = aiMatch.reasoning;
+      res.json({ recommended: recommendedMentor });
+    } else {
+      res.json({ recommended: null });
+    }
+  } catch (err) {
+    console.error("AI Recommend Mentor Error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 // Book a mentor
 router.post("/:id/book", auth, async (req, res) => {
   const { scheduled_time, mode, topic } = req.body;
@@ -61,6 +126,7 @@ router.post("/:id/book", auth, async (req, res) => {
       student_id: req.user.id,
       student_name: req.user.name || 'Student',
       scheduled_time,
+      duration: parseInt(req.body.duration) || 30,
       mode: mode || "Online",
       topic: topic || "",
       created_at: new Date(),

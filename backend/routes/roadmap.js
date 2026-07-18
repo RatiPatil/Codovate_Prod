@@ -2,10 +2,9 @@ const express = require("express");
 const router = express.Router();
 const { db, admin } = require("../config/firebase");
 const auth = require("../middleware/auth");
-const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 // Setup Gemini
-const genAI = process.env.GEMINI_API_KEY ? new GoogleGenerativeAI(process.env.GEMINI_API_KEY) : null;
+const { getConfiguredModel, genAI } = require("../utils/aiConfig");
 
 // Helper to generate a fallback mock roadmap if no API key
 const generateMockRoadmap = (goal) => {
@@ -91,7 +90,7 @@ router.post("/generate", auth, async (req, res) => {
     let roadmapData = null;
     
     if (genAI) {
-      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+      const model = await getConfiguredModel();
       
       const prompt = `
       You are an expert career advisor. Generate a highly personalized learning roadmap for a student aiming to become a ${goal}.
@@ -310,7 +309,7 @@ router.post("/step/:stepId/generate-content", auth, async (req, res) => {
     let content = null;
     
     if (genAI) {
-      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+      const model = await getConfiguredModel();
       const prompt = `
       You are an expert technical instructor. A student is learning "${step.title}" as part of their goal to become a ${data.goal}.
       

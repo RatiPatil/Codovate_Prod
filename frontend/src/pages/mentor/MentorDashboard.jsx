@@ -22,10 +22,11 @@ const MentorDashboard = () => {
   const { user } = useAuth();
   const [stats, setStats] = useState({
     total_students: 0,
-    pending_questions: 0,
-    answered_questions: 0,
-    total_chats: 0,
-    upcoming_sessions: 0
+    upcoming_sessions: 0,
+    total_reviews: 0,
+    pending_requests: 0,
+    resources_shared: 0,
+    revenue: 0
   });
 
   useEffect(() => {
@@ -33,7 +34,7 @@ const MentorDashboard = () => {
     // For now we will just use placeholders or fetch from mentor document
     const fetchStats = async () => {
       try {
-        const res = await api.get('/mentor-queries/dashboard-stats'); // we will build this endpoint
+        const res = await api.get('/mentor-interactions/dashboard-stats');
         if (res.data) setStats(res.data);
       } catch (err) {
         console.error(err);
@@ -49,11 +50,13 @@ const MentorDashboard = () => {
         <p className="text-gray-400">Here's what's happening with your students today.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         <StatCard title="Total Students" value={stats.total_students} icon={Users} color="blue" />
-        <StatCard title="Pending Questions" value={stats.pending_questions} icon={MessageSquare} color="yellow" />
-        <StatCard title="Answered Questions" value={stats.answered_questions} icon={CheckCircle} color="emerald" />
         <StatCard title="Upcoming Sessions" value={stats.upcoming_sessions} icon={Calendar} color="purple" />
+        <StatCard title="Reviews Given" value={stats.total_reviews} icon={CheckCircle} color="emerald" />
+        <StatCard title="Pending Requests" value={stats.pending_requests} icon={MessageSquare} color="yellow" />
+        <StatCard title="Resources Shared" value={stats.resources_shared} icon={Activity} color="orange" />
+        <StatCard title="Revenue (INR)" value={`₹${stats.revenue}`} icon={Activity} color="green" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

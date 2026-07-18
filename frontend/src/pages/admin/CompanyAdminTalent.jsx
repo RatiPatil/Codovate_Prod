@@ -14,6 +14,20 @@ const CompanyAdminTalent = () => {
   const [skillFilter, setSkillFilter] = useState('');
   const [roleFilter, setRoleFilter] = useState('');
 
+  const toggleShortlist = async (student, e) => {
+    if(e) e.stopPropagation();
+    try {
+      const res = await api.post(`/company-admin/talent/${student.id}/shortlist`);
+      setCandidates(prev => prev.map(c => c.id === student.id ? { ...c, is_shortlisted: res.data.is_shortlisted } : c));
+      if (selectedStudent && selectedStudent.id === student.id) {
+        setSelectedStudent(prev => ({ ...prev, is_shortlisted: res.data.is_shortlisted }));
+      }
+      toast.success(res.data.message);
+    } catch (err) {
+      toast.error('Failed to update shortlist status');
+    }
+  };
+
   useEffect(() => {
     fetchTalent();
   }, []);
@@ -145,11 +159,31 @@ const CompanyAdminTalent = () => {
 
                 <div className="grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-white/5">
                   <button 
+                    onClick={(e) => toggleShortlist(candidate, e)}
+                    className={`col-span-1 border font-bold py-2 rounded-lg transition-colors text-sm ${
+                      candidate.is_shortlisted 
+                        ? 'bg-amber-500/20 text-amber-400 border-amber-500/50 hover:bg-amber-500/30' 
+                        : 'bg-white/5 text-white border-white/10 hover:bg-white/10'
+                    }`}
+                  >
+                    {candidate.is_shortlisted ? '★ Shortlisted' : '☆ Shortlist'}
+                  </button>
+                  <button 
                     onClick={() => setSelectedStudent(candidate)}
-                    className="col-span-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold py-2 rounded-lg transition-colors text-sm"
+                    className="col-span-1 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold py-2 rounded-lg transition-colors text-sm"
                   >
                     View Profile
                   </button>
+                  {candidate.resume_url && (
+                    <a 
+                      href={candidate.resume_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="col-span-2 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 text-emerald-400 font-bold py-2 rounded-lg transition-colors text-sm text-center flex items-center justify-center gap-2"
+                    >
+                      <ExternalLink size={14} /> Download Resume
+                    </a>
+                  )}
                 </div>
               </div>
             </div>
@@ -174,7 +208,20 @@ const CompanyAdminTalent = () => {
                 )}
               </div>
               <div>
-                <h2 className="text-3xl font-black text-white mb-1">{selectedStudent.name}</h2>
+                <div className="flex items-center gap-3">
+                  <h2 className="text-3xl font-black text-white mb-1">{selectedStudent.name}</h2>
+                  <button
+                    onClick={() => toggleShortlist(selectedStudent)}
+                    className={`p-1.5 rounded-lg border transition-all ${
+                      selectedStudent.is_shortlisted
+                        ? 'bg-amber-500/20 border-amber-500/50 text-amber-400'
+                        : 'bg-white/5 border-white/10 text-gray-400 hover:text-white hover:bg-white/10'
+                    }`}
+                    title={selectedStudent.is_shortlisted ? "Remove from shortlist" : "Add to shortlist"}
+                  >
+                    {selectedStudent.is_shortlisted ? '★' : '☆'}
+                  </button>
+                </div>
                 <p className="text-amber-500 font-bold mb-2">{(selectedStudent.desired_roles && selectedStudent.desired_roles[0]) || 'Software Engineer'}</p>
                 <div className="flex flex-wrap gap-4 text-sm text-gray-400">
                   <span className="flex items-center gap-1"><GraduationCap size={16}/> {selectedStudent.college}</span>

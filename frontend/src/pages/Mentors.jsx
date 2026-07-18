@@ -7,6 +7,7 @@ import Loader from '../components/common/Loader';
 
 const BookingModal = ({ mentor, onClose, onConfirm }) => {
   const [dateTime, setDateTime] = useState('');
+  const [duration, setDuration] = useState('30');
   const [mode, setMode] = useState('Online');
   const [topic, setTopic] = useState('');
   const [loading, setLoading] = useState(false);
@@ -15,7 +16,7 @@ const BookingModal = ({ mentor, onClose, onConfirm }) => {
     e.preventDefault();
     if (!dateTime || !topic) return;
     setLoading(true);
-    await onConfirm(mentor.id, dateTime, mode, topic);
+    await onConfirm(mentor.id, dateTime, duration, mode, topic);
     setLoading(false);
   };
 
@@ -51,19 +52,36 @@ const BookingModal = ({ mentor, onClose, onConfirm }) => {
               className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all [color-scheme:dark]"
             />
           </div>
-          
-          <div>
-            <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2">
-              Meeting Mode <span className="text-red-400">*</span>
-            </label>
-            <select
-              value={mode}
-              onChange={e => setMode(e.target.value)}
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all [color-scheme:dark]"
-            >
-              <option className="bg-gray-900" value="Online">Online (Video Call)</option>
-              <option className="bg-gray-900" value="Offline">Offline (In-Person)</option>
-            </select>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+                Duration <span className="text-red-400">*</span>
+              </label>
+              <select
+                value={duration}
+                onChange={e => setDuration(e.target.value)}
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all [color-scheme:dark]"
+              >
+                <option className="bg-gray-900" value="30">30 Minutes</option>
+                <option className="bg-gray-900" value="60">60 Minutes</option>
+                <option className="bg-gray-900" value="90">90 Minutes</option>
+              </select>
+            </div>
+            
+            <div>
+              <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+                Meeting Mode <span className="text-red-400">*</span>
+              </label>
+              <select
+                value={mode}
+                onChange={e => setMode(e.target.value)}
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all [color-scheme:dark]"
+              >
+                <option className="bg-gray-900" value="Online">Online (Video Call)</option>
+                <option className="bg-gray-900" value="Offline">Offline (In-Person)</option>
+              </select>
+            </div>
           </div>
 
           <div>
@@ -303,6 +321,7 @@ const Mentors = () => {
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState({ msg: '', type: 'success' });
   const [bookingMentor, setBookingMentor] = useState(null);
+  const [aiRecommended, setAiRecommended] = useState(null);
   
   // Search and Filters
   const [searchTerm, setSearchTerm] = useState('');
@@ -319,12 +338,14 @@ const Mentors = () => {
   const fetchMentorsAndSessions = useCallback(async () => {
     setLoading(true);
     try {
-      const [mentorsRes, sessionsRes] = await Promise.all([
+      const [mentorsRes, sessionsRes, aiRes] = await Promise.all([
         api.get('/mentors'),
-        api.get('/mentors/my-sessions').catch(() => ({ data: [] }))
+        api.get('/mentors/my-sessions').catch(() => ({ data: [] })),
+        api.get('/mentors/ai-recommend').catch(() => ({ data: { recommended: null } }))
       ]);
       setMentors(mentorsRes.data);
       setSessions(sessionsRes.data || []);
+      setAiRecommended(aiRes.data?.recommended || null);
     } catch (err) {
       console.error(err);
     } finally {
@@ -334,10 +355,11 @@ const Mentors = () => {
 
   useEffect(() => { fetchMentorsAndSessions(); }, [fetchMentorsAndSessions]);
 
-  const handleConfirmBooking = async (mentorId, scheduledTime, mode, topic) => {
+  const handleConfirmBooking = async (mentorId, scheduledTime, duration, mode, topic) => {
     try {
       await api.post(`/mentors/${mentorId}/book`, {
         scheduled_time: scheduledTime,
+        duration,
         mode,
         topic,
       });
@@ -476,6 +498,35 @@ const Mentors = () => {
             </select>
           </div>
 
+          {/* AI Recommended Mentor Banner */}
+          {aiRecommended && !searchTerm && selectedExpertise === 'All' && (
+            <div className="mb-8 p-6 rounded-3xl bg-gradient-to-br from-purple-500/10 via-purple-500/5 to-transparent border border-purple-500/20 relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative z-10">
+                <div className="flex items-center gap-6">
+                  <div className="w-20 h-20 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center font-black text-3xl border-2 border-purple-500/30 shadow-[0_0_15px_rgba(168,85,247,0.3)] shrink-0">
+                    {aiRecommended.profile_photo ? <img loading="lazy" src={aiRecommended.profile_photo} alt={aiRecommended.name} className="w-full h-full object-cover rounded-full" /> : aiRecommended.name?.charAt(0)}
+                  </div>
+                  <div>
+                    <h3 className="text-[10px] font-bold text-purple-400 uppercase tracking-widest mb-1 flex items-center gap-2">
+                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                      AI Recommended Mentor
+                    </h3>
+                    <h2 className="text-2xl font-bold text-white mb-1">{aiRecommended.name}</h2>
+                    <p className="text-sm text-gray-300 font-semibold">{aiRecommended.designation || 'Senior Developer'} @ {aiRecommended.company || 'Tech Corp'} • {aiRecommended.years_of_experience || '5+'} yrs experience</p>
+                    <p className="text-xs text-purple-300/80 mt-2 max-w-xl italic">"{aiRecommended.ai_reasoning}"</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setBookingMentor(aiRecommended)}
+                  className="btn-primary whitespace-nowrap shadow-[0_0_20px_rgba(168,85,247,0.3)] shrink-0 px-6 py-3"
+                >
+                  Book Session
+                </button>
+              </div>
+            </div>
+          )}
+
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredMentors.length === 0 ? (
               <div className="col-span-full glass-panel p-12 rounded-3xl relative overflow-hidden text-center flex flex-col items-center justify-center min-h-[350px]">
@@ -515,9 +566,22 @@ const Mentors = () => {
                     <span className="text-[10px] text-gray-500 uppercase tracking-wider">Experience</span>
                   </div>
                   <div className="flex flex-col items-center flex-1">
-                    <span className="text-white text-sm font-black">{m.sessions_conducted || Math.floor(Math.random() * 50) + 10}</span>
-                    <span className="text-[10px] text-gray-500 uppercase tracking-wider">Sessions</span>
+                    <span className="text-green-400 text-sm font-black">{m.free_sessions_left || '3'} left</span>
+                    <span className="text-[10px] text-gray-500 uppercase tracking-wider">Free Sessions</span>
                   </div>
+                </div>
+
+                <div className="mb-4 relative z-10 flex items-center justify-between">
+                   <div className="flex gap-2">
+                     {(m.languages || ['English', 'Hindi']).map(lang => (
+                       <span key={lang} className="text-[10px] text-gray-400 bg-white/5 px-2 py-0.5 rounded">
+                         🗣️ {lang}
+                       </span>
+                     ))}
+                   </div>
+                   <span className="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded">
+                     🟢 {m.availability || 'Available Now'}
+                   </span>
                 </div>
 
                 <p className="text-gray-400 text-sm mb-4 line-clamp-2 relative z-10 flex-1">{m.bio}</p>

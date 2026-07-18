@@ -1,30 +1,135 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api/axios';
 import { useSocket } from '../context/SocketContext';
 import { formatDate } from '../utils/dateUtils';
-import { showAlert, showConfirm } from '../utils/uiUtils';
+import { showConfirm, showAlert } from '../utils/uiUtils';
 import SkeletonLoader from '../components/common/SkeletonLoader';
+
+const KANBAN_STAGES = [
+  'Applied',
+  'Under Review',
+  'Online Assessment',
+  'Interview',
+  'Offer',
+  'Accepted',
+  'Rejected'
+];
 
 const statusStyles = {
   Applied: 'bg-primary/10 text-primary border-primary/20',
   'Under Review': 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
-  Selected: 'bg-green-500/10 text-green-400 border-green-500/20',
+  'Online Assessment': 'bg-purple-500/10 text-purple-400 border-purple-500/20',
+  Interview: 'bg-orange-500/10 text-orange-400 border-orange-500/20',
+  Offer: 'bg-teal-500/10 text-teal-400 border-teal-500/20',
+  Accepted: 'bg-green-500/10 text-green-400 border-green-500/20',
   Rejected: 'bg-red-500/10 text-red-400 border-red-500/20',
   'External Link Opened': 'bg-blue-500/10 text-blue-400 border-blue-500/20',
 };
 
-const typeColors = {
-  Internship: 'text-blue-400',
-  Hackathon: 'text-purple-400',
-  Competition: 'text-yellow-400',
+const TrackerModal = ({ app, onClose, onSave, loading }) => {
+  const [formData, setFormData] = useState({
+    status: app.status || 'Applied',
+    notes: app.notes || '',
+    follow_up_date: app.follow_up_date ? new Date(app.follow_up_date.seconds ? app.follow_up_date.seconds * 1000 : app.follow_up_date).toISOString().split('T')[0] : '',
+    interview_date: app.interview_date ? new Date(app.interview_date.seconds ? app.interview_date.seconds * 1000 : app.interview_date).toISOString().split('T')[0] : '',
+    documents_submitted: app.documents_submitted || ''
+  });
+
+  const handleChange = (e) => setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+
+  return (
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="absolute inset-0" onClick={onClose} />
+      <div className="relative z-10 w-full max-w-2xl glass-panel rounded-2xl shadow-2xl animate-[scale-in_0.2s_ease-out] flex flex-col max-h-[90vh]">
+        <div className="p-6 border-b border-white/10 flex justify-between items-center shrink-0">
+          <div>
+            <h2 className="text-xl font-bold text-white">{app.title || app.internship_title}</h2>
+            <p className="text-primary text-sm font-semibold">{app.company}</p>
+          </div>
+          <button onClick={onClose} className="text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 p-2 rounded-xl border border-white/10 transition-colors">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        </div>
+
+        <div className="p-6 overflow-y-auto space-y-6">
+          {/* Timeline Visualizer */}
+          <div className="relative pt-2 pb-6 overflow-x-auto no-scrollbar">
+            <div className="flex items-center min-w-[600px]">
+              {KANBAN_STAGES.map((stage, idx) => {
+                const isActive = stage === formData.status;
+                const isPast = KANBAN_STAGES.indexOf(formData.status) > idx;
+                return (
+                  <div key={stage} className="flex-1 relative flex flex-col items-center">
+                    <div className={`w-4 h-4 rounded-full z-10 border-2 transition-colors ${
+                      isActive ? 'bg-primary border-primary' :
+                      isPast ? 'bg-primary/50 border-primary/50' : 'bg-gray-800 border-gray-600'
+                    }`} />
+                    <span className={`text-[10px] uppercase tracking-widest mt-2 font-bold text-center ${
+                      isActive ? 'text-primary' : isPast ? 'text-gray-300' : 'text-gray-600'
+                    }`}>
+                      {stage}
+                    </span>
+                    {idx < KANBAN_STAGES.length - 1 && (
+                      <div className={`absolute top-2 left-1/2 w-full h-[2px] -translate-y-1/2 ${
+                        isPast ? 'bg-primary/50' : 'bg-gray-800'
+                      }`} />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5">Status</label>
+              <select name="status" value={formData.status} onChange={handleChange} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none">
+                {KANBAN_STAGES.map(s => <option key={s} value={s} className="bg-gray-900">{s}</option>)}
+                <option value="External Link Opened" className="bg-gray-900">External Link Opened</option>
+              </select>
+            </div>
+            
+            <div>
+              <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5">Interview Date</label>
+              <input type="date" name="interview_date" value={formData.interview_date} onChange={handleChange} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:border-primary outline-none" style={{ colorScheme: 'dark' }} />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5">Follow-up Date</label>
+              <input type="date" name="follow_up_date" value={formData.follow_up_date} onChange={handleChange} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:border-primary outline-none" style={{ colorScheme: 'dark' }} />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5">Documents Submitted</label>
+              <input type="text" name="documents_submitted" value={formData.documents_submitted} onChange={handleChange} placeholder="e.g. Resume, Cover Letter, Portfolio Link" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:border-primary outline-none" />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5">My Notes / Prep</label>
+            <textarea name="notes" value={formData.notes} onChange={handleChange} rows="4" placeholder="Add interview prep notes, questions to ask, or feedback received..." className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:border-primary outline-none resize-none" />
+          </div>
+        </div>
+        
+        <div className="p-6 border-t border-white/10 flex justify-end gap-3 shrink-0">
+          <button onClick={onClose} className="btn-secondary text-sm px-6 py-2 rounded-xl">Cancel</button>
+          <button onClick={() => onSave(app.id, formData)} disabled={loading} className="btn-primary text-sm px-6 py-2 rounded-xl flex items-center gap-2">
+            {loading ? <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"/> Saving...</> : 'Save Tracker'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 const Applications = () => {
   const [apps, setApps] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [withdrawing, setWithdrawing] = useState(null);
   const [toast, setToast] = useState({ msg: '', type: 'success' });
+  const [selectedApp, setSelectedApp] = useState(null);
   const { socket } = useSocket();
 
   const showToast = (msg, type = 'success') => {
@@ -44,11 +149,11 @@ const Applications = () => {
   useEffect(() => {
     if (!socket) return;
     socket.on('application_update', (data) => {
+      setApps(prev => prev.map(a =>
+        a.id === data.application_id ? { ...a, ...data } : a
+      ));
       if (data.type === 'status_change') {
-        setApps(prev => prev.map(a =>
-          a.id === data.application_id ? { ...a, status: data.status } : a
-        ));
-        showToast(`🔔 Status updated to: ${data.status}`, 'success');
+        showToast(`🔔 Status updated: ${data.status}`, 'success');
       }
     });
     socket.on('application_withdrawn', ({ application_id }) => {
@@ -59,6 +164,20 @@ const Applications = () => {
       socket.off('application_withdrawn');
     };
   }, [socket]);
+
+  const handleSaveTracker = async (id, data) => {
+    setSaving(true);
+    try {
+      const res = await api.put(`/applications/${id}/track`, data);
+      setApps(prev => prev.map(a => a.id === id ? { ...a, ...res.data } : a));
+      showToast('Tracker updated successfully!', 'success');
+      setSelectedApp(null);
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Failed to update.', 'error');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const handleWithdraw = async (appId) => {
     if (!await showConfirm('Are you sure you want to withdraw this application? This cannot be undone.')) return;
@@ -74,24 +193,29 @@ const Applications = () => {
     }
   };
 
-  const counts = {
-    total: apps.length,
-    applied: apps.filter(a => a.status === 'Applied').length,
-    review: apps.filter(a => a.status === 'Under Review').length,
-    selected: apps.filter(a => a.status === 'Selected').length,
-    rejected: apps.filter(a => a.status === 'Rejected').length,
-  };
+  const kanbanBoard = useMemo(() => {
+    const board = {};
+    KANBAN_STAGES.forEach(stage => board[stage] = []);
+    board['Other'] = [];
+    apps.forEach(app => {
+      let st = app.status;
+      if (st === 'Selected') st = 'Accepted'; // normalize legacy
+      if (board[st]) board[st].push(app);
+      else board['Other'].push(app);
+    });
+    return board;
+  }, [apps]);
 
   if (loading) {
     return (
       <div className="p-6 md:p-8 max-w-7xl mx-auto relative z-10 w-full pt-4">
-        <SkeletonLoader type="list" count={5} />
+        <SkeletonLoader type="list" count={3} />
       </div>
     );
   }
 
   return (
-    <div className="flex-1 p-6 md:p-8 overflow-y-auto relative z-10 max-w-7xl mx-auto w-full">
+    <div className="flex-1 p-6 md:p-8 overflow-y-auto relative z-10 max-w-[1400px] mx-auto w-full h-full flex flex-col">
       {toast.msg && (
         <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-xl text-sm font-semibold shadow-2xl glass-panel ${
           toast.type === 'success' ? 'border-green-500/30 text-green-400' : 'border-red-500/30 text-red-400'
@@ -100,115 +224,94 @@ const Applications = () => {
         </div>
       )}
 
-      <div className="mb-8 text-center md:text-left relative z-10">
-        <h1 className="text-3xl md:text-4xl font-bold text-white tracking-tight">
-          <span className="text-gradient">My Applications</span>
-        </h1>
-        <p className="text-gray-400 text-sm mt-2">Track all your opportunity applications in real-time</p>
+      {selectedApp && (
+        <TrackerModal app={selectedApp} onClose={() => setSelectedApp(null)} onSave={handleSaveTracker} loading={saving} />
+      )}
+
+      <div className="mb-6 flex justify-between items-end shrink-0 relative z-10">
+        <div>
+          <h1 className="text-3xl md:text-4xl font-bold text-white tracking-tight">
+            <span className="text-gradient">Application Tracker</span>
+          </h1>
+          <p className="text-gray-400 text-sm mt-2">Manage your job search journey</p>
+        </div>
+        <Link to="/opportunities" className="btn-primary text-sm px-5 py-2 rounded-xl hidden sm:flex items-center gap-2">
+          Find Opportunities
+        </Link>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-10 relative z-10">
-        {[
-          { label: 'Total', value: counts.total, color: 'text-white' },
-          { label: 'Pending', value: counts.applied, color: 'text-primary' },
-          { label: 'In Review', value: counts.review, color: 'text-yellow-400' },
-          { label: 'Selected', value: counts.selected, color: 'text-green-400' },
-          { label: 'Rejected', value: counts.rejected, color: 'text-red-400' },
-        ].map(s => (
-          <div key={s.label} className="glass-card p-5 text-center">
-            <p className={`text-4xl font-black tracking-tighter ${s.color}`}>{s.value}</p>
-            <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest mt-2">{s.label}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* Applications List */}
       {apps.length === 0 ? (
-        <div className="glass-panel p-12 rounded-3xl relative overflow-hidden text-center flex flex-col items-center justify-center min-h-[350px]">
+        <div className="glass-panel p-12 rounded-3xl relative overflow-hidden text-center flex flex-col items-center justify-center flex-1 min-h-[400px]">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-primary/10 rounded-full blur-[80px] pointer-events-none" />
-          <div className="w-20 h-20 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center text-4xl mb-6 shadow-xl relative z-10 transform transition-transform hover:scale-105">
-            📋
-          </div>
+          <div className="w-20 h-20 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center text-4xl mb-6 shadow-xl relative z-10">📋</div>
           <h3 className="text-xl font-bold text-white mb-2 relative z-10">Your Journey Begins Here</h3>
           <p className="text-gray-400 text-sm mb-8 max-w-md mx-auto relative z-10">
-            You haven't applied to any opportunities yet. Discover hackathons and internships to start building your career.
+            You haven't applied to any opportunities yet.
           </p>
           <Link to="/opportunities" className="btn-primary py-3 px-8 text-sm font-bold shadow-[0_0_20px_rgba(32,21,255,0.3)] relative z-10">
             Explore Opportunities
           </Link>
         </div>
       ) : (
-        <div className="glass-panel p-6 rounded-2xl relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-[80px] pointer-events-none" />
-          
-          <div className="space-y-4 relative z-10">
-            {apps.map(app => (
-              <div
-                key={app.id}
-                className="glass-card p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 group"
-              >
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-4 mb-4">
-                    <div>
-                      <h3 className="text-xl font-bold text-white mb-1 group-hover:text-primary transition-colors">
-                        {app.title}
-                      </h3>
-                      <p className="text-gray-400 text-sm font-semibold flex items-center gap-2">
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
-                        {app.company}
-                      </p>
-                    </div>
-                  </div>
-                  
-                  {app.is_external && (
-                    <div className="mb-4 bg-blue-500/10 border border-blue-500/20 rounded-lg p-3">
-                      <p className="text-xs text-blue-400">
-                        <span className="font-bold">Note:</span> You opened the original application page. Since this opportunity is hosted externally, Codovate cannot track whether your application was successfully submitted.
-                      </p>
-                    </div>
-                  )}
-
-                  <div className="flex flex-wrap gap-x-6 gap-y-2 mt-auto">
-                    <p className="text-gray-500 text-xs flex items-center gap-1">
-                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                      Applied on {formatDate(app.applied_at, {
-                        day: 'numeric', month: 'short', year: 'numeric'
-                      })}
-                    </p>
-                  </div>
+        <div className="flex gap-6 overflow-x-auto pb-6 flex-1 no-scrollbar items-start min-h-[500px]">
+          {KANBAN_STAGES.map(stage => {
+            const columnApps = kanbanBoard[stage];
+            return (
+              <div key={stage} className="min-w-[300px] w-[300px] flex flex-col shrink-0 h-full glass-panel rounded-2xl bg-black/20 overflow-hidden">
+                <div className="flex items-center justify-between p-4 bg-white/5 border-b border-white/5">
+                  <h3 className="font-bold text-white text-sm">{stage}</h3>
+                  <span className="bg-white/10 text-gray-300 text-xs px-2 py-0.5 rounded-full font-black">{columnApps.length}</span>
                 </div>
-
-                <div className="flex items-center gap-4 shrink-0 border-t sm:border-t-0 sm:border-l border-white/10 pt-4 sm:pt-0 sm:pl-4">
-                  <div className="text-right hidden sm:block">
-                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Deadline</p>
-                    <p className="text-gray-300 text-xs font-semibold">
-                      {app.deadline ? formatDate(app.deadline, { day: 'numeric', month: 'short' }) : '—'}
-                    </p>
-                  </div>
-                  <span className={`text-xs px-4 py-1.5 rounded-full border font-bold shadow-sm backdrop-blur-sm ${statusStyles[app.status] || 'bg-gray-500/10 text-gray-400 border-gray-500/20'}`}>
-                    {app.status}
-                  </span>
-                  {app.status === 'Applied' && (
-                    <button
-                      onClick={() => handleWithdraw(app.id)}
-                      disabled={withdrawing === app.id}
-                      title="Withdraw application"
-                      className="text-gray-500 hover:text-red-400 transition-colors p-1.5 rounded-lg hover:bg-red-500/10 border border-transparent hover:border-red-500/20"
+                
+                <div className="flex flex-col gap-3 flex-1 overflow-y-auto no-scrollbar p-4">
+                  {columnApps.map(app => (
+                    <div 
+                      key={app.id} 
+                      onClick={() => setSelectedApp(app)}
+                      className="glass-card p-4 rounded-xl cursor-pointer hover:border-primary/50 transition-all hover:-translate-y-1 group relative overflow-hidden bg-[#1a1a24] shadow-md shadow-black/20"
                     >
-                      {withdrawing === app.id ? (
-                        <div className="w-4 h-4 border-2 border-red-400/30 border-t-red-400 rounded-full animate-spin" />
-                      ) : (
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
+                      <div className={`absolute top-0 left-0 w-1 h-full opacity-50 ${statusStyles[stage]?.split(' ')[0] || 'bg-gray-500'}`} />
+                      
+                      <div className="flex justify-between items-start mb-2">
+                        <h4 className="text-white font-bold text-sm leading-snug pr-4">{app.title || app.internship_title}</h4>
+                        {stage === 'Applied' && (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleWithdraw(app.id); }}
+                            className="text-gray-500 hover:text-red-400 p-1 rounded transition-colors bg-white/5 hover:bg-red-500/20"
+                            title="Withdraw Application"
+                          >
+                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                          </button>
+                        )}
+                      </div>
+                      <p className="text-primary text-xs font-semibold mb-3">{app.company}</p>
+                      
+                      {app.interview_date && stage !== 'Rejected' && stage !== 'Accepted' && (
+                        <div className="mb-3 bg-purple-500/10 border border-purple-500/20 rounded p-1.5 flex items-center gap-1.5">
+                          <span className="text-[10px] text-purple-400 font-bold uppercase tracking-widest">Interview:</span>
+                          <span className="text-purple-300 text-xs font-semibold">{formatDate(app.interview_date, { month: 'short', day: 'numeric' })}</span>
+                        </div>
                       )}
-                    </button>
+
+                      <div className="flex items-center justify-between mt-auto pt-2 border-t border-white/5">
+                        <span className="text-[10px] text-gray-500 font-bold">
+                          {formatDate(app.applied_at, { month: 'short', day: 'numeric' })}
+                        </span>
+                        {app.notes && (
+                          <svg className="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                  {columnApps.length === 0 && (
+                    <div className="border border-dashed border-white/10 rounded-xl p-4 text-center">
+                      <p className="text-xs font-semibold text-gray-500">No applications</p>
+                    </div>
                   )}
                 </div>
               </div>
-            ))}
-          </div>
+            );
+          })}
         </div>
       )}
     </div>

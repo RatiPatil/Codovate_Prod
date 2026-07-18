@@ -24,7 +24,9 @@ router.get('/', superAdminOnly, async (req, res) => {
         maintenance_mode: false,
         allow_registrations: true,
         contact_email: 'support@codovate.in',
-        default_theme: 'dark'
+        default_theme: 'dark',
+        ai_model: 'gemini-2.5-flash',
+        ai_temperature: 0.7
       };
       await docRef.set(defaultSettings);
       return res.json(defaultSettings);
@@ -41,7 +43,9 @@ router.put('/', superAdminOnly, [
   body('maintenance_mode').isBoolean(),
   body('allow_registrations').isBoolean(),
   body('contact_email').isEmail().withMessage('Valid contact email required'),
-  body('default_theme').isIn(['dark', 'light'])
+  body('default_theme').isIn(['dark', 'light']),
+  body('ai_model').optional().isString(),
+  body('ai_temperature').optional().isFloat({ min: 0, max: 1 })
 ], async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });

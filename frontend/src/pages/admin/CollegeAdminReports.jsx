@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../api/axios';
 import { showAlert, showConfirm } from '../../utils/uiUtils';
-import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, PieChart, Pie, Cell, Legend } from 'recharts';
+
+const COLORS = ['#10B981', '#3B82F6', '#F59E0B', '#8B5CF6', '#EC4899', '#06B6D4'];
 
 const CollegeAdminReports = () => {
   const [analytics, setAnalytics] = useState(null);
@@ -104,6 +106,32 @@ const CollegeAdminReports = () => {
                   <Line type="monotone" dataKey="interviewed" stroke="#F59E0B" strokeWidth={2} name="Interviewed" />
                   <Line type="monotone" dataKey="hired" stroke="#10B981" strokeWidth={3} name="Hired" />
                 </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Department Analytics */}
+          <div className="bg-[#080812] border border-white/5 rounded-3xl p-6">
+            <h3 className="text-lg font-bold text-white mb-6">Department Distribution</h3>
+            <div className="h-[300px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={analytics.departments}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={100}
+                    paddingAngle={5}
+                    dataKey="count"
+                  >
+                    {analytics.departments?.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip contentStyle={{ backgroundColor: '#0f0f1a', border: '1px solid #ffffff10', borderRadius: '12px' }} />
+                  <Legend />
+                </PieChart>
               </ResponsiveContainer>
             </div>
           </div>

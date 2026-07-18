@@ -98,6 +98,8 @@ app.use("/api/mentors",       require("./routes/mentors"));
 app.use("/api/mentor-interactions", require("./routes/mentorInteractions"));
 app.use("/api/mentor-resources", require("./routes/mentorResources"));
 app.use("/api/mentor-queries", require("./routes/mentorQueries"));
+app.use("/api/mentor-reviews", require("./routes/mentor-reviews"));
+app.use("/api/project-mentorships", require("./routes/project-mentorships"));
 app.use("/api/networking",    require("./routes/networking"));
 app.use("/api/leaderboard",   require("./routes/leaderboard"));
 app.use("/api/chat",          require("./routes/chat"));
@@ -118,6 +120,7 @@ app.use("/api/assessments",   require("./routes/assessments"));
 app.use("/api/interviews",    require("./routes/interviews"));
 app.use("/api/events",        require("./routes/events"));
 app.use("/api/community",     require("./routes/community"));
+app.use("/api/calendar",      require("./routes/calendar"));
 
 app.get("/", (req, res) => {
   res.json({ message: "Codovate API running 🚀", realtime: true });

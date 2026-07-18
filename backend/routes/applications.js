@@ -356,5 +356,44 @@ router.delete("/:id", auth, async (req, res) => {
     res.status(500).json({ message: "Server error." });
   }
 });
+// Update application tracker (student only)
+router.put("/:id/track", auth, async (req, res) => {
+  const { status, notes, follow_up_date, interview_date, documents_submitted } = req.body;
+  try {
+    const appRef = db.collection("applications").doc(req.params.id);
+    const appDoc = await appRef.get();
+
+    if (!appDoc.exists)
+      return res.status(404).json({ message: "Application not found." });
+
+    const app = appDoc.data();
+
+    if (app.user_id !== req.user.id)
+      return res.status(403).json({ message: "Not authorized." });
+
+    const updateData = {};
+    if (status) updateData.status = status;
+    if (notes !== undefined) updateData.notes = notes;
+    if (follow_up_date !== undefined) updateData.follow_up_date = follow_up_date;
+    if (interview_date !== undefined) updateData.interview_date = interview_date;
+    if (documents_submitted !== undefined) updateData.documents_submitted = documents_submitted;
+
+    await appRef.update(updateData);
+    
+    // Fetch updated
+    const updatedDoc = await appRef.get();
+
+    req.io.to(`user_${req.user.id}`).emit("application_update", {
+      type: "tracker_update",
+      application_id: req.params.id,
+      ...updateData
+    });
+
+    res.json(updatedDoc.data());
+  } catch (err) {
+    console.error("Tracker update error:", err.message);
+    res.status(500).json({ message: "Server error." });
+  }
+});
 
 module.exports = router;

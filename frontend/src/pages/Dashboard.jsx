@@ -175,11 +175,11 @@ const Dashboard = () => {
           {/* Mentors Card */}
           <CareerEngineCard
             icon="👨‍🏫"
-            label="Mentors"
-            title="Book a 1:1 Session"
-            subtitle={`${profile?.mentorsCount || 0} session(s) booked so far`}
+            label="Recommended Mentor"
+            title="Java Backend"
+            subtitle="15 Years Experience · Available Tomorrow"
             link="/mentors"
-            linkText="Find Mentors"
+            linkText="Book Session →"
             accentColor="orange"
             badge="Expert Guidance"
           />

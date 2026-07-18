@@ -12,9 +12,14 @@ const typeColors = {
   Hackathon: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
   Competition: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
   Job: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+  'Research Programs': 'bg-teal-500/10 text-teal-400 border-teal-500/20',
+  Fellowships: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
+  'Open Source Programs': 'bg-pink-500/10 text-pink-400 border-pink-500/20',
+  Scholarships: 'bg-orange-500/10 text-orange-400 border-orange-500/20',
+  Certifications: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
 };
 
-const OppDetailModal = ({ opp, isApplied, isApplying, onApply, isBookmarked, onBookmark, onClose }) => {
+const OppDetailModal = ({ opp, isApplied, isApplying, onApply, isBookmarked, onBookmark, onClose, aiAnalysis, analyzing, onAnalyzeMatch }) => {
   if (!opp) return null;
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -33,8 +38,17 @@ const OppDetailModal = ({ opp, isApplied, isApplying, onApply, isBookmarked, onB
                   </span>
                 )}
               </div>
-              <h2 className="text-2xl font-bold text-white">{opp.title}</h2>
-              <p className="text-primary text-sm font-semibold mt-1">{opp.company}</p>
+              <div className="flex items-center gap-4 mt-2">
+                {opp.logo && (
+                  <div className="w-16 h-16 rounded-xl bg-white flex items-center justify-center p-2 shrink-0">
+                    <img src={opp.logo} alt={opp.company} className="max-w-full max-h-full object-contain" />
+                  </div>
+                )}
+                <div>
+                  <h2 className="text-2xl font-bold text-white leading-tight">{opp.title}</h2>
+                  <p className="text-primary text-sm font-semibold mt-1">{opp.company}</p>
+                </div>
+              </div>
             </div>
             <div className="flex items-center gap-3 shrink-0">
               <button 
@@ -56,11 +70,14 @@ const OppDetailModal = ({ opp, isApplied, isApplying, onApply, isBookmarked, onB
             </div>
           </div>
 
-          <div className="grid sm:grid-cols-3 gap-4 mb-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             {[
+              { label: 'Posted', value: opp.created_at ? formatDate(typeof opp.created_at === 'string' ? opp.created_at : opp.created_at.seconds ? opp.created_at.seconds * 1000 : new Date(), { day: 'numeric', month: 'short', year: 'numeric' }) : 'Recently' },
               { label: 'Deadline', value: opp.deadline ? formatDate(opp.deadline, { day: 'numeric', month: 'short', year: 'numeric' }) : 'Open' },
               { label: 'Mode', value: opp.mode || 'Not specified' },
               { label: 'Location', value: opp.location || 'Remote / Anywhere' },
+              { label: 'Salary/Stipend', value: opp.salary || 'Unpaid / Not Disclosed' },
+              { label: 'Experience', value: opp.experience || 'Entry Level / Student' }
             ].map(item => (
               <div key={item.label} className="bg-white/5 border border-white/10 rounded-xl p-4">
                 <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1">{item.label}</p>
@@ -72,16 +89,93 @@ const OppDetailModal = ({ opp, isApplied, isApplying, onApply, isBookmarked, onB
           {opp.description && (
             <div className="mb-6">
               <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-2">Description</p>
-              <p className="text-gray-300 text-sm leading-relaxed">{opp.description}</p>
+              <p className="text-gray-300 text-sm leading-relaxed whitespace-pre-wrap">{opp.description}</p>
             </div>
           )}
 
           {opp.eligibility && (
             <div className="mb-6">
               <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-2">Eligibility</p>
-              <p className="text-gray-300 text-sm">{opp.eligibility}</p>
+              <p className="text-gray-300 text-sm whitespace-pre-wrap">{opp.eligibility}</p>
             </div>
           )}
+
+          {opp.selection_process && (
+            <div className="mb-6">
+              <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-2">Selection Process</p>
+              <p className="text-gray-300 text-sm whitespace-pre-wrap">{opp.selection_process}</p>
+            </div>
+          )}
+
+          {opp.benefits && (
+            <div className="mb-6">
+              <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-2">Benefits / Perks</p>
+              <p className="text-gray-300 text-sm whitespace-pre-wrap">{opp.benefits}</p>
+            </div>
+          )}
+
+          <div className="mb-6 p-6 rounded-2xl bg-gradient-to-r from-primary/10 to-purple-500/10 border border-primary/20 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 blur-3xl rounded-full pointer-events-none"></div>
+            <div className="flex items-center justify-between mb-4 relative z-10">
+              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                🤖 AI Match Analysis
+              </h3>
+              {aiAnalysis ? (
+                <span className="px-3 py-1 bg-green-500/20 text-green-400 border border-green-500/30 rounded-full font-black text-sm">
+                  {aiAnalysis.detailed_score}% Match
+                </span>
+              ) : (
+                <button
+                  onClick={() => onAnalyzeMatch(opp.id)}
+                  disabled={analyzing}
+                  className="bg-primary/20 hover:bg-primary/40 text-primary border border-primary/30 px-4 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-2"
+                >
+                  {analyzing ? (
+                    <><div className="w-3 h-3 border-2 border-primary/30 border-t-primary rounded-full animate-spin" /> Analyzing...</>
+                  ) : 'Generate Deep Match Score'}
+                </button>
+              )}
+            </div>
+            
+            {aiAnalysis && (
+              <div className="space-y-4 relative z-10 animate-[fade-in_0.3s_ease-out]">
+                <p className="text-sm text-gray-300">{aiAnalysis.reasoning}</p>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="bg-black/20 p-4 rounded-xl border border-white/5">
+                    <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-2">Skill Gap Checklist</p>
+                    <ul className="space-y-1.5">
+                      {aiAnalysis.missing_skills_analysis?.map((item, idx) => (
+                        <li key={idx} className={`text-xs font-semibold ${item.includes('❌') ? 'text-red-400' : 'text-green-400'}`}>
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="bg-black/20 p-4 rounded-xl border border-white/5 flex flex-col justify-center items-center text-center">
+                    <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1">Estimated Learning Time</p>
+                    <p className="text-2xl font-black text-yellow-400">{aiAnalysis.estimated_learning_time}</p>
+                    <p className="text-xs text-gray-400 mt-1">to master missing requirements</p>
+                  </div>
+                </div>
+
+                {aiAnalysis.preparation_tips && aiAnalysis.preparation_tips.length > 0 && (
+                  <div className="mt-4 pt-4 border-t border-white/10">
+                    <p className="text-[10px] text-purple-400 font-bold uppercase tracking-widest mb-2 flex items-center gap-1">
+                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                      AI Preparation Tips
+                    </p>
+                    <ul className="space-y-1">
+                      {aiAnalysis.preparation_tips.map((tip, idx) => (
+                        <li key={idx} className="text-xs text-purple-200/80 leading-relaxed flex items-start gap-1.5">
+                          <span className="text-purple-400 mt-0.5">•</span> {tip}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
 
           {opp.required_skills && opp.required_skills.length > 0 && (
             <div className="mb-6">
@@ -113,8 +207,19 @@ const OppDetailModal = ({ opp, isApplied, isApplying, onApply, isBookmarked, onB
             </div>
           )}
 
+          {opp.tags && opp.tags.length > 0 && (
+            <div className="mb-6">
+              <div className="flex flex-wrap gap-2">
+                {opp.tags.map(tag => (
+                  <span key={tag} className="px-3 py-1 rounded-full text-xs font-bold border bg-gray-500/10 border-gray-500/20 text-gray-400">
+                    #{tag}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="flex items-center justify-between gap-4 pt-6 border-t border-white/10">
-            {/* Left side empty or could contain other info */}
             <div>
               {(opp.external || opp.applyUrl || opp.registration_link) && (
                  <p className="text-xs text-gray-400 max-w-sm">
@@ -136,8 +241,6 @@ const OppDetailModal = ({ opp, isApplied, isApplying, onApply, isBookmarked, onB
                         if (confirm) {
                           try {
                             await api.post('/applications/external', { opportunity_id: opp.id });
-                            // The modal doesn't have setAppliedIds but the parent does, 
-                            // though it doesn't matter much for external, we can just log it.
                           } catch (err) {
                             console.error("Failed to log external apply", err);
                           }
@@ -192,10 +295,12 @@ const Opportunities = () => {
   const [applying, setApplying] = useState(null);
   const [toast, setToast] = useState('');
   const [selectedOpp, setSelectedOpp] = useState(null);
+  const [aiAnalysis, setAiAnalysis] = useState(null);
+  const [analyzingMatch, setAnalyzingMatch] = useState(false);
   const { socket } = useSocket();
   const listRef = useRef(null);
 
-  const types = ['All', 'Saved', 'Internship', 'Job', 'Hackathon', 'Competition'];
+  const types = ['All', 'Saved', 'Interested', 'Applied', 'Deadline Soon', 'Internship', 'Job', 'Hackathon', 'Competition', 'Research Programs', 'Fellowships', 'Open Source Programs', 'Scholarships', 'Certifications', 'Volunteering', 'Grant/Funding'];
 
   const showToast = (msg) => {
     setToast(msg);
@@ -236,7 +341,6 @@ const Opportunities = () => {
       showToast('An opportunity was removed.');
     });
     socket.on('application_withdrawn', ({ application_id }) => {
-      // Refresh the applied set from fresh data when a withdrawal happens
       api.get('/applications/my').then(res => setAppliedIds(new Set(res.data.map(a => a.opportunity_id))));
     });
     return () => {
@@ -260,6 +364,18 @@ const Opportunities = () => {
     }
   };
 
+  const handleAnalyzeMatch = async (id) => {
+    setAnalyzingMatch(true);
+    try {
+      const res = await api.get(`/opportunities/${id}/ai-match`);
+      setAiAnalysis(res.data);
+    } catch (err) {
+      showToast('Failed to analyze match.');
+    } finally {
+      setAnalyzingMatch(false);
+    }
+  };
+
   const handleBookmark = async (id) => {
     try {
       const res = await api.post(`/opportunities/${id}/bookmark`);
@@ -276,14 +392,25 @@ const Opportunities = () => {
   };
 
   const filtered = opps.filter(o => {
-    if (filter === 'Saved' && !bookmarkedIds.has(o.id)) return false;
-    if (filter !== 'All' && filter !== 'Saved' && o.type !== filter) return false;
-    if (showRecommended && (o.match_score === undefined || o.match_score < 30)) return false;
-    if (search) {
-      const q = search.toLowerCase();
-      return (o.title?.toLowerCase().includes(q) || o.company?.toLowerCase().includes(q));
+    const matchesSearch = o.title?.toLowerCase().includes(search.toLowerCase()) || o.company?.toLowerCase().includes(search.toLowerCase());
+    
+    let matchesType = true;
+    if (filter === 'Saved' || filter === 'Interested') {
+      matchesType = bookmarkedIds.has(o.id);
+    } else if (filter === 'Applied') {
+      matchesType = appliedIds.has(o.id);
+    } else if (filter === 'Deadline Soon') {
+      if (!o.deadline) matchesType = false;
+      else {
+        const diffDays = (new Date(o.deadline) - new Date()) / (1000 * 60 * 60 * 24);
+        matchesType = diffDays >= 0 && diffDays <= 7;
+      }
+    } else if (filter !== 'All') {
+      matchesType = o.type === filter;
     }
-    return true;
+
+    const matchesRec = !showRecommended || o.match_score >= 80;
+    return matchesSearch && matchesType && matchesRec;
   });
 
   useEffect(() => {
@@ -321,11 +448,16 @@ const Opportunities = () => {
           isBookmarked={bookmarkedIds.has(selectedOpp.id)}
           onApply={handleApply}
           onBookmark={handleBookmark}
-          onClose={() => setSelectedOpp(null)}
+          onClose={() => {
+            setSelectedOpp(null);
+            setAiAnalysis(null);
+          }}
+          aiAnalysis={aiAnalysis}
+          analyzing={analyzingMatch}
+          onAnalyzeMatch={handleAnalyzeMatch}
         />
       )}
 
-      {/* Header */}
       <div className="mb-8 relative z-10">
         <h1 className="text-3xl md:text-4xl font-bold text-white tracking-tight">
           <span className="text-gradient">Opportunities</span>
@@ -333,7 +465,6 @@ const Opportunities = () => {
         <p className="text-gray-400 text-sm mt-2">{opps.length} total opportunities available to accelerate your career</p>
       </div>
 
-      {/* Search + Filters */}
       <div className="flex flex-col gap-4 mb-8 relative z-10">
         <div className="relative">
           <svg className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -348,15 +479,15 @@ const Opportunities = () => {
           />
         </div>
         <div className="flex flex-col sm:flex-row gap-3 justify-between items-start sm:items-center">
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex gap-2 overflow-x-auto pb-4 no-scrollbar">
             {types.map(t => (
               <button
                 key={t}
                 onClick={() => setFilter(t)}
-                className={`px-5 py-2 rounded-full text-sm font-semibold transition-all duration-300 border ${
+                className={`whitespace-nowrap px-5 py-2.5 rounded-xl font-bold transition-all text-sm ${
                   filter === t
-                    ? 'bg-primary text-white border-primary shadow-[0_0_15px_rgba(32,21,255,0.4)]'
-                    : 'bg-white/5 text-gray-400 border-white/10 hover:text-white hover:bg-white/10 hover:border-white/20'
+                    ? 'bg-primary text-white shadow-lg shadow-primary/20'
+                    : 'bg-white/5 text-gray-400 hover:text-white hover:bg-white/10'
                 }`}
               >
                 {t}
@@ -397,7 +528,10 @@ const Opportunities = () => {
             return (
               <div
                 key={opp.id}
-                onClick={() => setSelectedOpp(opp)}
+                onClick={() => {
+                  setSelectedOpp(opp);
+                  setAiAnalysis(null);
+                }}
                 className="opp-card glass-card p-6 flex flex-col h-full group relative overflow-hidden hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(32,21,255,0.2)] transition-all duration-300 cursor-pointer"
               >
                 <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-bl-full pointer-events-none transition-transform group-hover:scale-110" />
@@ -416,10 +550,27 @@ const Opportunities = () => {
                 </button>
 
                 <div className="flex-1 flex flex-col gap-4 relative z-10">
-                  <div className="flex items-start justify-between gap-3 pr-10">
-                    <h3 className="text-white font-bold text-lg leading-snug group-hover:text-primary transition-colors">
-                      {opp.title}
-                    </h3>
+                  <div className="flex items-start justify-between gap-3 pr-10 mb-2">
+                    <div className="flex items-center gap-3">
+                      {opp.logo ? (
+                        <div className="w-12 h-12 bg-white rounded-lg p-1.5 flex items-center justify-center shadow-lg shadow-black/20 shrink-0">
+                          <img src={opp.logo} alt={opp.company} className="max-w-full max-h-full object-contain" />
+                        </div>
+                      ) : (
+                        <div className="w-12 h-12 bg-white/5 rounded-lg flex items-center justify-center border border-white/10 shrink-0">
+                          <span className="text-xl font-black text-gray-500">{opp.company.charAt(0)}</span>
+                        </div>
+                      )}
+                      <div>
+                        <h3 className="text-white font-bold text-lg leading-snug group-hover:text-primary transition-colors">
+                          {opp.title}
+                        </h3>
+                        <p className="text-primary text-sm font-semibold flex items-center gap-2 mt-1">
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                          {opp.company}
+                        </p>
+                      </div>
+                    </div>
                     <div className="flex flex-col gap-2 items-end shrink-0">
                       <span className={`text-[10px] uppercase tracking-widest px-3 py-1 rounded-full border font-bold backdrop-blur-md ${typeColors[opp.type] || 'bg-gray-500/10 text-gray-400 border-gray-500/20'}`}>
                         {opp.type}
@@ -432,12 +583,20 @@ const Opportunities = () => {
                     </div>
                   </div>
 
-                  <p className="text-primary text-sm font-semibold flex items-center gap-2">
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
-                    {opp.company}
-                  </p>
+                  {opp.tags && opp.tags.length > 0 && (
+                    <div className="flex gap-2 flex-wrap">
+                      {opp.tags.slice(0, 3).map(tag => (
+                        <span key={tag} className="text-[10px] text-gray-400 bg-white/5 border border-white/10 px-2 py-0.5 rounded-full font-bold">
+                          #{tag}
+                        </span>
+                      ))}
+                      {opp.tags.length > 3 && (
+                        <span className="text-[10px] text-gray-500 font-bold">+{opp.tags.length - 3}</span>
+                      )}
+                    </div>
+                  )}
 
-                  <p className="text-gray-400 text-sm leading-relaxed line-clamp-2">
+                  <p className="text-gray-400 text-sm leading-relaxed line-clamp-2 mt-2">
                     {opp.description || 'Click to view details...'}
                   </p>
                 </div>

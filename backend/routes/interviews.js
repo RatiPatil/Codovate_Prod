@@ -1,12 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const { GoogleGenerativeAI } = require("@google/generative-ai");
 const { db, admin } = require("../config/firebase");
 const auth = require("../middleware/auth");
 const { syncDashboard } = require("../services/dashboardService");
 require('dotenv').config();
 
-const genAI = process.env.GEMINI_API_KEY ? new GoogleGenerativeAI(process.env.GEMINI_API_KEY) : null;
+const { getConfiguredModel, genAI } = require("../utils/aiConfig");
 
 // GET /api/interviews/history
 // Returns user's past interviews
@@ -27,7 +26,7 @@ router.post('/start', auth, async (req, res) => {
 
   try {
     const sessionRef = db.collection("interviewSessions").doc();
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const model = await getConfiguredModel();
 
     const prompt = `
 You are an expert ${type} interviewer for a ${role} position. 
@@ -89,7 +88,7 @@ You can acknowledge their answer, ask a follow-up question, or move on to the ne
 Keep your response conversational, natural, and concise (2-4 sentences max). Do not break character. Do not provide a formal score here.
 `;
 
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const model = await getConfiguredModel();
     const result = await model.generateContent(prompt);
     const nextResponse = result.response.text().trim();
 
@@ -135,7 +134,7 @@ Provide a comprehensive JSON evaluation containing:
 Respond ONLY with valid JSON.
 `;
 
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const model = await getConfiguredModel();
     const result = await model.generateContent(prompt);
     let jsonStr = result.response.text().trim();
     if (jsonStr.startsWith('\`\`\`json')) jsonStr = jsonStr.slice(7);

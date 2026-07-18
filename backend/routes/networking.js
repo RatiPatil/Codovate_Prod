@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const { db } = require('../config/firebase');
 const auth = require('../middleware/auth');
-const { GoogleGenerativeAI } = require("@google/generative-ai");
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 // Helper: No longer expiring chats
@@ -178,7 +177,7 @@ Return ONLY a JSON array of objects with the exact structure:
 ]
 `;
 
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const model = await getConfiguredModel();
     const result = await model.generateContent(prompt);
     let text = result.response.text().trim();
     if (text.startsWith('\`\`\`json')) text = text.slice(7);

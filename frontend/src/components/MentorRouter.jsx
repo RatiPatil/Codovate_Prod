@@ -7,6 +7,7 @@ import MentorLayout from './MentorLayout';
 const MentorDashboard = lazy(() => import('../pages/mentor/MentorDashboard'));
 const MentorChat = lazy(() => import('../pages/mentor/MentorChat'));
 const MentorStudents = lazy(() => import('../pages/mentor/MentorStudents'));
+const MentorProjects = lazy(() => import('../pages/mentor/MentorProjects'));
 const MentorResources = lazy(() => import('../pages/mentor/MentorResources'));
 const MentorProfile = lazy(() => import('../pages/mentor/MentorProfile'));
 
@@ -31,6 +32,7 @@ const MentorRouter = () => {
           <Route path="dashboard" element={<MentorDashboard />} />
           <Route path="chat" element={<MentorChat />} />
           <Route path="students" element={<MentorStudents />} />
+          <Route path="projects" element={<MentorProjects />} />
           <Route path="resources" element={<MentorResources />} />
           <Route path="profile" element={<MentorProfile />} />
           <Route path="*" element={<Navigate to="dashboard" replace />} />

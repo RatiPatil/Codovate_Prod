@@ -8,6 +8,7 @@ const navItems = [
   { path: '/dashboard', label: 'Dashboard', icon: '⊞' },
   { path: '/opportunities', label: 'Opportunities', icon: '🔍' },
   { path: '/applications', label: 'Applications', icon: '📋' },
+  { path: '/calendar', label: 'Calendar', icon: '📆' },
   { path: '/teams', label: 'Teams', icon: '🤝' },
   { path: '/community', label: 'College Community', icon: '🏫' },
   { path: '/events', label: 'Events', icon: '📅' },

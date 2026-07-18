@@ -2,16 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { db, admin } = require("../config/firebase");
 const auth = require("../middleware/auth");
-const { GoogleGenerativeAI } = require("@google/generative-ai");
-
-const genAI = process.env.GEMINI_API_KEY
-  ? new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
-  : null;
-
-const getModel = () => {
-  if (!genAI) throw new Error("GEMINI_API_KEY is not configured.");
-  return genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-};
+const { getConfiguredModel, genAI } = require("../utils/aiConfig");
 
 const parseJSON = (text) => {
   let t = text.trim();
@@ -61,7 +52,7 @@ router.get("/skill-gap", auth, async (req, res) => {
       return res.json(fallback);
     }
 
-    const model = getModel();
+    const model = await getConfiguredModel();
     const prompt = `
 You are an expert tech career advisor. Analyze this student's profile and identify skill gaps.
 
@@ -141,7 +132,20 @@ router.post("/coach", auth, async (req, res) => {
     const systemContext = `
 You are an expert AI Career Coach on Codovate, a student career platform.
 Be concise, encouraging, and practical. Use bullet points when listing steps.
-Respond in plain text — no markdown headers (##), no bold (**), no asterisks.
+
+**CRITICAL INSTRUCTION - GENERATIVE UI ACTIONS:**
+You have the ability to spawn interactive UI widgets directly in the chat! 
+Whenever the user asks for something that matches one of the capabilities below, you MUST include the exact exact markdown tag at the end of your response.
+
+1. Build a Roadmap: If they want to learn a role (e.g., AI Engineer, Frontend), output: [ACTION:BUILD_ROADMAP:RoleName]
+2. Find Internships/Jobs: If they are looking for jobs/internships for a role, output: [ACTION:FIND_INTERNSHIPS:RoleName]
+3. Find Mentors: If they want a mentor for a specific skill, output: [ACTION:FIND_MENTORS:SkillName]
+4. Review Resume: If they want their resume reviewed, output: [ACTION:REVIEW_RESUME]
+5. Estimate Readiness: If they ask about their placement readiness, output: [ACTION:ESTIMATE_READINESS]
+
+Example Response:
+"That's a great goal! An AI Engineer needs strong Python and Math skills. Let's get started on your customized roadmap!
+[ACTION:BUILD_ROADMAP:AI Engineer]"
 
 Student Context:
 - Career Goal: ${goal}
@@ -157,7 +161,7 @@ Student Context:
       });
     }
 
-    const model = getModel();
+    const model = await getConfiguredModel();
 
     // Build conversation history for Gemini multi-turn chat
     const chat = model.startChat({
@@ -247,7 +251,7 @@ router.get("/weekly-report", auth, async (req, res) => {
     let narrative = null;
     if (genAI) {
       try {
-        const model = getModel();
+        const model = await getConfiguredModel();
         const prompt = `
 Write a brief, encouraging weekly progress report for a student.
 Keep it to 3-4 sentences. Be specific about numbers. Suggest one clear next step.
@@ -284,6 +288,58 @@ Their data this week:
   } catch (err) {
     console.error("Weekly report error:", err.message);
     res.status(500).json({ message: "Server error generating weekly report." });
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────
+// GET /api/ai/career-advisor
+// Provide structured career roadmap advice for the student
+// ─────────────────────────────────────────────────────────────────
+router.get("/career-advisor", auth, async (req, res) => {
+  const uid = req.user.id;
+  try {
+    const careerDoc = await db.collection("careerProfiles").doc(uid).get();
+    const c = careerDoc.exists ? careerDoc.data() : {};
+
+    const goal = c.career_goal || c.desired_roles?.[0] || "Software Engineer";
+    const currentSkills = c.skills || [];
+
+    if (!genAI) {
+      return res.json({
+        readiness_statement: `You are ready for ${goal} Internships.`,
+        recommended_companies: ["TCS", "Infosys", "Accenture", "Capgemini"],
+        missing_skills: ["Docker", "AWS", "System Design"]
+      });
+    }
+
+    const model = await getConfiguredModel();
+    const prompt = `
+You are an expert technical career advisor. Look at this student's profile:
+Career Goal: ${goal}
+Current Skills: ${currentSkills.length > 0 ? currentSkills.join(", ") : "None"}
+
+Generate structured career advice.
+Return ONLY valid JSON in exactly this shape:
+{
+  "readiness_statement": "You are ready for Backend Developer Internships.",
+  "recommended_companies": ["TCS", "Infosys", "Accenture", "Capgemini"],
+  "missing_skills": ["Docker", "AWS"]
+}
+Limit missing skills to the most critical 2-4 skills they don't have.
+Limit recommended companies to top 4 realistic choices in the tech industry for freshers/interns.
+`;
+
+    const result = await model.generateContent(prompt);
+    const parsed = parseJSON(result.response.text());
+
+    res.json(parsed);
+  } catch (err) {
+    console.error("Career advisor error:", err.message);
+    res.status(500).json({ 
+      readiness_statement: "You are on track for your career goals.",
+      recommended_companies: ["Top Tech Companies"],
+      missing_skills: ["Keep practicing and building projects!"]
+    });
   }
 });
 

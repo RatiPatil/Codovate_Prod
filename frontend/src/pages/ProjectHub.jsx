@@ -11,8 +11,17 @@ const ProjectHub = () => {
   const [editingProject, setEditingProject] = useState(null);
   
   // AI Analysis state
+  // AI Analysis state
   const [analyzingId, setAnalyzingId] = useState(null);
   const [analysisResults, setAnalysisResults] = useState({});
+
+  // Mentor Invite state
+  const [inviteModalOpen, setInviteModalOpen] = useState(false);
+  const [selectedProjectId, setSelectedProjectId] = useState(null);
+  const [mentors, setMentors] = useState([]);
+  const [selectedMentorId, setSelectedMentorId] = useState('');
+  const [inviteMessage, setInviteMessage] = useState('');
+  const [inviting, setInviting] = useState(false);
 
   const fetchProjects = useCallback(async () => {
     try {
@@ -61,6 +70,37 @@ const ProjectHub = () => {
       toast.error('Failed to analyze project.');
     } finally {
       setAnalyzingId(null);
+    }
+  };
+
+  const handleOpenInvite = async (id) => {
+    setSelectedProjectId(id);
+    setInviteModalOpen(true);
+    try {
+      const res = await api.get('/mentors'); // Fetch active mentors
+      setMentors(res.data);
+    } catch (err) {
+      toast.error('Failed to load mentors.');
+    }
+  };
+
+  const handleSendInvite = async () => {
+    if (!selectedMentorId) return toast.error('Please select a mentor.');
+    setInviting(true);
+    try {
+      await api.post('/project-mentorships/invite', {
+        project_id: selectedProjectId,
+        mentor_id: selectedMentorId,
+        message: inviteMessage
+      });
+      toast.success('Invite sent successfully!');
+      setInviteModalOpen(false);
+      setSelectedMentorId('');
+      setInviteMessage('');
+    } catch (err) {
+      toast.error('Failed to send invite.');
+    } finally {
+      setInviting(false);
     }
   };
 
@@ -134,6 +174,9 @@ const ProjectHub = () => {
               <div className="flex items-center gap-4 mb-6 text-sm">
                 {proj.githubUrl && <a href={proj.githubUrl} target="_blank" rel="noreferrer" className="text-gray-400 hover:text-white transition flex items-center gap-1.5"><i className="fab fa-github"></i> GitHub</a>}
                 {proj.liveUrl && <a href={proj.liveUrl} target="_blank" rel="noreferrer" className="text-gray-400 hover:text-white transition flex items-center gap-1.5"><i className="fas fa-external-link-alt"></i> Live Demo</a>}
+                <button onClick={() => handleOpenInvite(proj.id)} className="text-purple-400 hover:text-purple-300 font-bold flex items-center gap-1.5 transition ml-auto">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg> Invite Mentor
+                </button>
               </div>
 
               {/* AI Analysis Section */}
@@ -173,12 +216,44 @@ const ProjectHub = () => {
       )}
 
       {/* Project Form Modal */}
-      <ProjectFormModal 
-        isOpen={isFormOpen} 
-        onClose={() => setIsFormOpen(false)} 
-        initialData={editingProject} 
-        onSaved={fetchProjects} 
-      />
+      {isFormOpen && (
+        <ProjectFormModal 
+          isOpen={isFormOpen} 
+          onClose={() => setIsFormOpen(false)} 
+          onSuccess={fetchProjects} 
+          projectToEdit={editingProject} 
+        />
+      )}
+
+      {/* Invite Mentor Modal */}
+      {inviteModalOpen && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-[#0f0f15] border border-white/10 p-8 rounded-3xl w-full max-w-md relative">
+            <h2 className="text-2xl font-bold mb-6 text-white">Invite Mentor</h2>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Select Mentor</label>
+                <select value={selectedMentorId} onChange={e => setSelectedMentorId(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-primary">
+                  <option value="">-- Choose a Mentor --</option>
+                  {mentors.map(m => (
+                    <option key={m.id} value={m.id}>{m.name} - {m.headline}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Message (Optional)</label>
+                <textarea rows={3} value={inviteMessage} onChange={e => setInviteMessage(e.target.value)} placeholder="Hi! I'd love your feedback on my project..." className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-primary resize-none"></textarea>
+              </div>
+            </div>
+            <div className="flex gap-4 mt-8">
+              <button onClick={() => setInviteModalOpen(false)} className="flex-1 py-2.5 bg-white/5 hover:bg-white/10 font-bold rounded-xl transition-colors">Cancel</button>
+              <button onClick={handleSendInvite} disabled={inviting} className="flex-1 py-2.5 bg-primary hover:bg-primary-light text-white font-bold rounded-xl transition-colors disabled:opacity-50">
+                {inviting ? 'Sending...' : 'Send Invite'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

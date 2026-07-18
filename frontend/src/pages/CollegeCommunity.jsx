@@ -7,6 +7,13 @@ import { useNavigate } from 'react-router-dom';
 const CollegeCommunity = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  
+  // New Topic Modal State
+  const [showModal, setShowModal] = useState(false);
+  const [newTitle, setNewTitle] = useState('');
+  const [newContent, setNewContent] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -21,6 +28,28 @@ const CollegeCommunity = () => {
       toast.error('Failed to load community data');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCreateTopic = async (e) => {
+    e.preventDefault();
+    if (!newTitle.trim() || !newContent.trim()) return toast.error("Title and content are required");
+    
+    setSubmitting(true);
+    try {
+      const res = await api.post('/community/discussions', {
+        title: newTitle,
+        content: newContent
+      });
+      toast.success("Topic posted successfully!");
+      setShowModal(false);
+      setNewTitle('');
+      setNewContent('');
+      fetchCommunityData(); // Refresh list
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to create topic');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -96,7 +125,10 @@ const CollegeCommunity = () => {
             <h2 className="text-2xl font-bold flex items-center gap-2"><MessageSquare className="text-primary" /> Discussions</h2>
             
             <div className="bg-[#0a0a16] border border-white/10 rounded-2xl p-4 space-y-2">
-              <button className="w-full bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 py-3 rounded-xl font-bold mb-4 transition-colors">
+              <button 
+                onClick={() => setShowModal(true)}
+                className="w-full bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 py-3 rounded-xl font-bold mb-4 transition-colors"
+              >
                 + New Topic
               </button>
               
@@ -114,6 +146,53 @@ const CollegeCommunity = () => {
 
         </div>
       </div>
+      {/* New Topic Modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-[#0a0a16] border border-white/10 rounded-2xl p-8 max-w-lg w-full">
+            <h2 className="text-2xl font-bold text-white mb-6">Create New Topic</h2>
+            <form onSubmit={handleCreateTopic} className="space-y-4">
+              <div>
+                <label className="block text-gray-400 mb-2 font-medium">Topic Title</label>
+                <input 
+                  type="text" 
+                  value={newTitle}
+                  onChange={e => setNewTitle(e.target.value)}
+                  placeholder="What do you want to discuss?"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors"
+                  maxLength={100}
+                />
+              </div>
+              <div>
+                <label className="block text-gray-400 mb-2 font-medium">Content</label>
+                <textarea 
+                  value={newContent}
+                  onChange={e => setNewContent(e.target.value)}
+                  placeholder="Provide more details..."
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors h-32 resize-none"
+                  maxLength={1000}
+                />
+              </div>
+              <div className="flex justify-end gap-3 pt-4">
+                <button 
+                  type="button"
+                  onClick={() => setShowModal(false)}
+                  className="px-6 py-2 rounded-xl font-bold text-gray-400 hover:text-white transition-colors"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit"
+                  disabled={submitting}
+                  className="bg-primary hover:bg-primary/90 text-white px-6 py-2 rounded-xl font-bold transition-all disabled:opacity-50"
+                >
+                  {submitting ? 'Posting...' : 'Post Topic'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

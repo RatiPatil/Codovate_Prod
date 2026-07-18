@@ -120,6 +120,52 @@ const SuperAdminSettings = () => {
 
           <div className="h-px bg-white/10 w-full" />
 
+          {/* AI Configuration */}
+          <div>
+            <h3 className="text-xl font-bold text-white mb-4">AI Configuration</h3>
+            <div className="space-y-4">
+              
+              <div>
+                <label className="block text-sm font-bold text-gray-400 mb-2">Default Gemini Model</label>
+                <select 
+                  name="ai_model"
+                  value={settings?.ai_model || 'gemini-2.5-flash'}
+                  onChange={handleChange}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#2015FF] transition-colors"
+                >
+                  <option value="gemini-1.5-flash" className="bg-[#0f0f1a]">Gemini 1.5 Flash (Fast, Cheap)</option>
+                  <option value="gemini-1.5-pro" className="bg-[#0f0f1a]">Gemini 1.5 Pro (Accurate, Expensive)</option>
+                  <option value="gemini-2.5-flash" className="bg-[#0f0f1a]">Gemini 2.5 Flash (Default, Balanced)</option>
+                </select>
+                <p className="text-xs text-gray-500 mt-2">This model powers the Career Engine, Mock Interviews, and Resume Reviews.</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-gray-400 mb-2">AI Creativity (Temperature)</label>
+                <div className="flex items-center gap-4">
+                  <input 
+                    type="range"
+                    name="ai_temperature"
+                    min="0"
+                    max="1"
+                    step="0.1"
+                    value={settings?.ai_temperature || 0.7}
+                    onChange={handleChange}
+                    className="w-full accent-[#2015FF]"
+                  />
+                  <span className="text-white font-bold w-12 text-right">{settings?.ai_temperature || 0.7}</span>
+                </div>
+                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>Precise (0.0)</span>
+                  <span>Creative (1.0)</span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <div className="h-px bg-white/10 w-full" />
+
           {/* Variables */}
           <div>
             <h3 className="text-xl font-bold text-white mb-4">Variables</h3>

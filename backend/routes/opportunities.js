@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { db } = require("../config/firebase");
 const auth = require("../middleware/auth");
+const { getConfiguredModel, genAI } = require("../utils/aiConfig");
 
 // GET all opportunities — with real data
 router.get("/", auth, async (req, res) => {
@@ -14,10 +15,17 @@ router.get("/", auth, async (req, res) => {
       opportunitiesRef = opportunitiesRef.where("type", "==", type);
     }
     
-    // Fetch student skills for matching algorithm
+    // Fetch student full context for heuristic matching
     const profileDoc = await db.collection("student_profiles").doc(req.user.id).get();
-    const userSkills = profileDoc.exists ? (profileDoc.data().skills || []).map(s => s.toLowerCase()) : [];
-
+    const profileData = profileDoc.exists ? profileDoc.data() : {};
+    const userSkills = (profileData.skills || []).map(s => s.toLowerCase());
+    const careerGoal = (profileData.careerGoal || "").toLowerCase();
+    
+    // Check for multipliers
+    const projectsSnapshot = await db.collection("projects").where("userId", "==", req.user.id).limit(1).get();
+    const hasProjects = !projectsSnapshot.empty;
+    const codingDoc = await db.collection("codingStats").doc(req.user.id).get();
+    const hasGoodCodingScore = codingDoc.exists && (codingDoc.data().total_score > 200);
     // Note: Firestore doesn't support ILIKE or text search natively.
     // For MVP, we will fetch all matching the above and filter by search in memory.
     const snapshot = await opportunitiesRef.get();
@@ -48,14 +56,25 @@ router.get("/", auth, async (req, res) => {
               missing_skills.push(opp.required_skills[reqSkills.indexOf(reqSkill)]); // Original case
             }
           });
-          match_score = Math.round((matchCount / reqSkills.length) * 100);
+          // Base score from skills (up to 70%)
+          match_score = (matchCount / reqSkills.length) * 70;
         } else {
           missing_skills = opp.required_skills; // No skills = all missing
         }
       } else {
-        match_score = 100; // Defaults to 100% if no skills are explicitly required
+        match_score = 70; // Default base score if no skills are explicitly required
       }
-      opp.match_score = match_score;
+      
+      // Bonus Multipliers (up to 30%)
+      if (careerGoal && opp.title && opp.title.toLowerCase().includes(careerGoal)) {
+        match_score += 10;
+      } else if (careerGoal && opp.type && opp.type.toLowerCase().includes(careerGoal)) {
+        match_score += 5;
+      }
+      if (hasProjects) match_score += 10;
+      if (hasGoodCodingScore) match_score += 10;
+
+      opp.match_score = Math.round(Math.min(match_score, 99)); // Cap at 99%, leave 100 for perfect AI match
       opp.missing_skills = missing_skills;
 
       // Get application count
@@ -307,6 +326,79 @@ router.delete("/:id", auth, async (req, res) => {
   } catch (err) {
     console.error("Delete opportunity error:", err.message);
     res.status(500).json({ message: "Server error." });
+  }
+});
+
+// GET detailed AI Match Score
+router.get("/:id/ai-match", auth, async (req, res) => {
+  try {
+    const oppDoc = await db.collection("opportunities").doc(req.params.id).get();
+    if (!oppDoc.exists) return res.status(404).json({ message: "Opportunity not found." });
+    
+    const opp = oppDoc.data();
+    
+    const profileDoc = await db.collection("student_profiles").doc(req.user.id).get();
+    const p = profileDoc.data() || {};
+    
+    const projectsSnapshot = await db.collection("projects").where("userId", "==", req.user.id).get();
+    const projects = projectsSnapshot.docs.map(d => d.data());
+    
+    const codingDoc = await db.collection("codingStats").doc(req.user.id).get();
+    const codingStats = codingDoc.exists ? codingDoc.data() : {};
+    
+    const resumeDoc = await db.collection("aiResumeReviews").doc(req.user.id).get();
+    const resumeScore = resumeDoc.exists ? resumeDoc.data().atsScore : "N/A";
+    
+    if (!genAI) {
+      return res.json({
+        detailed_score: opp.match_score || 65,
+        missing_skills_analysis: opp.required_skills?.map(s => `✓ ${s} (Assumed)`) || ["✓ Core Skills"],
+        estimated_learning_time: "14 Days",
+        reasoning: "AI integration disabled. Showing heuristic match."
+      });
+    }
+
+    const model = await getConfiguredModel();
+    const prompt = `
+    You are an expert technical recruiter and AI Match engine.
+    Calculate a highly accurate match score for a student applying to an opportunity.
+    
+    Opportunity Requirements:
+    - Role: ${opp.title}
+    - Type: ${opp.type}
+    - Required Skills: ${(opp.required_skills || []).join(", ")}
+    - Eligibility: ${opp.eligibility || "N/A"}
+    - Experience: ${opp.experience || "N/A"}
+    
+    Student Profile:
+    - Goal: ${p.careerGoal || "N/A"}
+    - Skills: ${(p.skills || []).join(", ")}
+    - Projects Built: ${projects.map(pr => pr.title).join(", ") || "None listed"}
+    - Coding Score: ${codingStats.total_score || 0}
+    - Resume ATS Score: ${resumeScore}
+    
+    Analyze the gap and return ONLY a valid JSON object in this exact shape (no markdown, no backticks):
+    {
+      "detailed_score": 92,
+      "missing_skills_analysis": ["✓ React (Known)", "❌ Docker (Missing)", "❌ Spring Boot (Missing)"],
+      "estimated_learning_time": "21 Days",
+      "reasoning": "A 1-2 sentence explanation of why they got this score based on their projects/skills.",
+      "preparation_tips": ["Build a small full-stack Docker app", "Review Spring Boot REST patterns before applying"]
+    }
+    
+    Note: missing_skills_analysis must map each of the opportunity's required skills to either "✓ Skill (Known)" or "❌ Skill (Missing)".
+    `;
+
+    const result = await model.generateContent(prompt);
+    let text = result.response.text().trim();
+    if (text.startsWith("\`\`\`json")) text = text.slice(7, -3);
+    else if (text.startsWith("\`\`\`")) text = text.slice(3, -3);
+    
+    const aiResponse = JSON.parse(text);
+    res.json(aiResponse);
+  } catch (err) {
+    console.error("AI Match Error:", err);
+    res.status(500).json({ message: "Failed to generate AI match." });
   }
 });
 

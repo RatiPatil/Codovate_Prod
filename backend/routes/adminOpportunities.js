@@ -24,13 +24,15 @@ router.get('/', superAdminOnly, async (req, res) => {
   }
 });
 
-// We can just rely on the existing /api/opportunities POST/PUT/DELETE for the rest,
-// but since the user requested full CRUD, we'll implement it here for completeness and safety.
+const VALID_TYPES = [
+  'Internship', 'Hackathon', 'Competition', 'Job',
+  'Research Programs', 'Fellowships', 'Open Source Programs', 'Scholarships', 'Certifications'
+];
 
 // POST new opportunity
 router.post('/', superAdminOnly, [
   body('title').notEmpty().withMessage('Title is required'),
-  body('type').isIn(['Internship', 'Hackathon', 'Competition', 'Job']).withMessage('Invalid type'),
+  body('type').isIn(VALID_TYPES).withMessage('Invalid type'),
   body('company').notEmpty().withMessage('Company is required'),
   body('status').isIn(['active', 'inactive']).withMessage('Invalid status')
 ], async (req, res) => {
@@ -38,7 +40,11 @@ router.post('/', superAdminOnly, [
   if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
   try {
-    const { title, type, company, description, status, mode, location, deadline } = req.body;
+    const { 
+      title, type, company, description, status, mode, location, deadline,
+      logo, salary, experience, applyUrl, selection_process, benefits, tags, required_skills, eligibility 
+    } = req.body;
+    
     const newDocRef = db.collection('opportunities').doc();
     const newOpp = {
       id: newDocRef.id,
@@ -49,6 +55,15 @@ router.post('/', superAdminOnly, [
       mode: mode || '',
       location: location || '',
       deadline: deadline || null,
+      logo: logo || '',
+      salary: salary || '',
+      experience: experience || '',
+      applyUrl: applyUrl || '',
+      selection_process: selection_process || '',
+      benefits: benefits || '',
+      tags: tags ? (Array.isArray(tags) ? tags : tags.split(',').map(s=>s.trim()).filter(Boolean)) : [],
+      required_skills: required_skills ? (Array.isArray(required_skills) ? required_skills : required_skills.split(',').map(s=>s.trim()).filter(Boolean)) : [],
+      eligibility: eligibility || '',
       is_active: status === 'active',
       created_at: new Date()
     };
@@ -62,7 +77,7 @@ router.post('/', superAdminOnly, [
 // PUT update opportunity
 router.put('/:id', superAdminOnly, [
   body('title').optional().notEmpty(),
-  body('type').optional().isIn(['Internship', 'Hackathon', 'Competition', 'Job']),
+  body('type').optional().isIn(VALID_TYPES),
   body('status').optional().isIn(['active', 'inactive'])
 ], async (req, res) => {
   const errors = validationResult(req);
@@ -77,6 +92,12 @@ router.put('/:id', superAdminOnly, [
     if (updateData.status) {
       updateData.is_active = updateData.status === 'active';
       delete updateData.status;
+    }
+    if (updateData.tags && typeof updateData.tags === 'string') {
+      updateData.tags = updateData.tags.split(',').map(s=>s.trim()).filter(Boolean);
+    }
+    if (updateData.required_skills && typeof updateData.required_skills === 'string') {
+      updateData.required_skills = updateData.required_skills.split(',').map(s=>s.trim()).filter(Boolean);
     }
     
     await docRef.update(updateData);

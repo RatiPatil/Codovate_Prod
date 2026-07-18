@@ -7,7 +7,8 @@ import {
   Users, 
   FolderOpen, 
   Settings, 
-  LogOut 
+  LogOut,
+  Briefcase
 } from 'lucide-react';
 
 const MentorSidebar = () => {
@@ -17,6 +18,7 @@ const MentorSidebar = () => {
     { to: '/mentor/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { to: '/mentor/chat', icon: MessageSquare, label: 'Student Chat' },
     { to: '/mentor/students', icon: Users, label: 'My Students' },
+    { to: '/mentor/projects', icon: Briefcase, label: 'Project Mentorship' },
     { to: '/mentor/resources', icon: FolderOpen, label: 'Resources' },
     { to: '/mentor/profile', icon: Settings, label: 'Profile Settings' },
   ];

@@ -52,36 +52,51 @@ router.get('/students', mentorOnly, async (req, res) => {
 // 2. GET: Mentor's Dashboard Stats
 router.get('/dashboard-stats', mentorOnly, async (req, res) => {
   try {
-    const mentorId = req.user.id;
+    const mentorDocs = await db.collection("mentors").where("user_id", "==", req.user.id).get();
+    let mentorId = req.user.id;
+    if (!mentorDocs.empty) {
+      mentorId = mentorDocs.docs[0].id; // actual mentor doc id
+    }
     
+    // Total Students (from mentorQueries)
     const queriesSnap = await db.collection('mentorQueries')
-      .where('mentor_id', '==', mentorId)
+      .where('mentor_id', '==', req.user.id)
       .get();
       
-    let pending = 0;
-    let answered = 0;
+    let pending_requests = 0;
     const studentIds = new Set();
     
     queriesSnap.forEach(doc => {
       const data = doc.data();
       studentIds.add(data.student_id);
       if (data.status === 'Assigned' || data.status === 'In Progress') {
-        pending++;
-      } else if (data.status === 'Answered' || data.status === 'Closed') {
-        answered++;
+        pending_requests++;
       }
     });
 
-    const chatsSnap = await db.collection('mentorChats')
+    // Upcoming Sessions
+    const sessionsSnap = await db.collection('mentorSessions')
       .where('mentor_id', '==', mentorId)
+      .where('status', 'in', ['Pending', 'Scheduled'])
+      .get();
+    
+    // Reviews
+    const reviewsSnap = await db.collection('mentor_reviews')
+      .where('mentor_id', '==', req.user.id)
+      .get();
+
+    // Resources
+    const resourcesSnap = await db.collection('mentorResources')
+      .where('mentor_id', '==', req.user.id)
       .get();
 
     res.json({
       total_students: studentIds.size,
-      pending_questions: pending,
-      answered_questions: answered,
-      total_chats: chatsSnap.size,
-      upcoming_sessions: 0 // Mock for now
+      pending_requests: pending_requests,
+      total_reviews: reviewsSnap.size,
+      upcoming_sessions: sessionsSnap.size,
+      resources_shared: resourcesSnap.size,
+      revenue: 0 // Mock for future
     });
   } catch (error) {
     console.error("Dashboard stats error:", error);

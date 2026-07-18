@@ -10,6 +10,7 @@ import { showAlert, showConfirm } from '../../utils/uiUtils';
 const oppSchema = [
   { name: 'title', label: 'Opportunity Title', type: 'text', required: true },
   { name: 'company', label: 'Company Name', type: 'text', required: true },
+  { name: 'logo', label: 'Company Logo URL', type: 'text', required: false },
   { 
     name: 'type', 
     label: 'Type', 
@@ -19,13 +20,36 @@ const oppSchema = [
       { label: 'Internship', value: 'Internship' },
       { label: 'Hackathon', value: 'Hackathon' },
       { label: 'Competition', value: 'Competition' },
-      { label: 'Job', value: 'Job' }
+      { label: 'Job', value: 'Job' },
+      { label: 'Research Programs', value: 'Research Programs' },
+      { label: 'Fellowships', value: 'Fellowships' },
+      { label: 'Open Source Programs', value: 'Open Source Programs' },
+      { label: 'Scholarships', value: 'Scholarships' },
+      { label: 'Certifications', value: 'Certifications' }
     ]
   },
-  { name: 'mode', label: 'Mode (Remote/In-person)', type: 'text', required: false },
+  { 
+    name: 'mode', 
+    label: 'Mode', 
+    type: 'select', 
+    required: false,
+    options: [
+      { label: 'Remote', value: 'Remote' },
+      { label: 'Hybrid', value: 'Hybrid' },
+      { label: 'On-site', value: 'On-site' }
+    ]
+  },
   { name: 'location', label: 'Location', type: 'text', required: false },
+  { name: 'salary', label: 'Salary / Stipend', type: 'text', required: false },
+  { name: 'experience', label: 'Experience Required', type: 'text', required: false },
   { name: 'deadline', label: 'Deadline Date (YYYY-MM-DD)', type: 'text', required: false },
+  { name: 'applyUrl', label: 'Official Apply Link', type: 'text', required: false },
   { name: 'description', label: 'Description', type: 'textarea', required: false },
+  { name: 'eligibility', label: 'Eligibility', type: 'textarea', required: false },
+  { name: 'required_skills', label: 'Required Skills (comma separated)', type: 'text', required: false },
+  { name: 'selection_process', label: 'Selection Process', type: 'textarea', required: false },
+  { name: 'benefits', label: 'Benefits', type: 'textarea', required: false },
+  { name: 'tags', label: 'Tags (comma separated)', type: 'text', required: false },
   {
     name: 'status',
     label: 'Status',

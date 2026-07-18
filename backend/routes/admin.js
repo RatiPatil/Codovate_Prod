@@ -31,17 +31,58 @@ router.get('/stats', async (req, res) => {
     stats.projects = 0;
     stats.certificates = 0;
 
-    // Initialize charts with 0 values
-    const generateChartData = (labelBase, valuesCount) => {
-      return Array.from({ length: valuesCount }).map((_, i) => ({
-        name: `${labelBase} ${i + 1}`,
-        uv: 0,
-        pv: 0,
-        amt: 0,
-      }));
-    };
+    // Fetch actual students for registration trends
+    const studentsSnap = await db.collection('students').get();
+    
+    const monthlyRegistrations = {};
+    const dailyActive = {};
+    
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const today = new Date();
+    
+    // Init last 6 months
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
+      const mName = monthNames[d.getMonth()];
+      monthlyRegistrations[mName] = { name: mName, pv: 0, sortKey: d.getTime() };
+    }
+    
+    // Init last 7 days
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(today.getDate() - i);
+      const dayName = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()];
+      dailyActive[dayName] = { name: dayName, uv: 0, sortKey: d.getTime() };
+    }
+
+    studentsSnap.forEach(doc => {
+      const data = doc.data();
+      const createdAt = data.created_at?.toDate ? data.created_at.toDate() : (data.created_at ? new Date(data.created_at) : null);
+      if (createdAt && !isNaN(createdAt.getTime())) {
+        const mName = monthNames[createdAt.getMonth()];
+        if (monthlyRegistrations[mName]) {
+          monthlyRegistrations[mName].pv += 1;
+        }
+      }
+      
+      const lastLogin = data.last_login?.toDate ? data.last_login.toDate() : (data.last_login ? new Date(data.last_login) : null);
+      if (lastLogin && !isNaN(lastLogin.getTime())) {
+        const timeDiff = today.getTime() - lastLogin.getTime();
+        const daysDiff = Math.floor(timeDiff / (1000 * 3600 * 24));
+        if (daysDiff >= 0 && daysDiff < 7) {
+          const dayName = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][lastLogin.getDay()];
+          if(dailyActive[dayName]) {
+             dailyActive[dayName].uv += 1;
+          }
+        }
+      }
+    });
+
+    const activeUsersChart = Object.values(dailyActive).sort((a,b) => a.sortKey - b.sortKey);
+    const registrationsChart = Object.values(monthlyRegistrations).sort((a,b) => a.sortKey - b.sortKey);
 
     // Mock Revenue Data for B2B SaaS Subscriptions + Job Posting Fees
+    // (Since there is no actual billing collection in this MVP)
     const mockRevenue = [
       { name: 'Jan', mrr: 12000, jobs: 4000 },
       { name: 'Feb', mrr: 15000, jobs: 5200 },
@@ -51,13 +92,28 @@ router.get('/stats', async (req, res) => {
       { name: 'Jun', mrr: 42000, jobs: 21000 },
     ];
 
+    // Mock AI Analytics Data
+    const mockAiAnalytics = [
+      { name: 'Jan', tokens: 1200000, generations: 4500 },
+      { name: 'Feb', tokens: 1800000, generations: 6200 },
+      { name: 'Mar', tokens: 2500000, generations: 8900 },
+      { name: 'Apr', tokens: 4100000, generations: 14500 },
+      { name: 'May', tokens: 6800000, generations: 22000 },
+      { name: 'Jun', tokens: 9500000, generations: 31000 },
+    ];
+
     res.json({
       success: true,
-      data: stats,
+      data: {
+        ...stats,
+        aiTokensUsed: 25900000,
+        aiGenerations: 87100
+      },
       charts: {
-        activeUsers: generateChartData('Day', 7).map((d, i) => ({ ...d, uv: Math.floor(Math.random() * 500) + 100 })),
-        registrations: generateChartData('Month', 6).map((d, i) => ({ ...d, pv: Math.floor(Math.random() * 1000) + 200 })),
-        revenue: mockRevenue
+        activeUsers: activeUsersChart,
+        registrations: registrationsChart,
+        revenue: mockRevenue,
+        ai: mockAiAnalytics
       }
     });
 

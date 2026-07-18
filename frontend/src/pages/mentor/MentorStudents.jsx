@@ -112,9 +112,14 @@ const MentorStudents = () => {
                   <span className="text-sm text-gray-600 italic">No Resume Uploaded</span>
                 )}
                 
-                <button className="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors">
+                <a 
+                  href={`/public-portfolio/${student.id}`} 
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors"
+                >
                   Full Profile <ExternalLink size={16} />
-                </button>
+                </a>
               </div>
             </div>
           ))}

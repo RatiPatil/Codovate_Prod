@@ -16,9 +16,8 @@ let model = null;
 
 try {
   if (process.env.GEMINI_API_KEY) {
-    const { GoogleGenerativeAI } = require("@google/generative-ai");
-    genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    model = await getConfiguredModel();
     console.log("✅ Gemini AI initialized for Resume Builder");
   } else {
     console.log("⚠️  No GEMINI_API_KEY — AI resume will use smart templates");

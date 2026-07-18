@@ -3,13 +3,10 @@ const router = express.Router();
 const { db, admin } = require("../config/firebase");
 const auth = require("../middleware/auth");
 const https = require("https");
-const { GoogleGenerativeAI } = require("@google/generative-ai");
 const { syncDashboard } = require("../services/dashboardService");
 const eventBus = require("../events/eventBus");
 
-const genAI = process.env.GEMINI_API_KEY
-  ? new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
-  : null;
+const { getConfiguredModel, genAI } = require("../utils/aiConfig");
 
 const adminOnly = (req, res, next) => {
   if (!["admin", "super_admin", "college_admin", "company_admin"].includes(req.user.role)) {
@@ -224,7 +221,7 @@ router.post("/ai-suggest", auth, async (req, res) => {
       ]});
     }
 
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const model = await getConfiguredModel();
     const prompt = `You are a tech career advisor. Suggest 4 project ideas for a student.
 Student: Career Goal: ${goal}, Skills: ${skills.join(", ") || "Beginner"}, Currently Learning: ${activeStep?.title || "Basics"}.
 Return ONLY valid JSON array (no markdown) with exactly 4 objects:
@@ -255,7 +252,7 @@ router.post("/:id/analyze", auth, async (req, res) => {
       return res.json({ suggestions: ["Missing documentation", "Consider adding a better description.", "Add more screenshots to showcase your work."] });
     }
 
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const model = await getConfiguredModel();
     const prompt = `You are an expert technical recruiter and open-source contributor evaluating a student's portfolio project.
 Here are the project details:
 Title: ${project.title || 'N/A'}

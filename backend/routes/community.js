@@ -13,34 +13,93 @@ router.get('/', auth, async (req, res) => {
     }
     
     const college = userDoc.data().college;
-    if (!college) {
+    const college_id = userDoc.data().college_id;
+    
+    if (!college || !college_id) {
       return res.json({ 
         hasCollege: false, 
         message: "You must set your college in your profile to access the community." 
       });
     }
 
-    // Mock data for the MVP to show how it works
-    const mockAnnouncements = [
-      { id: 1, author: "Dean of Engineering", date: "2 hours ago", title: "Upcoming Tech Fest", content: `Registrations for the annual Tech Fest at ${college} are now open! Make sure to sign up.` },
-      { id: 2, author: "Placement Cell", date: "1 day ago", title: "Mock Interview Schedule", content: "The placement cell has released the schedule for the upcoming mock interviews." }
-    ];
+    // Fetch live announcements from Firestore
+    const announcementsSnap = await db.collection('announcements')
+      .where('college_id', '==', college_id)
+      .orderBy('created_at', 'desc')
+      .limit(10)
+      .get();
+      
+    const announcements = [];
+    announcementsSnap.forEach(doc => {
+      const data = doc.data();
+      announcements.push({
+        id: doc.id,
+        author: data.author || 'Admin',
+        title: data.title,
+        content: data.content,
+        date: data.created_at?.toDate ? data.created_at.toDate().toLocaleDateString() : 'Recently'
+      });
+    });
 
-    const mockDiscussions = [
-      { id: 1, author: "John Doe", title: "Looking for team for hackathon", replies: 4 },
-      { id: 2, author: "Jane Smith", title: "Anyone have notes for OS?", replies: 12 },
-    ];
+    // Fetch live discussions from Firestore
+    const discussionsSnap = await db.collection('discussions')
+      .where('college_id', '==', college_id)
+      .orderBy('created_at', 'desc')
+      .limit(20)
+      .get();
+
+    const discussions = [];
+    discussionsSnap.forEach(doc => {
+      const data = doc.data();
+      discussions.push({
+        id: doc.id,
+        author: data.author_name || 'Anonymous',
+        title: data.title,
+        content: data.content,
+        replies: data.reply_count || 0,
+        date: data.created_at?.toDate ? data.created_at.toDate().toLocaleDateString() : 'Recently'
+      });
+    });
 
     res.json({
       hasCollege: true,
       collegeName: college,
-      announcements: mockAnnouncements,
-      discussions: mockDiscussions
+      announcements,
+      discussions
     });
 
   } catch (error) {
     console.error("Community error:", error);
     res.status(500).json({ message: "Failed to load community data" });
+  }
+});
+
+// POST /api/community/discussions
+// Create a new discussion topic
+router.post('/discussions', auth, async (req, res) => {
+  try {
+    const { title, content } = req.body;
+    if (!title || !content) return res.status(400).json({ message: "Title and content are required." });
+
+    const userDoc = await db.collection('students').doc(req.user.id).get();
+    const college_id = userDoc.data().college_id;
+    if (!college_id) return res.status(403).json({ message: "Must be part of a college to post." });
+
+    const newDiscussionRef = db.collection('discussions').doc();
+    await newDiscussionRef.set({
+      college_id,
+      author_id: req.user.id,
+      author_name: userDoc.data().name || userDoc.data().full_name || 'Student',
+      title,
+      content,
+      reply_count: 0,
+      created_at: new Date()
+    });
+
+    res.json({ message: "Discussion posted successfully!", id: newDiscussionRef.id });
+  } catch (error) {
+    console.error("Create discussion error:", error);
+    res.status(500).json({ message: "Failed to post discussion" });
   }
 });
 

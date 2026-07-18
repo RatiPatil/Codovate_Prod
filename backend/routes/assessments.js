@@ -1,12 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const { GoogleGenerativeAI } = require("@google/generative-ai");
 const { db, admin } = require("../config/firebase");
 const auth = require("../middleware/auth");
 const { syncDashboard } = require("../services/dashboardService");
 require('dotenv').config();
 
-const genAI = process.env.GEMINI_API_KEY ? new GoogleGenerativeAI(process.env.GEMINI_API_KEY) : null;
+const { getConfiguredModel, genAI } = require("../utils/aiConfig");
 
 // GET /api/assessments
 // Returns past assessment results for the user
@@ -32,7 +31,7 @@ router.post('/start', auth, async (req, res) => {
   if (!genAI) return res.status(500).json({ message: "AI is not configured" });
 
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const model = await getConfiguredModel();
     const prompt = `
 Generate 5 intermediate-level Multiple Choice Questions (MCQs) for a skill assessment on "${topic}".
 Each question should have 4 options (A, B, C, D) and exactly one correct answer.
@@ -123,7 +122,7 @@ router.post('/submit', auth, async (req, res) => {
     // Call Gemini to generate improvement plan
     let breakdown = {};
     if (genAI) {
-      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+      const model = await getConfiguredModel();
       const analysisPrompt = `
 You are an expert technical tutor. A student just took a 5-question assessment on "${pendingData.topic}" and scored ${scorePercentage}% (${correctCount}/5).
 

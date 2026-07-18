@@ -1,13 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const { GoogleGenerativeAI } = require("@google/generative-ai");
 const { db, admin } = require("../config/firebase");
 const auth = require("../middleware/auth");
 const { CODING_PROBLEMS } = require("../data/codingProblems");
 const { syncDashboard } = require("../services/dashboardService");
 require('dotenv').config();
 
-const genAI = process.env.GEMINI_API_KEY ? new GoogleGenerativeAI(process.env.GEMINI_API_KEY) : null;
+const { getConfiguredModel, genAI } = require("../utils/aiConfig");
 
 // GET /api/coding/dashboard
 // Returns user stats and daily/weekly challenges
@@ -144,7 +143,7 @@ router.post('/submit', auth, async (req, res) => {
   }
 
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const model = await getConfiguredModel();
     
     // Custom prompt logic depending on topic
     let evaluationPrompt = "";
