@@ -34,6 +34,7 @@ const ResumeBuilder = lazy(() => import('./pages/ResumeBuilder'));
 const Notifications = lazy(() => import('./pages/Notifications'));
 const Roadmap = lazy(() => import('./pages/Roadmap'));
 const CareerCoach = lazy(() => import('./pages/CareerCoach'));
+const LearningModule = lazy(() => import('./pages/LearningModule'));
 const ProjectHub = lazy(() => import('./pages/ProjectHub'));
 const DashboardRouter = lazy(() => import('./components/DashboardRouter'));
 const MentorRouter = lazy(() => import('./components/MentorRouter'));
@@ -179,6 +180,11 @@ function App() {
                   <Route path="/roadmap" element={
                     <ProtectedRoute>
                       <Layout><Roadmap /></Layout>
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/roadmap/module/:stepId" element={
+                    <ProtectedRoute>
+                      <Layout><LearningModule /></Layout>
                     </ProtectedRoute>
                   } />
                   <Route path="/coach" element={

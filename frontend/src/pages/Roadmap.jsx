@@ -74,7 +74,7 @@ const Roadmap = () => {
     });
 
     try {
-      await api.put('/roadmap/step', { stepId, taskId, completed });
+      await api.put('/roadmap/roadmap-progress', { stepId, taskId, completed });
     } catch (err) {
       console.error('Failed to save task status:', err);
       // Revert if failed (simple re-fetch for now)
