@@ -11,13 +11,14 @@ require("dotenv").config();
 const upload = multer({ storage: multer.memoryStorage() });
 
 // ─── Gemini AI Client ─────────────────────────────────────────────────────────
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 let genAI = null;
 let model = null;
 
 try {
   if (process.env.GEMINI_API_KEY) {
-        genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    model = await getConfiguredModel();
+    genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     console.log("✅ Gemini AI initialized for Resume Builder");
   } else {
     console.log("⚠️  No GEMINI_API_KEY — AI resume will use smart templates");

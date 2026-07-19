@@ -457,17 +457,20 @@ router.get("/workspace", auth, async (req, res) => {
     }
 
     // B. Project Recommendation
-    // If the user's roadmap has projects, suggest one, otherwise suggest a mock one.
-    recommendations.push({
-      id: `proj_${Date.now()}`,
-      type: 'project',
-      title: activeTopic === 'Spring Boot' ? 'Library Management System' : 'Expense Tracker',
-      description: `Build a real-world project to solidify your ${activeTopic} skills and boost your resume.`,
-      linkUrl: `/roadmap`,
-      tags: ['Hands-on', 'Portfolio']
-    });
+    const projectsSnap = await db.collection("projects").limit(1).get();
+    if (!projectsSnap.empty) {
+       const prj = projectsSnap.docs[0].data();
+       recommendations.push({
+         id: projectsSnap.docs[0].id,
+         type: 'project',
+         title: prj.title || 'Featured Project',
+         description: prj.description || `Build a real-world project to solidify your skills.`,
+         linkUrl: `/projecthub`,
+         tags: ['Hands-on', 'Portfolio']
+       });
+    }
 
-    // C. Internship Recommendation (from DB or fallback)
+    // C. Internship Recommendation (from DB)
     const oppsSnap = await db.collection("opportunities").where("status", "==", "Active").limit(1).get();
     if (!oppsSnap.empty) {
       const opp = oppsSnap.docs[0].data();
@@ -480,39 +483,43 @@ router.get("/workspace", auth, async (req, res) => {
         linkUrl: `/opportunities/${oppsSnap.docs[0].id}`,
         tags: [opp.type || 'Internship', opp.location || 'Remote']
       });
-    } else {
-      recommendations.push({
-        id: 'mock_internship',
-        type: 'job',
-        title: 'Backend Developer Intern',
-        company: 'TechCorp',
-        description: `Gain practical experience in ${careerTarget} roles.`,
-        linkUrl: `/opportunities`,
-        tags: ['Internship', 'Remote']
-      });
     }
 
     // D. Mentor Recommendation
-    recommendations.push({
-      id: `mentor_${Date.now()}`,
-      type: 'mentor',
-      title: 'Java Backend Expert',
-      company: 'Mentor Network',
-      description: `Book a 1:1 session to get unblocked on ${activeTopic}.`,
-      linkUrl: `/mentors`,
-      tags: ['1:1', 'Expert']
-    });
+    const mentorsSnap = await db.collection("mentors").limit(1).get();
+    if (!mentorsSnap.empty) {
+      const mentorDoc = mentorsSnap.docs[0];
+      const m = mentorDoc.data();
+      let mName = "Expert Mentor";
+      if (m.user_id) {
+         const mu = await db.collection("users").doc(m.user_id).get();
+         if (mu.exists) mName = mu.data().name;
+      }
+      recommendations.push({
+        id: mentorDoc.id,
+        type: 'mentor',
+        title: mName,
+        company: m.expertise?.[0] || 'Mentor Network',
+        description: `Book a 1:1 session with ${mName} to get unblocked on ${activeTopic}.`,
+        linkUrl: `/mentors`,
+        tags: ['1:1', 'Expert']
+      });
+    }
 
     // E. Team Recommendation
-    recommendations.push({
-      id: `team_${Date.now()}`,
-      type: 'team',
-      title: 'Spring Boot Team',
-      company: 'Collab',
-      description: 'Join a group of peers building a scalable microservice architecture.',
-      linkUrl: `/teams`,
-      tags: ['Collaboration', 'Live Project']
-    });
+    const teamsRecSnap = await db.collection("teams").where("status", "==", "Recruiting").limit(1).get();
+    if (!teamsRecSnap.empty) {
+      const team = teamsRecSnap.docs[0].data();
+      recommendations.push({
+        id: teamsRecSnap.docs[0].id,
+        type: 'team',
+        title: team.name || 'Project Team',
+        company: 'Collab',
+        description: team.description || 'Join a group of peers building a scalable architecture.',
+        linkUrl: `/teams`,
+        tags: ['Collaboration', 'Live Project']
+      });
+    }
     
     // Persist AI Recommendations
     await db.collection("aiRecommendations").doc(uid).set({ recommendations }, { merge: true });
@@ -528,8 +535,9 @@ router.get("/workspace", auth, async (req, res) => {
     const improvements = [];
     
     // Profile Completion (15%)
-    readinessScore += (a.profile_completion || 0) * 0.15;
-    if ((a.profile_completion || 0) < 80) improvements.push('Profile Completion');
+    const profComp = p.profile_completion || p.profileCompletion || u.profileCompleted || 0;
+    readinessScore += profComp * 0.15;
+    if (profComp < 80) improvements.push('Profile Completion');
     
     // Learning Progress (25%)
     if (roadmapDoc.exists) {
@@ -541,12 +549,12 @@ router.get("/workspace", auth, async (req, res) => {
     }
     
     // Skills (15%)
-    const skillCount = c.skills?.length || 0;
+    const skillCount = p.skills?.length || 0;
     readinessScore += Math.min(skillCount, 10) / 10 * 15;
     if (skillCount < 5) improvements.push('Skills');
     
     // Projects (15%)
-    const projCount = c.projects?.length || 0;
+    const projCount = p.projects?.length || 0;
     readinessScore += Math.min(projCount, 3) / 3 * 15;
     if (projCount < 2) improvements.push('Projects');
     
@@ -558,7 +566,7 @@ router.get("/workspace", auth, async (req, res) => {
     }
     
     // Certificates (10%)
-    const certCount = c.certificates?.length || 0;
+    const certCount = p.certificates?.length || 0;
     readinessScore += Math.min(certCount, 2) / 2 * 10;
     if (certCount < 1 && !improvements.includes('Certificates') && improvements.length < 4) {
        improvements.push('Certificates');
@@ -581,9 +589,9 @@ router.get("/workspace", auth, async (req, res) => {
       profile: {
         id: uid,
         name: p.name || u.name || '',
-        career_goal: c.desired_roles?.[0] || 'Software Engineer',
-        profile_completion: a.profile_completion || 0,
-        has_resume: !!p.resume_url,
+        career_goal: p.careerGoal || p.desired_roles?.[0] || 'Software Engineer',
+        profile_completion: profComp,
+        has_resume: !!p.socialLinks?.resume || !!p.resume_url,
         points: totalPoints,
         appsCount,
         teamsCount,
@@ -808,17 +816,17 @@ router.get("/recommendations", auth, async (req, res) => {
 // GET /api/students/weekly-report
 router.get("/weekly-report", auth, async (req, res) => {
   try {
-    // Fetch the most recent report for this user
+    // Fetch the most recent report for this user (sorted in JS to avoid index requirement)
     const reportsSnap = await db.collection("weeklyReports")
       .where("uid", "==", req.user.id)
-      .orderBy("generatedAt", "desc")
-      .limit(1)
       .get();
       
     if (reportsSnap.empty) {
       return res.json({ report: null });
     }
-    res.json(reportsSnap.docs[0].data());
+    const reports = reportsSnap.docs.map(d => d.data());
+    reports.sort((a, b) => new Date(b.generatedAt) - new Date(a.generatedAt));
+    res.json(reports[0]);
   } catch (err) {
     console.error("Error fetching weekly report:", err);
     res.status(500).json({ message: "Server error" });
