@@ -439,4 +439,43 @@ router.delete("/:id/members/:userId", auth, async (req, res) => {
   }
 });
 
+// ── AI Recommendations ──────────────────────────────────────────────────────
+router.get("/:id/recommendations", auth, async (req, res) => {
+  try {
+    const teamDoc = await db.collection("teams").doc(req.params.id).get();
+    if (!teamDoc.exists) return res.status(404).json({ message: "Team not found" });
+    const team = teamDoc.data();
+    
+    const reqSkills = team.required_skills || [];
+    if (reqSkills.length === 0) return res.json([]);
+
+    const profilesSnap = await db.collection("profiles").get();
+    const recommendations = [];
+
+    profilesSnap.forEach(doc => {
+      const p = doc.data();
+      if (!p.skills) return;
+      // Match if the user's skill names match any required skills (case-insensitive)
+      const userSkillNames = p.skills.map(s => (s.name || s).toLowerCase());
+      const matchCount = reqSkills.filter(rs => userSkillNames.includes(rs.toLowerCase())).length;
+      
+      if (matchCount > 0 && doc.id !== req.user.id) {
+        recommendations.push({
+          id: doc.id,
+          name: p.personalInfo?.name || "Student",
+          skills: p.skills,
+          matchScore: Math.round((matchCount / reqSkills.length) * 100),
+          avatar: p.personalInfo?.avatar || null
+        });
+      }
+    });
+
+    recommendations.sort((a, b) => b.matchScore - a.matchScore);
+    res.json(recommendations.slice(0, 10));
+  } catch (err) {
+    console.error("AI recommendations error:", err.message);
+    res.status(500).json({ message: "Server error fetching recommendations." });
+  }
+});
+
 module.exports = router;

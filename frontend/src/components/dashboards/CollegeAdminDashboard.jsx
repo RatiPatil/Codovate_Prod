@@ -50,8 +50,8 @@ const CollegeAdminDashboard = () => {
   };
 
   useEffect(() => {
-    // 1. Initial Load
-    api.get('/admin/college/dashboard')
+      // 1. Initial Load
+    api.get('/college-admin/dashboard')
       .then(res => {
         setStats(prev => ({ ...prev, ...res.data, loading: false }));
       })
@@ -108,13 +108,13 @@ const CollegeAdminDashboard = () => {
             <div className="grid grid-cols-2 gap-6">
               <div>
                 <div className="text-sm text-gray-500 font-bold uppercase tracking-wider mb-2">Hackathon Participants</div>
-                <div className="text-5xl font-black text-emerald-500">--</div>
-                <p className="text-xs text-gray-600 mt-2">Coming soon</p>
+                <div className="text-5xl font-black text-emerald-500">{stats.hackathonParticipants || 0}</div>
+                <p className="text-xs text-gray-600 mt-2">Active builders</p>
               </div>
               <div>
                 <div className="text-sm text-gray-500 font-bold uppercase tracking-wider mb-2">Placement Ready Score</div>
-                <div className="text-5xl font-black text-white">--</div>
-                <p className="text-xs text-gray-600 mt-2">Requires AI evaluation plugin</p>
+                <div className="text-5xl font-black text-white">{stats.avgReadiness || 0}%</div>
+                <p className="text-xs text-gray-600 mt-2">Average across students</p>
               </div>
             </div>
           </div>

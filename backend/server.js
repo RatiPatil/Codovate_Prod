@@ -73,6 +73,7 @@ app.use("/api/admin/health", protect, require("./routes/adminHealth"));
 app.use("/api/admin/settings", protect, require("./routes/adminSettings"));
 
 // College Admin Scoped Routes
+app.use("/api/college-admin/dashboard", protect, require("./routes/collegeAdminDashboard"));
 app.use("/api/college-admin/students", protect, require("./routes/collegeAdminStudents"));
 app.use("/api/college-admin/faculty", protect, require("./routes/collegeAdminFaculty"));
 app.use("/api/college-admin/projects", protect, require("./routes/collegeAdminProjects"));
@@ -90,7 +91,9 @@ app.use("/api/company-admin/notifications", protect, require("./routes/companyAd
 app.use("/api/company-admin/talent", protect, require("./routes/companyAdminTalent"));
 app.use("/api/admin/company/dashboard", protect, require("./routes/companyAdminDashboard"));
 app.use("/api/students",      require("./routes/students"));
-app.use("/api/opportunities", require("./routes/opportunities"));
+app.use("/api/teams",         protect, require("./routes/teams"));
+app.use("/api/workspace",     protect, require("./routes/teamWorkspace"));
+app.use("/api/opportunities", protect, require("./routes/opportunities"));
 app.use("/api/applications",  require("./routes/applications"));
 app.use("/api/onboarding",    require("./routes/onboarding"));
 app.use("/api/notifications", require("./routes/notifications"));

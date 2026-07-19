@@ -27,6 +27,7 @@ const Profile = lazy(() => import('./pages/Profile'));
 const AdminLogin = lazy(() => import('./pages/AdminLogin'));
 const RecruiterLogin = lazy(() => import('./pages/RecruiterLogin'));
 const TeamsLayout = lazy(() => import('./pages/teams/TeamsLayout'));
+const Workspace = lazy(() => import('./pages/teams/Workspace'));
 const Mentors = lazy(() => import('./pages/Mentors'));
 const Leaderboard = lazy(() => import('./pages/Leaderboard'));
 const Gamification = lazy(() => import('./pages/Gamification'));
@@ -45,7 +46,7 @@ const SkillAssessments = lazy(() => import('./pages/SkillAssessments'));
 const ResumeReview = lazy(() => import('./pages/ResumeReview'));
 const MockInterview = lazy(() => import('./pages/MockInterview'));
 const Events = lazy(() => import('./pages/Events'));
-const CollegeCommunity = lazy(() => import('./pages/CollegeCommunity'));
+const Community = lazy(() => import('./pages/Community'));
 
 import GlobalErrorBoundary from './components/common/GlobalErrorBoundary';
 
@@ -142,6 +143,12 @@ function App() {
                       <Layout><TeamsLayout /></Layout>
                     </ProtectedRoute>
                   } />
+
+                  <Route path="/teams/:id/workspace" element={
+                    <ProtectedRoute>
+                      <Layout><Workspace /></Layout>
+                    </ProtectedRoute>
+                  } />
                   <Route path="/mentors" element={
                     <ProtectedRoute>
                       <Layout><Mentors /></Layout>
@@ -154,7 +161,7 @@ function App() {
                   } />
                   <Route path="/community" element={
                     <ProtectedRoute>
-                      <Layout><CollegeCommunity /></Layout>
+                      <Layout><Community /></Layout>
                     </ProtectedRoute>
                   } />
                   <Route path="/leaderboard" element={

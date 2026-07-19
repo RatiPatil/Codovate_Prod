@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../../api/axios';
 import { showAlert } from '../../utils/uiUtils';
+import { useNavigate } from 'react-router-dom';
 import TeamDetailsModal from './TeamDetailsModal';
 import SkeletonLoader from '../../components/common/SkeletonLoader';
 
@@ -8,6 +9,7 @@ const MyTeams = () => {
   const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedTeam, setSelectedTeam] = useState(null);
+  const navigate = useNavigate();
   
   // Create Team Modal State
   const [isCreating, setIsCreating] = useState(false);
@@ -112,10 +114,10 @@ const MyTeams = () => {
                     <span className="text-primary font-medium">{team.status}</span>
                   </div>
                   <button 
-                    onClick={() => setSelectedTeam(team)}
-                    className="w-full py-2 bg-white/5 hover:bg-white/10 text-white rounded-xl font-medium transition-colors border border-white/10"
+                    onClick={() => navigate(`/teams/${team.id}/workspace`)}
+                    className="w-full py-2 bg-primary hover:bg-primary/90 text-white rounded-xl font-bold transition-all shadow-lg shadow-primary/20"
                   >
-                    Manage Team
+                    Go to Workspace
                   </button>
                 </div>
               </div>

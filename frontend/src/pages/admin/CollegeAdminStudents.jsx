@@ -65,9 +65,34 @@ const CollegeAdminStudents = () => {
     { header: 'Student Name', accessor: 'name' },
     { header: 'Email', accessor: 'email' },
     { 
+      header: 'AI Readiness', 
+      render: (row) => (
+        <span className={`font-bold ${row.readiness_score >= 80 ? 'text-emerald-500' : row.readiness_score >= 50 ? 'text-amber-500' : 'text-red-500'}`}>
+          {row.readiness_score || 0}%
+        </span>
+      )
+    },
+    { 
+      header: 'Coding Stats', 
+      render: (row) => (
+        <div className="flex flex-col">
+          <span className="text-xs">Rating: {row.coding_score || 0}</span>
+          <span className="text-[10px] text-gray-400">Solved: {row.problems_solved || 0}</span>
+        </div>
+      )
+    },
+    { 
+      header: 'Resume', 
+      render: (row) => (
+        <span className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase ${row.resume_completed ? 'bg-emerald-500/20 text-emerald-500' : 'bg-red-500/20 text-red-500'}`}>
+          {row.resume_completed ? 'Uploaded' : 'Missing'}
+        </span>
+      )
+    },
+    { 
       header: 'Status', 
       render: (row) => (
-        <span className={`px-2 py-1 rounded-md text-xs font-bold uppercase ${
+        <span className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase ${
           row.status === 'suspended' ? 'bg-amber-500/20 text-amber-500' :
           row.status === 'banned' ? 'bg-red-500/20 text-red-500' :
           'bg-emerald-500/20 text-emerald-500'

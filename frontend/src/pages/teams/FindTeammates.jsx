@@ -14,10 +14,22 @@ const FindTeammates = () => {
   const [roleFilter, setRoleFilter] = useState('');
   const [aiLoading, setAiLoading] = useState(false);
   const [isAiMode, setIsAiMode] = useState(false);
+  const [myTeams, setMyTeams] = useState([]);
+  const [selectedTeamIdForMatch, setSelectedTeamIdForMatch] = useState('');
 
   useEffect(() => {
     fetchStudents();
+    fetchMyTeams();
   }, []);
+
+  const fetchMyTeams = async () => {
+    try {
+      const res = await api.get('/teams/my');
+      setMyTeams(res.data || []);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const fetchStudents = async () => {
     try {
@@ -39,11 +51,24 @@ const FindTeammates = () => {
   };
 
   const fetchAiMatches = async () => {
+    if (!selectedTeamIdForMatch) {
+      showAlert('Please select a team first to find matching teammates!');
+      return;
+    }
     try {
       setAiLoading(true);
       setIsAiMode(true);
-      const res = await api.get('/networking/ai-match');
-      setStudents(res.data.matches || []);
+      const res = await api.get(`/teams/${selectedTeamIdForMatch}/recommendations`);
+      // Maps recommendation structure to standard student structure
+      const formattedMatches = res.data.map(m => ({
+        id: m.id,
+        name: m.name,
+        profile_photo: m.avatar,
+        skills: m.skills,
+        matchScore: m.matchScore,
+        ai_match_reason: `Matches ${m.matchScore}% of the team's required skills.`
+      }));
+      setStudents(formattedMatches);
     } catch (err) {
       console.error(err);
       showAlert('AI Match failed. Please try again.');
@@ -99,22 +124,34 @@ const FindTeammates = () => {
         >
           Search
         </button>
-        <button 
-          onClick={fetchAiMatches}
-          disabled={aiLoading}
-          className="ml-auto bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-bold px-5 py-2 rounded-xl transition-all shadow-[0_0_15px_rgba(168,85,247,0.4)] flex items-center gap-2"
-        >
-          {aiLoading ? (
-             <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Analyzing...</>
-          ) : (
-             <>🪄 AI Matchmaker</>
-          )}
-        </button>
+        <div className="flex items-center gap-2 ml-auto">
+          <select 
+            value={selectedTeamIdForMatch} 
+            onChange={(e) => setSelectedTeamIdForMatch(e.target.value)}
+            className="bg-[#12121A] text-white border border-white/10 rounded-xl px-4 py-2 focus:outline-none focus:border-purple-500 max-w-[200px]"
+          >
+            <option value="">Select Team for AI Match</option>
+            {myTeams.map(t => (
+              <option key={t.id} value={t.id}>{t.name}</option>
+            ))}
+          </select>
+          <button 
+            onClick={fetchAiMatches}
+            disabled={aiLoading || !selectedTeamIdForMatch}
+            className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-bold px-5 py-2 rounded-xl transition-all shadow-[0_0_15px_rgba(168,85,247,0.4)] flex items-center gap-2 disabled:opacity-50 disabled:shadow-none"
+          >
+            {aiLoading ? (
+               <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Analyzing...</>
+            ) : (
+               <>🪄 AI Matchmaker</>
+            )}
+          </button>
+        </div>
       </div>
 
       {isAiMode && students.length > 0 && (
         <div className="mb-6 p-4 bg-purple-500/10 border border-purple-500/20 rounded-xl text-purple-200 text-sm">
-          <strong>AI Matchmaker Active:</strong> Showing candidates with complementary skills tailored to your profile.
+          <strong>AI Matchmaker Active:</strong> Showing candidates with complementary skills tailored to your selected team's requirements.
         </div>
       )}
 

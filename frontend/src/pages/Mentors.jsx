@@ -4,6 +4,113 @@ import { formatTime, formatDateTime } from '../utils/dateUtils';
 import api from '../api/axios';
 import { showAlert, showConfirm } from '../utils/uiUtils';
 import Loader from '../components/common/Loader';
+import { Star, MessageSquare, Heart, Clock, Search } from 'lucide-react';
+
+const MentorReviewsModal = ({ mentor, onClose }) => {
+  const [reviews, setReviews] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [newReview, setNewReview] = useState({ rating: 5, feedback: '' });
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    fetchReviews();
+  }, [mentor.id]);
+
+  const fetchReviews = async () => {
+    try {
+      const res = await api.get(`/mentor-reviews/mentor/${mentor.id}`);
+      setReviews(res.data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!newReview.feedback) return;
+    try {
+      setSubmitting(true);
+      await api.post(`/mentor-reviews/mentor/${mentor.id}`, newReview);
+      showAlert('Review submitted successfully!', 'success');
+      setNewReview({ rating: 5, feedback: '' });
+      fetchReviews();
+    } catch (err) {
+      showAlert('Failed to submit review');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="absolute inset-0" onClick={onClose} />
+      <div className="relative z-10 w-full max-w-2xl bg-[#0f0f11] border border-white/10 rounded-2xl shadow-2xl p-6 max-h-[90vh] flex flex-col">
+        
+        <div className="flex items-center justify-between mb-6 shrink-0">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center font-bold text-xl text-primary">
+              {mentor.profile_photo ? <img src={mentor.profile_photo} alt="" className="w-full h-full object-cover rounded-full" /> : mentor.name?.charAt(0)}
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-white">{mentor.name}</h3>
+              <p className="text-sm text-gray-400">Reviews & Ratings</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="text-gray-400 hover:text-white">✕</button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto mb-6 pr-2 custom-scrollbar">
+          {loading ? (
+            <div className="text-center py-8 text-gray-500">Loading reviews...</div>
+          ) : reviews.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">No reviews yet for this mentor.</div>
+          ) : (
+            <div className="space-y-4">
+              {reviews.map(r => (
+                <div key={r.id} className="bg-white/5 border border-white/10 p-4 rounded-xl">
+                  <div className="flex justify-between items-start mb-2">
+                    <span className="font-bold text-sm text-white">{r.student_name}</span>
+                    <span className="text-primary font-bold text-sm">★ {r.rating}</span>
+                  </div>
+                  <p className="text-sm text-gray-300">{r.feedback}</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="shrink-0 border-t border-white/10 pt-6">
+          <h4 className="text-sm font-bold text-white mb-3">Leave a Review</h4>
+          <form onSubmit={handleSubmit} className="space-y-3">
+            <div className="flex items-center gap-4">
+              <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Rating</label>
+              <select 
+                value={newReview.rating} 
+                onChange={e => setNewReview({ ...newReview, rating: Number(e.target.value) })}
+                className="bg-[#12121A] border border-white/10 rounded-lg px-3 py-1 text-white text-sm focus:border-primary focus:outline-none"
+              >
+                {[5, 4.5, 4, 3.5, 3, 2, 1].map(r => <option key={r} value={r}>{r} Stars</option>)}
+              </select>
+            </div>
+            <textarea 
+              value={newReview.feedback}
+              onChange={e => setNewReview({ ...newReview, feedback: e.target.value })}
+              placeholder="Share your experience..."
+              required
+              rows={2}
+              className="w-full bg-[#12121A] border border-white/10 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-primary resize-none"
+            />
+            <button type="submit" disabled={submitting} className="w-full btn-primary py-2 text-sm">
+              {submitting ? 'Submitting...' : 'Submit Review'}
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const BookingModal = ({ mentor, onClose, onConfirm }) => {
   const [dateTime, setDateTime] = useState('');
@@ -321,7 +428,9 @@ const Mentors = () => {
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState({ msg: '', type: 'success' });
   const [bookingMentor, setBookingMentor] = useState(null);
+  const [reviewMentor, setReviewMentor] = useState(null);
   const [aiRecommended, setAiRecommended] = useState(null);
+  const [followingMap, setFollowingMap] = useState({});
   
   // Search and Filters
   const [searchTerm, setSearchTerm] = useState('');
@@ -372,6 +481,19 @@ const Mentors = () => {
     }
   };
 
+  const handleFollow = async (mentorId) => {
+    try {
+      const res = await api.post(`/mentors/${mentorId}/follow`);
+      setFollowingMap(prev => ({
+        ...prev,
+        [mentorId]: res.data.isFollowing
+      }));
+      showToast(res.data.message, 'success');
+    } catch (err) {
+      showToast('Error following mentor', 'error');
+    }
+  };
+
   const filteredMentors = mentors.filter(m => {
     const matchesSearch = !searchTerm || m.name?.toLowerCase().includes(searchTerm.toLowerCase()) || m.expertise?.some(s => s.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesExpertise = selectedExpertise === 'All' || (m.expertise && m.expertise.includes(selectedExpertise));
@@ -401,6 +523,13 @@ const Mentors = () => {
           mentor={bookingMentor}
           onClose={() => setBookingMentor(null)}
           onConfirm={handleConfirmBooking}
+        />
+      )}
+
+      {reviewMentor && (
+        <MentorReviewsModal
+          mentor={reviewMentor}
+          onClose={() => setReviewMentor(null)}
         />
       )}
 
@@ -543,6 +672,15 @@ const Mentors = () => {
               <div key={m.id} className="glass-card p-6 flex flex-col group relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-bl-[100px] pointer-events-none transition-transform duration-500 group-hover:scale-125 group-hover:bg-primary/20" />
 
+                <button 
+                  onClick={() => handleFollow(m.id)}
+                  className={`absolute top-4 right-4 z-20 w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+                    followingMap[m.id] ? 'bg-pink-500/20 text-pink-500' : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white'
+                  }`}
+                >
+                  <Heart size={16} className={followingMap[m.id] ? 'fill-pink-500' : ''} />
+                </button>
+
                 <div className="flex items-center gap-4 mb-4 relative z-10">
                   <div className="w-14 h-14 rounded-full bg-primary/10 text-primary flex items-center justify-center font-black text-2xl border border-primary/20 shadow-lg backdrop-blur-sm group-hover:scale-110 transition-transform shrink-0">
                     {m.profile_photo ? <img loading="lazy" decoding="async" src={m.profile_photo} alt={m.name} className="w-full h-full object-cover rounded-full" /> : m.name?.charAt(0) || 'M'}
@@ -557,9 +695,12 @@ const Mentors = () => {
                 </div>
 
                 <div className="flex gap-4 mb-4 text-xs font-semibold text-gray-300 relative z-10 border-y border-white/5 py-3">
-                  <div className="flex flex-col items-center flex-1 border-r border-white/5">
+                  <div 
+                    onClick={() => setReviewMentor(m)}
+                    className="flex flex-col items-center flex-1 border-r border-white/5 cursor-pointer hover:bg-white/5 rounded-lg transition-colors py-1"
+                  >
                     <span className="text-primary text-sm font-black">{m.rating || '4.9'}⭐</span>
-                    <span className="text-[10px] text-gray-500 uppercase tracking-wider">Rating</span>
+                    <span className="text-[10px] text-gray-500 uppercase tracking-wider">Reviews</span>
                   </div>
                   <div className="flex flex-col items-center flex-1 border-r border-white/5">
                     <span className="text-white text-sm font-black">{m.years_of_experience || '5+'} yrs</span>

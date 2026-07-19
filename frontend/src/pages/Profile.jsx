@@ -155,7 +155,7 @@ const Profile = () => {
   }, [fetchProfile, fetchActivity]);
 
   const handleSaveSection = async (sectionKey) => {
-    if (sectionKey === 'personal' && (!form.name || form.name.trim().length < 3)) {
+    if (sectionKey === 'personal' && (!form.name || form.name?.trim().length < 3)) {
       showToast('Full name must be at least 3 characters.', 'error');
       return;
     }
@@ -537,9 +537,9 @@ const Profile = () => {
                   <div key={idx} className="p-4 bg-white/5 border border-white/10 rounded-xl relative group">
                     <button onClick={() => setProjects(projects.filter((_, i) => i !== idx))} className="absolute top-2 right-2 text-gray-500 hover:text-red-400"><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
                     <div className="grid gap-3">
-                      <input type="text" value={proj.title} onChange={e => { const p = [...projects]; p[idx].title = e.target.value; setProjects(p); }} placeholder="Project Title" className="input-glass text-sm font-bold" />
-                      <textarea value={proj.description} onChange={e => { const p = [...projects]; p[idx].description = e.target.value; setProjects(p); }} placeholder="Description" className="input-glass text-sm h-16 resize-none" />
-                      <input type="url" value={proj.link} onChange={e => { const p = [...projects]; p[idx].link = e.target.value; setProjects(p); }} placeholder="Project URL (GitHub/Live)" className="input-glass text-sm" />
+                      <input type="text" value={proj.title} onChange={e => { const p = [...projects]; p[idx] = { ...p[idx], title: e.target.value }; setProjects(p); }} placeholder="Project Title" className="input-glass text-sm font-bold" />
+                      <textarea value={proj.description} onChange={e => { const p = [...projects]; p[idx] = { ...p[idx], description: e.target.value }; setProjects(p); }} placeholder="Description" className="input-glass text-sm h-16 resize-none" />
+                      <input type="url" value={proj.link} onChange={e => { const p = [...projects]; p[idx] = { ...p[idx], link: e.target.value }; setProjects(p); }} placeholder="Project URL (GitHub/Live)" className="input-glass text-sm" />
                     </div>
                   </div>
                 ))}

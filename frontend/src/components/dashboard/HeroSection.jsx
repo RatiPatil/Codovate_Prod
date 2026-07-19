@@ -24,63 +24,70 @@ const HeroSection = ({ profile }) => {
   };
 
   return (
-    <div ref={containerRef} className="relative w-full rounded-3xl p-8 md:p-12 overflow-hidden border border-white/10 bg-[#0a0a0c]">
+    <div ref={containerRef} className="relative w-full rounded-[2rem] p-8 md:p-12 overflow-hidden border border-white/5 bg-gradient-to-br from-[#0a0a0c] to-[#12121a] shadow-2xl group">
       {/* Background Glow */}
-      <div className="absolute -top-40 -right-40 w-96 h-96 bg-primary/20 rounded-full blur-[100px] pointer-events-none" />
-      <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-purple-500/10 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute -top-40 -right-40 w-96 h-96 bg-primary/20 rounded-full blur-[120px] pointer-events-none group-hover:bg-primary/30 transition-all duration-700" />
+      <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-purple-600/10 rounded-full blur-[120px] pointer-events-none group-hover:bg-purple-600/20 transition-all duration-700" />
 
       {/* Content */}
-      <div className="relative z-10 flex flex-col md:flex-row gap-10 items-start justify-between">
+      <div className="relative z-10 flex flex-col md:flex-row gap-12 items-start justify-between">
         
         {/* Left Side: Greeting & Goal */}
         <div className="flex-1 space-y-6">
           <div>
-            <h1 className="text-3xl md:text-5xl font-bold text-white tracking-tight mb-2">
-              {getGreeting()}, {profile.name.split(' ')[0] || 'Builder'} <span className="inline-block hover:animate-wave">👋</span>
+            <h1 className="text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-3">
+              {getGreeting()}, <span className="bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">{profile?.name?.split(' ')[0] || 'Builder'}</span> <span className="inline-block hover:animate-wave origin-bottom-right">👋</span>
             </h1>
-            <p className="text-xl text-gray-400 font-medium">
-              Continue your journey to becoming a <span className="text-white font-bold">{profile.career_goal}</span>.
+            <p className="text-lg md:text-xl text-gray-400 font-medium leading-relaxed max-w-2xl">
+              Continue your journey to becoming a <span className="text-white font-bold px-2 py-1 bg-white/5 rounded-lg border border-white/10">{profile?.career_goal || 'Professional'}</span>.
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-4 pt-4">
-            <Link to="/opportunities" className="bg-primary hover:bg-primary-dark text-white font-bold py-3 px-8 rounded-xl transition-all shadow-[0_0_20px_rgba(32,21,255,0.3)]">
-              Find Opportunities
+            <Link to="/opportunities" className="relative overflow-hidden group/btn bg-primary text-white font-bold py-3 px-8 rounded-xl transition-all shadow-[0_0_20px_rgba(32,21,255,0.2)] hover:shadow-[0_0_30px_rgba(32,21,255,0.4)] hover:-translate-y-0.5">
+              <span className="relative z-10">Find Opportunities</span>
+              <div className="absolute inset-0 h-full w-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-[150%] group-hover/btn:translate-x-[150%] transition-transform duration-700 ease-in-out" />
             </Link>
-            <div className="flex items-center gap-2 px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-sm font-bold text-gray-300">
-              ⭐ <span className="text-white">{profile.points || 0}</span> Profile Score
+            <div className="flex items-center gap-2 px-5 py-3 glass-panel rounded-xl text-sm font-bold text-gray-300 hover:-translate-y-0.5 transition-transform cursor-default">
+              ⭐ <span className="text-white bg-clip-text">{profile?.points || 0}</span> Score
             </div>
-            <div className="flex items-center gap-2 px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-sm font-bold text-gray-300">
-              👋 Joined <span className="text-white">{new Date(profile.joinedAt).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}</span>
-            </div>
+            {profile?.joinedAt && (
+              <div className="flex items-center gap-2 px-5 py-3 glass-panel rounded-xl text-sm font-bold text-gray-300 hover:-translate-y-0.5 transition-transform cursor-default">
+                👋 Joined <span className="text-white">{new Date(profile.joinedAt).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}</span>
+              </div>
+            )}
           </div>
         </div>
 
         {/* Right Side: Primary Stats */}
-        <div className="w-full md:w-[350px] space-y-6 shrink-0">
+        <div className="w-full md:w-[350px] space-y-4 shrink-0">
           
           {/* Profile Completion */}
-          <div className="bg-black/40 border border-white/5 rounded-2xl p-6 backdrop-blur-md">
-            <div className="flex justify-between items-end mb-2">
-              <h3 className="text-gray-400 font-bold text-sm uppercase tracking-wider">Profile Completion</h3>
-              <span className="text-2xl font-black text-white">{profile.profile_completion || 0}%</span>
+          <div className="glass-panel hover:bg-white/[0.04] transition-colors rounded-2xl p-6 relative overflow-hidden group/stat">
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-transparent opacity-0 group-hover/stat:opacity-100 transition-opacity" />
+            <div className="relative z-10 flex justify-between items-end mb-3">
+              <h3 className="text-gray-400 font-bold text-xs uppercase tracking-widest">Profile Completion</h3>
+              <span className="text-3xl font-black text-white tracking-tighter">{profile?.profile_completion || 0}%</span>
             </div>
-            <div className="w-full bg-white/10 h-2 rounded-full overflow-hidden">
+            <div className="relative z-10 w-full bg-white/5 h-2.5 rounded-full overflow-hidden border border-white/5">
               <div 
-                className="h-full bg-gradient-to-r from-blue-400 to-blue-500 rounded-full" 
-                style={{ width: `${profile.profile_completion || 0}%` }}
-              />
+                className="h-full bg-gradient-to-r from-blue-500 to-blue-400 rounded-full relative" 
+                style={{ width: `${profile?.profile_completion || 0}%` }}
+              >
+                <div className="absolute inset-0 bg-white/20 animate-pulse" />
+              </div>
             </div>
-            <p className="text-xs text-gray-500 mt-3">Complete your profile to stand out to recruiters.</p>
+            <p className="relative z-10 text-[11px] text-gray-500 mt-4 font-medium uppercase tracking-wide">Complete profile to stand out.</p>
           </div>
 
           {/* Applications Submitted */}
-          <div className="bg-black/40 border border-white/5 rounded-2xl p-6 backdrop-blur-md">
-            <div className="flex justify-between items-end mb-2">
-              <h3 className="text-gray-400 font-bold text-sm uppercase tracking-wider">Total Applications</h3>
-              <span className="text-2xl font-black text-white">{profile.appsCount || 0}</span>
+          <div className="glass-panel hover:bg-white/[0.04] transition-colors rounded-2xl p-6 relative overflow-hidden group/stat">
+            <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-transparent opacity-0 group-hover/stat:opacity-100 transition-opacity" />
+            <div className="relative z-10 flex justify-between items-end mb-1">
+              <h3 className="text-gray-400 font-bold text-xs uppercase tracking-widest">Total Applications</h3>
+              <span className="text-3xl font-black text-white tracking-tighter">{profile?.appsCount || 0}</span>
             </div>
-            <p className="text-xs text-gray-500 mt-1">Keep applying to land your dream role.</p>
+            <p className="relative z-10 text-[11px] text-gray-500 mt-2 font-medium uppercase tracking-wide">Keep applying to land roles.</p>
           </div>
 
         </div>

@@ -38,23 +38,23 @@ const CareerEngineCard = ({
   const accent = accentMap[accentColor] || accentMap.blue;
 
   return (
-    <div className={`group relative bg-[#0a0a0c] border border-white/10 rounded-2xl p-6 overflow-hidden flex flex-col gap-4 hover:border-white/20 transition-all duration-300 hover:-translate-y-0.5`}>
+    <div className={`group relative glass-panel border border-white/5 rounded-3xl p-7 overflow-hidden flex flex-col gap-5 hover:bg-white/[0.04] hover:border-white/20 transition-all duration-500 hover:shadow-[0_8px_30px_rgba(255,255,255,0.05)] hover:-translate-y-1`}>
       {/* Ambient glow */}
-      <div className={`absolute -top-8 -right-8 w-32 h-32 rounded-full blur-[60px] opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${accent.glow}`} />
+      <div className={`absolute -top-12 -right-12 w-40 h-40 rounded-full blur-[70px] opacity-20 group-hover:opacity-40 transition-opacity duration-700 ${accent.glow}`} />
 
       {/* Header */}
-      <div className="relative z-10 flex items-start justify-between gap-2">
-        <div className="flex items-center gap-3">
-          <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0 ${accent.bg} border ${accent.border}`}>
-            {icon}
+      <div className="relative z-10 flex items-start justify-between gap-3">
+        <div className="flex items-center gap-4">
+          <div className={`w-14 h-14 rounded-[1.2rem] flex items-center justify-center text-2xl shrink-0 ${accent.bg} border border-white/5 group-hover:scale-110 transition-transform duration-500 shadow-inner`}>
+            <span className="drop-shadow-md">{icon}</span>
           </div>
           <div>
-            <p className={`text-[10px] font-black uppercase tracking-widest ${accent.text}`}>{label}</p>
-            <h3 className="text-sm font-bold text-white leading-tight line-clamp-1">{title}</h3>
+            <p className={`text-[10px] font-black uppercase tracking-widest ${accent.text} mb-1 opacity-90`}>{label}</p>
+            <h3 className="text-base font-extrabold text-white leading-tight line-clamp-1">{title}</h3>
           </div>
         </div>
         {badge && (
-          <span className={`shrink-0 text-[10px] font-bold px-2 py-1 rounded-lg ${accent.bg} ${accent.text} border ${accent.border} uppercase tracking-wide`}>
+          <span className={`shrink-0 text-[10px] font-black px-2.5 py-1 rounded-xl ${accent.bg} ${accent.text} border ${accent.border} uppercase tracking-widest shadow-sm`}>
             {badge}
           </span>
         )}
@@ -62,33 +62,35 @@ const CareerEngineCard = ({
 
       {/* Subtitle */}
       {subtitle && (
-        <p className="relative z-10 text-xs text-gray-500 leading-relaxed line-clamp-2">{subtitle}</p>
+        <p className="relative z-10 text-sm text-gray-400 font-medium leading-relaxed line-clamp-2 mt-1">{subtitle}</p>
       )}
 
       {/* Progress Bar */}
       {progress != null && (
-        <div className="relative z-10">
-          <div className="flex justify-between text-[10px] text-gray-600 mb-1">
+        <div className="relative z-10 mt-auto pt-2">
+          <div className="flex justify-between text-[11px] text-gray-500 font-bold mb-2 uppercase tracking-wide">
             <span>Progress</span>
-            <span className="font-bold text-gray-400">{progress}%</span>
+            <span className="text-gray-300">{progress}%</span>
           </div>
-          <div className="w-full bg-white/5 rounded-full h-1.5 overflow-hidden">
+          <div className="w-full bg-white/5 rounded-full h-2 overflow-hidden shadow-inner border border-white/5">
             <div
-              className={`h-full rounded-full transition-all duration-700 ${accent.text.replace('text-', 'bg-')}`}
+              className={`h-full rounded-full transition-all duration-1000 ease-out relative overflow-hidden ${accent.text.replace('text-', 'bg-')}`}
               style={{ width: `${Math.min(progress, 100)}%` }}
-            />
+            >
+              <div className="absolute inset-0 bg-white/20 animate-pulse" />
+            </div>
           </div>
         </div>
       )}
 
       {/* CTA */}
-      <div className="relative z-10 mt-auto">
+      <div className="relative z-10 mt-auto pt-4 border-t border-white/5 flex justify-end">
         <Link
           to={link}
-          className={`inline-flex items-center gap-1.5 text-xs font-bold ${accent.text} hover:opacity-80 transition-opacity`}
+          className={`inline-flex items-center gap-2 text-sm font-black ${accent.text} bg-white/5 px-4 py-2 rounded-xl border border-white/5 hover:bg-white/10 transition-all group-hover:translate-x-1`}
         >
           {linkText}
-          <svg className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="w-4 h-4 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
           </svg>
         </Link>

@@ -270,3 +270,31 @@ router.get("/my-sessions", auth, async (req, res) => {
 });
 
 module.exports = router;
+
+// Follow/Unfollow a mentor
+router.post("/:id/follow", auth, async (req, res) => {
+  try {
+    const studentId = req.user.id;
+    const mentorId = req.params.id;
+    
+    const followRef = db.collection("mentor_followers").doc(`${studentId}_${mentorId}`);
+    const doc = await followRef.get();
+    
+    if (doc.exists) {
+      // Unfollow
+      await followRef.delete();
+      res.json({ message: "Unfollowed mentor", isFollowing: false });
+    } else {
+      // Follow
+      await followRef.set({
+        student_id: studentId,
+        mentor_id: mentorId,
+        created_at: new Date()
+      });
+      res.json({ message: "Following mentor", isFollowing: true });
+    }
+  } catch (err) {
+    console.error("Follow mentor error:", err);
+    res.status(500).json({ message: "Server error." });
+  }
+});

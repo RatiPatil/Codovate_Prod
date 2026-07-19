@@ -190,15 +190,78 @@ const runDailyPipeline = async () => {
   }
 };
 
+const runRecruiterPipeline = async () => {
+  console.log("🏢 [RECRUITER PIPELINE START] Running Recruiter Automation...");
+  const startTime = Date.now();
+  try {
+    // 1. Send interview reminders (Next 24 Hours)
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    // Simplification for presentation: Send reminder to any 'scheduled' interview
+    const interviewsSnap = await db.collection("interviews").where("status", "==", "scheduled").get();
+    
+    const reminderPromises = interviewsSnap.docs.map(async (doc) => {
+      const interview = doc.data();
+      const iDate = new Date(interview.date);
+      // If interview is within next 24 hours
+      if (iDate > new Date() && iDate < tomorrow) {
+        await db.collection("notifications").add({
+          user_id: interview.student_id,
+          title: "Interview Reminder",
+          message: `You have an interview scheduled for tomorrow at ${iDate.toLocaleTimeString()}.`,
+          type: "interview_reminder",
+          read: false,
+          created_at: admin.firestore.FieldValue.serverTimestamp()
+        });
+      }
+    });
+    await Promise.all(reminderPromises);
+
+    // 2. Generate Recruiter Analytics
+    const companiesSnap = await db.collection("companies").get();
+    const analyticsPromises = companiesSnap.docs.map(async (companyDoc) => {
+      const companyId = companyDoc.id;
+      
+      const appsSnap = await db.collection("applications").where("company_id", "==", companyId).get();
+      let total = 0, shortlisted = 0, interviewed = 0, hired = 0, rejected = 0;
+      
+      appsSnap.forEach(appDoc => {
+        total++;
+        const s = appDoc.data().status;
+        if (s === 'shortlisted') shortlisted++;
+        if (s === 'interview') interviewed++;
+        if (s === 'hired' || s === 'selected') hired++;
+        if (s === 'rejected') rejected++;
+      });
+      
+      const matchRate = total > 0 ? Math.round(((shortlisted + interviewed + hired) / total) * 100) : 0;
+      
+      await db.collection("hiringAnalytics").doc(companyId).set({
+        company_id: companyId,
+        metrics: { total, shortlisted, interviewed, hired, rejected, matchRate },
+        updated_at: admin.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+    });
+    await Promise.all(analyticsPromises);
+
+    console.log(`✅ [RECRUITER PIPELINE SUCCESS] Execution Time: ${Date.now() - startTime}ms`);
+  } catch (error) {
+    console.error("❌ [RECRUITER PIPELINE ERROR]:", error);
+  }
+};
+
 const startAutomationJobs = () => {
   cron.schedule("0 0 * * *", () => {
     console.log("⏰ Triggering Midnight Automation Pipeline...");
     runDailyPipeline();
+    runRecruiterPipeline();
   });
   console.log("🛠️ Automation Jobs Scheduled (Cron).");
 };
 
 module.exports = {
   runDailyPipeline,
+  runRecruiterPipeline,
   startAutomationJobs
 };

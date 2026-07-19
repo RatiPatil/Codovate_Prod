@@ -101,11 +101,11 @@ const Dashboard = () => {
       </section>
 
       {/* ── SECTION 3: AI CAREER ENGINE ROW ─────────────────────── */}
-      <section className="dashboard-section mb-4">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-2 h-8 bg-gradient-to-b from-primary to-purple-500 rounded-full" />
-          <h2 className="text-2xl font-bold text-white">AI Career Engine</h2>
-          <span className="bg-primary/20 text-primary text-[10px] font-black uppercase px-2 py-0.5 rounded-full border border-primary/30 tracking-widest">Live</span>
+      <section className="dashboard-section mb-10">
+        <div className="flex items-center gap-3 mb-8">
+          <div className="w-2 h-8 bg-gradient-to-b from-primary to-purple-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(32,21,255,0.5)]" />
+          <h2 className="text-2xl md:text-3xl font-extrabold text-white tracking-tight">AI Career Engine</h2>
+          <span className="bg-primary/20 text-primary text-[10px] font-black uppercase px-2.5 py-1 rounded-full border border-primary/30 tracking-widest shadow-sm">Live</span>
         </div>
 
         {/* Engine Grid: All sections fed by the AI Pipeline */}

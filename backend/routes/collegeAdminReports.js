@@ -111,7 +111,8 @@ router.get('/analytics', collegeAdminOnly, async (req, res) => {
 
     appsSnapshot.forEach(doc => {
       const app = doc.data();
-      if (!studentIds.has(app.student_id)) return;
+      const uid = app.user_id || app.student_id;
+      if (!studentIds.has(uid)) return;
       
       const date = app.applied_at?.toDate ? app.applied_at.toDate() : new Date(app.applied_at);
       if (isNaN(date.getTime())) return;

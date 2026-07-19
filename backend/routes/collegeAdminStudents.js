@@ -26,19 +26,53 @@ router.get('/', collegeAdminOnly, async (req, res) => {
                              .where('college_id', '==', targetCollegeId)
                              .get();
     
-    const students = [];
-    snapshot.forEach(doc => {
+    const studentDocs = snapshot.docs;
+    
+    const students = await Promise.all(studentDocs.map(async (doc) => {
       const data = doc.data();
-      students.push({ 
-        id: doc.id, 
+      const uid = doc.id;
+      
+      // Fetch readiness score
+      let readinessScore = 0;
+      try {
+        const rDoc = await db.collection('placementReadiness').doc(uid).get();
+        if (rDoc.exists) readinessScore = rDoc.data().score || 0;
+      } catch (e) {}
+      
+      // Fetch coding stats
+      let codingScore = 0;
+      let problemsSolved = 0;
+      try {
+        const cDoc = await db.collection('codingStats').doc(uid).get();
+        if (cDoc.exists) {
+          codingScore = cDoc.data().rating || 0;
+          problemsSolved = cDoc.data().totalSolved || 0;
+        }
+      } catch (e) {}
+      
+      // Fetch profile for resume check
+      let resumeCompleted = false;
+      try {
+        const pDoc = await db.collection('profiles').doc(uid).get();
+        if (pDoc.exists && pDoc.data().socialLinks?.resume) {
+          resumeCompleted = true;
+        }
+      } catch (e) {}
+
+      return { 
+        id: uid, 
         email: data.email,
         name: data.profile_data?.name || 'Unknown',
         status: data.status,
         is_active: data.is_active,
         college_id: data.college_id,
-        created_at: data.created_at
-      });
-    });
+        created_at: data.created_at,
+        readiness_score: readinessScore,
+        coding_score: codingScore,
+        problems_solved: problemsSolved,
+        resume_completed: resumeCompleted
+      };
+    }));
     
     res.json(students);
   } catch (error) {
