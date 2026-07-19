@@ -25,6 +25,7 @@ const Applications = lazy(() => import('./pages/Applications'));
 const Calendar = lazy(() => import('./pages/Calendar'));
 const Profile = lazy(() => import('./pages/Profile'));
 const AdminLogin = lazy(() => import('./pages/AdminLogin'));
+const RecruiterLogin = lazy(() => import('./pages/RecruiterLogin'));
 const TeamsLayout = lazy(() => import('./pages/teams/TeamsLayout'));
 const Mentors = lazy(() => import('./pages/Mentors'));
 const Leaderboard = lazy(() => import('./pages/Leaderboard'));
@@ -82,6 +83,7 @@ function App() {
                 <Routes>
                   <Route path="/" element={<Home />} />
                   <Route path="/login" element={<Login />} />
+                  <Route path="/recruiter-login" element={<RecruiterLogin />} />
                   <Route path="/admin-login" element={<AdminLogin />} />
                   <Route path="/signup" element={<Signup />} />
                   <Route path="/forgot-password" element={<ForgotPassword />} />

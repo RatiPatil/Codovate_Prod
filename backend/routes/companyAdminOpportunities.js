@@ -20,7 +20,13 @@ router.get('/', companyAdminOnly, async (req, res) => {
     
     let query = db.collection('opportunities').where('company_id', '==', targetCompanyId);
     if (req.query.type) {
-      const formattedType = req.query.type === 'job' ? 'Job' : 'Internship';
+      // Support 'Job', 'Internship', 'Hiring Challenge'
+      const typeMap = {
+        'job': 'Job',
+        'internship': 'Internship',
+        'challenge': 'Hiring Challenge'
+      };
+      const formattedType = typeMap[req.query.type] || 'Job';
       query = query.where('type', '==', formattedType);
     }
 
@@ -37,7 +43,7 @@ router.get('/', companyAdminOnly, async (req, res) => {
 
 router.post('/', companyAdminOnly, [
   body('title').notEmpty().withMessage('Title is required'),
-  body('type').isIn(['job', 'internship']).withMessage('Valid type required')
+  body('type').isIn(['job', 'internship', 'challenge']).withMessage('Valid type required')
 ], async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
@@ -51,17 +57,26 @@ router.post('/', companyAdminOnly, [
     const compName = compDoc.exists ? compDoc.data().name : 'Unknown Company';
     
     // Format type to Title Case so frontend filters match it
-    const formattedType = data.type === 'job' ? 'Job' : 'Internship';
+    const typeMap = {
+      'job': 'Job',
+      'internship': 'Internship',
+      'challenge': 'Hiring Challenge'
+    };
+    const formattedType = typeMap[data.type] || 'Job';
     
     const newDocRef = db.collection('opportunities').doc();
     const newOp = {
       id: newDocRef.id,
       title: data.title,
       type: formattedType,
+      role: data.role || '',
+      skills: data.skills || [],
       location: data.location || '',
       description: data.description || '',
-      salary: data.salary || '',
-      stipend: data.stipend || '',
+      salary: data.salary || data.stipend || '',
+      experience: data.experience || '',
+      deadline: data.deadline || '',
+      hiring_process: data.hiring_process || '',
       link: data.link || '',
       company_id: targetCompanyId,
       company: compName, // Add company name for frontend display
@@ -87,7 +102,12 @@ router.put('/:id', companyAdminOnly, async (req, res) => {
     const updateData = { ...req.body };
     delete updateData.company_id;
     if (updateData.type) {
-      updateData.type = updateData.type === 'job' ? 'Job' : 'Internship';
+      const typeMap = {
+        'job': 'Job',
+        'internship': 'Internship',
+        'challenge': 'Hiring Challenge'
+      };
+      updateData.type = typeMap[updateData.type] || updateData.type;
     }
     await docRef.update(updateData);
     res.json((await docRef.get()).data());

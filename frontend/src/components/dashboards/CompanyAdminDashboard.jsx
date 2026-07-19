@@ -29,6 +29,9 @@ const CompanyAdminDashboard = () => {
     totalApplications: 0,
     shortlistedCandidates: 0,
     selectedCandidates: 0,
+    totalCandidates: 0,
+    savedCandidates: 0,
+    interviewsScheduled: 0,
     loading: true
   });
   
@@ -106,10 +109,11 @@ const CompanyAdminDashboard = () => {
         
         {/* Top KPIs */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-10">
-          <StatCard title="Active Jobs" value={stats.activeJobs} icon="💼" isLive />
-          <StatCard title="Active Internships" value={stats.activeInternships} icon="🚀" isLive />
-          <StatCard title="Applications" value={stats.totalApplications} icon="📥" isLive />
-          <StatCard title="Shortlisted" value={stats.shortlistedCandidates} icon="⭐" isLive />
+          <StatCard title="Total Candidates" value={stats.totalCandidates} icon="👥" />
+          <StatCard title="Saved Candidates" value={stats.savedCandidates} icon="⭐" />
+          <StatCard title="Interviews Scheduled" value={stats.interviewsScheduled} icon="🗓️" />
+          <StatCard title="Active Job Posts" value={stats.activeJobs + stats.activeInternships} icon="💼" />
+          <StatCard title="Shortlisted Students" value={stats.shortlistedCandidates} icon="✅" />
         </div>
 
         {/* Action Panel & Secondary Stats */}
@@ -123,7 +127,7 @@ const CompanyAdminDashboard = () => {
               </div>
               <div>
                 <div className="text-sm text-gray-500 font-bold uppercase tracking-wider mb-2">Interviewing</div>
-                <div className="text-4xl font-black text-white">--</div>
+                <div className="text-4xl font-black text-white">{stats.interviewsScheduled}</div>
               </div>
               <div>
                 <div className="text-sm text-gray-500 font-bold uppercase tracking-wider mb-2">Selected</div>

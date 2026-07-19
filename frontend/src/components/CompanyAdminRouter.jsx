@@ -3,8 +3,7 @@ import { Routes, Route } from 'react-router-dom';
 import CompanyAdminLayout from './layouts/CompanyAdminLayout';
 
 const CompanyAdminDashboard = lazy(() => import('./dashboards/CompanyAdminDashboard'));
-const CompanyAdminJobs = lazy(() => import('../pages/admin/CompanyAdminJobs'));
-const CompanyAdminInternships = lazy(() => import('../pages/admin/CompanyAdminInternships'));
+const CompanyAdminOpportunities = lazy(() => import('../pages/admin/CompanyAdminOpportunities'));
 const CompanyAdminApplications = lazy(() => import('../pages/admin/CompanyAdminApplications'));
 const CompanyAdminCandidates = lazy(() => import('../pages/admin/CompanyAdminCandidates'));
 const CompanyAdminInterviews = lazy(() => import('../pages/admin/CompanyAdminInterviews'));
@@ -24,8 +23,7 @@ const CompanyAdminRouter = () => {
       <Suspense fallback={<Loader />}>
         <Routes>
           <Route path="/" element={<CompanyAdminDashboard />} />
-          <Route path="jobs" element={<CompanyAdminJobs />} />
-          <Route path="internships" element={<CompanyAdminInternships />} />
+          <Route path="opportunities" element={<CompanyAdminOpportunities />} />
           <Route path="applications" element={<CompanyAdminApplications />} />
           <Route path="candidates" element={<CompanyAdminCandidates />} />
           <Route path="interviews" element={<CompanyAdminInterviews />} />

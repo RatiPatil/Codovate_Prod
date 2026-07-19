@@ -12,8 +12,7 @@ const CompanyAdminSidebar = ({ mobileOpen, setMobileOpen }) => {
 
   const menuItems = [
     { label: 'Dashboard', path: '/admin', icon: '📊' },
-    { label: 'Jobs', path: '/admin/jobs', icon: '💼' },
-    { label: 'Internships', path: '/admin/internships', icon: '🚀' },
+    { label: 'Opportunities', path: '/admin/opportunities', icon: '💼' },
     { label: 'Applications', path: '/admin/applications', icon: '📥' },
     { label: 'Candidates', path: '/admin/candidates', icon: '👥' },
     { label: 'Talent Search', path: '/admin/talent', icon: '🔎' },

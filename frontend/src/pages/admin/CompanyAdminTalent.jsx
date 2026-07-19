@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../api/axios';
-import { Search, MapPin, Briefcase, GraduationCap, Link as LinkIcon, ExternalLink, Calendar, Video } from 'lucide-react';
+import { Search, MapPin, Briefcase, GraduationCap, Link as LinkIcon, ExternalLink, Calendar, Video, CheckCircle, Code, FileText, Target, Brain, Award } from 'lucide-react';
 import toast from 'react-hot-toast';
+import CandidateProfileModal from '../../components/modals/CandidateProfileModal';
 
 const CompanyAdminTalent = () => {
   const [candidates, setCandidates] = useState([]);
@@ -10,9 +11,22 @@ const CompanyAdminTalent = () => {
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [scheduleData, setScheduleData] = useState({ date: '', time: '', link: '', message: '' });
 
-  // Filters
+  // Basic Filters
   const [skillFilter, setSkillFilter] = useState('');
   const [roleFilter, setRoleFilter] = useState('');
+  
+  // Advanced Filters
+  const [showFilters, setShowFilters] = useState(false);
+  const [advancedFilters, setAdvancedFilters] = useState({
+    branch: '',
+    year: '',
+    location: '',
+    experience_level: '',
+    resume_score: '',
+    coding_score: '',
+    project_count: '',
+    availability: false
+  });
 
   const toggleShortlist = async (student, e) => {
     if(e) e.stopPropagation();
@@ -39,6 +53,14 @@ const CompanyAdminTalent = () => {
         params: {
           skills: skillFilter || undefined,
           role: roleFilter || undefined,
+          branch: advancedFilters.branch || undefined,
+          year: advancedFilters.year || undefined,
+          location: advancedFilters.location || undefined,
+          experience_level: advancedFilters.experience_level || undefined,
+          resume_score: advancedFilters.resume_score || undefined,
+          coding_score: advancedFilters.coding_score || undefined,
+          project_count: advancedFilters.project_count || undefined,
+          availability: advancedFilters.availability ? 'true' : undefined
         }
       });
       setCandidates(res.data);
@@ -102,6 +124,12 @@ const CompanyAdminTalent = () => {
             className="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-amber-500 w-full md:w-48"
           />
           <button 
+            onClick={() => setShowFilters(!showFilters)}
+            className="bg-white/5 hover:bg-white/10 text-gray-300 font-bold px-4 py-2 rounded-xl transition-colors"
+          >
+            Filters
+          </button>
+          <button 
             onClick={fetchTalent}
             className="bg-amber-600 hover:bg-amber-500 text-white font-bold px-6 py-2 rounded-xl transition-colors"
           >
@@ -109,6 +137,51 @@ const CompanyAdminTalent = () => {
           </button>
         </div>
       </div>
+      
+      {/* Advanced Filters Panel */}
+      {showFilters && (
+        <div className="bg-[#0a0a16] border border-white/10 p-6 rounded-2xl mb-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div>
+            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Branch</label>
+            <input type="text" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white focus:border-amber-500 focus:outline-none" placeholder="e.g. Computer Science" value={advancedFilters.branch} onChange={e => setAdvancedFilters({...advancedFilters, branch: e.target.value})} />
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Graduation Year</label>
+            <input type="text" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white focus:border-amber-500 focus:outline-none" placeholder="e.g. 2026" value={advancedFilters.year} onChange={e => setAdvancedFilters({...advancedFilters, year: e.target.value})} />
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Location</label>
+            <input type="text" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white focus:border-amber-500 focus:outline-none" placeholder="e.g. New York" value={advancedFilters.location} onChange={e => setAdvancedFilters({...advancedFilters, location: e.target.value})} />
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Experience Level</label>
+            <select className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white focus:border-amber-500 focus:outline-none" value={advancedFilters.experience_level} onChange={e => setAdvancedFilters({...advancedFilters, experience_level: e.target.value})}>
+              <option value="">Any</option>
+              <option value="Beginner">Beginner</option>
+              <option value="Intermediate">Intermediate</option>
+              <option value="Advanced">Advanced</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Min Resume Score</label>
+            <input type="number" min="0" max="100" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white focus:border-amber-500 focus:outline-none" placeholder="e.g. 70" value={advancedFilters.resume_score} onChange={e => setAdvancedFilters({...advancedFilters, resume_score: e.target.value})} />
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Min Coding Score</label>
+            <input type="number" min="0" max="100" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white focus:border-amber-500 focus:outline-none" placeholder="e.g. 80" value={advancedFilters.coding_score} onChange={e => setAdvancedFilters({...advancedFilters, coding_score: e.target.value})} />
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Min Project Count</label>
+            <input type="number" min="0" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white focus:border-amber-500 focus:outline-none" placeholder="e.g. 3" value={advancedFilters.project_count} onChange={e => setAdvancedFilters({...advancedFilters, project_count: e.target.value})} />
+          </div>
+          <div className="flex items-center mt-6">
+            <label className="flex items-center cursor-pointer gap-2">
+              <input type="checkbox" className="form-checkbox text-amber-500 rounded bg-white/5 border-white/10 focus:ring-amber-500" checked={advancedFilters.availability} onChange={e => setAdvancedFilters({...advancedFilters, availability: e.target.checked})} />
+              <span className="text-sm font-bold text-white">Actively Looking Only</span>
+            </label>
+          </div>
+        </div>
+      )}
 
       {loading ? (
         <div className="flex items-center justify-center h-64">
@@ -125,6 +198,11 @@ const CompanyAdminTalent = () => {
             <div key={candidate.id} className="bg-[#0a0a16] border border-white/10 hover:border-amber-500/30 rounded-2xl overflow-hidden group transition-all">
               
               <div className="p-6 relative">
+                {candidate.readiness?.readinessScore > 75 && (
+                  <span className="absolute top-4 left-4 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 text-xs font-bold px-2 py-1 rounded-md flex items-center gap-1">
+                    <CheckCircle size={12} /> Verified Ready
+                  </span>
+                )}
                 {candidate.profile_score > 80 && (
                   <span className="absolute top-4 right-4 bg-amber-500/10 text-amber-500 border border-amber-500/20 text-xs font-bold px-2 py-1 rounded-md">
                     Top Match
@@ -193,99 +271,11 @@ const CompanyAdminTalent = () => {
 
       {/* Student Detail Modal */}
       {selectedStudent && !showScheduleModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0" onClick={() => setSelectedStudent(null)}></div>
-          <div className="bg-[#080812] border border-white/10 w-full max-w-3xl rounded-3xl p-8 relative z-10 max-h-[90vh] overflow-y-auto custom-scrollbar">
-            
-            <button onClick={() => setSelectedStudent(null)} className="absolute top-6 right-6 w-8 h-8 flex items-center justify-center rounded-full bg-white/5 text-gray-400 hover:text-white">✕</button>
-
-            <div className="flex items-start gap-6 mb-8">
-              <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-amber-500/20 to-orange-600/20 flex items-center justify-center overflow-hidden border border-white/10 shrink-0">
-                {selectedStudent.profile_photo ? (
-                  <img src={selectedStudent.profile_photo} alt={selectedStudent.name} className="w-full h-full object-cover" />
-                ) : (
-                  <span className="text-4xl font-bold text-white">{selectedStudent.name.charAt(0)}</span>
-                )}
-              </div>
-              <div>
-                <div className="flex items-center gap-3">
-                  <h2 className="text-3xl font-black text-white mb-1">{selectedStudent.name}</h2>
-                  <button
-                    onClick={() => toggleShortlist(selectedStudent)}
-                    className={`p-1.5 rounded-lg border transition-all ${
-                      selectedStudent.is_shortlisted
-                        ? 'bg-amber-500/20 border-amber-500/50 text-amber-400'
-                        : 'bg-white/5 border-white/10 text-gray-400 hover:text-white hover:bg-white/10'
-                    }`}
-                    title={selectedStudent.is_shortlisted ? "Remove from shortlist" : "Add to shortlist"}
-                  >
-                    {selectedStudent.is_shortlisted ? '★' : '☆'}
-                  </button>
-                </div>
-                <p className="text-amber-500 font-bold mb-2">{(selectedStudent.desired_roles && selectedStudent.desired_roles[0]) || 'Software Engineer'}</p>
-                <div className="flex flex-wrap gap-4 text-sm text-gray-400">
-                  <span className="flex items-center gap-1"><GraduationCap size={16}/> {selectedStudent.college}</span>
-                  <span className="flex items-center gap-1"><Calendar size={16}/> Class of {selectedStudent.year}</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              <div className="md:col-span-2 space-y-6">
-                
-                <div>
-                  <h3 className="text-lg font-bold text-white mb-3 border-b border-white/10 pb-2">About</h3>
-                  <p className="text-gray-300 leading-relaxed text-sm">
-                    {selectedStudent.bio || 'This student prefers to let their code speak for itself.'}
-                  </p>
-                </div>
-
-                <div>
-                  <h3 className="text-lg font-bold text-white mb-3 border-b border-white/10 pb-2">Technical Skills</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedStudent.skills?.map(skill => (
-                      <span key={skill} className="px-3 py-1 bg-white/5 border border-white/10 rounded-lg text-sm text-gray-300">{skill}</span>
-                    ))}
-                  </div>
-                </div>
-
-              </div>
-
-              <div className="space-y-4">
-                <div className="bg-white/5 border border-white/10 rounded-xl p-5">
-                  <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">Links</h3>
-                  <div className="space-y-3">
-                    {selectedStudent.resume_url && (
-                      <a href={selectedStudent.resume_url} target="_blank" rel="noreferrer" className="flex items-center justify-between text-sm text-gray-300 hover:text-amber-500 transition-colors">
-                        <span className="flex items-center gap-2"><LinkIcon size={16}/> Resume</span>
-                        <ExternalLink size={14}/>
-                      </a>
-                    )}
-                    {selectedStudent.github_url && (
-                      <a href={selectedStudent.github_url} target="_blank" rel="noreferrer" className="flex items-center justify-between text-sm text-gray-300 hover:text-amber-500 transition-colors">
-                        <span className="flex items-center gap-2"><LinkIcon size={16}/> GitHub</span>
-                        <ExternalLink size={14}/>
-                      </a>
-                    )}
-                    {selectedStudent.portfolio_url && (
-                      <a href={selectedStudent.portfolio_url} target="_blank" rel="noreferrer" className="flex items-center justify-between text-sm text-gray-300 hover:text-amber-500 transition-colors">
-                        <span className="flex items-center gap-2"><LinkIcon size={16}/> Portfolio</span>
-                        <ExternalLink size={14}/>
-                      </a>
-                    )}
-                  </div>
-                </div>
-
-                <button 
-                  onClick={() => setShowScheduleModal(true)}
-                  className="w-full py-3 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-xl transition-colors shadow-[0_0_15px_rgba(217,119,6,0.3)] flex items-center justify-center gap-2"
-                >
-                  <Video size={18} /> Schedule Interview
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <CandidateProfileModal
+          student={selectedStudent}
+          onClose={() => setSelectedStudent(null)}
+          onShortlist={toggleShortlist}
+        />
       )}
 
       {/* Schedule Interview Modal */}

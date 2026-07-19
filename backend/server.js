@@ -83,10 +83,12 @@ app.use("/api/college-admin/reports", protect, require("./routes/collegeAdminRep
 
 // Company Admin Scoped Routes
 app.use("/api/company-admin/opportunities", protect, require("./routes/companyAdminOpportunities"));
+app.use("/api/company-admin/analytics", protect, require("./routes/companyAdminAnalytics"));
 app.use("/api/company-admin/applications", protect, require("./routes/companyAdminApplications"));
 app.use("/api/company-admin/interviews", protect, require("./routes/companyAdminInterviews"));
 app.use("/api/company-admin/notifications", protect, require("./routes/companyAdminNotifications"));
 app.use("/api/company-admin/talent", protect, require("./routes/companyAdminTalent"));
+app.use("/api/admin/company/dashboard", protect, require("./routes/companyAdminDashboard"));
 app.use("/api/students",      require("./routes/students"));
 app.use("/api/opportunities", require("./routes/opportunities"));
 app.use("/api/applications",  require("./routes/applications"));

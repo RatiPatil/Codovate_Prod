@@ -7,7 +7,19 @@ import { showAlert, showConfirm } from '../../utils/uiUtils';
 const interviewSchema = [
   { name: 'candidate_name', label: 'Candidate Name', type: 'text', required: true },
   { name: 'role', label: 'Role / Job Title', type: 'text', required: true },
-  { name: 'date', label: 'Interview Date & Time', type: 'text', required: true },
+  { 
+    name: 'interview_type', 
+    label: 'Interview Type', 
+    type: 'select',
+    options: [
+      { label: 'HR Interview', value: 'HR Interview' },
+      { label: 'Technical Interview', value: 'Technical Interview' },
+      { label: 'Group Discussion', value: 'Group Discussion' },
+      { label: 'Online Test', value: 'Online Test' }
+    ],
+    required: true
+  },
+  { name: 'date', label: 'Interview Date & Time', type: 'datetime-local', required: true },
   { name: 'link', label: 'Meeting Link', type: 'text' },
   {
     name: 'status',
@@ -80,7 +92,32 @@ const CompanyAdminInterviews = () => {
   const columns = [
     { header: 'Candidate Name', accessor: 'candidate_name' },
     { header: 'Role', accessor: 'role' },
-    { header: 'Date', accessor: 'date' },
+    { 
+      header: 'Type', 
+      render: (row) => (
+        <span className={`px-2 py-1 rounded-md text-xs font-bold ${
+          row.interview_type === 'Technical Interview' ? 'bg-blue-500/20 text-blue-400' :
+          row.interview_type === 'HR Interview' ? 'bg-purple-500/20 text-purple-400' :
+          row.interview_type === 'Online Test' ? 'bg-pink-500/20 text-pink-400' :
+          'bg-gray-500/20 text-gray-400'
+        }`}>
+          {row.interview_type || 'Unknown'}
+        </span>
+      )
+    },
+    { 
+      header: 'Date & Time', 
+      render: (row) => {
+        if (!row.date) return '—';
+        try {
+          return new Date(row.date).toLocaleString('en-US', {
+            month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
+          });
+        } catch(e) {
+          return row.date;
+        }
+      }
+    },
     { 
       header: 'Status', 
       render: (row) => (

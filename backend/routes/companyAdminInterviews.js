@@ -32,7 +32,8 @@ router.get('/', companyAdminOnly, async (req, res) => {
 router.post('/', companyAdminOnly, [
   body('candidate_name').notEmpty(),
   body('role').notEmpty(),
-  body('date').notEmpty()
+  body('date').notEmpty(),
+  body('interview_type').isIn(['HR Interview', 'Technical Interview', 'Group Discussion', 'Online Test']).withMessage('Invalid interview type')
 ], async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
