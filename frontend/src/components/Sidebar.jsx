@@ -59,7 +59,7 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    window.location.href = '/login';
   };
 
   const Content = () => (

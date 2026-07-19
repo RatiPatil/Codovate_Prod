@@ -180,7 +180,7 @@ router.get("/status", auth, async (req, res) => {
 
     if (userDoc.exists) {
       const u = userDoc.data();
-      isCompleted = u.onboardingCompleted === true || u.onboardingCompleted === "true";
+      isCompleted = u.onboardingCompleted === true || u.onboardingCompleted === "true" || u.onboarding_completed === true || u.onboarding_completed === "true";
       completionScore = u.profileCompleted || 0;
     }
     
