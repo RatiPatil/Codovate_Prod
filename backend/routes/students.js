@@ -581,12 +581,15 @@ router.get("/workspace", auth, async (req, res) => {
     
     // Profile Completion (15%)
     const profComp = p.profile_completion || p.profileCompletion || u.profileCompleted || 0;
-    readinessScore += profComp * 0.15;
+    const profScore = profComp * 0.15;
+    readinessScore += profScore;
     if (profComp < 80) improvements.push('Profile Completion');
     
     // Learning Progress (25%)
+    let learnScore = 0;
     if (roadmapDoc.exists) {
-      readinessScore += (roadmapDoc.data().overall_progress || 0) * 0.25;
+      learnScore = (roadmapDoc.data().overall_progress || 0) * 0.25;
+      readinessScore += learnScore;
       const activeStep = roadmapDoc.data().steps?.find(s => s.status === 'in_progress' || s.status === 'pending');
       if (activeStep) improvements.push(activeStep.title);
     } else {
@@ -595,16 +598,20 @@ router.get("/workspace", auth, async (req, res) => {
     
     // Skills (15%)
     const skillCount = p.skills?.length || 0;
-    readinessScore += Math.min(skillCount, 10) / 10 * 15;
+    const skillsScore = Math.min(skillCount, 10) / 10 * 15;
+    readinessScore += skillsScore;
     if (skillCount < 5) improvements.push('Skills');
     
     // Projects (15%)
     const projCount = p.projects?.length || 0;
-    readinessScore += Math.min(projCount, 3) / 3 * 15;
+    const projScore = Math.min(projCount, 3) / 3 * 15;
+    readinessScore += projScore;
     if (projCount < 2) improvements.push('Projects');
     
     // Resume (10%)
+    let resScore = 0;
     if (p.resume_url) {
+      resScore = 10;
       readinessScore += 10;
     } else {
       improvements.push('Resume');
@@ -612,23 +619,35 @@ router.get("/workspace", auth, async (req, res) => {
     
     // Certificates (10%)
     const certCount = p.certificates?.length || 0;
-    readinessScore += Math.min(certCount, 2) / 2 * 10;
+    const certScore = Math.min(certCount, 2) / 2 * 10;
+    readinessScore += certScore;
     if (certCount < 1 && !improvements.includes('Certificates') && improvements.length < 4) {
        improvements.push('Certificates');
     }
     
     // Applications (10%)
-    readinessScore += Math.min(appsCount, 5) / 5 * 10;
-    if (appsCount === 0) improvements.push('Applications');
+    const appScore = Math.min(appsCount, 5) / 5 * 10;
+    readinessScore += appScore;
+    if (appsCount < 1 && !improvements.includes('Applications') && improvements.length < 4) {
+      improvements.push('Applications');
+    }
 
+    const details = {
+      codingScore: (skillsScore / 15 * 12.5) + (projScore / 15 * 12.5),
+      assessmentScore: learnScore,
+      resumeScore: (profScore / 15 * 15) + resScore,
+      interviewScore: (appScore / 10 * 12.5) + (certScore / 10 * 12.5)
+    };
+    
     const placementReadiness = {
       score: Math.round(readinessScore),
+      details,
       improvements: improvements.slice(0, 4) // Show top 4 areas to improve
     };
     
     // Persist Placement Readiness
     await db.collection("placementReadiness").doc(uid).set(placementReadiness, { merge: true });
-
+    
     // Compile Dashboard Data
     res.json({
       profile: {
@@ -817,18 +836,7 @@ router.post("/career-goal", auth, async (req, res) => {
 router.get("/daily-tasks", auth, async (req, res) => {
   try {
     const doc = await db.collection("dailyTasks").doc(req.user.id).get();
-    const data = doc.exists ? doc.data() : { tasks: [] };
-    
-    // Always append a daily coding challenge task
-    data.tasks.unshift({
-      id: "daily_coding",
-      title: "Complete Today's Coding Challenge",
-      type: "action",
-      actionUrl: "/coding"
-    });
-    
-    if (!data.estimated_time) data.estimated_time = "30 Minutes";
-    if (!data.reward) data.reward = "+50 XP";
+    const data = doc.exists ? doc.data() : { tasks: [], estimated_time: null, reward: null };
 
     res.json(data);
   } catch (err) {

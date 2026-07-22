@@ -31,9 +31,12 @@ const Dashboard = () => {
     const fetchAll = async () => {
       try {
         setLoading(true);
-        // Fetch workspace (hero, profile data) + all engine data in parallel
+        // Fetch workspace (hero, profile data) which generates the dependent data
+        const wsRes = await api.get('/students/workspace');
+        setWorkspace(wsRes.data);
+
+        // Fetch dependent data in parallel
         const [
-          wsRes,
           tasksRes,
           readinessRes,
           recsRes,
@@ -41,7 +44,6 @@ const Dashboard = () => {
           reportRes,
           skillGapRes
         ] = await Promise.allSettled([
-          api.get('/students/workspace'),
           api.get('/students/daily-tasks'),
           api.get('/students/placement-readiness'),
           api.get('/students/recommendations'),
@@ -49,9 +51,6 @@ const Dashboard = () => {
           api.get('/students/weekly-report'),
           api.get('/ai/skill-gap'),
         ]);
-
-        if (wsRes.status === 'fulfilled') setWorkspace(wsRes.value.data);
-        else setError('Failed to load workspace.');
 
         if (tasksRes.status === 'fulfilled') setDailyTasks(tasksRes.value.data);
         if (readinessRes.status === 'fulfilled') setReadiness(readinessRes.value.data);
@@ -174,16 +173,22 @@ const Dashboard = () => {
           />
 
           {/* Mentors Card */}
-          <CareerEngineCard
-            icon="👨‍🏫"
-            label="Recommended Mentor"
-            title="Java Backend"
-            subtitle="15 Years Experience · Available Tomorrow"
-            link="/mentors"
-            linkText="Book Session →"
-            accentColor="orange"
-            badge="Expert Guidance"
-          />
+          {(() => {
+            const recs = recommendations || workspace?.recommendations || [];
+            const mentorRec = recs.find(r => r.type === 'mentor');
+            return (
+              <CareerEngineCard
+                icon="👨‍🏫"
+                label="Recommended Mentor"
+                title={mentorRec ? mentorRec.title : 'Find a Mentor'}
+                subtitle={mentorRec ? mentorRec.company : 'Get expert guidance'}
+                link={mentorRec ? mentorRec.linkUrl : '/mentors'}
+                linkText="Book Session →"
+                accentColor="orange"
+                badge="Expert Guidance"
+              />
+            );
+          })()}
 
           {/* Teams Card */}
           <CareerEngineCard
