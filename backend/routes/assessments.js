@@ -176,30 +176,49 @@ Respond ONLY with a JSON object in this exact format:
 
     // Delete the pending assessment
     await pendingRef.delete();
-
-    // Trigger dashboard and readiness sync
-    syncDashboard(uid);
     
     // Also award points for taking an assessment (if they did well, e.g. > 60%)
     if (scorePercentage >= 60) {
       const userRef = db.collection("users").doc(uid);
-      const userDoc = await userRef.get();
-      const userData = userDoc.data() || {};
+      const profileRef = db.collection("profiles").doc(uid);
+      const pointLedgerRef = db.collection("point_ledger").doc();
       const xpEarned = 25;
       
-      await userRef.update({
-        total_points: (userData.total_points || 0) + xpEarned
-      });
-      
-      await db.collection("point_ledger").add({
-        student_id: uid,
-        action: 'assessment_' + pendingData.topic,
-        points: xpEarned,
-        created_at: admin.firestore.FieldValue.serverTimestamp()
+      await db.runTransaction(async (t) => {
+        const userDoc = await t.get(userRef);
+        const profileDoc = await t.get(profileRef);
+        
+        const userData = userDoc.exists ? userDoc.data() : {};
+        
+        // Update user XP
+        t.update(userRef, {
+          total_points: (userData.total_points || 0) + xpEarned
+        });
+        
+        // Log points
+        t.set(pointLedgerRef, {
+          student_id: uid,
+          action: 'assessment_' + pendingData.topic,
+          points: xpEarned,
+          created_at: admin.firestore.FieldValue.serverTimestamp()
+        });
+        
+        // Sync verified skill to Profile/Resume
+        if (profileDoc.exists) {
+          const profileData = profileDoc.data();
+          let skills = profileData.skills || [];
+          if (!skills.includes(pendingData.topic)) {
+            skills.push(pendingData.topic);
+            t.update(profileRef, { skills });
+          }
+        }
       });
       
       finalResult.xpEarned = xpEarned;
     }
+
+    // Trigger dashboard and readiness sync
+    syncDashboard(uid);
 
     res.json({ id: resultRef.id, ...finalResult });
   } catch (err) {

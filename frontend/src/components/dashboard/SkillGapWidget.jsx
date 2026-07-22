@@ -6,7 +6,6 @@ const SkillGapWidget = ({ skillGap }) => {
   const { goal, strongSkills = [], gapSkills = [], analysis } = skillGap;
 
   return (
-  return (
     <div className="w-full relative z-10">
       <div className="flex items-center justify-between mb-8">
         <div>
