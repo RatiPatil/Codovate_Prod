@@ -119,6 +119,7 @@ app.use("/api/certificates",  require("./routes/certificates"));
 app.use("/api/skills",        require("./routes/skills"));
 app.use("/api/achievements",  require("./routes/achievements"));
 app.use("/api/activity",      require("./routes/activity"));
+app.use("/api/gamification",  require("./routes/gamification"));
 app.use("/api/dashboard",     require("./routes/dashboard"));
 app.use("/api/coding",        require("./routes/coding"));
 app.use("/api/assessments",   require("./routes/assessments"));
@@ -141,13 +142,29 @@ io.on("connection", (socket) => {
     socket.join(`user_${userId}`);
     onlineUsers.set(socket.id, userId);
     
-    // Broadcast to others that this user is online
     socket.broadcast.emit('user_online', userId);
     
     // Send current unique online users to this new client
     socket.emit('online_users', Array.from(new Set(onlineUsers.values())));
     
     console.log(`👤 User ${userId} joined and is online`);
+  });
+
+  socket.on("join_room", (roomName) => {
+    socket.join(roomName);
+    console.log(`👤 Socket ${socket.id} joined room ${roomName}`);
+  });
+
+  socket.on("typing", ({ roomName, userName }) => {
+    socket.to(roomName).emit("typing", { userName });
+  });
+
+  socket.on("stop_typing", ({ roomName }) => {
+    socket.to(roomName).emit("stop_typing");
+  });
+
+  socket.on("read_message", ({ roomName, messageId, userId }) => {
+    socket.to(roomName).emit("message_read", { messageId, userId });
   });
 
   socket.on("join_global", () => {

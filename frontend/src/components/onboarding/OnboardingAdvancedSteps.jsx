@@ -8,41 +8,44 @@ export const Step10AIGeneration = ({ onComplete }) => {
   const containerRef = useRef(null);
 
   useEffect(() => {
-    const items = listRef.current.children;
-    const tl = gsap.timeline({
-      onComplete: () => {
-        setTimeout(onComplete, 1000);
-      }
-    });
-
-    // Particle Animation
-    gsap.utils.toArray(".ai-particle").forEach(particle => {
-      gsap.fromTo(particle, 
-        { x: 0, y: 0, opacity: 0, scale: 0 },
-        {
-          x: () => (Math.random() * 300 - 150),
-          y: () => (Math.random() * 300 - 150),
-          opacity: () => Math.random() * 0.6 + 0.2,
-          scale: () => Math.random() * 2 + 0.5,
-          duration: () => Math.random() * 2 + 1.5,
-          ease: "power2.out",
-          repeat: -1,
-          yoyo: true,
-          delay: () => Math.random() * 2
+    const ctx = gsap.context(() => {
+      const items = listRef.current.children;
+      const tl = gsap.timeline({
+        onComplete: () => {
+          setTimeout(onComplete, 1000);
         }
-      );
-    });
+      });
 
-    tl.fromTo(".ai-title", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.5 })
-      .fromTo(".ai-spinner", { scale: 0, rotation: 0 }, { scale: 1, rotation: 360, duration: 0.8, ease: "back.out(1.5)" }, "-=0.2");
+      // Particle Animation
+      gsap.utils.toArray(".ai-particle").forEach(particle => {
+        gsap.fromTo(particle, 
+          { x: 0, y: 0, opacity: 0, scale: 0 },
+          {
+            x: () => (Math.random() * 300 - 150),
+            y: () => (Math.random() * 300 - 150),
+            opacity: () => Math.random() * 0.6 + 0.2,
+            scale: () => Math.random() * 2 + 0.5,
+            duration: () => Math.random() * 2 + 1.5,
+            ease: "power2.out",
+            repeat: -1,
+            yoyo: true,
+            delay: () => Math.random() * 2
+          }
+        );
+      });
 
-    Array.from(items).forEach((item, i) => {
-      tl.to(item, { opacity: 1, x: 0, duration: 0.4 }, `+=${i === 0 ? 0 : 0.4}`);
-      tl.to(item.querySelector('.check-icon'), { scale: 1, opacity: 1, duration: 0.2, ease: "back.out(2)" });
-    });
+      tl.fromTo(".ai-title", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.5 })
+        .fromTo(".ai-spinner", { scale: 0, rotation: 0 }, { scale: 1, rotation: 360, duration: 0.8, ease: "back.out(1.5)" }, "-=0.2");
 
-    // Make the infinite animation separate from the main timeline so onComplete fires
-    gsap.fromTo(".ai-almost", { opacity: 0 }, { opacity: 1, duration: 0.5, yoyo: true, repeat: -1, delay: tl.duration() + 0.5 });
+      Array.from(items).forEach((item, i) => {
+        tl.to(item, { opacity: 1, x: 0, duration: 0.4 }, `+=${i === 0 ? 0 : 0.4}`);
+        tl.to(item.querySelector('.check-icon'), { scale: 1, opacity: 1, duration: 0.2, ease: "back.out(2)" });
+      });
+
+      // Make the infinite animation separate from the main timeline so onComplete fires
+      gsap.fromTo(".ai-almost", { opacity: 0 }, { opacity: 1, duration: 0.5, yoyo: true, repeat: -1, delay: tl.duration() + 0.5 });
+    }, containerRef);
+    return () => ctx.revert();
   }, [onComplete]);
 
   const tasks = [
@@ -99,28 +102,36 @@ export const Step11Success = ({ data, onFinish }) => {
   const navigate = require('react-router-dom').useNavigate();
 
   useEffect(() => {
-    gsap.fromTo(".success-card", { scale: 0.9, opacity: 0, y: 30 }, { scale: 1, opacity: 1, y: 0, duration: 0.8, ease: "elastic.out(1, 0.5)" });
-    
-    // Count up animation for Profile Completion
-    gsap.to({ val: 0 }, {
-      val: 68,
-      duration: 2,
-      ease: 'power2.out',
-      onUpdate: function() {
-        const el = document.querySelector('.completion-stat');
-        if (el) el.innerText = Math.round(this.targets()[0].val) + '%';
-      }
+    const ctx = gsap.context(() => {
+      gsap.fromTo(".success-card", { scale: 0.9, opacity: 0, y: 30 }, { scale: 1, opacity: 1, y: 0, duration: 0.8, ease: "elastic.out(1, 0.5)" });
+      
+      // Count up animation for Profile Completion
+      gsap.to({ val: 0 }, {
+        val: 68,
+        duration: 2,
+        ease: 'power2.out',
+        onUpdate: function() {
+          const el = document.querySelector('.completion-stat');
+          if (el) el.innerText = Math.round(this.targets()[0].val) + '%';
+        }
+      });
     });
 
     // Confetti
     const duration = 3000;
     const end = Date.now() + duration;
 
+    let rafId;
     (function frame() {
       confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#2015FF', '#4ade80', '#c084fc'] });
       confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#2015FF', '#4ade80', '#c084fc'] });
-      if (Date.now() < end) requestAnimationFrame(frame);
+      if (Date.now() < end) rafId = requestAnimationFrame(frame);
     }());
+
+    return () => {
+      ctx.revert();
+      if (rafId) cancelAnimationFrame(rafId);
+    };
   }, []);
 
   const firstSkill = data.skills?.[0]?.name || 'Basics';

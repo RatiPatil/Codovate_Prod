@@ -17,10 +17,13 @@ const ForgotPassword = () => {
   const { addToast } = useToast();
 
   useEffect(() => {
-    gsap.fromTo(formRef.current,
-      { y: 30, opacity: 0 },
-      { y: 0, opacity: 1, duration: 0.8, ease: 'power3.out' }
-    );
+    let ctx = gsap.context(() => {
+      gsap.fromTo(formRef.current,
+        { y: 30, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.8, ease: 'power3.out' }
+      );
+    });
+    return () => ctx.revert();
   }, []);
 
   const emailError = touched ? validateEmail(email) : null;

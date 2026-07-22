@@ -20,6 +20,35 @@ router.get("/", auth, async (req, res) => {
   }
 });
 
+// ─── GET /api/activity/global ───────────────────────────────────────────────────────
+router.get("/global", auth, async (req, res) => {
+  try {
+    const snapshot = await db.collection("activityLogs")
+      .orderBy("createdAt", "desc")
+      .limit(100)
+      .get();
+      
+    const logs = [];
+    for (const doc of snapshot.docs) {
+      const data = doc.data();
+      // Fetch user details for the feed
+      const userDoc = await db.collection("students").doc(data.uid).get();
+      if (userDoc.exists) {
+        data.user_name = userDoc.data().name;
+        data.user_avatar = userDoc.data().profile_picture || null;
+      } else {
+        data.user_name = "Anonymous Student";
+      }
+      logs.push(data);
+    }
+    
+    res.json(logs);
+  } catch (err) {
+    console.error("Fetch global activity error:", err);
+    res.status(500).json({ message: "Failed to load global activity." });
+  }
+});
+
 // ─── POST /api/activity ──────────────────────────────────────────────────────
 router.post("/", auth, async (req, res) => {
   try {

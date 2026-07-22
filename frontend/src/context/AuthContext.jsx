@@ -115,7 +115,7 @@ export const AuthProvider = ({ children }) => {
           login(jwtToken, userData, true); // Redirect → default to rememberMe
         }
       } catch (err) {
-        console.error("Firebase Redirect Auth Error:", err);
+        console.warn("Firebase Redirect Auth Error:", err);
       }
     };
     checkRedirect();

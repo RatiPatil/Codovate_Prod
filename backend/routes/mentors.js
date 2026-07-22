@@ -129,6 +129,7 @@ router.post("/:id/book", auth, async (req, res) => {
       duration: parseInt(req.body.duration) || 30,
       mode: mode || "Online",
       topic: topic || "",
+      meeting_link: mode !== 'Offline' ? `https://meet.google.com/${Math.random().toString(36).substring(2, 5)}-${Math.random().toString(36).substring(2, 6)}-${Math.random().toString(36).substring(2, 5)}` : null,
       created_at: new Date(),
       status: 'Pending'
     };

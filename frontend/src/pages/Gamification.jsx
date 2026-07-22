@@ -13,7 +13,7 @@ const Gamification = () => {
   useEffect(() => {
     const fetchGamification = async () => {
       try {
-        const res = await api.get('/students/gamification');
+        const res = await api.get('/gamification');
         setData(res.data);
       } catch (err) {
         console.error("Failed to load gamification data", err);
@@ -24,6 +24,22 @@ const Gamification = () => {
     };
     fetchGamification();
   }, []);
+
+  const handleCheckIn = async () => {
+    try {
+      const res = await api.post('/gamification/streak');
+      alert(res.data.message);
+      // Optimistically update
+      setData(prev => ({
+        ...prev,
+        streak: res.data.streak,
+        xp: prev.xp + res.data.xpGain,
+        coins: prev.coins + (res.data.xpGain / 2)
+      }));
+    } catch (err) {
+      alert("Failed to check in");
+    }
+  };
 
   useEffect(() => {
     if (!loading && data && containerRef.current) {
@@ -75,7 +91,13 @@ const Gamification = () => {
           <div className="absolute inset-0 bg-orange-500/5 group-hover:bg-orange-500/10 transition-colors duration-500" />
           <span className="text-5xl mb-4 animate-pulse">🔥</span>
           <h3 className="text-gray-400 text-sm font-bold uppercase tracking-widest mb-1">Daily Streak</h3>
-          <p className="text-5xl font-black text-orange-500">{data.dailyStreak} <span className="text-2xl text-orange-500/50">Days</span></p>
+          <p className="text-5xl font-black text-orange-500 mb-4">{data.streak} <span className="text-2xl text-orange-500/50">Days</span></p>
+          <button 
+            onClick={handleCheckIn}
+            className="px-6 py-2 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-full text-sm transition-colors"
+          >
+            Check In
+          </button>
         </div>
 
       </div>
@@ -85,63 +107,26 @@ const Gamification = () => {
         {/* LEFT COL: Goals & Challenges */}
         <div className="space-y-8">
           
-          {/* Weekly Goal */}
+          {/* Challenges List */}
           <div className="stagger-item bg-[#0a0a0c] border border-white/10 rounded-3xl p-6 md:p-8">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold flex items-center gap-2"><span>🎯</span> Weekly Goal</h2>
-              <span className="bg-primary/20 text-primary text-xs font-bold px-3 py-1 rounded-full border border-primary/30">
-                {data.weeklyGoal.current} / {data.weeklyGoal.target}
-              </span>
-            </div>
-            <p className="text-gray-300 font-medium mb-4">{data.weeklyGoal.title}</p>
-            <div className="w-full bg-white/5 h-3 rounded-full overflow-hidden">
-              <div 
-                className="bg-gradient-to-r from-primary to-purple-500 h-full rounded-full transition-all duration-1000" 
-                style={{ width: `${(data.weeklyGoal.current / data.weeklyGoal.target) * 100}%` }} 
-              />
-            </div>
-          </div>
-
-          {/* Monthly Challenge */}
-          <div className="stagger-item bg-[#0a0a0c] border border-white/10 rounded-3xl p-6 md:p-8">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold flex items-center gap-2"><span>⚔️</span> Monthly Challenge</h2>
-              <span className="bg-pink-500/20 text-pink-400 text-xs font-bold px-3 py-1 rounded-full border border-pink-500/30">
-                {data.monthlyChallenge.current} / {data.monthlyChallenge.target}
-              </span>
-            </div>
-            <p className="text-gray-300 font-medium mb-4">{data.monthlyChallenge.title}</p>
-            <div className="w-full bg-white/5 h-3 rounded-full overflow-hidden">
-              <div 
-                className="bg-gradient-to-r from-pink-500 to-orange-500 h-full rounded-full transition-all duration-1000" 
-                style={{ width: `${Math.min((data.monthlyChallenge.current / data.monthlyChallenge.target) * 100, 100)}%` }} 
-              />
-            </div>
-          </div>
-
-          {/* College Ranking Mini-Leaderboard */}
-          <div className="stagger-item bg-[#0a0a0c] border border-white/10 rounded-3xl p-6 md:p-8">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold flex items-center gap-2"><span>🏛️</span> College Ranking</h2>
-              <span className="text-xs text-gray-500 font-bold uppercase tracking-widest">{data.collegeName}</span>
+              <h2 className="text-xl font-bold flex items-center gap-2"><span>🎯</span> Weekly Challenges</h2>
             </div>
             
-            <div className="space-y-3">
-              {data.collegeRanking.map((user, idx) => (
-                <div 
-                  key={idx} 
-                  className={`flex items-center justify-between p-4 rounded-xl border ${user.isCurrentUser ? 'bg-primary/10 border-primary/30' : 'bg-white/5 border-white/5'}`}
-                >
-                  <div className="flex items-center gap-4">
-                    <span className={`w-8 text-center font-black ${user.rank === 1 ? 'text-yellow-500 text-xl' : user.rank === 2 ? 'text-gray-400' : user.rank === 3 ? 'text-orange-400' : 'text-gray-600'}`}>
-                      {user.rank === 1 ? '🥇' : user.rank === 2 ? '🥈' : user.rank === 3 ? '🥉' : `#${user.rank}`}
-                    </span>
-                    <span className={`font-bold ${user.isCurrentUser ? 'text-white' : 'text-gray-300'}`}>
-                      {user.name}
-                      {user.isCurrentUser && <span className="ml-2 text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full">You</span>}
-                    </span>
+            <div className="space-y-6">
+              {data.weeklyChallenges?.map((challenge) => (
+                <div key={challenge.id} className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <p className="text-gray-300 font-medium text-sm">{challenge.title}</p>
+                    <span className="text-xs text-primary font-bold">{challenge.current} / {challenge.target}</span>
                   </div>
-                  <span className="font-bold text-gray-400 text-sm">{user.xp} XP</span>
+                  <div className="w-full bg-white/5 h-2 rounded-full overflow-hidden">
+                    <div 
+                      className="bg-gradient-to-r from-primary to-purple-500 h-full rounded-full transition-all duration-1000" 
+                      style={{ width: `${Math.min((challenge.current / challenge.target) * 100, 100)}%` }} 
+                    />
+                  </div>
+                  <p className="text-[10px] text-gray-500 text-right">+ {challenge.reward} XP</p>
                 </div>
               ))}
             </div>

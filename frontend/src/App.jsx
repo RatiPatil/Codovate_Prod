@@ -47,6 +47,8 @@ const ResumeReview = lazy(() => import('./pages/ResumeReview'));
 const MockInterview = lazy(() => import('./pages/MockInterview'));
 const Events = lazy(() => import('./pages/Events'));
 const Community = lazy(() => import('./pages/Community'));
+const Chat = lazy(() => import('./pages/Chat'));
+const ActivityFeed = lazy(() => import('./pages/ActivityFeed'));
 
 import GlobalErrorBoundary from './components/common/GlobalErrorBoundary';
 
@@ -157,6 +159,16 @@ function App() {
                   <Route path="/events" element={
                     <ProtectedRoute>
                       <Layout><Events /></Layout>
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/chat" element={
+                    <ProtectedRoute>
+                      <Layout><Chat /></Layout>
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/activity" element={
+                    <ProtectedRoute>
+                      <Layout><ActivityFeed /></Layout>
                     </ProtectedRoute>
                   } />
                   <Route path="/community" element={

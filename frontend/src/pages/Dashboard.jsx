@@ -11,6 +11,7 @@ import PlacementReadinessWidget from '../components/dashboard/PlacementReadiness
 import AIRecommendations from '../components/dashboard/AIRecommendations';
 import CareerEngineCard from '../components/dashboard/CareerEngineCard';
 import SkillGapWidget from '../components/dashboard/SkillGapWidget';
+import CommunityHubWidget from '../components/dashboard/CommunityHubWidget';
 
 const Dashboard = () => {
   // Each section has its own loading state for progressive rendering
@@ -238,10 +239,17 @@ const Dashboard = () => {
         </section>
       )}
 
-      {/* ── SECTION 6: AI RECOMMENDATIONS ────────────────────────── */}
-      <section className="dashboard-section mb-10">
-        <AIRecommendations recommendations={recommendations || workspace.recommendations || []} />
-      </section>
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-10 mb-10">
+        {/* ── SECTION 6: AI RECOMMENDATIONS ────────────────────────── */}
+        <section className="dashboard-section xl:col-span-2">
+          <AIRecommendations recommendations={recommendations || workspace.recommendations || []} />
+        </section>
+        
+        {/* ── SECTION 7: COMMUNITY HUB ───────────────────────────── */}
+        <section className="dashboard-section xl:col-span-1">
+          <CommunityHubWidget updates={workspace?.communityUpdates || []} />
+        </section>
+      </div>
 
     </div>
   );

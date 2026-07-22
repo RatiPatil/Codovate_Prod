@@ -13,20 +13,15 @@ const Leaderboard = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [collegeFilter, setCollegeFilter] = useState('All');
-  const [courseFilter, setCourseFilter] = useState('All');
-  const [activeTab, setActiveTab] = useState('Overall');
+  const [activeTab, setActiveTab] = useState('Global');
   const tableRef = useRef(null);
 
-  const tabs = ['Overall', 'Weekly', 'Monthly', 'College Wise', 'Course Wise', 'Skill Wise'];
+  const tabs = ['Global', 'College Wise'];
 
   useEffect(() => {
     setLoading(true);
     let queryParams = new URLSearchParams();
-    
-    if (activeTab === 'Weekly') queryParams.append('filter', 'weekly');
-    if (activeTab === 'Monthly') queryParams.append('filter', 'monthly');
     if (activeTab === 'College Wise' && collegeFilter !== 'All') queryParams.append('college', collegeFilter);
-    if (activeTab === 'Course Wise' && courseFilter !== 'All') queryParams.append('course', courseFilter);
 
     api.get(`/leaderboard?${queryParams.toString()}`)
       .then(res => {
@@ -41,10 +36,9 @@ const Leaderboard = () => {
     return students.filter(s => {
       const matchesSearch = !search || s.name?.toLowerCase().includes(search.toLowerCase()) || s.college?.toLowerCase().includes(search.toLowerCase());
       const matchesCollege = (activeTab !== 'College Wise' || collegeFilter === 'All') ? true : s.college === collegeFilter;
-      const matchesCourse = (activeTab !== 'Course Wise' || courseFilter === 'All') ? true : s.course === courseFilter;
-      return matchesSearch && matchesCollege && matchesCourse;
+      return matchesSearch && matchesCollege;
     });
-  }, [students, search, collegeFilter, courseFilter, activeTab]);
+  }, [students, search, collegeFilter, activeTab]);
 
   useEffect(() => {
     if (!loading && filtered.length > 0 && tableRef.current) {
@@ -56,9 +50,8 @@ const Leaderboard = () => {
     }
   }, [loading, filtered]);
 
-  // Extract unique colleges/courses for dropdowns based on students fetched or pre-defined lists
+  // Extract unique colleges for dropdowns
   const colleges = useMemo(() => ['All', ...new Set(students.map(s => s.college).filter(Boolean))].sort(), [students]);
-  const courses = useMemo(() => ['All', ...new Set(students.map(s => s.course).filter(Boolean))].sort(), [students]);
 
   const top3 = filtered.slice(0, 3);
 
@@ -116,15 +109,7 @@ const Leaderboard = () => {
           </select>
         )}
 
-        {activeTab === 'Course Wise' && (
-          <select
-            value={courseFilter}
-            onChange={e => setCourseFilter(e.target.value)}
-            className="bg-[#0a0a0f] border border-white/10 rounded-xl px-4 py-3.5 text-white text-sm focus:outline-none focus:border-primary transition-all appearance-none min-w-[200px]"
-          >
-            {courses.map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
-        )}
+
       </div>
 
       {loading ? (

@@ -113,23 +113,37 @@ const MentorReviewsModal = ({ mentor, onClose }) => {
 };
 
 const BookingModal = ({ mentor, onClose, onConfirm }) => {
-  const [dateTime, setDateTime] = useState('');
+  const [date, setDate] = useState('');
+  const [time, setTime] = useState('');
   const [duration, setDuration] = useState('30');
   const [mode, setMode] = useState('Online');
   const [topic, setTopic] = useState('');
   const [loading, setLoading] = useState(false);
 
+  // Available Time Slots
+  const timeSlots = [
+    '09:00 AM', '10:00 AM', '11:00 AM', 
+    '02:00 PM', '03:00 PM', '04:00 PM', 
+    '06:00 PM', '08:00 PM'
+  ];
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!dateTime || !topic) return;
+    if (!date || !time || !topic) return;
+    
+    // Parse time like '09:00 AM' into datetime
+    const [timeStr, modifier] = time.split(' ');
+    let [hours, minutes] = timeStr.split(':');
+    if (hours === '12') hours = '00';
+    if (modifier === 'PM') hours = parseInt(hours, 10) + 12;
+    const finalDateTime = `${date}T${hours.toString().padStart(2, '0')}:${minutes}:00`;
+
     setLoading(true);
-    await onConfirm(mentor.id, dateTime, duration, mode, topic);
+    await onConfirm(mentor.id, finalDateTime, duration, mode, topic);
     setLoading(false);
   };
 
-  const now = new Date();
-  now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-  const minDateTime = now.toISOString().slice(0, 16);
+  const todayStr = new Date().toISOString().split('T')[0];
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -148,17 +162,41 @@ const BookingModal = ({ mentor, onClose, onConfirm }) => {
         <div className="space-y-5">
           <div>
             <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2">
-              Select Date & Time <span className="text-red-400">*</span>
+              Select Date <span className="text-red-400">*</span>
             </label>
             <input
-              type="datetime-local"
-              value={dateTime}
-              min={minDateTime}
+              type="date"
+              value={date}
+              min={todayStr}
               required
-              onChange={e => setDateTime(e.target.value)}
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all [color-scheme:dark]"
+              onChange={e => { setDate(e.target.value); setTime(''); }}
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all [color-scheme:dark]"
             />
           </div>
+
+          {date && (
+            <div>
+              <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+                Available Time Slots <span className="text-red-400">*</span>
+              </label>
+              <div className="grid grid-cols-4 gap-2">
+                {timeSlots.map(slot => (
+                  <button
+                    key={slot}
+                    type="button"
+                    onClick={() => setTime(slot)}
+                    className={`py-2 px-2 text-xs font-bold rounded-lg border transition-all ${
+                      time === slot 
+                        ? 'bg-primary text-white border-primary shadow-[0_0_10px_rgba(32,21,255,0.3)]' 
+                        : 'bg-white/5 text-gray-400 border-white/10 hover:bg-white/10 hover:text-white'
+                    }`}
+                  >
+                    {slot}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="grid grid-cols-2 gap-4">
             <div>

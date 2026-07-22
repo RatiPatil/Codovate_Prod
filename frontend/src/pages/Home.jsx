@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
@@ -38,9 +39,25 @@ const Home = () => {
   const horizontalSectionRef = useRef(null);
   const cardsWrapperRef = useRef(null);
 
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  // Redirect if already authenticated
   useEffect(() => {
-    // 1. Initial Hero Load Animation
-    const tl = gsap.timeline();
+    if (user) {
+      const adminRoles = ['super_admin', 'admin', 'college_admin', 'company_admin', 'mentor'];
+      if (adminRoles.includes(user.role)) {
+        navigate('/admin');
+      } else {
+        navigate('/dashboard');
+      }
+    }
+  }, [user, navigate]);
+
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      // 1. Initial Hero Load Animation
+      const tl = gsap.timeline();
     
     // Background glow fade in
     tl.fromTo(bgRef.current,
@@ -148,6 +165,7 @@ const Home = () => {
         }
       );
     }
+    }, containerRef);
 
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
@@ -155,7 +173,7 @@ const Home = () => {
         magneticBtn.removeEventListener('mousemove', handleMagneticMove);
         magneticBtn.removeEventListener('mouseleave', handleMagneticLeave);
       }
-      ScrollTrigger.getAll().forEach(t => t.kill());
+      ctx.revert(); // Properly kills all GSAP tweens and ScrollTriggers
     };
   }, []);
 
@@ -163,10 +181,10 @@ const Home = () => {
     <div ref={containerRef} className="min-h-screen bg-black text-white selection:bg-primary/30">
       
       {/* Absolute Logo (No Navbar) */}
-      <div className="absolute top-6 left-6 md:top-8 md:left-8 z-50 flex items-center gap-2 md:gap-3">
+      <Link to="/" className="absolute top-6 left-6 md:top-8 md:left-8 z-50 flex items-center gap-2 md:gap-3 cursor-pointer">
         <div className="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-primary flex items-center justify-center text-white font-bold text-sm md:text-lg shadow-[0_0_20px_rgba(32,21,255,0.4)]">C</div>
         <span className="text-white font-bold text-lg md:text-xl tracking-tight">Codovate</span>
-      </div>
+      </Link>
 
       <div className="absolute top-7 right-6 md:top-10 md:right-8 z-50 flex items-center gap-4 md:gap-6">
         <Link to="/login" className="text-[10px] md:text-xs font-bold text-white hover:text-primary transition-colors uppercase tracking-widest">
@@ -225,12 +243,15 @@ const Home = () => {
         </div>
 
         {/* Premium Scroll Indicator */}
-        <div className="hero-fade-up absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3">
+        <button 
+          onClick={() => window.scrollBy({ top: window.innerHeight, behavior: 'smooth' })}
+          className="hero-fade-up absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-lg p-2"
+        >
           <span className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.3em]">Explore</span>
           <div className="w-[1px] h-16 bg-white/10 relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-1/2 bg-white animate-[scroll-down_1.5s_ease-in-out_infinite]" />
           </div>
-        </div>
+        </button>
       </section>
 
       {/* Narrative Section (Scroll Tied Text) */}

@@ -48,7 +48,10 @@ const AIRecommendations = ({ recommendations }) => {
                        rec.type === 'learning' ? '📚' : 
                        rec.type === 'project' ? '💻' :
                        rec.type === 'mentor' ? '👨‍🏫' :
-                       rec.type === 'team' ? '🤝' : '🎯'}
+                       rec.type === 'team' ? '🤝' : 
+                       rec.type === 'teammate' ? '👋' :
+                       rec.type === 'community' ? '🌐' :
+                       rec.type === 'event' ? '📅' : '🎯'}
                     </div>
                     <div>
                       <span className="text-[10px] font-black text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-full uppercase tracking-widest mb-1.5 inline-block">{rec.type}</span>

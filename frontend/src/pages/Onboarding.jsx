@@ -81,17 +81,23 @@ export default function Onboarding() {
   }, [data, step]);
 
   useEffect(() => {
-    if (toastMessage && toastRef.current) {
-      gsap.killTweensOf(toastRef.current);
-      gsap.fromTo(toastRef.current, { y: 50, opacity: 0, scale: 0.9 }, { y: 0, opacity: 1, scale: 1, duration: 0.5, ease: 'back.out(1.5)' });
-      gsap.to(toastRef.current, { y: 50, opacity: 0, scale: 0.9, duration: 0.5, delay: 3, onComplete: () => setToastMessage(null) });
-    }
+    const ctx = gsap.context(() => {
+      if (toastMessage && toastRef.current) {
+        gsap.killTweensOf(toastRef.current);
+        gsap.fromTo(toastRef.current, { y: 50, opacity: 0, scale: 0.9 }, { y: 0, opacity: 1, scale: 1, duration: 0.5, ease: 'back.out(1.5)' });
+        gsap.to(toastRef.current, { y: 50, opacity: 0, scale: 0.9, duration: 0.5, delay: 3, onComplete: () => setToastMessage(null) });
+      }
+    }, toastRef);
+    return () => ctx.revert();
   }, [toastMessage]);
 
   useEffect(() => {
-    if (step > 1 && step <= TOTAL_STEPS && cardRef.current) {
-      gsap.fromTo(cardRef.current, { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power3.out' });
-    }
+    const ctx = gsap.context(() => {
+      if (step > 1 && step <= TOTAL_STEPS && cardRef.current) {
+        gsap.fromTo(cardRef.current, { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power3.out' });
+      }
+    }, cardRef);
+    return () => ctx.revert();
   }, [step]);
 
   const update = (field, value) => {
@@ -131,6 +137,12 @@ export default function Onboarding() {
       if (!data.city) stepErrors.city = 'City is required';
       if (!data.state) stepErrors.state = 'State is required';
       if (!data.country) stepErrors.country = 'Country is required';
+    } else if (currentStep === 3) {
+      if (!data.career_goal) { showAlert("Please select a career goal"); return false; }
+    } else if (currentStep === 5) {
+      if (!data.skills || data.skills.length === 0) { showAlert("Please select at least one skill"); return false; }
+    } else if (currentStep === 8) {
+      if (!data.experience_level) { showAlert("Please select your experience level"); return false; }
     }
     setErrors(stepErrors);
     return Object.keys(stepErrors).length === 0;

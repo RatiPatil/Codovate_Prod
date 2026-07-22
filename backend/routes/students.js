@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { db } = require("../config/firebase");
 const auth = require("../middleware/auth");
+const { getCommunityUpdates } = require("../services/communityService");
 const { awardPoints, updatePlacementScore } = require("../utils/scoring");
 const eventBus = require("../events/eventBus");
 
@@ -520,6 +521,50 @@ router.get("/workspace", auth, async (req, res) => {
         tags: ['Collaboration', 'Live Project']
       });
     }
+
+    // F. Teammate Recommendation
+    const profilesSnap = await db.collection("profiles").where("role", "==", "student").limit(1).get();
+    if (!profilesSnap.empty) {
+      const pData = profilesSnap.docs[0].data();
+      if (profilesSnap.docs[0].id !== uid) {
+        recommendations.push({
+          id: profilesSnap.docs[0].id,
+          type: 'teammate',
+          title: pData.name || 'Recommended Teammate',
+          description: `This student has complementary skills for your next project.`,
+          linkUrl: `/profile/${profilesSnap.docs[0].id}`,
+          tags: ['Peer matching', 'Collaboration']
+        });
+      }
+    }
+
+    // G. Hackathon Recommendation
+    const hackathonsSnap = await db.collection("events").where("type", "==", "Hackathon").limit(1).get();
+    if (!hackathonsSnap.empty) {
+      const hack = hackathonsSnap.docs[0].data();
+      recommendations.push({
+        id: hackathonsSnap.docs[0].id,
+        type: 'event',
+        title: hack.title || 'Upcoming Hackathon',
+        description: `Join this hackathon to practice your skills and build your portfolio.`,
+        linkUrl: `/events/${hackathonsSnap.docs[0].id}`,
+        tags: ['Hackathon', 'Competition']
+      });
+    }
+
+    // H. Community Recommendation
+    const commsSnap = await db.collection("communities").limit(1).get();
+    if (!commsSnap.empty) {
+      const comm = commsSnap.docs[0].data();
+      recommendations.push({
+        id: commsSnap.docs[0].id,
+        type: 'community',
+        title: comm.name || 'Tech Community',
+        description: comm.description || `Connect with like-minded developers.`,
+        linkUrl: `/communities/${commsSnap.docs[0].id}`,
+        tags: ['Networking', 'Group']
+      });
+    }
     
     // Persist AI Recommendations
     await db.collection("aiRecommendations").doc(uid).set({ recommendations }, { merge: true });
@@ -600,6 +645,7 @@ router.get("/workspace", auth, async (req, res) => {
       },
       mission,
       recommendations,
+      communityUpdates,
       placementReadiness
     });
 

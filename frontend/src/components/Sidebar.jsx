@@ -12,6 +12,8 @@ const navItems = [
   { path: '/teams', label: 'Teams', icon: '🤝' },
   { path: '/community', label: 'College Community', icon: '🏫' },
   { path: '/events', label: 'Events', icon: '📅' },
+  { path: '/chat', label: 'Messages', icon: '💬' },
+  { path: '/activity', label: 'Activity Feed', icon: '⚡' },
   { path: '/mentors', label: 'Mentors', icon: '👨‍🏫' },
   { path: '/leaderboard', label: 'Leaderboard', icon: '🏆' },
   { path: '/rewards', label: 'Rewards', icon: '💎' },

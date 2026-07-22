@@ -84,7 +84,12 @@ router.post("/google", async (req, res) => {
       
       if (user.is_active === false) return res.status(403).json({ message: "Your account has been suspended. Please contact the administrator." });
       
-      // Update authUid, providers, claimed, and last_login_at
+      // AUTH-006: Prevent Identity Orphaning
+      if (user.authUid && user.authUid !== uid) {
+        return res.status(409).json({ message: "An account with this email already exists via another method. Please login with your original method." });
+      }
+
+      // Update authUid (if it was missing), providers, claimed, and last_login_at
       const providers = user.providers || [];
       if (!providers.includes('google')) providers.push('google');
 

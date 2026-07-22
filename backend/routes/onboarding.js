@@ -44,12 +44,17 @@ router.post("/save", auth, async (req, res) => {
     if (!branch || branch.trim().length < 2) errors.branch = 'Branch is required';
     if (!year) errors.year = 'Year of study is required';
 
+    const cleanSkills = Array.isArray(skills) && skills.length > 0 ? skills : null;
+
+    if (!career_goal) errors.career_goal = 'Career goal is required';
+    if (!cleanSkills) errors.skills = 'At least one skill is required';
+    if (!experience_level) errors.experience_level = 'Experience level is required';
+
     if (Object.keys(errors).length > 0) {
       return res.status(400).json({ message: "Validation failed", errors });
     }
 
     const cleanYear = year ? parseInt(year) : null;
-    const cleanSkills = Array.isArray(skills) && skills.length > 0 ? skills : null;
     const cleanInterests = Array.isArray(interests) && interests.length > 0 ? interests : null;
 
     // ── Profile Completion Calculation ──────────────────────────────────

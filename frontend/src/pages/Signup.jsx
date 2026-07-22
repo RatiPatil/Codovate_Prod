@@ -42,11 +42,15 @@ const Signup = () => {
 
   // GSAP entrance animations
   useEffect(() => {
-    const tl = gsap.timeline();
-    if (bgRef.current) tl.fromTo(bgRef.current, { opacity: 0, scale: 1.1 }, { opacity: 1, scale: 1, duration: 1.2, ease: 'power2.out' });
-    if (infoRef.current) tl.fromTo(infoRef.current.children, { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, stagger: 0.15, ease: 'power3.out' }, '-=0.8');
-    if (headingRef.current) tl.fromTo(headingRef.current, { y: -20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, ease: 'power3.out' }, '-=0.8');
-    if (formRef.current) tl.fromTo(formRef.current, { x: 30, opacity: 0 }, { x: 0, opacity: 1, duration: 0.8, ease: 'power3.out' }, '-=0.6');
+    let ctx = gsap.context(() => {
+      const tl = gsap.timeline();
+      if (bgRef.current) tl.fromTo(bgRef.current, { opacity: 0, scale: 1.1 }, { opacity: 1, scale: 1, duration: 1.2, ease: 'power2.out' });
+      if (infoRef.current) tl.fromTo(infoRef.current.children, { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, stagger: 0.15, ease: 'power3.out' }, '-=0.8');
+      if (headingRef.current) tl.fromTo(headingRef.current, { y: -20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, ease: 'power3.out' }, '-=0.8');
+      if (formRef.current) tl.fromTo(formRef.current, { x: 30, opacity: 0 }, { x: 0, opacity: 1, duration: 0.8, ease: 'power3.out' }, '-=0.6');
+    });
+
+    return () => ctx.revert();
   }, []);
 
   // ─── Real-time validation ──────────────────────────────
@@ -153,7 +157,10 @@ const Signup = () => {
       setIsSignupComplete(true);
       addToast({ type: 'success', title: 'Account Created!', message: 'Please check your email to verify your account.' });
     } catch (err) {
-      const msg = getFirebaseErrorMessage(err);
+      let msg = getFirebaseErrorMessage(err);
+      if (err.isAxiosError && !err.response) {
+        msg = 'Network error. Server unreachable. Please check your connection.';
+      }
       setErrors({ form: msg });
       setFormShake(true);
       setTimeout(() => setFormShake(false), 400);
