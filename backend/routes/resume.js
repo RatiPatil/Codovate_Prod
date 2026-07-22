@@ -386,6 +386,13 @@ Respond ONLY with valid JSON.
     };
     await reviewRef.set(finalResult);
 
+    // Update main resume score & sync dashboard
+    await db.collection("resumes").doc(req.user.id).set({
+      atsScore: analysis.atsScore,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+    syncDashboard(req.user.id);
+
     res.json({ id: reviewRef.id, ...finalResult });
   } catch (err) {
     console.error("Resume Review error:", err);

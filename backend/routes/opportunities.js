@@ -3,6 +3,7 @@ const router = express.Router();
 const { db } = require("../config/firebase");
 const auth = require("../middleware/auth");
 const { getConfiguredModel, genAI } = require("../utils/aiConfig");
+const { syncDashboard } = require("../services/dashboardService");
 
 // GET all opportunities — with real data
 router.get("/", auth, async (req, res) => {
@@ -16,7 +17,7 @@ router.get("/", auth, async (req, res) => {
     }
     
     // Fetch student full context for heuristic matching
-    const profileDoc = await db.collection("student_profiles").doc(req.user.id).get();
+    const profileDoc = await db.collection("profiles").doc(req.user.id).get();
     const profileData = profileDoc.exists ? profileDoc.data() : {};
     const userSkills = (profileData.skills || []).map(s => s.toLowerCase());
     const careerGoal = (profileData.careerGoal || "").toLowerCase();
@@ -170,11 +171,13 @@ router.post("/:id/bookmark", auth, async (req, res) => {
         opportunity_id,
         created_at: new Date()
       });
+      syncDashboard(user_id);
       res.json({ bookmarked: true });
     } else {
       // Remove bookmark
       const docId = snapshot.docs[0].id;
       await db.collection("bookmarks").doc(docId).delete();
+      syncDashboard(user_id);
       res.json({ bookmarked: false });
     }
   } catch (err) {
@@ -191,7 +194,7 @@ router.post(
   auth,
   [
     body("title").notEmpty().withMessage("Title is required.").trim().escape(),
-    body("type").isIn(["Internship", "Hackathon", "Competition", "Job"]).withMessage("Invalid type."),
+    body("type").isIn(["Internship", "Hackathon", "Competition", "Job", "Research Programs", "Fellowships", "Open Source Programs", "Scholarships", "Certifications", "Volunteering", "Grant/Funding"]).withMessage("Invalid type."),
     body("company").notEmpty().withMessage("Company is required.").trim().escape(),
     body("registration_link").optional({ checkFalsy: true }).isURL().withMessage("Must be a valid URL."),
   ],
@@ -337,7 +340,7 @@ router.get("/:id/ai-match", auth, async (req, res) => {
     
     const opp = oppDoc.data();
     
-    const profileDoc = await db.collection("student_profiles").doc(req.user.id).get();
+    const profileDoc = await db.collection("profiles").doc(req.user.id).get();
     const p = profileDoc.data() || {};
     
     const projectsSnapshot = await db.collection("projects").where("userId", "==", req.user.id).get();
@@ -346,7 +349,7 @@ router.get("/:id/ai-match", auth, async (req, res) => {
     const codingDoc = await db.collection("codingStats").doc(req.user.id).get();
     const codingStats = codingDoc.exists ? codingDoc.data() : {};
     
-    const resumeDoc = await db.collection("aiResumeReviews").doc(req.user.id).get();
+    const resumeDoc = await db.collection("resumes").doc(req.user.id).get();
     const resumeScore = resumeDoc.exists ? resumeDoc.data().atsScore : "N/A";
     
     if (!genAI) {

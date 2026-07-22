@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../api/axios';
 import { toast } from 'react-hot-toast';
+import { uploadFileToStorage } from '../../utils/storageUtils';
 
 const ProjectFormModal = ({ isOpen, onClose, initialData, onSaved }) => {
   const [saving, setSaving] = useState(false);
+  const [thumbnailFile, setThumbnailFile] = useState(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
   
   const [form, setForm] = useState({
     title: '',
@@ -56,11 +59,18 @@ const ProjectFormModal = ({ isOpen, onClose, initialData, onSaved }) => {
 
     setSaving(true);
     try {
+      let finalData = { ...form };
+      if (thumbnailFile) {
+        const path = `projects/thumbnails/${Date.now()}_${thumbnailFile.name}`;
+        const url = await uploadFileToStorage(thumbnailFile, path, setUploadProgress);
+        finalData.thumbnailUrl = url;
+      }
+
       if (initialData?.id) {
-        await api.put(`/projects/${initialData.id}`, form);
+        await api.put(`/projects/${initialData.id}`, finalData);
         toast.success('Project updated!');
       } else {
-        await api.post('/projects', form);
+        await api.post('/projects', finalData);
         toast.success('Project created!');
       }
       onSaved();
@@ -139,6 +149,26 @@ const ProjectFormModal = ({ isOpen, onClose, initialData, onSaved }) => {
                     <span className="absolute left-3 top-2.5 text-gray-500"><i className="fas fa-video"></i></span>
                     <input type="url" value={form.videoUrl} onChange={e => setForm({...form, videoUrl: e.target.value})} className="input-glass w-full pl-9 text-sm" placeholder="Demo Video URL (YouTube/Loom)" />
                   </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-gray-400 uppercase mb-1.5">Project Thumbnail / Image</label>
+                <div className="flex flex-col gap-2">
+                  {form.thumbnailUrl && !thumbnailFile && (
+                    <img src={form.thumbnailUrl} alt="Thumbnail" className="w-full h-32 object-cover rounded-xl border border-white/10" />
+                  )}
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    onChange={e => setThumbnailFile(e.target.files[0])} 
+                    className="input-glass w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-primary/20 file:text-primary hover:file:bg-primary/30"
+                  />
+                  {uploadProgress > 0 && uploadProgress < 100 && (
+                    <div className="w-full bg-white/5 rounded-full h-1.5 mt-1">
+                      <div className="bg-primary h-1.5 rounded-full transition-all" style={{ width: `${uploadProgress}%` }}></div>
+                    </div>
+                  )}
                 </div>
               </div>
 

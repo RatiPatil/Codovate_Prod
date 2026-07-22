@@ -23,6 +23,20 @@ const ProjectHub = () => {
   const [inviteMessage, setInviteMessage] = useState('');
   const [inviting, setInviting] = useState(false);
 
+  // Peer Invite state
+  const [peerInviteModalOpen, setPeerInviteModalOpen] = useState(false);
+  const [peerEmail, setPeerEmail] = useState('');
+  const [invites, setInvites] = useState([]);
+
+  const fetchInvites = useCallback(async () => {
+    try {
+      const res = await api.get('/projects/invites');
+      setInvites(res.data);
+    } catch (err) {
+      console.error("Failed to load project invites");
+    }
+  }, []);
+
   const fetchProjects = useCallback(async () => {
     try {
       const res = await api.get('/projects/my');
@@ -37,7 +51,8 @@ const ProjectHub = () => {
 
   useEffect(() => {
     fetchProjects();
-  }, [fetchProjects]);
+    fetchInvites();
+  }, [fetchProjects, fetchInvites]);
 
   const handleCreate = () => {
     setEditingProject(null);
@@ -104,6 +119,42 @@ const ProjectHub = () => {
     }
   };
 
+  const handleSendPeerInvite = async () => {
+    if (!peerEmail) return toast.error('Please enter an email.');
+    setInviting(true);
+    try {
+      await api.post(`/projects/${selectedProjectId}/invite`, { email: peerEmail });
+      toast.success('Team member invite sent!');
+      setPeerInviteModalOpen(false);
+      setPeerEmail('');
+    } catch (err) {
+      toast.error('Failed to send invite. User may not exist.');
+    } finally {
+      setInviting(false);
+    }
+  };
+
+  const handleAcceptInvite = async (id) => {
+    try {
+      await api.post(`/projects/invites/${id}/accept`);
+      toast.success('Joined project team!');
+      fetchInvites();
+      fetchProjects();
+    } catch (err) {
+      toast.error('Failed to accept invite.');
+    }
+  };
+
+  const handleRejectInvite = async (id) => {
+    try {
+      await api.post(`/projects/invites/${id}/reject`);
+      toast.success('Invite rejected.');
+      fetchInvites();
+    } catch (err) {
+      toast.error('Failed to reject invite.');
+    }
+  };
+
   if (loading) {
     return (
       <div className="w-full max-w-7xl mx-auto pt-8 flex items-center justify-center min-h-[50vh]">
@@ -128,6 +179,24 @@ const ProjectHub = () => {
           Create Project
         </button>
       </div>
+
+      {/* Pending Invites */}
+      {invites.length > 0 && (
+        <div className="mb-6 space-y-3">
+          <h2 className="text-lg font-bold text-white">Pending Team Invitations</h2>
+          {invites.map(inv => (
+            <div key={inv.id} className="bg-primary/10 border border-primary/20 rounded-xl p-4 flex items-center justify-between animate-fade-in">
+              <div>
+                <p className="text-white font-semibold"><span className="text-primary">{inv.fromName}</span> invited you to join <span className="font-bold">"{inv.projectTitle}"</span></p>
+              </div>
+              <div className="flex gap-2">
+                <button onClick={() => handleAcceptInvite(inv.id)} className="px-4 py-1.5 bg-green-500/20 text-green-400 hover:bg-green-500/30 rounded-lg text-xs font-bold transition">Accept</button>
+                <button onClick={() => handleRejectInvite(inv.id)} className="px-4 py-1.5 bg-red-500/20 text-red-400 hover:bg-red-500/30 rounded-lg text-xs font-bold transition">Reject</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Projects Grid */}
       {projects.length === 0 ? (
@@ -171,13 +240,26 @@ const ProjectHub = () => {
               </div>
 
               {/* Links */}
-              <div className="flex items-center gap-4 mb-6 text-sm">
+              <div className="flex items-center gap-4 mb-6 text-sm flex-wrap">
                 {proj.githubUrl && <a href={proj.githubUrl} target="_blank" rel="noreferrer" className="text-gray-400 hover:text-white transition flex items-center gap-1.5"><i className="fab fa-github"></i> GitHub</a>}
                 {proj.liveUrl && <a href={proj.liveUrl} target="_blank" rel="noreferrer" className="text-gray-400 hover:text-white transition flex items-center gap-1.5"><i className="fas fa-external-link-alt"></i> Live Demo</a>}
-                <button onClick={() => handleOpenInvite(proj.id)} className="text-purple-400 hover:text-purple-300 font-bold flex items-center gap-1.5 transition ml-auto">
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg> Invite Mentor
+                <button onClick={() => { setSelectedProjectId(proj.id); setPeerInviteModalOpen(true); }} className="text-blue-400 hover:text-blue-300 font-bold flex items-center gap-1.5 transition ml-auto">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg> Invite Team
+                </button>
+                <button onClick={() => handleOpenInvite(proj.id)} className="text-purple-400 hover:text-purple-300 font-bold flex items-center gap-1.5 transition">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg> Mentor
                 </button>
               </div>
+
+              {/* Team Members */}
+              {proj.teamMembers && proj.teamMembers.length > 0 && (
+                <div className="mb-6 flex flex-wrap gap-2">
+                  <span className="text-xs text-gray-500 font-bold">TEAM:</span>
+                  {proj.teamMembers.map((member, i) => (
+                    <span key={i} className="text-xs bg-white/5 border border-white/10 px-2 py-0.5 rounded-full text-gray-300">{member}</span>
+                  ))}
+                </div>
+              )}
 
               {/* AI Analysis Section */}
               <div className="mt-auto pt-5 border-t border-white/10">
@@ -248,6 +330,33 @@ const ProjectHub = () => {
             <div className="flex gap-4 mt-8">
               <button onClick={() => setInviteModalOpen(false)} className="flex-1 py-2.5 bg-white/5 hover:bg-white/10 font-bold rounded-xl transition-colors">Cancel</button>
               <button onClick={handleSendInvite} disabled={inviting} className="flex-1 py-2.5 bg-primary hover:bg-primary-light text-white font-bold rounded-xl transition-colors disabled:opacity-50">
+                {inviting ? 'Sending...' : 'Send Invite'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Invite Team Member Modal */}
+      {peerInviteModalOpen && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-[#0f0f15] border border-white/10 p-8 rounded-3xl w-full max-w-md relative">
+            <h2 className="text-2xl font-bold mb-6 text-white">Invite Team Member</h2>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Member Email</label>
+                <input 
+                  type="email" 
+                  value={peerEmail} 
+                  onChange={e => setPeerEmail(e.target.value)} 
+                  placeholder="friend@college.edu" 
+                  className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-primary"
+                />
+              </div>
+            </div>
+            <div className="flex gap-4 mt-8">
+              <button onClick={() => setPeerInviteModalOpen(false)} className="flex-1 py-2.5 bg-white/5 hover:bg-white/10 font-bold rounded-xl transition-colors">Cancel</button>
+              <button onClick={handleSendPeerInvite} disabled={inviting} className="flex-1 py-2.5 bg-primary hover:bg-primary-light text-white font-bold rounded-xl transition-colors disabled:opacity-50">
                 {inviting ? 'Sending...' : 'Send Invite'}
               </button>
             </div>

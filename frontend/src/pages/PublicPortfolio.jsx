@@ -17,6 +17,16 @@ const PublicPortfolio = () => {
       try {
         const res = await api.get(`/portfolio/${username}`);
         setData(res.data);
+
+        // Track View Analytics
+        api.post(`/portfolio/${username}/view`, { isRecruiter: user?.role === 'recruiter' }).catch(() => {});
+
+        // Update SEO Metadata
+        if (res.data.portfolio?.seoTitle) {
+          document.title = res.data.portfolio.seoTitle;
+        } else if (res.data.user?.name) {
+          document.title = `${res.data.user.name} - Portfolio`;
+        }
       } catch (err) {
         setError(err.response?.data?.message || 'Portfolio not found.');
       } finally {
@@ -24,7 +34,7 @@ const PublicPortfolio = () => {
       }
     };
     if (username) fetchPortfolio();
-  }, [username]);
+  }, [username, user]);
 
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
   const [reviewRating, setReviewRating] = useState(5);
@@ -35,7 +45,7 @@ const PublicPortfolio = () => {
     if (!reviewFeedback) return toast.error('Feedback is required.');
     setSubmittingReview(true);
     try {
-      await api.post(`/mentor-reviews/${data.id}`, { rating: reviewRating, feedback: reviewFeedback });
+      await api.post(`/mentor-reviews/${data.user?.id}`, { rating: reviewRating, feedback: reviewFeedback });
       toast.success('Review submitted successfully!');
       setReviewModalOpen(false);
     } catch (err) {
@@ -63,7 +73,21 @@ const PublicPortfolio = () => {
     );
   }
 
-  const { name, headline, about, contact, skills, experience, education, certifications, projects, avatar } = data;
+  const name = data.user?.name;
+  const headline = data.profile?.headline || data.profile?.title || 'Aspiring Professional';
+  const about = data.portfolio?.about || data.resume?.aiSummary || data.resume?.targetSummary || '';
+  const contact = {
+    email: data.user?.email,
+    github: data.profile?.github_url,
+    linkedin: data.profile?.linkedin_url,
+    location: data.profile?.location,
+  };
+  const skills = data.skills || { technical: [], soft: [] };
+  const experience = data.resume?.enhancedExperience?.length > 0 ? data.resume.enhancedExperience : (data.resume?.experience || []);
+  const education = data.resume?.education || [];
+  const certifications = data.certificates || [];
+  const projects = data.projects || [];
+  const avatar = data.user?.avatar;
 
   return (
     <div className="min-h-screen bg-[#050510] text-white selection:bg-purple-500/30 font-sans pb-20">

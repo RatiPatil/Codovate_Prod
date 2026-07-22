@@ -28,9 +28,34 @@ router.post('/start', auth, async (req, res) => {
     const sessionRef = db.collection("interviewSessions").doc();
     const model = await getConfiguredModel();
 
+    const [profileDoc, resumeDoc, skillsDoc, projectsSnap] = await Promise.all([
+      db.collection("profiles").doc(req.user.id).get(),
+      db.collection("resumes").doc(req.user.id).get(),
+      db.collection("skills").doc(req.user.id).get(),
+      db.collection("projects").where("userId", "==", req.user.id).get()
+    ]);
+    
+    const profile = profileDoc.exists ? profileDoc.data() : {};
+    const resume = resumeDoc.exists ? resumeDoc.data() : {};
+    const skills = skillsDoc.exists ? skillsDoc.data() : {};
+    const projects = projectsSnap.docs.map(doc => doc.data());
+
+    const candidateContext = {
+      name: profile.personalInfo?.name || "Student",
+      skills: skills.technical || [],
+      experience: resume.experience ? resume.experience.map(e => `${e.role} at ${e.company}`) : [],
+      projects: projects.map(p => p.title)
+    };
+
     const prompt = `
 You are an expert ${type} interviewer for a ${role} position. 
-We are starting a mock interview. Introduce yourself briefly and ask the first question.
+Here is the candidate's background context:
+- Name: ${candidateContext.name}
+- Skills: ${candidateContext.skills.join(", ") || "None specified"}
+- Experience: ${candidateContext.experience.join(", ") || "None"}
+- Projects: ${candidateContext.projects.join(", ") || "None"}
+
+We are starting a mock interview. Introduce yourself briefly and ask the first question. Tailor your first question specifically to their background or projects if possible.
 Keep it conversational, natural, and concise (1-2 sentences). Do not include any formatting or placeholders.
 `;
     
@@ -41,6 +66,7 @@ Keep it conversational, natural, and concise (1-2 sentences). Do not include any
       uid: req.user.id,
       type,
       role,
+      candidateContext,
       transcript: [
         { role: 'interviewer', text: firstQuestion }
       ],
@@ -79,11 +105,16 @@ router.post('/reply', auth, async (req, res) => {
 
     const prompt = `
 You are an expert ${sessionData.type} interviewer for a ${sessionData.role} position.
+Candidate Context:
+- Name: ${sessionData.candidateContext?.name || "Student"}
+- Skills: ${sessionData.candidateContext?.skills?.join(", ") || "None"}
+- Projects: ${sessionData.candidateContext?.projects?.join(", ") || "None"}
+
 Here is the transcript of the interview so far:
 ${chatHistory}
 
 The candidate just answered. 
-Evaluate their answer internally. Then, respond directly to them as the interviewer.
+Evaluate their answer internally. Then, respond directly to them as the interviewer. Tailor follow-up questions to their skills and projects where applicable.
 You can acknowledge their answer, ask a follow-up question, or move on to the next topic.
 Keep your response conversational, natural, and concise (2-4 sentences max). Do not break character. Do not provide a formal score here.
 `;

@@ -135,6 +135,7 @@ router.get("/:username", async (req, res) => {
     // 3. Assemble unified relational tree
     const publicProfile = {
       user: {
+        id: userId,
         username: user.username,
         name: user.name,
         avatar: user.avatar || "",

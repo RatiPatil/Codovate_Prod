@@ -132,7 +132,11 @@ const ResumeReview = () => {
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-2xl font-bold">Analysis Results for: <span className="text-emerald-400">{result.targetRole}</span></h2>
               <button 
-                onClick={() => { setResult(null); setFile(null); }}
+                onClick={() => { 
+                  setResult(null); 
+                  setFile(null); 
+                  if (fileInputRef.current) fileInputRef.current.value = '';
+                }}
                 className="px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-sm font-bold transition-colors border border-white/10"
               >
                 Scan Another Resume

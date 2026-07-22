@@ -699,35 +699,62 @@ const ResumeBuilder = () => {
 
 
 
-  // Load saved resume
+  // Load saved resume, profile, and projects
   useEffect(() => {
-    api.get('/resume').then(res => {
-      if (res.data) {
-        setData(prev => ({ ...prev, ...res.data }));
-        if (res.data.aiSummary) setAiResult({ summary: res.data.aiSummary, atsScore: res.data.atsScore, atsTips: res.data.atsTips || [], suggestedSkills: res.data.suggestedSkills || [], powered_by: res.data.powered_by || '' });
-      }
-    }).catch(() => {});
-    // Pre-fill from profile
-    api.get('/students/profile').then(res => {
-      const p = res.data;
-      setData(prev => ({
-        ...prev,
-        personalInfo: {
-          ...prev.personalInfo,
-          name: p.name || prev.personalInfo.name,
-          email: p.email || prev.personalInfo.email,
-          phone: p.phone || prev.personalInfo.phone || '',
-          github: p.github_url || prev.personalInfo.github || '',
-          linkedin: p.linkedin_url || prev.personalInfo.linkedin || '',
-          portfolio: p.portfolio_url || prev.personalInfo.portfolio || '',
-        },
-        skills: {
-          ...prev.skills,
-          technical: p.skills?.length > 0 ? p.skills : prev.skills.technical,
-        },
-        education: p.college ? [{ ...emptyEducation(), institution: p.college, field: p.branch || '', endYear: p.year || '' }] : prev.education,
-      }));
-    }).catch(() => {});
+    Promise.all([
+      api.get('/resume').catch(() => ({ data: null })),
+      api.get('/students/profile').catch(() => ({ data: {} })),
+      api.get('/projects/my').catch(() => ({ data: [] }))
+    ]).then(([resResume, resProfile, resProjects]) => {
+      const saved = resResume.data;
+      const p = resProfile.data || {};
+      const projs = resProjects.data || [];
+
+      setData(prev => {
+        const nextData = { ...prev };
+        
+        // 1. Merge saved resume
+        if (saved) {
+          Object.assign(nextData, saved);
+          if (saved.aiSummary) setAiResult({ summary: saved.aiSummary, atsScore: saved.atsScore, atsTips: saved.atsTips || [], suggestedSkills: saved.suggestedSkills || [], powered_by: saved.powered_by || '' });
+        }
+
+        // 2. Merge profile
+        nextData.personalInfo = {
+          ...nextData.personalInfo,
+          name: p.name || nextData.personalInfo.name,
+          email: p.email || nextData.personalInfo.email,
+          phone: p.phone || nextData.personalInfo.phone || '',
+          github: p.github_url || nextData.personalInfo.github || '',
+          linkedin: p.linkedin_url || nextData.personalInfo.linkedin || '',
+          portfolio: p.portfolio_url || nextData.personalInfo.portfolio || '',
+        };
+        nextData.skills = {
+          ...nextData.skills,
+          technical: p.skills?.length > 0 ? p.skills : (nextData.skills?.technical || []),
+        };
+        if (p.college && (!nextData.education || !nextData.education[0]?.institution)) {
+          nextData.education = [{ ...emptyEducation(), institution: p.college, field: p.branch || '', endYear: p.year || '' }];
+        }
+
+        // 3. Merge projects (if not already populated manually by user in saved resume)
+        if (!saved?.projects || saved.projects.length === 0 || !saved.projects[0].title) {
+          if (projs.length > 0) {
+            nextData.projects = projs.map(proj => ({
+              id: proj.id || uid(),
+              title: proj.title || '',
+              techStack: (proj.techStack || []).join(', '),
+              link: proj.liveUrl || proj.githubUrl || '',
+              description: proj.description || ''
+            }));
+          } else {
+            nextData.projects = [emptyProject()];
+          }
+        }
+
+        return nextData;
+      });
+    });
   }, []);
 
   const onChange = useCallback((key, val) => {
@@ -738,7 +765,7 @@ const ResumeBuilder = () => {
     setAiLoading(true);
     setAiResult(null);
     try {
-      const res = await api.post('/resume/ai-generate', {
+      const res = await api.post('/resume/generate', {
         personalInfo: data.personalInfo,
         education: data.education,
         experience: data.experience,

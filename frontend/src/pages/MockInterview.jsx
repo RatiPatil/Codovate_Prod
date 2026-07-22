@@ -104,22 +104,31 @@ const MockInterview = () => {
     }
   };
 
+  const isProcessingRef = useRef(false);
+
   const handleUserReply = async (text) => {
-    if (!text.trim()) return;
+    if (!text.trim() || isProcessingRef.current) return;
+    isProcessingRef.current = true;
     
-    // Add user text immediately
-    const newTranscript = [...transcript, { role: 'candidate', text }];
-    setTranscript(newTranscript);
+    // Stop listening immediately to prevent overlap
+    if (isListening) {
+      recognitionRef.current?.stop();
+      setIsListening(false);
+    }
+    
+    // Add user text immediately via functional update
+    setTranscript(prev => [...prev, { role: 'candidate', text }]);
     
     try {
       setLoading(true);
       const res = await api.post('/interviews/reply', { sessionId, answer: text });
-      setTranscript([...newTranscript, { role: 'interviewer', text: res.data.response }]);
+      setTranscript(prev => [...prev, { role: 'interviewer', text: res.data.response }]);
       speak(res.data.response);
     } catch (err) {
       toast.error('Failed to get AI response');
     } finally {
       setLoading(false);
+      isProcessingRef.current = false;
     }
   };
 

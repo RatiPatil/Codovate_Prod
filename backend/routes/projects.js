@@ -71,6 +71,72 @@ router.get("/public/:uid", async (req, res) => {
   }
 });
 
+// GET /api/projects/invites
+router.get("/invites", auth, async (req, res) => {
+  try {
+    const snap = await db.collection("projectInvites").where("toEmail", "==", req.user.email).get();
+    res.json(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// POST /api/projects/invites/:id/accept
+router.post("/invites/:id/accept", auth, async (req, res) => {
+  try {
+    const inviteRef = db.collection("projectInvites").doc(req.params.id);
+    const doc = await inviteRef.get();
+    if (!doc.exists) return res.status(404).json({ message: "Invite not found" });
+    if (doc.data().toEmail !== req.user.email) return res.status(403).json({ message: "Unauthorized" });
+
+    // Add to project teamMembers
+    await db.collection("projects").doc(doc.data().projectId).update({
+      teamMembers: admin.firestore.FieldValue.arrayUnion(req.user.name || req.user.email)
+    });
+
+    await inviteRef.delete();
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// POST /api/projects/invites/:id/reject
+router.post("/invites/:id/reject", auth, async (req, res) => {
+  try {
+    const inviteRef = db.collection("projectInvites").doc(req.params.id);
+    const doc = await inviteRef.get();
+    if (doc.exists && doc.data().toEmail === req.user.email) {
+      await inviteRef.delete();
+    }
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// POST /api/projects/:id/invite
+router.post("/:id/invite", auth, async (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ message: "Email required" });
+  
+  try {
+    const projectDoc = await db.collection("projects").doc(req.params.id).get();
+    if (!projectDoc.exists || projectDoc.data().uid !== req.user.id) return res.status(403).json({ message: "Unauthorized" });
+
+    await db.collection("projectInvites").add({
+      projectId: req.params.id,
+      projectTitle: projectDoc.data().title,
+      fromName: req.user.name || req.user.email,
+      toEmail: email,
+      createdAt: admin.firestore.FieldValue.serverTimestamp()
+    });
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 // POST /api/projects
 router.post("/", auth, async (req, res) => {
   try {
@@ -96,11 +162,30 @@ router.post("/", auth, async (req, res) => {
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     };
 
-    const ref = await db.collection("projects").add(projectData);
-    await db.collection("careerProfiles").doc(uid).set(
-      { projects: admin.firestore.FieldValue.arrayUnion(ref.id) },
-      { merge: true }
-    );
+    const ref = db.collection("projects").doc();
+    
+    await db.runTransaction(async (t) => {
+      const userRef = db.collection("users").doc(uid);
+      const userDoc = await t.get(userRef);
+      const userData = userDoc.exists ? userDoc.data() : {};
+      
+      t.set(ref, projectData);
+      
+      t.set(db.collection("careerProfiles").doc(uid), {
+        projects: admin.firestore.FieldValue.arrayUnion(ref.id)
+      }, { merge: true });
+      
+      t.update(userRef, {
+        total_points: (userData.total_points || 0) + 50
+      });
+      
+      t.set(db.collection("point_ledger").doc(), {
+        student_id: uid,
+        action: 'project_created',
+        points: 50,
+        created_at: admin.firestore.FieldValue.serverTimestamp()
+      });
+    });
 
     syncDashboard(uid);
     eventBus.emit("PROJECT_ADDED", { uid, projectData });

@@ -165,16 +165,16 @@ const Home = () => {
         }
       );
     }
+      return () => {
+        window.removeEventListener('mousemove', handleMouseMove);
+        if (magneticBtn) {
+          magneticBtn.removeEventListener('mousemove', handleMagneticMove);
+          magneticBtn.removeEventListener('mouseleave', handleMagneticLeave);
+        }
+      };
     }, containerRef);
 
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      if (magneticBtn) {
-        magneticBtn.removeEventListener('mousemove', handleMagneticMove);
-        magneticBtn.removeEventListener('mouseleave', handleMagneticLeave);
-      }
-      ctx.revert(); // Properly kills all GSAP tweens and ScrollTriggers
-    };
+    return () => ctx.revert(); // Properly kills all GSAP tweens and ScrollTriggers
   }, []);
 
   return (
