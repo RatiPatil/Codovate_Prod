@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { db, admin } = require("../config/firebase");
 const auth = require("../middleware/auth");
+const { awardPoints, updatePlacementScore } = require("../utils/scoring");
 
 // Setup Gemini
 const { getConfiguredModel, genAI } = require("../utils/aiConfig");
@@ -168,56 +169,71 @@ router.put("/roadmap-progress", auth, async (req, res) => {
     const { stepId, taskId, completed } = req.body;
     
     const docRef = db.collection("userRoadmaps").doc(uid);
-    const doc = await docRef.get();
     
-    if (!doc.exists) {
-      return res.status(404).json({ message: "Roadmap not found." });
-    }
-    
-    const data = doc.data();
-    let totalTasks = 0;
-    let completedTasks = 0;
-    
-    const newSteps = data.steps.map(step => {
-      let stepCompletedTasks = 0;
+    const result = await db.runTransaction(async (t) => {
+      const doc = await t.get(docRef);
+      if (!doc.exists) {
+        throw new Error("Roadmap not found.");
+      }
       
-      const newTasks = step.tasks.map(task => {
-        const isTarget = step.id === stepId && task.id === taskId;
-        const taskCompleted = isTarget ? completed : task.completed;
+      const data = doc.data();
+      let totalTasks = 0;
+      let completedTasks = 0;
+      let newlyCompletedStep = false;
+      
+      const newSteps = data.steps.map(step => {
+        let stepCompletedTasks = 0;
         
-        if (taskCompleted) stepCompletedTasks++;
+        const newTasks = step.tasks.map(task => {
+          const isTarget = step.id === stepId && task.id === taskId;
+          const taskCompleted = isTarget ? completed : task.completed;
+          
+          if (taskCompleted) stepCompletedTasks++;
+          
+          return { ...task, completed: taskCompleted };
+        });
         
-        return { ...task, completed: taskCompleted };
+        totalTasks += newTasks.length;
+        completedTasks += stepCompletedTasks;
+        
+        let stepStatus = "pending";
+        if (stepCompletedTasks > 0) stepStatus = "in_progress";
+        if (stepCompletedTasks === newTasks.length && newTasks.length > 0) stepStatus = "completed";
+        
+        if (step.status !== "completed" && stepStatus === "completed") {
+          newlyCompletedStep = true;
+        }
+        
+        return { ...step, tasks: newTasks, status: stepStatus };
       });
       
-      totalTasks += newTasks.length;
-      completedTasks += stepCompletedTasks;
+      const overallProgress = totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100);
       
-      let stepStatus = "pending";
-      if (stepCompletedTasks > 0) stepStatus = "in_progress";
-      if (stepCompletedTasks === newTasks.length && newTasks.length > 0) stepStatus = "completed";
+      t.update(docRef, {
+        steps: newSteps,
+        overall_progress: overallProgress,
+        updated_at: admin.firestore.FieldValue.serverTimestamp()
+      });
       
-      return { ...step, tasks: newTasks, status: stepStatus };
-    });
-    
-    const overallProgress = totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100);
-    
-    await docRef.update({
-      steps: newSteps,
-      overall_progress: overallProgress,
-      updated_at: admin.firestore.FieldValue.serverTimestamp()
+      const progressRef = db.collection("roadmapProgress").doc(uid);
+      t.set(progressRef, {
+        overall_progress: overallProgress,
+        completedSteps: newSteps.filter(s => s.status === 'completed').map(s => s.id),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+      
+      return { newSteps, overallProgress, newlyCompletedStep };
     });
 
-    await db.collection("roadmapProgress").doc(uid).set({
-      overall_progress: overallProgress,
-      completedSteps: newSteps.filter(s => s.status === 'completed').map(s => s.id),
-      updatedAt: admin.firestore.FieldValue.serverTimestamp()
-    }, { merge: true });
+    if (result.newlyCompletedStep) {
+      await awardPoints(uid, 'roadmap_step', 50);
+    }
+    await updatePlacementScore(uid);
     
-    res.json({ success: true, steps: newSteps, overall_progress: overallProgress });
+    res.json({ success: true, steps: result.newSteps, overall_progress: result.overallProgress });
   } catch (err) {
     console.error("Error updating roadmap:", err);
-    res.status(500).json({ message: "Server error." });
+    res.status(err.message === "Roadmap not found." ? 404 : 500).json({ message: err.message || "Server error." });
   }
 });
 
@@ -228,56 +244,71 @@ router.put("/step", auth, async (req, res) => {
     const { stepId, taskId, completed } = req.body;
     
     const docRef = db.collection("userRoadmaps").doc(uid);
-    const doc = await docRef.get();
     
-    if (!doc.exists) {
-      return res.status(404).json({ message: "Roadmap not found." });
-    }
-    
-    const data = doc.data();
-    let totalTasks = 0;
-    let completedTasks = 0;
-    
-    const newSteps = data.steps.map(step => {
-      let stepCompletedTasks = 0;
+    const result = await db.runTransaction(async (t) => {
+      const doc = await t.get(docRef);
+      if (!doc.exists) {
+        throw new Error("Roadmap not found.");
+      }
       
-      const newTasks = step.tasks.map(task => {
-        const isTarget = step.id === stepId && task.id === taskId;
-        const taskCompleted = isTarget ? completed : task.completed;
+      const data = doc.data();
+      let totalTasks = 0;
+      let completedTasks = 0;
+      let newlyCompletedStep = false;
+      
+      const newSteps = data.steps.map(step => {
+        let stepCompletedTasks = 0;
         
-        if (taskCompleted) stepCompletedTasks++;
+        const newTasks = step.tasks.map(task => {
+          const isTarget = step.id === stepId && task.id === taskId;
+          const taskCompleted = isTarget ? completed : task.completed;
+          
+          if (taskCompleted) stepCompletedTasks++;
+          
+          return { ...task, completed: taskCompleted };
+        });
         
-        return { ...task, completed: taskCompleted };
+        totalTasks += newTasks.length;
+        completedTasks += stepCompletedTasks;
+        
+        let stepStatus = "pending";
+        if (stepCompletedTasks > 0) stepStatus = "in_progress";
+        if (stepCompletedTasks === newTasks.length && newTasks.length > 0) stepStatus = "completed";
+        
+        if (step.status !== "completed" && stepStatus === "completed") {
+          newlyCompletedStep = true;
+        }
+        
+        return { ...step, tasks: newTasks, status: stepStatus };
       });
       
-      totalTasks += newTasks.length;
-      completedTasks += stepCompletedTasks;
+      const overallProgress = totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100);
       
-      let stepStatus = "pending";
-      if (stepCompletedTasks > 0) stepStatus = "in_progress";
-      if (stepCompletedTasks === newTasks.length && newTasks.length > 0) stepStatus = "completed";
+      t.update(docRef, {
+        steps: newSteps,
+        overall_progress: overallProgress,
+        updated_at: admin.firestore.FieldValue.serverTimestamp()
+      });
       
-      return { ...step, tasks: newTasks, status: stepStatus };
-    });
-    
-    const overallProgress = totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100);
-    
-    await docRef.update({
-      steps: newSteps,
-      overall_progress: overallProgress,
-      updated_at: admin.firestore.FieldValue.serverTimestamp()
+      const progressRef = db.collection("roadmapProgress").doc(uid);
+      t.set(progressRef, {
+        overall_progress: overallProgress,
+        completedSteps: newSteps.filter(s => s.status === 'completed').map(s => s.id),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+      
+      return { newSteps, overallProgress, newlyCompletedStep };
     });
 
-    await db.collection("roadmapProgress").doc(uid).set({
-      overall_progress: overallProgress,
-      completedSteps: newSteps.filter(s => s.status === 'completed').map(s => s.id),
-      updatedAt: admin.firestore.FieldValue.serverTimestamp()
-    }, { merge: true });
+    if (result.newlyCompletedStep) {
+      await awardPoints(uid, 'roadmap_step', 50);
+    }
+    await updatePlacementScore(uid);
     
-    res.json({ success: true, steps: newSteps, overall_progress: overallProgress });
+    res.json({ success: true, steps: result.newSteps, overall_progress: result.overallProgress });
   } catch (err) {
     console.error("Error updating roadmap:", err);
-    res.status(500).json({ message: "Server error." });
+    res.status(err.message === "Roadmap not found." ? 404 : 500).json({ message: err.message || "Server error." });
   }
 });
 

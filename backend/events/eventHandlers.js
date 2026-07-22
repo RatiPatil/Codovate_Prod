@@ -30,16 +30,6 @@ async function logActivity(uid, type, title, description = "") {
  */
 eventBus.on("PROFILE_UPDATED", async ({ uid, profileData }) => {
   try {
-    // 1. Recalculate Profile Completion (Could also be purely in dashboard, but saving it here if needed)
-    let completion = 0;
-    if (profileData.personalInfo?.email) completion += 20;
-    if (profileData.education?.length > 0) completion += 20;
-    if (profileData.skills?.length > 0) completion += 20;
-    if (profileData.experienceLevel) completion += 20;
-    if (profileData.headline) completion += 20;
-    
-    await db.collection("profiles").doc(uid).set({ profileCompletion: completion }, { merge: true });
-
     // 2. Merge basic identity data into Resume
     const resumeRef = db.collection("resumes").doc(uid);
     const resumeDoc = await resumeRef.get();

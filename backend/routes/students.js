@@ -142,6 +142,11 @@ router.put("/profile", auth, async (req, res) => {
       bio: bio !== undefined ? bio : currentProfile.bio,
       profileImage: avatar_url !== undefined ? avatar_url : currentProfile.profileImage,
       skills: skills !== undefined ? skills : currentProfile.skills,
+      projects: projects !== undefined ? projects : currentProfile.projects,
+      certificates: certificates !== undefined ? certificates : currentProfile.certificates,
+      achievements: achievements !== undefined ? achievements : currentProfile.achievements,
+      seeking: seeking !== undefined ? seeking : currentProfile.seeking,
+      passionate_about: passionate_about !== undefined ? passionate_about : currentProfile.passionate_about,
       careerGoal: desired_roles && desired_roles.length > 0 ? desired_roles[0] : currentProfile.careerGoal,
       updatedAt: new Date()
     };
