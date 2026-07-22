@@ -414,41 +414,62 @@ router.put("/step/:stepId/content-progress", auth, async (req, res) => {
     // type: 'assignment' or 'quiz'
     
     const docRef = db.collection("userRoadmaps").doc(uid);
-    const doc = await docRef.get();
+    let newlyPassedQuiz = false;
+    let newlyCompletedAssignment = false;
+    let resultSteps = [];
     
-    if (!doc.exists) return res.status(404).json({ message: "Roadmap not found." });
-    const data = doc.data();
-    
-    const newSteps = data.steps.map(step => {
-      if (step.id !== stepId) return step;
+    await db.runTransaction(async (t) => {
+      const doc = await t.get(docRef);
+      if (!doc.exists) throw new Error("Roadmap not found.");
       
-      const content = { ...step.content };
+      const data = doc.data();
+      const newSteps = data.steps.map(step => {
+        if (step.id !== stepId) return step;
+        
+        const content = { ...step.content };
+        
+        if (type === 'assignment' && content.assignments) {
+          content.assignments = content.assignments.map(a => {
+            if (a.id === itemId) {
+              if (!a.completed && completed) newlyCompletedAssignment = true;
+              return { ...a, completed };
+            }
+            return a;
+          });
+        }
+        
+        if (type === 'quiz') {
+          const pass = score >= 60;
+          if (!content.quizPassed && pass) newlyPassedQuiz = true;
+          content.quizPassed = pass;
+          content.quizScore = score;
+        }
+        
+        return { ...step, content };
+      });
       
-      if (type === 'assignment' && content.assignments) {
-        content.assignments = content.assignments.map(a => 
-          a.id === itemId ? { ...a, completed } : a
-        );
-      }
+      t.update(docRef, { steps: newSteps, updated_at: admin.firestore.FieldValue.serverTimestamp() });
       
-      if (type === 'quiz') {
-        content.quizPassed = score >= 60; // arbitrarily, if score passed
-        content.quizScore = score;
-      }
+      const progressRef = db.collection("learningProgress").doc(uid);
+      t.set(progressRef, {
+        [`module_${stepId}`]: newSteps.find(s => s.id === stepId).content,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
       
-      return { ...step, content };
+      resultSteps = newSteps;
     });
-    
-    await docRef.update({ steps: newSteps });
-    
-    await db.collection("learningProgress").doc(uid).set({
-      [`module_${stepId}`]: newSteps.find(s => s.id === stepId).content,
-      updatedAt: admin.firestore.FieldValue.serverTimestamp()
-    }, { merge: true });
 
-    res.json({ success: true, steps: newSteps });
+    if (newlyCompletedAssignment) await awardPoints(uid, 'assignment_completed', 20);
+    if (newlyPassedQuiz) await awardPoints(uid, 'quiz_passed', 30);
+    
+    if (newlyCompletedAssignment || newlyPassedQuiz) {
+      await updatePlacementScore(uid);
+    }
+    
+    res.json({ success: true, steps: resultSteps });
   } catch (err) {
     console.error("Error updating content progress:", err);
-    res.status(500).json({ message: "Server error." });
+    res.status(err.message === "Roadmap not found." ? 404 : 500).json({ message: err.message || "Server error." });
   }
 });
 
