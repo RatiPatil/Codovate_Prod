@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
@@ -30,7 +30,7 @@ const Leaderboard = () => {
       })
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, [activeTab, collegeFilter, courseFilter]);
+  }, [activeTab, collegeFilter]);
 
   const filtered = useMemo(() => {
     return students.filter(s => {
