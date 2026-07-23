@@ -575,12 +575,15 @@ const Profile = () => {
             {editingSection === 'skills' ? (
               <div className="space-y-6">
                 <div className="flex flex-wrap gap-2">
-                  {skills.map((skill, idx) => (
-                    <div key={idx} className="flex items-center justify-between pl-3 pr-1 py-1 bg-white/10 border border-white/20 rounded-xl">
-                      <span className="text-white text-sm font-medium mr-2">{skill}</span>
-                      <button onClick={() => setSkills(skills.filter(s => s !== skill))} className="p-1 text-gray-400 hover:text-rose-400 bg-black/20 rounded-lg transition"><X className="w-3 h-3" /></button>
-                    </div>
-                  ))}
+                  {skills.map((skill, idx) => {
+                    const skillName = typeof skill === 'string' ? skill : (skill?.name || '');
+                    return (
+                      <div key={idx} className="flex items-center justify-between pl-3 pr-1 py-1 bg-white/10 border border-white/20 rounded-xl">
+                        <span className="text-white text-sm font-medium mr-2">{skillName}</span>
+                        <button onClick={() => setSkills(skills.filter(s => s !== skill))} className="p-1 text-gray-400 hover:text-rose-400 bg-black/20 rounded-lg transition"><X className="w-3 h-3" /></button>
+                      </div>
+                    );
+                  })}
                 </div>
                 <div className="flex gap-2">
                   <input type="text" value={customSkill} onChange={e => setCustomSkill(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); if (customSkill.trim() && !skills.includes(customSkill.trim())) { setSkills([...skills, customSkill.trim()]); setCustomSkill(''); } } }} placeholder="Add a custom skill..." className="input-glass w-full text-sm bg-black/20" />
@@ -599,11 +602,14 @@ const Profile = () => {
               <div>
                 {skills.length > 0 ? (
                   <div className="flex flex-wrap gap-3">
-                    {skills.map((skill, idx) => (
-                      <div key={idx} className="px-4 py-2 bg-gradient-to-r from-white/5 to-white/10 border border-white/10 hover:border-white/30 rounded-xl text-white text-sm font-semibold shadow-lg hover:shadow-[0_0_15px_rgba(255,255,255,0.1)] hover:-translate-y-0.5 cursor-default transition-all duration-300">
-                        {skill}
-                      </div>
-                    ))}
+                    {skills.map((skill, idx) => {
+                      const skillName = typeof skill === 'string' ? skill : (skill?.name || '');
+                      return (
+                        <div key={idx} className="px-4 py-2 bg-gradient-to-r from-white/5 to-white/10 border border-white/10 hover:border-white/30 rounded-xl text-white text-sm font-semibold shadow-lg hover:shadow-[0_0_15px_rgba(255,255,255,0.1)] hover:-translate-y-0.5 cursor-default transition-all duration-300">
+                          {skillName}
+                        </div>
+                      );
+                    })}
                   </div>
                 ) : (
                   <p className="text-sm text-gray-500 italic">"Every superhero starts somewhere ⚡. Add your skills!"</p>
