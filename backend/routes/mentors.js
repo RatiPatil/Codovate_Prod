@@ -21,10 +21,12 @@ router.get("/", auth, async (req, res) => {
       const m = doc.data();
       m.id = doc.id;
       
-      const userDoc = await db.collection("users").doc(m.user_id).get();
-      if (userDoc.exists) {
-        m.name = userDoc.data().name;
-        m.email = userDoc.data().email;
+      if (m.user_id) {
+        const userDoc = await db.collection("users").doc(m.user_id).get();
+        if (userDoc.exists) {
+          m.name = userDoc.data().name;
+          m.email = userDoc.data().email;
+        }
       }
       return m;
     }));
@@ -44,7 +46,7 @@ router.get("/ai-recommend", auth, async (req, res) => {
     const studentDoc = await db.collection("students").doc(req.user.id).get();
     if (!studentDoc.exists) return res.status(404).json({ message: "Student profile not found" });
     const studentData = studentDoc.data();
-    const currentSkills = studentData.skills || [];
+    const currentSkills = (studentData.skills || []).map(s => typeof s === 'string' ? s : (s.name || ''));
     const careerGoal = studentData.career_goal || '';
 
     // Fetch active mentors
@@ -56,9 +58,11 @@ router.get("/ai-recommend", auth, async (req, res) => {
     const mentors = await Promise.all(activeDocs.map(async (doc) => {
       const m = doc.data();
       m.id = doc.id;
-      const userDoc = await db.collection("users").doc(m.user_id).get();
-      if (userDoc.exists) {
-        m.name = userDoc.data().name;
+      if (m.user_id) {
+        const userDoc = await db.collection("users").doc(m.user_id).get();
+        if (userDoc.exists) {
+          m.name = userDoc.data().name;
+        }
       }
       return m;
     }));
@@ -242,9 +246,13 @@ router.get("/my-sessions", auth, async (req, res) => {
         const mentorDoc = await db.collection("mentors").doc(b.mentor_id).get();
         if (mentorDoc.exists) {
           const md = mentorDoc.data();
-          const userDoc = await db.collection("users").doc(md.user_id).get();
+          let name = "Unknown";
+          if (md.user_id) {
+            const userDoc = await db.collection("users").doc(md.user_id).get();
+            name = userDoc.exists ? userDoc.data().name : "Unknown";
+          }
           mentorData = {
-            name: userDoc.exists ? userDoc.data().name : "Unknown",
+            name,
             expertise: md.expertise || [],
             hourly_rate: md.hourly_rate || 0,
             bio: md.bio || "",
