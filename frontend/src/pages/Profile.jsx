@@ -247,7 +247,7 @@ const Profile = () => {
   const handleCropComplete = async (croppedBlob) => {
     try {
       showToast('Uploading profile photo...', 'success');
-      const url = await uploadProfilePhoto(croppedBlob, user.uid);
+      const url = await uploadProfilePhoto(croppedBlob, user.uid || user.id);
       setForm(prev => ({ ...prev, avatar_url: url }));
       await api.put('/students/profile', { avatar_url: url });
       showToast('Profile photo updated! ✅', 'success');
@@ -272,7 +272,7 @@ const Profile = () => {
       
       try {
         setUploadingResume(true);
-        const url = await uploadResume(file, user.uid, (prog) => setResumeProgress(prog));
+        const url = await uploadResume(file, user.uid || user.id, (prog) => setResumeProgress(prog));
         setForm(prev => ({ ...prev, resume_url: url }));
         await api.put('/students/profile', { resume_url: url });
         showToast('Resume uploaded successfully! ✅', 'success');
