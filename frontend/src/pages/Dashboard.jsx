@@ -31,12 +31,10 @@ const Dashboard = () => {
     const fetchAll = async () => {
       try {
         setLoading(true);
-        // Fetch workspace (hero, profile data) which generates the dependent data
-        const wsRes = await api.get('/students/workspace');
-        setWorkspace(wsRes.data);
 
-        // Fetch dependent data in parallel
+        // Fetch all data in parallel to avoid waterfall loading
         const [
+          wsRes,
           tasksRes,
           readinessRes,
           recsRes,
@@ -44,6 +42,7 @@ const Dashboard = () => {
           reportRes,
           skillGapRes
         ] = await Promise.allSettled([
+          api.get('/students/workspace'),
           api.get('/students/daily-tasks'),
           api.get('/students/placement-readiness'),
           api.get('/students/recommendations'),
@@ -51,6 +50,9 @@ const Dashboard = () => {
           api.get('/students/weekly-report'),
           api.get('/ai/skill-gap'),
         ]);
+
+        if (wsRes.status === 'fulfilled') setWorkspace(wsRes.value.data);
+        else throw new Error('Failed to load workspace.'); // Core requirement
 
         if (tasksRes.status === 'fulfilled') setDailyTasks(tasksRes.value.data);
         if (readinessRes.status === 'fulfilled') setReadiness(readinessRes.value.data);

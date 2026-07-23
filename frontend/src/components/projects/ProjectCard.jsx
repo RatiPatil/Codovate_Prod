@@ -32,7 +32,7 @@ const ProjectCard = ({ project, onEdit, onDelete, isOwner = false }) => {
       {/* Thumbnail / gradient fallback */}
       <div className="relative h-40 bg-gradient-to-br from-primary/30 via-purple-600/20 to-transparent overflow-hidden flex-shrink-0">
         {thumbnailUrl ? (
-          <img src={thumbnailUrl} alt={title} className="w-full h-full object-cover opacity-70 group-hover:opacity-90 transition-opacity duration-300" />
+          <img loading="lazy" decoding="async" src={thumbnailUrl} alt={title} className="w-full h-full object-cover opacity-70 group-hover:opacity-90 transition-opacity duration-300" />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
             <span className="text-6xl opacity-20">💻</span>

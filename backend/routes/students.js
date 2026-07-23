@@ -332,16 +332,16 @@ router.get("/workspace", auth, async (req, res) => {
     const u = userDoc.data();
     const p = profileDoc.exists ? profileDoc.data() : {};
 
-    // 1. Fetch Real Data Counts
+    // 1. Fetch Real Data Counts using aggregate queries for performance
     const [appsSnap, teamsSnap, bookingsSnap] = await Promise.all([
-      db.collection("applications").where("student_id", "==", uid).get(),
-      db.collection("team_members").where("user_id", "==", uid).get(),
-      db.collection("mentorSessions").where("student_id", "==", uid).get(),
+      db.collection("applications").where("student_id", "==", uid).count().get(),
+      db.collection("team_members").where("user_id", "==", uid).count().get(),
+      db.collection("mentorSessions").where("student_id", "==", uid).count().get(),
     ]);
 
-    const appsCount = appsSnap.size;
-    const teamsCount = teamsSnap.size;
-    const mentorsCount = bookingsSnap.size;
+    const appsCount = appsSnap.data().count;
+    const teamsCount = teamsSnap.data().count;
+    const mentorsCount = bookingsSnap.data().count;
 
     // Calculate real points based on stats
     const profilePoints = (u.profileCompleted || p.profileCompletion || 0) * 10;

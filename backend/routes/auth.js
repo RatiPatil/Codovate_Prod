@@ -112,7 +112,8 @@ router.post("/google", async (req, res) => {
         created_at: new Date()
       });
 
-      await batch.commit();
+      // Fire and forget batch commit to speed up login
+      batch.commit().catch(e => console.error('Background batch commit failed:', e));
       console.log("✅ User logged in via Google and linked:", email);
     }
 
@@ -249,7 +250,8 @@ router.post("/phone", async (req, res) => {
           created_at: new Date()
         });
         
-        await batch.commit();
+        // Fire and forget
+        batch.commit().catch(e => console.error('Background batch commit failed:', e));
 
         const tokenPayload = { id: user.id, role: user.role, name: user.name, email: user.email };
         if (user.college_id) tokenPayload.college_id = user.college_id;
@@ -288,7 +290,8 @@ router.post("/phone", async (req, res) => {
         created_at: new Date()
       });
 
-      await batch.commit();
+      // Fire and forget
+      batch.commit().catch(e => console.error('Background batch commit failed:', e));
       console.log("✅ User logged in via Phone and linked:", phone_number);
     }
 
@@ -467,7 +470,8 @@ router.post("/signup", async (req, res) => {
       created_at: new Date()
     });
     
-    await batch.commit();
+    // Fire and forget
+    batch.commit().catch(e => console.error('Background batch commit failed:', e));
 
     // 🔴 REAL-TIME: Notify Admin
     if (req.io) req.io.to("admin_room").emit("admin_new_student", userData);
@@ -559,7 +563,8 @@ router.post("/login", async (req, res) => {
       created_at: new Date()
     });
     
-    await batch.commit();
+    // Fire and forget
+    batch.commit().catch(e => console.error('Background batch commit failed:', e));
 
     // Role-based JWT payload for admins
     const tokenPayload = {
@@ -630,9 +635,12 @@ router.post("/admin-login", async (req, res) => {
     if (!match)
       return res.status(401).json({ message: "Invalid email or password." });
 
-    await usersRef.doc(user.id).update({ lastLogin: new Date(), updatedAt: new Date() });
+    // Fire and forget
+    usersRef.doc(user.id).update({ lastLogin: new Date(), updatedAt: new Date() })
+      .catch(e => console.error('Background login update failed:', e));
 
-    await db.collection('audit_logs').add({
+    // Fire and forget
+    db.collection('audit_logs').add({
       actor_id: user.id,
       actor_email: user.email,
       action: 'ADMIN_LOGIN',
@@ -640,7 +648,7 @@ router.post("/admin-login", async (req, res) => {
       entity_id: null,
       details: { role: user.role },
       created_at: new Date()
-    });
+    }).catch(e => console.error('Background audit log failed:', e));
 
     // Role-based JWT payload
     const tokenPayload = {

@@ -73,7 +73,7 @@ const PostCard = ({ post, onUpdate }) => {
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center font-bold text-primary overflow-hidden">
             {post.author_avatar ? (
-              <img src={post.author_avatar} alt="avatar" className="w-full h-full object-cover" />
+              <img loading="lazy" decoding="async" src={post.author_avatar} alt="avatar" className="w-full h-full object-cover" />
             ) : (
               post.author_name?.charAt(0) || 'U'
             )}
