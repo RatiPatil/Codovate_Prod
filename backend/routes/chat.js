@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { db } = require('../config/firebase');
+const { db, FieldValue } = require('../config/firebase');
 const auth = require('../middleware/auth');
 const admin = require('firebase-admin');
 
@@ -142,7 +142,7 @@ router.get('/:chatId/messages', auth, async (req, res) => {
     const unread = messagesSnap.docs.filter(d => !d.data().read_by?.includes(req.user.id));
     for (const doc of unread) {
       await doc.ref.update({
-        read_by: admin.firestore.FieldValue.arrayUnion(req.user.id)
+        read_by: FieldValue.arrayUnion(req.user.id)
       });
     }
 
@@ -189,7 +189,7 @@ router.post('/:chatId/messages', auth, async (req, res) => {
     }
 
     const msgRef = messagesRef.doc();
-    const timestamp = admin.firestore.FieldValue.serverTimestamp();
+    const timestamp = FieldValue.serverTimestamp();
     const msg = {
       id: msgRef.id,
       sender_id: req.user.id,

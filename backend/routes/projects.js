@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { db, admin } = require("../config/firebase");
+const { db, admin, FieldValue } = require("../config/firebase");
 const auth = require("../middleware/auth");
 const https = require("https");
 const { syncDashboard } = require("../services/dashboardService");
@@ -94,7 +94,7 @@ router.post("/invites/:id/accept", auth, async (req, res) => {
 
     // Add to project teamMembers
     await db.collection("projects").doc(doc.data().projectId).update({
-      teamMembers: admin.firestore.FieldValue.arrayUnion(req.user.name || req.user.email)
+      teamMembers: FieldValue.arrayUnion(req.user.name || req.user.email)
     });
 
     await inviteRef.delete();
@@ -132,7 +132,7 @@ router.post("/:id/invite", auth, async (req, res) => {
       projectTitle: projectDoc.data().title,
       fromName: req.user.name || req.user.email,
       toEmail: email,
-      createdAt: admin.firestore.FieldValue.serverTimestamp()
+      createdAt: FieldValue.serverTimestamp()
     });
     res.json({ success: true });
   } catch (err) {
@@ -161,8 +161,8 @@ router.post("/", auth, async (req, res) => {
       uid, authorName, title, description, problemStatement, solution, features,
       skillsLearned, techStack, githubUrl, liveUrl, thumbnailUrl, screenshots, videoUrl,
       teamMembers, milestones, status, visibility, featured, likes: 0,
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      createdAt: FieldValue.serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp(),
     };
 
     const ref = db.collection("projects").doc();
@@ -175,7 +175,7 @@ router.post("/", auth, async (req, res) => {
       t.set(ref, projectData);
       
       t.set(db.collection("careerProfiles").doc(uid), {
-        projects: admin.firestore.FieldValue.arrayUnion(ref.id)
+        projects: FieldValue.arrayUnion(ref.id)
       }, { merge: true });
       
       t.update(userRef, {
@@ -186,7 +186,7 @@ router.post("/", auth, async (req, res) => {
         student_id: uid,
         action: 'project_created',
         points: 50,
-        created_at: admin.firestore.FieldValue.serverTimestamp()
+        created_at: FieldValue.serverTimestamp()
       });
     });
 
@@ -212,7 +212,7 @@ router.put("/:id", auth, async (req, res) => {
     const allowed = ["title","description","problemStatement","solution","features",
       "skillsLearned","techStack","githubUrl","liveUrl",
       "thumbnailUrl","screenshots","videoUrl","teamMembers","milestones","status","visibility","featured"];
-    const update = { updatedAt: admin.firestore.FieldValue.serverTimestamp() };
+    const update = { updatedAt: FieldValue.serverTimestamp() };
     allowed.forEach((k) => { if (req.body[k] !== undefined) update[k] = req.body[k]; });
 
     await ref.update(update);
@@ -235,7 +235,7 @@ router.delete("/:id", auth, async (req, res) => {
 
     await ref.delete();
     await db.collection("careerProfiles").doc(uid).update({
-      projects: admin.firestore.FieldValue.arrayRemove(req.params.id),
+      projects: FieldValue.arrayRemove(req.params.id),
     });
     syncDashboard(uid);
     res.json({ success: true });

@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { db, admin } = require("../config/firebase");
+const { db, admin, FieldValue } = require("../config/firebase");
 const auth = require("../middleware/auth");
 const { syncDashboard } = require("../services/dashboardService");
 
@@ -178,7 +178,7 @@ router.post("/:username/view", async (req, res) => {
     
     // Update Portfolio Document
     const portfolioRef = db.collection("portfolios").doc(userId);
-    const inc = admin.firestore.FieldValue.increment(1);
+    const inc = FieldValue.increment(1);
     
     const updateData = { views: inc };
     if (isRecruiter) updateData.recruiterViews = inc;

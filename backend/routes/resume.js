@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const auth = require("../middleware/auth");
-const { db, admin } = require("../config/firebase");
+const { db, admin, FieldValue } = require("../config/firebase");
 const { syncDashboard } = require("../services/dashboardService");
 const multer = require("multer");
 const pdfParse = require("pdf-parse");
@@ -382,14 +382,14 @@ Respond ONLY with valid JSON.
       uid: req.user.id,
       targetRole,
       ...analysis,
-      createdAt: admin.firestore.FieldValue.serverTimestamp()
+      createdAt: FieldValue.serverTimestamp()
     };
     await reviewRef.set(finalResult);
 
     // Update main resume score & sync dashboard
     await db.collection("resumes").doc(req.user.id).set({
       atsScore: analysis.atsScore,
-      updatedAt: admin.firestore.FieldValue.serverTimestamp()
+      updatedAt: FieldValue.serverTimestamp()
     }, { merge: true });
     syncDashboard(req.user.id);
 

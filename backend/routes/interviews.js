@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { db, admin } = require("../config/firebase");
+const { db, admin, FieldValue } = require("../config/firebase");
 const auth = require("../middleware/auth");
 const { syncDashboard } = require("../services/dashboardService");
 require('dotenv').config();
@@ -70,7 +70,7 @@ Keep it conversational, natural, and concise (1-2 sentences). Do not include any
       transcript: [
         { role: 'interviewer', text: firstQuestion }
       ],
-      createdAt: admin.firestore.FieldValue.serverTimestamp()
+      createdAt: FieldValue.serverTimestamp()
     };
     
     await sessionRef.set(newSession);
@@ -182,7 +182,7 @@ Respond ONLY with valid JSON.
       transcript: sessionData.transcript,
       wpm: wpm || 0,
       ...evaluation,
-      createdAt: admin.firestore.FieldValue.serverTimestamp()
+      createdAt: FieldValue.serverTimestamp()
     };
 
     // Save final report to 'interviews' collection

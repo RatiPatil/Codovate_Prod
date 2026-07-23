@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { db } = require('../config/firebase');
+const { db, FieldValue } = require('../config/firebase');
 const auth = require('../middleware/auth');
 const admin = require('firebase-admin');
 
@@ -46,13 +46,13 @@ router.post('/:id/rsvp', auth, async (req, res) => {
     
     if (isRSVP) {
       // Un-RSVP
-      await eventRef.update({ attendees: admin.firestore.FieldValue.increment(-1) });
-      await userRef.update({ rsvp_events: admin.firestore.FieldValue.arrayRemove(req.params.id) });
+      await eventRef.update({ attendees: FieldValue.increment(-1) });
+      await userRef.update({ rsvp_events: FieldValue.arrayRemove(req.params.id) });
       res.json({ message: "RSVP cancelled", is_rsvp: false });
     } else {
       // RSVP
-      await eventRef.update({ attendees: admin.firestore.FieldValue.increment(1) });
-      await userRef.update({ rsvp_events: admin.firestore.FieldValue.arrayUnion(req.params.id) });
+      await eventRef.update({ attendees: FieldValue.increment(1) });
+      await userRef.update({ rsvp_events: FieldValue.arrayUnion(req.params.id) });
       
       // Also log Activity Feed
       await db.collection("activityLogs").add({
@@ -80,10 +80,10 @@ router.post('/:id/save', auth, async (req, res) => {
     const isSaved = savedEvents.includes(req.params.id);
     
     if (isSaved) {
-      await userRef.update({ saved_events: admin.firestore.FieldValue.arrayRemove(req.params.id) });
+      await userRef.update({ saved_events: FieldValue.arrayRemove(req.params.id) });
       res.json({ message: "Event removed from saved list", is_saved: false });
     } else {
-      await userRef.update({ saved_events: admin.firestore.FieldValue.arrayUnion(req.params.id) });
+      await userRef.update({ saved_events: FieldValue.arrayUnion(req.params.id) });
       res.json({ message: "Event saved", is_saved: true });
     }
   } catch (err) {

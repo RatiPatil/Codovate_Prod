@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { db, admin } = require("../config/firebase");
+const { db, admin, FieldValue } = require("../config/firebase");
 const auth = require("../middleware/auth");
 const { awardPoints, updatePlacementScore } = require("../utils/scoring");
 
@@ -156,7 +156,7 @@ router.post("/generate", auth, async (req, res) => {
     }
     
     // Add metadata
-    roadmapData.generated_at = admin.firestore.FieldValue.serverTimestamp();
+    roadmapData.generated_at = FieldValue.serverTimestamp();
     roadmapData.uid = uid;
     
     await db.collection("userRoadmaps").doc(uid).set(roadmapData);
@@ -218,14 +218,14 @@ router.put("/roadmap-progress", auth, async (req, res) => {
       t.update(docRef, {
         steps: newSteps,
         overall_progress: overallProgress,
-        updated_at: admin.firestore.FieldValue.serverTimestamp()
+        updated_at: FieldValue.serverTimestamp()
       });
       
       const progressRef = db.collection("roadmapProgress").doc(uid);
       t.set(progressRef, {
         overall_progress: overallProgress,
         completedSteps: newSteps.filter(s => s.status === 'completed').map(s => s.id),
-        updatedAt: admin.firestore.FieldValue.serverTimestamp()
+        updatedAt: FieldValue.serverTimestamp()
       }, { merge: true });
       
       return { newSteps, overallProgress, newlyCompletedStep };
@@ -293,14 +293,14 @@ router.put("/step", auth, async (req, res) => {
       t.update(docRef, {
         steps: newSteps,
         overall_progress: overallProgress,
-        updated_at: admin.firestore.FieldValue.serverTimestamp()
+        updated_at: FieldValue.serverTimestamp()
       });
       
       const progressRef = db.collection("roadmapProgress").doc(uid);
       t.set(progressRef, {
         overall_progress: overallProgress,
         completedSteps: newSteps.filter(s => s.status === 'completed').map(s => s.id),
-        updatedAt: admin.firestore.FieldValue.serverTimestamp()
+        updatedAt: FieldValue.serverTimestamp()
       }, { merge: true });
       
       return { newSteps, overallProgress, newlyCompletedStep };
@@ -396,12 +396,12 @@ router.post("/step/:stepId/generate-content", auth, async (req, res) => {
     
     await docRef.update({
       steps: newSteps,
-      updated_at: admin.firestore.FieldValue.serverTimestamp()
+      updated_at: FieldValue.serverTimestamp()
     });
 
     await db.collection("learningProgress").doc(uid).set({
       [`module_${stepId}`]: content,
-      updatedAt: admin.firestore.FieldValue.serverTimestamp()
+      updatedAt: FieldValue.serverTimestamp()
     }, { merge: true });
     
     res.json({ success: true, content });
@@ -454,12 +454,12 @@ router.put("/step/:stepId/content-progress", auth, async (req, res) => {
         return { ...step, content };
       });
       
-      t.update(docRef, { steps: newSteps, updated_at: admin.firestore.FieldValue.serverTimestamp() });
+      t.update(docRef, { steps: newSteps, updated_at: FieldValue.serverTimestamp() });
       
       const progressRef = db.collection("learningProgress").doc(uid);
       t.set(progressRef, {
         [`module_${stepId}`]: newSteps.find(s => s.id === stepId).content,
-        updatedAt: admin.firestore.FieldValue.serverTimestamp()
+        updatedAt: FieldValue.serverTimestamp()
       }, { merge: true });
       
       resultSteps = newSteps;

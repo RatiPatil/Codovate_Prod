@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { db, admin } = require("../config/firebase");
+const { db, admin, FieldValue } = require("../config/firebase");
 const auth = require("../middleware/auth");
 const { syncDashboard } = require("../services/dashboardService");
 require('dotenv').config();
@@ -67,7 +67,7 @@ Respond ONLY with a valid JSON array of objects in this exact format (no markdow
       uid,
       topic,
       questions,
-      createdAt: admin.firestore.FieldValue.serverTimestamp()
+      createdAt: FieldValue.serverTimestamp()
     });
 
     // Strip out correct answers and explanations before sending to client
@@ -167,7 +167,7 @@ Respond ONLY with a JSON object in this exact format:
       weakAreas: breakdown.weakAreas || [],
       recommendedLearning: breakdown.recommendedLearning || [],
       improvementPlan: breakdown.improvementPlan || "Review the questions you missed and study those specific topics.",
-      createdAt: admin.firestore.FieldValue.serverTimestamp()
+      createdAt: FieldValue.serverTimestamp()
     };
 
     // Save to assessments collection
@@ -200,7 +200,7 @@ Respond ONLY with a JSON object in this exact format:
           student_id: uid,
           action: 'assessment_' + pendingData.topic,
           points: xpEarned,
-          created_at: admin.firestore.FieldValue.serverTimestamp()
+          created_at: FieldValue.serverTimestamp()
         });
         
         // Sync verified skill to Profile/Resume

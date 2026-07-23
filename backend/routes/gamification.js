@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { db } = require('../config/firebase');
+const { db, FieldValue } = require('../config/firebase');
 const auth = require('../middleware/auth');
 const admin = require('firebase-admin');
 
@@ -91,8 +91,8 @@ router.post('/streak', auth, async (req, res) => {
     await analyticsRef.set({
       last_active: now,
       streak_count: newStreak,
-      profile_score: admin.firestore.FieldValue.increment(xpGain),
-      coins: admin.firestore.FieldValue.increment(xpGain / 2)
+      profile_score: FieldValue.increment(xpGain),
+      coins: FieldValue.increment(xpGain / 2)
     }, { merge: true });
     
     res.json({ message: "Checked in successfully!", streak: newStreak, xpGain });

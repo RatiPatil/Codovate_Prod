@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { db, admin } = require("../config/firebase");
+const { db, admin, FieldValue } = require("../config/firebase");
 const auth = require("../middleware/auth");
 const { CODING_PROBLEMS } = require("../data/codingProblems");
 const { syncDashboard } = require("../services/dashboardService");
@@ -56,7 +56,7 @@ async function ensureUserQuestions(uid) {
     const batch = db.batch();
     questions.forEach(q => {
       q.uid = uid;
-      q.createdAt = admin.firestore.FieldValue.serverTimestamp();
+      q.createdAt = FieldValue.serverTimestamp();
       const docRef = db.collection("codingQuestions").doc(`${uid}_${q.id}`);
       batch.set(docRef, q);
     });
@@ -196,7 +196,7 @@ router.post('/submit', auth, async (req, res) => {
     
     const submissionRef = db.collection("codingSubmissions").doc();
     await submissionRef.set({
-      uid, problemId, language, code, status: evalResult.passed ? 'completed' : 'failed', createdAt: admin.firestore.FieldValue.serverTimestamp()
+      uid, problemId, language, code, status: evalResult.passed ? 'completed' : 'failed', createdAt: FieldValue.serverTimestamp()
     });
 
     if (evalResult.passed) {
@@ -234,14 +234,14 @@ router.post('/submit', auth, async (req, res) => {
             total_points: (userData.total_points || 0) + xpEarned,
             coins: (userData.coins || 0) + coinsEarned,
             codingStreak: streak,
-            lastActiveDate: admin.firestore.FieldValue.serverTimestamp()
+            lastActiveDate: FieldValue.serverTimestamp()
           });
 
           if (statsDoc.exists) {
             t.update(statsRef, {
-              totalXp: admin.firestore.FieldValue.increment(xpEarned),
-              coinsEarned: admin.firestore.FieldValue.increment(coinsEarned),
-              completedCount: admin.firestore.FieldValue.increment(1),
+              totalXp: FieldValue.increment(xpEarned),
+              coinsEarned: FieldValue.increment(coinsEarned),
+              completedCount: FieldValue.increment(1),
               streak: streak
             });
           } else {
@@ -250,10 +250,10 @@ router.post('/submit', auth, async (req, res) => {
           
           const pointLedgerRef = db.collection("point_ledger").doc();
           t.set(pointLedgerRef, {
-            student_id: uid, action: `solved_${problemId}`, points: xpEarned, created_at: admin.firestore.FieldValue.serverTimestamp()
+            student_id: uid, action: `solved_${problemId}`, points: xpEarned, created_at: FieldValue.serverTimestamp()
           });
         } else if (!alreadyPracticedToday) {
-          t.update(userRef, { codingStreak: streak, lastActiveDate: admin.firestore.FieldValue.serverTimestamp() });
+          t.update(userRef, { codingStreak: streak, lastActiveDate: FieldValue.serverTimestamp() });
           if (statsDoc.exists) t.update(statsRef, { streak });
           else t.set(statsRef, { streak });
         }

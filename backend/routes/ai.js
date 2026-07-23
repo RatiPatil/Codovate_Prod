@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { db, admin } = require("../config/firebase");
+const { db, admin, FieldValue } = require("../config/firebase");
 const auth = require("../middleware/auth");
 const { getConfiguredModel, genAI } = require("../utils/aiConfig");
 
@@ -46,7 +46,7 @@ router.get("/skill-gap", auth, async (req, res) => {
         strongSkills: currentSkills.slice(0, 3),
         gapSkills: ["System Design", "DSA", "Cloud (AWS/GCP)"],
         analysis: `You are on track to become a ${goal}. Focus on filling the skill gaps listed to reach your goal faster.`,
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: FieldValue.serverTimestamp(),
       };
       await db.collection("aiSkillGap").doc(uid).set(fallback);
       return res.json(fallback);
@@ -81,7 +81,7 @@ Return ONLY valid JSON (no markdown, no backticks) in exactly this shape:
       strongSkills: parsed.strongSkills || [],
       gapSkills: parsed.gapSkills || [],
       analysis: parsed.analysis || "",
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp(),
     };
 
     await db.collection("aiSkillGap").doc(uid).set(skillGapData);
@@ -193,8 +193,8 @@ Student Context:
 
     await db.collection("coachSessions").doc(uid).set(
       {
-        history: admin.firestore.FieldValue.arrayUnion(sessionEntry),
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        history: FieldValue.arrayUnion(sessionEntry),
+        updatedAt: FieldValue.serverTimestamp(),
       },
       { merge: true }
     );

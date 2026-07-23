@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { db } = require('../config/firebase');
+const { db, FieldValue } = require('../config/firebase');
 const auth = require('../middleware/auth');
 const admin = require('firebase-admin');
 
@@ -117,12 +117,12 @@ router.post('/posts/:id/upvote', auth, async (req, res) => {
     if (doc.exists) {
       // Remove upvote
       await upvoteRef.delete();
-      await postRef.update({ upvotes: admin.firestore.FieldValue.increment(-1) });
+      await postRef.update({ upvotes: FieldValue.increment(-1) });
       return res.json({ message: "Upvote removed", isUpvoted: false });
     } else {
       // Add upvote
       await upvoteRef.set({ user_id: userId, post_id: postId, created_at: new Date() });
-      await postRef.update({ upvotes: admin.firestore.FieldValue.increment(1) });
+      await postRef.update({ upvotes: FieldValue.increment(1) });
       return res.json({ message: "Upvoted successfully", isUpvoted: true });
     }
   } catch (error) {
@@ -185,7 +185,7 @@ router.post('/posts/:id/vote', auth, async (req, res) => {
       
       t.update(postRef, {
         poll_options: newOptions,
-        total_votes: admin.firestore.FieldValue.increment(1)
+        total_votes: FieldValue.increment(1)
       });
       
       t.set(voteRecordRef, {
