@@ -32,9 +32,10 @@ router.get("/my", auth, async (req, res) => {
   try {
     const snap = await db.collection("projects")
       .where("uid", "==", req.user.id)
-      .orderBy("createdAt", "desc")
       .get();
-    res.json(snap.docs.map(serializeProject));
+    let projects = snap.docs.map(serializeProject);
+    projects.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+    res.json(projects);
   } catch (err) {
     console.error("Fetch my projects:", err.message);
     res.status(500).json({ message: "Server error." });
@@ -46,9 +47,10 @@ router.get("/", auth, async (req, res) => {
   try {
     const snap = await db.collection("projects")
       .where("uid", "==", req.user.id)
-      .orderBy("createdAt", "desc")
       .get();
-    res.json(snap.docs.map(serializeProject));
+    let projects = snap.docs.map(serializeProject);
+    projects.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+    res.json(projects);
   } catch (err) {
     console.error("Fetch projects:", err.message);
     res.status(500).json({ message: "Server error." });
@@ -62,9 +64,10 @@ router.get("/public/:uid", async (req, res) => {
     const snap = await db.collection("projects")
       .where("uid", "==", req.params.uid)
       .where("visibility", "==", "public")
-      .orderBy("createdAt", "desc")
       .get();
-    res.json(snap.docs.map(serializeProject));
+    let projects = snap.docs.map(serializeProject);
+    projects.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+    res.json(projects);
   } catch (err) {
     console.error("Public projects:", err.message);
     res.status(500).json({ message: "Server error." });
