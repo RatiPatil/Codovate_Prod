@@ -19,7 +19,7 @@ router.get("/", auth, async (req, res) => {
     // Fetch student full context for heuristic matching
     const profileDoc = await db.collection("profiles").doc(req.user.id).get();
     const profileData = profileDoc.exists ? profileDoc.data() : {};
-    const userSkills = (profileData.skills || []).map(s => s.toLowerCase());
+    const userSkills = (profileData.skills || []).map(s => typeof s === 'string' ? s.toLowerCase() : (s.name ? s.name.toLowerCase() : ''));
     const careerGoal = (profileData.careerGoal || "").toLowerCase();
     
     // Check for multipliers

@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 
 const ProfileReadOnlyView = ({ 
   user, 
@@ -150,11 +150,14 @@ const ProfileReadOnlyView = ({
           <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-purple-500/10 rounded-full blur-[40px] pointer-events-none" />
           <h3 className="text-gray-900 dark:text-white font-bold mb-4 flex items-center gap-2 relative z-10"><span className="text-xl">âš¡</span> All Skills</h3>
           <div className="flex flex-wrap gap-2 relative z-10">
-            {user.skills.map(skill => (
-              <span key={skill} className="px-3 py-1.5 bg-white/5 backdrop-blur-md border border-white/10 rounded-lg text-white text-xs font-medium">
-                {skill}
-              </span>
-            ))}
+            {user.skills.map((skill, idx) => {
+              const skillName = typeof skill === 'string' ? skill : (skill?.name || '');
+              return (
+                <span key={skillName || idx} className="px-3 py-1.5 bg-white/5 backdrop-blur-md border border-white/10 rounded-lg text-white text-xs font-medium">
+                  {skillName}
+                </span>
+              );
+            })}
           </div>
         </div>
       )}

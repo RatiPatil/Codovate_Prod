@@ -94,11 +94,12 @@ const StudentProfileModal = ({ student, onClose }) => {
                 <section>
                   <h3 className="text-lg font-bold text-white mb-3">Skills</h3>
                   <div className="flex flex-wrap gap-2">
-                    {student.skills.map((skill, i) => (
-                      <span key={i} className="bg-white/5 text-gray-300 border border-white/10 px-3 py-1.5 rounded-lg text-sm font-medium">
-                        {skill}
-                      </span>
-                    ))}
+                    {student.skills.map((skill, i) => {
+                      const skillName = typeof skill === 'string' ? skill : (skill?.name || '');
+                      return (
+                      <span key={i} className="px-3 py-1.5 bg-primary/10 text-primary border border-primary/20 rounded-lg text-xs font-bold">{skillName}</span>
+                      );
+                    })}
                   </div>
                 </section>
               )}

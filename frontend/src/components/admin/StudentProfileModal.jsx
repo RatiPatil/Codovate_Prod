@@ -215,9 +215,12 @@ const StudentProfileModal = ({
                 <h3 className="text-sm font-black text-white mb-4">Skills</h3>
                 {profile.skills && profile.skills.length > 0 ? (
                   <div className="flex flex-wrap gap-2">
-                    {profile.skills.map((skill, idx) => (
-                      <span key={idx} className="px-3 py-1.5 bg-[#2015FF]/10 text-[#2015FF] border border-[#2015FF]/20 rounded-lg text-xs font-bold">{skill}</span>
-                    ))}
+                    {profile.skills.map((skill, idx) => {
+                      const skillName = typeof skill === 'string' ? skill : (skill?.name || '');
+                      return (
+                      <span key={idx} className="px-3 py-1.5 bg-[#2015FF]/10 text-[#2015FF] border border-[#2015FF]/20 rounded-lg text-xs font-bold">{skillName}</span>
+                      );
+                    })}
                   </div>
                 ) : <p className="text-gray-500 text-sm">No skills added yet.</p>}
               </div>

@@ -477,11 +477,17 @@ const Profile = () => {
             {editingSection === 'skills' ? (
               <div className="space-y-4 animate-fade-in">
                 <div className="flex flex-wrap gap-2 mb-3">
-                  {skills.map(skill => (
-                    <span key={skill} className="px-2.5 py-1 bg-primary/15 border border-primary text-primary text-xs font-bold rounded-lg flex items-center gap-1.5">
-                      {skill} <button onClick={() => setSkills(prev => prev.filter(s => s !== skill))} className="hover:text-red-400">×</button>
-                    </span>
-                  ))}
+                  {skills.map((skill, idx) => {
+                    const skillName = typeof skill === 'string' ? skill : (skill?.name || '');
+                    return (
+                    <div key={skillName || idx} className="flex items-center justify-between px-4 py-2 bg-white/5 border border-white/10 rounded-xl group hover:border-primary/50 transition-colors">
+                      <span className="text-white font-medium">{skillName}</span>
+                      <button type="button" onClick={() => removeSkill(skillName)} className="text-gray-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                    );
+                  })}
                 </div>
                 <div className="flex gap-2">
                   <input
@@ -515,7 +521,12 @@ const Profile = () => {
               <div className="animate-fade-in">
                 {skills.length > 0 ? (
                   <div className="flex flex-wrap gap-2">
-                    {skills.map(skill => <span key={skill} className="px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-sm font-medium">{skill}</span>)}
+                    {skills.map((skill, idx) => {
+                      const skillName = typeof skill === 'string' ? skill : (skill?.name || '');
+                      return (
+                        <span key={skillName || idx} className="px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-sm font-medium">{skillName}</span>
+                      );
+                    })}
                   </div>
                 ) : <p className="text-gray-400 italic text-sm">No skills added yet.</p>}
               </div>

@@ -150,11 +150,12 @@ const TeamDetailsModal = ({ team, onClose, onUpdate, currentUserRole }) => {
                 <section>
                   <h3 className="text-lg font-bold text-white mb-3">Tech Stack & Skills Needed</h3>
                   <div className="flex flex-wrap gap-2">
-                    {team.required_skills.map((skill, i) => (
-                      <span key={i} className="bg-primary/10 text-primary border border-primary/20 px-3 py-1.5 rounded-lg text-sm font-medium">
-                        {skill}
-                      </span>
-                    ))}
+                    {team.required_skills.map((skill, i) => {
+                      const skillName = typeof skill === 'string' ? skill : (skill?.name || '');
+                      return (
+                      <span key={i} className="px-3 py-1.5 bg-primary/10 text-primary border border-primary/20 rounded-lg text-xs font-bold">{skillName}</span>
+                      );
+                    })}
                   </div>
                 </section>
               )}

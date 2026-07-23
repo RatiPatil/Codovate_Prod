@@ -54,14 +54,17 @@ const SkillGapWidget = ({ skillGap }) => {
             </h3>
             {strongSkills.length > 0 ? (
               <div className="flex flex-wrap gap-2.5">
-                {strongSkills.map((skill, i) => (
+                {strongSkills.map((skill, i) => {
+                  const skillName = typeof skill === 'string' ? skill : (skill?.name || '');
+                  return (
                   <span
-                    key={i}
+                    key={skillName || i}
                     className="px-4 py-2 bg-green-500/10 border border-green-500/30 text-green-400 text-xs font-bold rounded-xl shadow-sm hover:-translate-y-0.5 transition-transform cursor-default"
                   >
-                    ✓ {skill}
+                    ✓ {skillName}
                   </span>
-                ))}
+                  );
+                })}
               </div>
             ) : (
               <p className="text-xs text-gray-500 font-medium italic p-4 bg-white/5 rounded-xl border border-white/5">
@@ -78,16 +81,19 @@ const SkillGapWidget = ({ skillGap }) => {
             </h3>
             {gapSkills.length > 0 ? (
               <div className="flex flex-wrap gap-2.5">
-                {gapSkills.map((skill, i) => (
+                {gapSkills.map((skill, i) => {
+                  const skillName = typeof skill === 'string' ? skill : (skill?.name || '');
+                  return (
                   <Link
-                    key={i}
+                    key={skillName || i}
                     to="/roadmap"
                     className="group/skill px-4 py-2 bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-bold rounded-xl hover:bg-red-500/20 hover:border-red-500/60 transition-all flex items-center gap-2 shadow-sm hover:-translate-y-0.5"
                   >
                     <span className="w-1.5 h-1.5 rounded-full bg-red-500 group-hover/skill:scale-150 transition-transform shrink-0 shadow-[0_0_5px_rgba(239,68,68,1)]"></span>
-                    {skill}
+                    {skillName}
                   </Link>
-                ))}
+                  );
+                })}
               </div>
             ) : (
               <div className="px-5 py-4 rounded-xl bg-green-500/10 border border-green-500/20 text-green-400 font-bold flex items-center gap-3 w-fit text-sm shadow-inner">

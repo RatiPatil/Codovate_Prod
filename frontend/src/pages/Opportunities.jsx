@@ -144,11 +144,15 @@ const OppDetailModal = ({ opp, isApplied, isApplying, onApply, isBookmarked, onB
                   <div className="bg-black/20 p-4 rounded-xl border border-white/5">
                     <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-2">Skill Gap Checklist</p>
                     <ul className="space-y-1.5">
-                      {aiAnalysis.missing_skills_analysis?.map((item, idx) => (
-                        <li key={idx} className={`text-xs font-semibold ${item.includes('❌') ? 'text-red-400' : 'text-green-400'}`}>
-                          {item}
+                      {aiAnalysis.missing_skills_analysis?.map((item, idx) => {
+                        const itemName = typeof item === 'string' ? item : (item?.skill || item?.name || JSON.stringify(item));
+                        const isMissing = typeof item === 'string' ? item.includes('❌') : false;
+                        return (
+                        <li key={idx} className={`text-xs font-semibold ${isMissing ? 'text-red-400' : 'text-green-400'}`}>
+                          {itemName}
                         </li>
-                      ))}
+                        );
+                      })}
                     </ul>
                   </div>
                   <div className="bg-black/20 p-4 rounded-xl border border-white/5 flex flex-col justify-center items-center text-center">
@@ -165,11 +169,14 @@ const OppDetailModal = ({ opp, isApplied, isApplying, onApply, isBookmarked, onB
                       AI Preparation Tips
                     </p>
                     <ul className="space-y-1">
-                      {aiAnalysis.preparation_tips.map((tip, idx) => (
+                      {aiAnalysis.preparation_tips.map((item, idx) => {
+                        const itemName = typeof item === 'string' ? item : (item?.skill || item?.name || JSON.stringify(item));
+                        return (
                         <li key={idx} className="text-xs text-purple-200/80 leading-relaxed flex items-start gap-1.5">
-                          <span className="text-purple-400 mt-0.5">•</span> {tip}
+                          <span className="text-purple-400 mt-0.5">•</span> {itemName}
                         </li>
-                      ))}
+                        );
+                      })}
                     </ul>
                   </div>
                 )}
@@ -181,18 +188,19 @@ const OppDetailModal = ({ opp, isApplied, isApplying, onApply, isBookmarked, onB
             <div className="mb-6">
               <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-2">Required Skills</p>
               <div className="flex flex-wrap gap-2">
-                {opp.required_skills.map(skill => {
-                  const isMissing = opp.missing_skills?.includes(skill);
+                {opp.required_skills.map((skill, idx) => {
+                  const skillName = typeof skill === 'string' ? skill : (skill?.name || '');
+                  const isMissing = opp.missing_skills?.includes(skillName) || opp.missing_skills?.includes(skill);
                   return (
                     <span 
-                      key={skill} 
+                      key={skillName || idx} 
                       className={`px-3 py-1 rounded-lg text-xs font-bold border ${
                         isMissing 
                           ? 'bg-red-500/10 border-red-500/20 text-red-400' 
                           : 'bg-primary/10 border-primary/20 text-primary'
                       }`}
                     >
-                      {skill} {isMissing && <span className="ml-1 opacity-70" title="Missing from your profile">⚠️</span>}
+                      {skillName} {isMissing && <span className="ml-1 opacity-70" title="Missing from your profile">⚠️</span>}
                     </span>
                   );
                 })}
