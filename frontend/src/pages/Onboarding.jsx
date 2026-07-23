@@ -164,12 +164,12 @@ export default function Onboarding() {
       setIsTransitioning(true);
       if (contentRef.current && step > 1 && step <= TOTAL_STEPS) {
         const tl = gsap.timeline();
-        tl.to(contentRef.current, { x: -30, opacity: 0, duration: 0.2, ease: 'power2.in' })
+        tl.to(contentRef.current, { scale: 0.95, opacity: 0, filter: 'blur(8px)', duration: 0.3, ease: 'power2.inOut' })
           .call(() => {
             setStep(s => s + 1);
             window.scrollTo(0, 0);
           })
-          .fromTo(contentRef.current, { x: 30, opacity: 0 }, { x: 0, opacity: 1, duration: 0.3, ease: 'power2.out', onComplete: () => setIsTransitioning(false) });
+          .fromTo(contentRef.current, { y: 40, scale: 1.05, opacity: 0, filter: 'blur(10px)' }, { y: 0, scale: 1, opacity: 1, filter: 'blur(0px)', duration: 0.5, ease: 'power3.out', onComplete: () => setIsTransitioning(false) });
       } else {
         setStep(s => s + 1);
         setIsTransitioning(false);
@@ -183,12 +183,12 @@ export default function Onboarding() {
     setIsTransitioning(true);
     if (contentRef.current) {
       const tl = gsap.timeline();
-      tl.to(contentRef.current, { x: 30, opacity: 0, duration: 0.2, ease: 'power2.in' })
+      tl.to(contentRef.current, { scale: 0.95, y: 40, opacity: 0, filter: 'blur(8px)', duration: 0.3, ease: 'power2.inOut' })
         .call(() => {
           setStep(s => s - 1);
           window.scrollTo(0, 0);
         })
-        .fromTo(contentRef.current, { x: -30, opacity: 0 }, { x: 0, opacity: 1, duration: 0.3, ease: 'power2.out', onComplete: () => setIsTransitioning(false) });
+        .fromTo(contentRef.current, { scale: 1.05, opacity: 0, filter: 'blur(10px)' }, { scale: 1, opacity: 1, filter: 'blur(0px)', duration: 0.5, ease: 'power3.out', onComplete: () => setIsTransitioning(false) });
     }
   };
 
@@ -215,61 +215,78 @@ export default function Onboarding() {
 
   // Render logic
   return (
-    <div className="min-h-screen bg-black flex flex-col relative overflow-x-hidden overflow-y-auto">
-      {/* Background with CSS Animation */}
+    <div className="min-h-screen bg-[#0a0a0a] flex flex-col relative overflow-x-hidden overflow-y-auto selection:bg-primary/30 selection:text-white font-inter">
+      {/* Premium Animated Background */}
       <style>{`
-        @keyframes slowGradient {
+        @keyframes gradientShift {
           0% { background-position: 0% 50%; }
           50% { background-position: 100% 50%; }
           100% { background-position: 0% 50%; }
         }
-        .animated-bg {
-          background: linear-gradient(-45deg, rgba(32,21,255,0.05), rgba(10,10,30,0.8), rgba(0,0,0,1), rgba(32,21,255,0.08));
-          background-size: 400% 400%;
-          animation: slowGradient 20s ease infinite;
+        @keyframes floatBlob {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          33% { transform: translate(30px, -50px) scale(1.1); }
+          66% { transform: translate(-20px, 20px) scale(0.9); }
+        }
+        .mesh-bg {
+          background: radial-gradient(circle at 15% 50%, rgba(32, 21, 255, 0.08), transparent 25%),
+                      radial-gradient(circle at 85% 30%, rgba(138, 43, 226, 0.05), transparent 25%);
+          background-size: 200% 200%;
+          animation: gradientShift 15s ease infinite;
+        }
+        .blob-1 { animation: floatBlob 20s ease-in-out infinite; }
+        .blob-2 { animation: floatBlob 25s ease-in-out infinite reverse; }
+        .glass-panel {
+          background: rgba(255, 255, 255, 0.02);
+          backdrop-filter: blur(24px);
+          -webkit-backdrop-filter: blur(24px);
+          border: 1px solid rgba(255, 255, 255, 0.05);
+          box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
         }
       `}</style>
-      <div className="absolute inset-0 pointer-events-none animated-bg" />
-      <div className="absolute inset-0 pointer-events-none opacity-[0.05]"
-        style={{ backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`, backgroundSize: '60px 60px' }} />
+      
+      {/* Background Elements */}
+      <div className="fixed inset-0 pointer-events-none mesh-bg z-0" />
+      <div className="fixed inset-0 pointer-events-none z-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(rgba(255,255,255,0.8) 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+      <div className="fixed top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/20 rounded-full blur-[120px] blob-1 z-0 pointer-events-none mix-blend-screen" />
+      <div className="fixed bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-purple-500/10 rounded-full blur-[150px] blob-2 z-0 pointer-events-none mix-blend-screen" />
 
       {/* Top Bar for Steps 2-8 */}
       {step > 1 && step <= TOTAL_STEPS && (
-        <div className="relative z-20 px-6 py-5 border-b border-white/5 bg-black/40 backdrop-blur-xl flex flex-col items-center shadow-lg">
-          <div className="w-full max-w-5xl flex items-center justify-between mb-6">
-             <button onClick={handleBack} className="text-gray-400 hover:text-white transition-colors flex items-center gap-2 group">
+        <div className="relative z-20 px-6 py-6 flex flex-col items-center">
+          <div className="w-full max-w-6xl flex items-center justify-between mb-8">
+             <button onClick={handleBack} className="text-gray-400 hover:text-white transition-all flex items-center gap-2 group px-4 py-2 rounded-full hover:bg-white/5">
                 <svg className="w-5 h-5 group-hover:-translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                 </svg>
-                <span className="text-sm font-medium hidden sm:block">Back</span>
+                <span className="text-sm font-semibold hidden sm:block">Back</span>
              </button>
-             <span className="text-white font-bold text-xl tracking-wider">Codovate</span>
-             <div className="w-16" /> {/* Placeholder for flex balance */}
-          </div>
-          
-          {/* Text-based Progress Bar */}
-          <div className="w-full max-w-2xl flex flex-col items-center justify-center relative px-2 gap-3 mt-2">
-            <h3 className="text-white font-semibold text-sm">🚀 Building Your Career Workspace</h3>
-            <div className="w-full flex items-center gap-3">
-              <div className="flex-1 h-2 bg-white/10 rounded-full overflow-hidden">
-                <div className="h-full bg-primary transition-all duration-700 ease-out shadow-[0_0_10px_rgba(32,21,255,0.8)]" style={{ width: `${Math.round(((step - 1) / (TOTAL_STEPS - 1)) * 100)}%` }} />
-              </div>
-              <span className="text-primary font-bold text-xs">{Math.round(((step - 1) / (TOTAL_STEPS - 1)) * 100)}% Completed</span>
-            </div>
-            
-            {/* Checklist */}
-            <div className="hidden sm:flex items-center gap-6 text-xs text-gray-500 mt-2">
-              <span className={`transition-colors duration-300 ${step > 3 ? 'text-green-400 font-medium' : 'opacity-50'}`}>
-                ✔ Career Goal
-              </span>
-              <span className={`transition-colors duration-300 ${step > 5 ? 'text-green-400 font-medium' : 'opacity-50'}`}>
-                ✔ Skills
-              </span>
-              <span className={`transition-colors duration-300 ${step > 6 ? 'text-green-400 font-medium' : 'opacity-50'}`}>
-                ✔ Interests
-              </span>
-              <span className="animate-pulse text-primary font-medium opacity-80">⏳ Preparing Dashboard</span>
-            </div>
+             
+             {/* Progress Journey Indicator */}
+             <div className="hidden md:flex items-center gap-2">
+               {['Basic Info', 'Vision', 'Company', 'Skills', 'Interests', 'Learning', 'Experience'].map((label, idx) => {
+                 const stepNum = idx + 2;
+                 const isActive = step === stepNum;
+                 const isCompleted = step > stepNum;
+                 return (
+                   <React.Fragment key={idx}>
+                     <div className="flex flex-col items-center gap-1 group relative">
+                       <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-500 ${isActive ? 'bg-primary text-white shadow-[0_0_15px_rgba(32,21,255,0.5)] scale-110' : isCompleted ? 'bg-white/10 text-gray-300' : 'bg-transparent border border-white/10 text-gray-600'}`}>
+                         {isCompleted ? '✓' : stepNum - 1}
+                       </div>
+                       <span className={`absolute -bottom-5 whitespace-nowrap text-[10px] font-medium transition-colors ${isActive ? 'text-white' : 'text-gray-600'} opacity-0 group-hover:opacity-100`}>{label}</span>
+                     </div>
+                     {idx < 6 && (
+                       <div className={`w-8 h-0.5 rounded-full transition-colors duration-500 ${isCompleted ? 'bg-primary/50' : 'bg-white/5'}`} />
+                     )}
+                   </React.Fragment>
+                 );
+               })}
+             </div>
+
+             <div className="w-24 text-right">
+               <span className="text-gray-500 text-xs font-semibold tracking-widest uppercase">Codovate</span>
+             </div>
           </div>
         </div>
       )}
@@ -280,58 +297,68 @@ export default function Onboarding() {
         {step === 1 && <Step1Welcome onNext={handleNext} />}
         
         {step > 1 && step <= TOTAL_STEPS && (
-          <div className="flex w-full gap-8 justify-center items-start">
+          <div className="flex w-full gap-10 justify-center items-start">
             <div ref={cardRef} className="w-full max-w-xl shrink-0">
-            <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl overflow-hidden glass-panel" style={{ boxShadow: '0 0 80px rgba(32,21,255,0.06), 0 25px 50px rgba(0,0,0,0.5)' }}>
-              <div ref={contentRef} className="px-8 py-8">
+            <div className="glass-panel rounded-3xl overflow-hidden relative">
+              {/* Subtle inner top highlight */}
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+              
+              <div ref={contentRef} className="px-8 py-10 sm:px-12 sm:py-12">
                 {step === 2 && (
                   <>
-                    <h2 className="text-2xl font-bold text-white mb-6">Basic Information</h2>
+                    <h2 className="text-3xl font-bold text-white mb-2 tracking-tight">Let's get to know you</h2>
+                    <p className="text-gray-400 mb-8 text-sm">Every great journey begins with a name.</p>
                     <Step2BasicInfo data={data} update={update} touched={touched} handleBlur={handleBlur} errors={errors} />
                   </>
                 )}
                 {step === 3 && (
                   <>
-                    <h2 className="text-2xl font-bold text-white mb-6">Career Vision</h2>
+                    <h2 className="text-3xl font-bold text-white mb-2 tracking-tight">Set your destination</h2>
+                    <p className="text-gray-400 mb-8 text-sm">Where do you want this journey to take you? 🚀</p>
                     <Step3CareerVision data={data} update={update} />
                   </>
                 )}
                 {step === 4 && (
                   <>
-                    <h2 className="text-2xl font-bold text-white mb-6">Dream Company</h2>
+                    <h2 className="text-3xl font-bold text-white mb-2 tracking-tight">Your Dream Company</h2>
+                    <p className="text-gray-400 mb-8 text-sm">Aim high. We'll help you get there.</p>
                     <Step4DreamCompany data={data} update={update} /> 
                   </>
                 )}
                 {step === 5 && (
                   <>
-                    <h2 className="text-2xl font-bold text-white mb-6">Current Skills</h2>
+                    <h2 className="text-3xl font-bold text-white mb-2 tracking-tight">Your Superpowers</h2>
+                    <p className="text-gray-400 mb-8 text-sm">Every hero has tools. Select your tech stack ⚡</p>
                     <Step5Skills data={data} update={update} />
                   </>
                 )}
                 {step === 6 && (
                   <>
-                    <h2 className="text-2xl font-bold text-white mb-6">Interests</h2>
+                    <h2 className="text-3xl font-bold text-white mb-2 tracking-tight">What excites you?</h2>
+                    <p className="text-gray-400 mb-8 text-sm">Pick the domains you want to conquer.</p>
                     <Step6Interests data={data} update={update} />
                   </>
                 )}
                 {step === 7 && (
                   <>
-                    <h2 className="text-2xl font-bold text-white mb-6">Learning Preferences</h2>
+                    <h2 className="text-3xl font-bold text-white mb-2 tracking-tight">Learning DNA</h2>
+                    <p className="text-gray-400 mb-8 text-sm">How do you prefer to level up?</p>
                     <Step7Learning data={data} update={update} />
                   </>
                 )}
                 {step === 8 && (
                   <>
-                    <h2 className="text-2xl font-bold text-white mb-6">Projects & Experience</h2>
+                    <h2 className="text-3xl font-bold text-white mb-2 tracking-tight">Your Legacy</h2>
+                    <p className="text-gray-400 mb-8 text-sm">Everyone starts somewhere. Be honest 😊</p>
                     <Step8Experience data={data} update={update} />
                   </>
                 )}
                 
-                <div className="mt-8 pt-6 border-t border-white/5 flex justify-end">
-                  <button onClick={handleNext} disabled={isTransitioning} className="bg-primary hover:bg-primary-hover text-white font-bold py-3 px-8 rounded-xl transition-all shadow-lg shadow-primary/30 hover:shadow-primary/50 flex items-center gap-2">
+                <div className="mt-10 pt-8 border-t border-white/5 flex justify-end">
+                  <button onClick={handleNext} disabled={isTransitioning} className="bg-white text-black hover:bg-gray-200 font-bold py-3.5 px-8 rounded-full transition-all shadow-[0_10px_20px_rgba(255,255,255,0.1)] hover:shadow-[0_10px_25px_rgba(255,255,255,0.2)] hover:scale-105 flex items-center gap-2 group">
                     {step === TOTAL_STEPS ? 'Generate Workspace' : 'Continue'}
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                    <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
                     </svg>
                   </button>
                 </div>
@@ -356,10 +383,11 @@ export default function Onboarding() {
       {/* GSAP Toaster */}
       <div 
         ref={toastRef} 
-        className="fixed bottom-8 right-8 z-50 bg-[#0a0a0a]/90 backdrop-blur-xl border border-white/20 rounded-2xl px-6 py-4 shadow-[0_10px_40px_rgba(32,21,255,0.3)] pointer-events-none"
+        className="fixed bottom-8 right-8 z-50 glass-panel rounded-full px-6 py-4 pointer-events-none flex items-center gap-3"
         style={{ opacity: 0, transform: 'translateY(50px) scale(0.9)' }}
       >
-        <span className="text-white font-bold text-sm tracking-wide">{toastMessage}</span>
+        <div className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center">✨</div>
+        <span className="text-white font-semibold text-sm tracking-wide">{toastMessage}</span>
       </div>
     </div>
   );
