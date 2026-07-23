@@ -31,7 +31,8 @@ const ProtectedRoute = ({ children, requireOnboarding = true }) => {
   // If they are on the onboarding page but already completed it, kick them to dashboard
   // (We allow /welcome so they can see the success confetti before landing on dashboard)
   if (!requireOnboarding && onboardingCompleted === true && (location.pathname === '/onboarding' || location.pathname === '/onboarding-success')) {
-    return <Navigate to="/dashboard" replace />;
+    // TEMPORARY: allow access to onboarding for testing
+    // return <Navigate to="/dashboard" replace />;
   }
 
   return children;

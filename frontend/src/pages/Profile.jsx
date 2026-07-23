@@ -1,12 +1,19 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
-import ProfileReadOnlyView from '../components/ProfileReadOnlyView';
 import MilestoneModal from '../components/MilestoneModal';
 import ImageCropperModal from '../components/profile/ImageCropperModal';
 import { uploadProfilePhoto, uploadResume } from '../utils/storageUtils';
-import { formatDistanceToNow } from 'date-fns';
 import SkeletonLoader from '../components/common/SkeletonLoader';
+import { formatDistanceToNow } from 'date-fns';
+import gsap from 'gsap';
+import confetti from 'canvas-confetti';
+import { 
+  Camera, MapPin, Briefcase, GraduationCap, Trophy, Link as LinkIcon, FileText, 
+  Globe, Edit3, X, Plus, Star, Target, Check, 
+  ChevronDown, ChevronUp, Shield, Bell, User as UserIcon, Zap, Heart, LayoutDashboard, Settings
+} from 'lucide-react';
+
 const ALL_SKILLS = [
   'JavaScript', 'Python', 'Java', 'C++', 'React', 'Node.js',
   'SQL', 'MongoDB', 'AWS', 'Docker', 'Git', 'TypeScript',
@@ -25,45 +32,41 @@ const ALL_DESIRED_ROLES = [
   'Competitive Programmer',
 ];
 
-const Section = ({ title, icon, isEditing, onEdit, onSave, onCancel, children, saving }) => (
-  <div className="glass-panel rounded-2xl p-5 md:p-8 relative w-full mb-6">
-    <div className="flex justify-between items-center mb-6 border-b border-white/5 pb-4">
-      <h3 className="text-gray-900 dark:text-white font-bold flex items-center gap-3 text-lg">
-        <span className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary text-sm">{icon}</span> {title}
-      </h3>
-      {!isEditing ? (
-        <button onClick={onEdit} className="text-primary hover:text-primary-light text-sm font-bold flex items-center gap-1 px-3 py-1.5 rounded-lg hover:bg-primary/10 transition">
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-          Edit
-        </button>
-      ) : (
-        <div className="flex gap-2">
-          <button onClick={onCancel} className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white text-xs font-bold px-3 py-1.5 rounded-lg border border-gray-200 dark:border-white/10 transition">Cancel</button>
-          <button onClick={onSave} disabled={saving} className="bg-primary text-white text-xs font-bold px-4 py-1.5 rounded-lg hover:bg-primary-light transition flex items-center gap-2">
-            {saving ? <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : 'Save'}
-          </button>
-        </div>
-      )}
-    </div>
-    {children}
-  </div>
-);
+const AnimatedCounter = ({ value }) => {
+  const nodeRef = useRef(null);
+  
+  useEffect(() => {
+    const node = nodeRef.current;
+    if (!node) return;
+    
+    const obj = { val: 0 };
+    gsap.to(obj, {
+      val: value,
+      duration: 1.5,
+      ease: "power3.out",
+      onUpdate: () => {
+        node.innerHTML = Math.round(obj.val);
+      }
+    });
+  }, [value]);
+
+  return <span ref={nodeRef}>0</span>;
+};
 
 const Profile = () => {
-  const { user } = useAuth();
+  const { user, linkGoogleAccount } = useAuth();
   const [profileData, setProfileData] = useState(null);
+  const [stats, setStats] = useState({ applications: 0, teams: 0, mentorSessions: 0, rank: '-', points: 0, daysOnPlatform: 1, selected: 0 });
   const [activities, setActivities] = useState([]);
   
-  // Edit state (which section is active)
   const [editingSection, setEditingSection] = useState(null);
   
-  // Local Form State
   const [form, setForm] = useState({
     name: '', email: '', college: '', branch: '', year: '', bio: '', 
-    github_url: '', linkedin_url: '', avatar_url: '', resume_url: '', portfolio_url: ''
+    github_url: '', linkedin_url: '', avatar_url: '', resume_url: '', portfolio_url: '',
+    phone: '', city: '', state: '', country: ''
   });
   
-  // Complex fields state
   const [skills, setSkills] = useState([]);
   const [desiredRoles, setDesiredRoles] = useState([]);
   const [achievements, setAchievements] = useState([]);
@@ -72,26 +75,22 @@ const Profile = () => {
   const [projects, setProjects] = useState([]);
   const [certificates, setCertificates] = useState([]);
 
-  // UI state
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState({ msg: '', type: '' });
-  const { linkGoogleAccount } = useAuth();
   const [linking, setLinking] = useState(false);
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark');
   const [showMilestone, setShowMilestone] = useState(false);
   
-  // Cropper state
   const [showCropper, setShowCropper] = useState(false);
   const [imageToCrop, setImageToCrop] = useState(null);
   
-  // Upload states
   const [uploadingResume, setUploadingResume] = useState(false);
   const [resumeProgress, setResumeProgress] = useState(0);
 
-  // Custom inputs state for specific sections
-  const [customRole, setCustomRole] = useState('');
   const [customSkill, setCustomSkill] = useState('');
+  
+  const containerRef = useRef(null);
 
   useEffect(() => {
     if (theme === 'light') {
@@ -126,10 +125,14 @@ const Profile = () => {
         linkedin_url: d.linkedin_url || '',
         avatar_url: d.avatar_url || '',
         resume_url: d.resume_url || '',
-        portfolio_url: d.portfolio_url || ''
+        portfolio_url: d.portfolio_url || '',
+        phone: d.phone || '',
+        city: d.city || '',
+        state: d.state || '',
+        country: d.country || ''
       });
       setSkills(Array.isArray(d.skills) ? d.skills : []);
-      setDesiredRoles(Array.isArray(d.desired_roles) ? d.desired_roles : []);
+      setDesiredRoles(Array.isArray(d.desired_roles) ? d.desired_roles : (d.careerGoal ? [d.careerGoal] : []));
       setAchievements(Array.isArray(d.achievements) ? d.achievements : []);
       setSeeking(Array.isArray(d.seeking) ? d.seeking : []);
       setPassionateAbout(Array.isArray(d.passionate_about) ? d.passionate_about : []);
@@ -137,6 +140,7 @@ const Profile = () => {
       setCertificates(Array.isArray(d.certificates) ? d.certificates : []);
       
       if (d.profile_completion === 100 && localStorage.getItem('milestone_100_shown') !== 'true') {
+        triggerConfetti();
         setShowMilestone(true);
         localStorage.setItem('milestone_100_shown', 'true');
       }
@@ -145,7 +149,10 @@ const Profile = () => {
 
   const fetchActivity = useCallback(() => {
     api.get('/students/activity')
-      .then(res => setActivities(res.data.activities || []))
+      .then(res => setActivities(res.data || []))
+      .catch(console.error);
+    api.get('/students/stats')
+      .then(res => setStats(res.data || {}))
       .catch(console.error);
   }, []);
 
@@ -154,8 +161,48 @@ const Profile = () => {
     fetchActivity();
   }, [fetchProfile, fetchActivity]);
 
+  useEffect(() => {
+    if (!loading && containerRef.current) {
+      let ctx = gsap.context(() => {
+        gsap.from('.stagger-animate', {
+          y: 40,
+          opacity: 0,
+          filter: 'blur(10px)',
+          duration: 0.6,
+          stagger: 0.08,
+          ease: 'power3.out'
+        });
+      }, containerRef);
+      return () => ctx.revert();
+    }
+  }, [loading]);
+
+  const triggerConfetti = () => {
+    const duration = 3000;
+    const end = Date.now() + duration;
+    (function frame() {
+      confetti({
+        particleCount: 5,
+        angle: 60,
+        spread: 55,
+        origin: { x: 0 },
+        colors: ['#4F46E5', '#7C3AED', '#06B6D4']
+      });
+      confetti({
+        particleCount: 5,
+        angle: 120,
+        spread: 55,
+        origin: { x: 1 },
+        colors: ['#4F46E5', '#7C3AED', '#06B6D4']
+      });
+      if (Date.now() < end) {
+        requestAnimationFrame(frame);
+      }
+    }());
+  };
+
   const handleSaveSection = async (sectionKey) => {
-    if (sectionKey === 'personal' && (!form.name || form.name?.trim().length < 3)) {
+    if (sectionKey === 'personal' && (!form.name || form.name.trim().length < 3)) {
       showToast('Full name must be at least 3 characters.', 'error');
       return;
     }
@@ -183,23 +230,6 @@ const Profile = () => {
     }
   };
 
-  const handleLinkGoogle = async () => {
-    setLinking(true);
-    try {
-      await linkGoogleAccount();
-      showToast('Google Account linked successfully! ✅', 'success');
-      fetchProfile();
-    } catch (err) {
-      if (err.code === 'auth/credential-already-in-use') {
-        showToast('This Google account is already linked to another Codovate profile.', 'error');
-      } else {
-        showToast(err.message || 'Failed to link account.', 'error');
-      }
-    } finally {
-      setLinking(false);
-    }
-  };
-
   const onAvatarSelected = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -219,8 +249,6 @@ const Profile = () => {
       showToast('Uploading profile photo...', 'success');
       const url = await uploadProfilePhoto(croppedBlob, user.uid);
       setForm(prev => ({ ...prev, avatar_url: url }));
-      
-      // Auto save after upload
       await api.put('/students/profile', { avatar_url: url });
       showToast('Profile photo updated! ✅', 'success');
       fetchProfile();
@@ -246,8 +274,6 @@ const Profile = () => {
         setUploadingResume(true);
         const url = await uploadResume(file, user.uid, (prog) => setResumeProgress(prog));
         setForm(prev => ({ ...prev, resume_url: url }));
-        
-        // Auto save
         await api.put('/students/profile', { resume_url: url });
         showToast('Resume uploaded successfully! ✅', 'success');
         fetchProfile();
@@ -264,26 +290,26 @@ const Profile = () => {
 
   const getMissingItems = () => {
     const items = [];
-    if (!form.bio) items.push({ label: 'Add a short bio', boost: 10 });
-    if (!form.college) items.push({ label: 'Add your college', boost: 10 });
-    if (skills.length === 0) items.push({ label: 'Add your top skills', boost: 10 });
-    if (!form.resume_url) items.push({ label: 'Upload your Resume', boost: 10 });
-    if (projects.length === 0) items.push({ label: 'Add at least one Project', boost: 10 });
+    if (!form.bio) items.push({ label: 'Add a short bio' });
+    if (!form.college) items.push({ label: 'Add your college' });
+    if (skills.length === 0) items.push({ label: 'Add your top skills' });
+    if (!form.resume_url) items.push({ label: 'Upload your Resume' });
+    if (projects.length === 0) items.push({ label: 'Add at least one Project' });
     return items;
   };
+  
+  const completionPct = profileData?.profile_completion || 0;
+  const strokeDasharray = 2 * Math.PI * 36;
+  const strokeDashoffset = strokeDasharray - (completionPct / 100) * strokeDasharray;
 
   if (loading) return (
-    <div className="w-full max-w-7xl mx-auto pt-8">
+    <div className="w-full max-w-7xl mx-auto pt-8 px-4">
       <SkeletonLoader type="card" count={3} />
     </div>
   );
 
-  const renderViewText = (val, placeholder = 'Not provided') => {
-    return val ? <span className="text-gray-800 dark:text-gray-200">{val}</span> : <span className="text-gray-400 italic text-sm">{placeholder}</span>;
-  };
-
   return (
-    <div className="w-full max-w-7xl mx-auto relative z-10">
+    <div ref={containerRef} className="w-full max-w-5xl mx-auto pb-24 px-4 sm:px-6">
       <ImageCropperModal
         isOpen={showCropper}
         onClose={() => setShowCropper(false)}
@@ -297,342 +323,490 @@ const Profile = () => {
         description="You've unlocked the ultimate builder status."
       />
       {toast.msg && (
-        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-xl text-sm font-semibold shadow-2xl glass-panel ${
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-xl text-sm font-semibold shadow-2xl glass-panel animate-fade-in-up ${
           toast.type === 'success'
-            ? 'border-green-500/30 text-green-400 bg-green-500/5'
-            : 'border-red-500/30 text-red-400 bg-red-500/5'
+            ? 'border-emerald-500/30 text-emerald-400 bg-emerald-500/5'
+            : 'border-rose-500/30 text-rose-400 bg-rose-500/5'
         }`}>
           {toast.msg}
         </div>
       )}
 
-      <div className="mb-8 text-center md:text-left flex flex-col md:flex-row justify-between items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center justify-center md:justify-start gap-3">
-            <span className="text-gradient">My Profile</span>
-          </h1>
-          <p className="text-gray-500 text-sm mt-1">Manage your identity and track your growth.</p>
-        </div>
-      </div>
-
-      <div className="grid lg:grid-cols-12 gap-8">
-        {/* Left Sidebar - Read Only & Progress */}
-        <div className="w-full lg:col-span-4 space-y-6">
-          <ProfileReadOnlyView
-            isOwner={true}
-            user={{ ...profileData, ...form, skills, desired_roles: desiredRoles, achievements, seeking, passionate_about: passionateAbout, projects, certificates }}
-            onAvatarChange={onAvatarSelected}
-            getMissingItems={getMissingItems}
-            onEditClick={() => setEditingSection('personal')}
-            onShareClick={() => {
-              const url = window.location.href;
-              navigator.clipboard.writeText(url).then(() => showToast('Profile link copied!', 'success'));
-            }}
-            linking={linking}
-            onLinkGoogle={handleLinkGoogle}
-            theme={theme}
-            toggleTheme={toggleTheme}
-          />
-          
-          {/* Activity History Feed */}
-          <div className="glass-panel rounded-2xl p-6 relative w-full">
-            <h3 className="text-gray-900 dark:text-white font-bold mb-4 flex items-center gap-2"><span className="text-xl">📈</span> Activity History</h3>
-            {activities.length > 0 ? (
-              <div className="space-y-4 relative before:absolute before:inset-0 before:ml-2 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-white/10 before:to-transparent">
-                {activities.map((act, i) => (
-                  <div key={i} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-                    <div className="flex items-center justify-center w-5 h-5 rounded-full border border-white/20 bg-gray-900 text-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2">
-                      <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
-                    </div>
-                    <div className="w-[calc(100%-2rem)] md:w-[calc(50%-1.5rem)] p-3 rounded-xl bg-white/5 border border-white/5 text-sm">
-                      <div className="font-bold text-gray-200">{act.title}</div>
-                      <div className="text-gray-400 text-xs mt-1">{formatDistanceToNow(new Date(act.timestamp), { addSuffix: true })}</div>
-                    </div>
-                  </div>
-                ))}
+      {/* 1. HERO SECTION */}
+      <div className="stagger-animate relative glass-panel rounded-[24px] mt-8 mb-8 p-6 sm:p-10 overflow-hidden flex flex-col md:flex-row items-center md:items-start gap-8">
+        <div className="absolute -top-32 -right-32 w-96 h-96 bg-primary/20 rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-secondary/20 rounded-full blur-[100px] pointer-events-none" />
+        
+        <div className="relative z-10 group shrink-0">
+          <label htmlFor="hero-avatar-upload" className="cursor-pointer block relative">
+            <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-[32px] bg-white/5 border border-white/20 p-1 flex items-center justify-center shadow-[0_0_30px_rgba(79,70,229,0.2)] overflow-hidden transition-all duration-300 group-hover:scale-105 group-hover:shadow-[0_0_50px_rgba(79,70,229,0.4)] rotate-[2deg] group-hover:rotate-0">
+              <div className="w-full h-full rounded-[28px] overflow-hidden bg-gray-900 flex items-center justify-center relative">
+                {form.avatar_url ? (
+                  <img src={form.avatar_url} alt="Profile" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                ) : (
+                  <span className="text-5xl font-black text-primary">{form.name ? form.name.charAt(0).toUpperCase() : 'U'}</span>
+                )}
+                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <Camera className="w-8 h-8 text-white" />
+                </div>
               </div>
-            ) : (
-              <div className="text-center py-6 text-gray-400 text-sm">No activity recorded yet. Start applying!</div>
-            )}
+            </div>
+          </label>
+          <input type="file" id="hero-avatar-upload" accept="image/*" className="hidden" onChange={onAvatarSelected} />
+          
+          <div className="absolute -bottom-2 -right-2 bg-gray-900 border-2 border-gray-800 rounded-full p-2 flex items-center gap-2 pr-4 shadow-xl">
+            <div className="relative flex h-3 w-3">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+            </div>
+            <span className="text-[10px] font-bold text-white uppercase tracking-wider">Online</span>
           </div>
         </div>
 
-        {/* Right Content - Editable Sections */}
-        <div className="w-full lg:col-span-8 space-y-6 pb-20">
+        <div className="relative z-10 flex-1 text-center md:text-left mt-2">
+          <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight mb-2 flex items-center justify-center md:justify-start gap-3">
+            {form.name || 'Set your name'}
+            {completionPct === 100 && <span className="bg-gradient-to-r from-amber-200 to-yellow-400 text-transparent bg-clip-text text-2xl" title="Premium Profile">✦</span>}
+          </h1>
+          <p className="text-lg sm:text-xl text-primary font-bold mb-4">{desiredRoles.length > 0 ? desiredRoles[0] : 'Aspiring Builder'}</p>
           
-          {/* Personal Section */}
-          <Section 
-            title="Personal & Education" icon="👤" 
-            isEditing={editingSection === 'personal'} 
-            onEdit={() => setEditingSection('personal')} 
-            onSave={() => handleSaveSection('personal')} 
-            onCancel={() => { setEditingSection(null); fetchProfile(); }} 
-            saving={saving}
-          >
-            {editingSection === 'personal' ? (
-              <div className="space-y-4 animate-fade-in">
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-[11px] font-bold text-gray-400 uppercase mb-1">Full Name</label>
-                    <input type="text" value={form.name} onChange={e => setForm({...form, name: e.target.value.toUpperCase()})} className="input-glass w-full text-sm" placeholder="John Doe" />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-bold text-gray-400 uppercase mb-1">Email</label>
-                    <input type="email" value={form.email} disabled className="input-glass w-full text-sm opacity-50 cursor-not-allowed" />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-[11px] font-bold text-gray-400 uppercase mb-1">Bio</label>
-                  <textarea value={form.bio} onChange={e => setForm({...form, bio: e.target.value})} className="input-glass w-full text-sm h-20 resize-none" placeholder="A short bio..." />
-                </div>
-                <div className="grid sm:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-[11px] font-bold text-gray-400 uppercase mb-1">College</label>
-                    <input type="text" value={form.college} onChange={e => setForm({...form, college: e.target.value})} className="input-glass w-full text-sm" placeholder="University Name" />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-bold text-gray-400 uppercase mb-1">Branch/Major</label>
-                    <input type="text" value={form.branch} onChange={e => setForm({...form, branch: e.target.value})} className="input-glass w-full text-sm" placeholder="Computer Science" />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-bold text-gray-400 uppercase mb-1">Year</label>
-                    <select value={form.year} onChange={e => setForm({...form, year: e.target.value})} className="input-glass w-full text-sm">
-                      <option value="">Select Year</option>
-                      <option value="1">1st Year</option>
-                      <option value="2">2nd Year</option>
-                      <option value="3">3rd Year</option>
-                      <option value="4">4th Year</option>
-                      <option value="Graduated">Graduated</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-4 animate-fade-in">
-                <div className="grid grid-cols-2 gap-4">
-                  <div><p className="text-[10px] text-gray-400 uppercase font-bold">Full Name</p><p className="mt-1">{renderViewText(form.name)}</p></div>
-                  <div><p className="text-[10px] text-gray-400 uppercase font-bold">Email</p><p className="mt-1">{renderViewText(form.email)}</p></div>
-                  <div className="col-span-2"><p className="text-[10px] text-gray-400 uppercase font-bold">Bio</p><p className="mt-1 text-sm text-gray-700 dark:text-gray-300">{renderViewText(form.bio)}</p></div>
-                  <div><p className="text-[10px] text-gray-400 uppercase font-bold">College</p><p className="mt-1">{renderViewText(form.college)}</p></div>
-                  <div><p className="text-[10px] text-gray-400 uppercase font-bold">Branch & Year</p><p className="mt-1">{renderViewText(form.branch)} • {renderViewText(form.year)}</p></div>
-                </div>
-              </div>
-            )}
-          </Section>
+          <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 text-sm text-gray-400 font-medium">
+            {form.college && <span className="flex items-center gap-1.5"><GraduationCap className="w-4 h-4 text-gray-500" /> {form.college}</span>}
+            {(form.city || form.country) && <span className="flex items-center gap-1.5"><MapPin className="w-4 h-4 text-gray-500" /> {[form.city, form.country].filter(Boolean).join(', ')}</span>}
+            <span className="flex items-center gap-1.5 px-3 py-1 bg-white/5 border border-white/10 rounded-full text-white"><Star className="w-4 h-4 text-amber-400 fill-amber-400" /> Lvl {Math.floor((stats.points || 0)/100) + 1}</span>
+            <span className="flex items-center gap-1.5 px-3 py-1 bg-white/5 border border-white/10 rounded-full text-white"><Zap className="w-4 h-4 text-primary fill-primary" /> {stats.points || 0} XP</span>
+          </div>
+        </div>
+      </div>
 
-          {/* Career Preferences */}
-          <Section 
-            title="Career Preferences" icon="🎯" 
-            isEditing={editingSection === 'career'} 
-            onEdit={() => setEditingSection('career')} 
-            onSave={() => handleSaveSection('career')} 
-            onCancel={() => { setEditingSection(null); fetchProfile(); }} 
-            saving={saving}
-          >
-            {editingSection === 'career' ? (
-              <div className="space-y-6 animate-fade-in">
-                <div>
-                  <label className="block text-[11px] font-bold text-gray-400 uppercase mb-2">Desired Roles</label>
-                  <div className="flex flex-wrap gap-2 mb-3">
-                    {desiredRoles.map(role => (
-                      <span key={role} className="px-2 py-1 bg-primary/10 border border-primary/20 text-primary text-xs rounded-md flex items-center gap-1">
-                        {role} <button onClick={() => setDesiredRoles(prev => prev.filter(r => r !== role))} className="hover:text-red-400">×</button>
-                      </span>
-                    ))}
-                  </div>
-                  <div className="flex gap-2">
-                    <select 
-                      onChange={e => { if(e.target.value && !desiredRoles.includes(e.target.value)) setDesiredRoles([...desiredRoles, e.target.value]); e.target.value=''; }} 
-                      className="input-glass text-sm flex-1"
-                    >
-                      <option value="">Select a role...</option>
-                      {ALL_DESIRED_ROLES.filter(r => !desiredRoles.includes(r)).map(r => <option key={r} value={r}>{r}</option>)}
-                    </select>
-                  </div>
-                </div>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        {/* LEFT COLUMN: COMPLETION & STATS */}
+        <div className="lg:col-span-4 space-y-8">
+          
+          {/* PROFILE COMPLETION */}
+          <div className="stagger-animate glass-panel rounded-[24px] p-6 sm:p-8 flex flex-col items-center text-center">
+            <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">Profile Completion</h3>
+            <div className="relative w-36 h-36 mb-6">
+              <svg className="w-full h-full transform -rotate-90" viewBox="0 0 80 80">
+                <circle cx="40" cy="40" r="36" fill="transparent" stroke="rgba(255,255,255,0.05)" strokeWidth="8" />
+                <circle 
+                  cx="40" cy="40" r="36" fill="transparent" 
+                  stroke="url(#gradient)" strokeWidth="8" strokeLinecap="round"
+                  style={{ strokeDasharray, strokeDashoffset, transition: 'stroke-dashoffset 1.5s ease-out' }}
+                />
+                <defs>
+                  <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#4F46E5" />
+                    <stop offset="100%" stopColor="#06B6D4" />
+                  </linearGradient>
+                </defs>
+              </svg>
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <span className="text-3xl font-black text-white"><AnimatedCounter value={completionPct} />%</span>
               </div>
-            ) : (
-              <div className="space-y-4 animate-fade-in">
-                <div>
-                  <p className="text-[10px] text-gray-400 uppercase font-bold mb-2">Desired Roles</p>
-                  {desiredRoles.length > 0 ? (
-                    <div className="flex flex-wrap gap-2">
-                      {desiredRoles.map(role => <span key={role} className="px-2.5 py-1 bg-white/5 border border-white/10 rounded-md text-xs font-semibold">{role}</span>)}
-                    </div>
-                  ) : <p className="text-gray-400 italic text-sm">No roles specified.</p>}
-                </div>
-              </div>
-            )}
-          </Section>
-
-          {/* Skills Section */}
-          <Section 
-            title="Skills" icon="⚡" 
-            isEditing={editingSection === 'skills'} 
-            onEdit={() => setEditingSection('skills')} 
-            onSave={() => handleSaveSection('skills')} 
-            onCancel={() => { setEditingSection(null); fetchProfile(); }} 
-            saving={saving}
-          >
-            {editingSection === 'skills' ? (
-              <div className="space-y-4 animate-fade-in">
-                <div className="flex flex-wrap gap-2 mb-3">
-                  {skills.map((skill, idx) => {
-                    const skillName = typeof skill === 'string' ? skill : (skill?.name || '');
-                    return (
-                    <div key={skillName || idx} className="flex items-center justify-between px-4 py-2 bg-white/5 border border-white/10 rounded-xl group hover:border-primary/50 transition-colors">
-                      <span className="text-white font-medium">{skillName}</span>
-                      <button type="button" onClick={() => removeSkill(skillName)} className="text-gray-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
-                    );
-                  })}
-                </div>
-                <div className="flex gap-2">
-                  <input
-                    type="text" value={customSkill} onChange={e => setCustomSkill(e.target.value)}
-                    onKeyDown={e => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        if (customSkill.trim() && !skills.includes(customSkill.trim())) {
-                          setSkills([...skills, customSkill.trim()]);
-                          setCustomSkill('');
-                        }
-                      }
-                    }}
-                    placeholder="Type a skill and hit enter..."
-                    className="input-glass w-full text-sm flex-1"
-                  />
-                  <button type="button" onClick={() => {
-                    if (customSkill.trim() && !skills.includes(customSkill.trim())) {
-                      setSkills([...skills, customSkill.trim()]);
-                      setCustomSkill('');
-                    }
-                  }} className="px-4 py-2 bg-white/10 rounded-lg text-sm font-bold hover:bg-white/20 transition">Add</button>
-                </div>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {ALL_SKILLS.filter(s => !skills.includes(s)).slice(0, 15).map(skill => (
-                    <button key={skill} onClick={() => setSkills([...skills, skill])} className="text-xs px-2 py-1 rounded border border-white/10 hover:border-primary text-gray-400 hover:text-primary transition">+ {skill}</button>
-                  ))}
-                </div>
-              </div>
-            ) : (
-              <div className="animate-fade-in">
-                {skills.length > 0 ? (
-                  <div className="flex flex-wrap gap-2">
-                    {skills.map((skill, idx) => {
-                      const skillName = typeof skill === 'string' ? skill : (skill?.name || '');
-                      return (
-                        <span key={skillName || idx} className="px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-sm font-medium">{skillName}</span>
-                      );
-                    })}
-                  </div>
-                ) : <p className="text-gray-400 italic text-sm">No skills added yet.</p>}
-              </div>
-            )}
-          </Section>
-
-          {/* Projects */}
-          <Section 
-            title="Projects" icon="🚀" 
-            isEditing={editingSection === 'projects'} 
-            onEdit={() => setEditingSection('projects')} 
-            onSave={() => handleSaveSection('projects')} 
-            onCancel={() => { setEditingSection(null); fetchProfile(); }} 
-            saving={saving}
-          >
-            {editingSection === 'projects' ? (
-              <div className="space-y-4 animate-fade-in">
-                {projects.map((proj, idx) => (
-                  <div key={idx} className="p-4 bg-white/5 border border-white/10 rounded-xl relative group">
-                    <button onClick={() => setProjects(projects.filter((_, i) => i !== idx))} className="absolute top-2 right-2 text-gray-500 hover:text-red-400"><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
-                    <div className="grid gap-3">
-                      <input type="text" value={proj.title} onChange={e => { const p = [...projects]; p[idx] = { ...p[idx], title: e.target.value }; setProjects(p); }} placeholder="Project Title" className="input-glass text-sm font-bold" />
-                      <textarea value={proj.description} onChange={e => { const p = [...projects]; p[idx] = { ...p[idx], description: e.target.value }; setProjects(p); }} placeholder="Description" className="input-glass text-sm h-16 resize-none" />
-                      <input type="url" value={proj.link} onChange={e => { const p = [...projects]; p[idx] = { ...p[idx], link: e.target.value }; setProjects(p); }} placeholder="Project URL (GitHub/Live)" className="input-glass text-sm" />
-                    </div>
+            </div>
+            
+            {completionPct < 100 ? (
+              <div className="w-full space-y-3">
+                <p className="text-xs text-gray-500 mb-4 italic">"Your future recruiter is watching 👀"</p>
+                {getMissingItems().map((item, i) => (
+                  <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors cursor-pointer group">
+                    <span className="text-sm text-gray-300 font-medium">{item.label}</span>
+                    <span className="text-[10px] font-bold text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded-full group-hover:scale-110 transition-transform">+{item.boost || 10}%</span>
                   </div>
                 ))}
-                <button onClick={() => setProjects([...projects, { title: '', description: '', link: '' }])} className="w-full py-3 border border-dashed border-white/20 rounded-xl text-gray-400 text-sm font-bold hover:bg-white/5 hover:text-white transition">+ Add Project</button>
               </div>
             ) : (
-              <div className="space-y-4 animate-fade-in">
-                {projects.length > 0 ? (
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    {projects.map((proj, idx) => (
-                      <div key={idx} className="p-4 bg-white/5 border border-white/10 rounded-xl flex flex-col h-full">
-                        <h4 className="font-bold text-gray-900 dark:text-white mb-1">{proj.title || 'Untitled Project'}</h4>
-                        <p className="text-gray-600 dark:text-gray-400 text-xs flex-1 mb-3">{proj.description}</p>
-                        {proj.link && <a href={proj.link} target="_blank" rel="noreferrer" className="text-primary text-xs font-bold hover:underline flex items-center gap-1">View Project <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg></a>}
+              <div className="w-full p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+                <div className="flex justify-center mb-2"><Trophy className="w-8 h-8" /></div>
+                <p className="font-bold text-sm">Profile 100% Complete!</p>
+                <p className="text-xs mt-1 opacity-80">You are ready for top opportunities.</p>
+              </div>
+            )}
+          </div>
+
+          {/* QUICK STATS */}
+          <div className="stagger-animate grid grid-cols-2 gap-4">
+            <div className="glass-panel rounded-2xl p-5 hover:-translate-y-1 hover:shadow-[0_10px_20px_rgba(0,0,0,0.2)] transition-all duration-300">
+              <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center mb-3 text-primary">
+                <Briefcase className="w-5 h-5" />
+              </div>
+              <p className="text-2xl font-black text-white"><AnimatedCounter value={projects.length} /></p>
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mt-1">Projects</p>
+            </div>
+            <div className="glass-panel rounded-2xl p-5 hover:-translate-y-1 hover:shadow-[0_10px_20px_rgba(0,0,0,0.2)] transition-all duration-300">
+              <div className="w-10 h-10 rounded-xl bg-secondary/20 flex items-center justify-center mb-3 text-secondary">
+                <Target className="w-5 h-5" />
+              </div>
+              <p className="text-2xl font-black text-white"><AnimatedCounter value={skills.length} /></p>
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mt-1">Skills</p>
+            </div>
+            <div className="glass-panel rounded-2xl p-5 hover:-translate-y-1 hover:shadow-[0_10px_20px_rgba(0,0,0,0.2)] transition-all duration-300">
+              <div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center mb-3 text-amber-500">
+                <Trophy className="w-5 h-5" />
+              </div>
+              <p className="text-2xl font-black text-white"><AnimatedCounter value={achievements.length || 0} /></p>
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mt-1">Achievements</p>
+            </div>
+            <div className="glass-panel rounded-2xl p-5 hover:-translate-y-1 hover:shadow-[0_10px_20px_rgba(0,0,0,0.2)] transition-all duration-300">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center mb-3 text-emerald-500">
+                <Globe className="w-5 h-5" />
+              </div>
+              <p className="text-2xl font-black text-white"><AnimatedCounter value={stats.applications || 0} /></p>
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mt-1">Applications</p>
+            </div>
+          </div>
+          
+          {/* SETTINGS SHORTCUTS */}
+          <div className="stagger-animate glass-panel rounded-2xl overflow-hidden">
+            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest p-5 pb-2">Preferences</h3>
+            <div className="divide-y divide-white/5">
+              <div className="p-4 flex items-center justify-between hover:bg-white/5 cursor-pointer transition">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-white/5 rounded-lg text-gray-400"><Shield className="w-4 h-4" /></div>
+                  <span className="text-sm font-medium text-gray-200">Privacy & Security</span>
+                </div>
+                <ChevronDown className="w-4 h-4 text-gray-500 -rotate-90" />
+              </div>
+              <div className="p-4 flex items-center justify-between hover:bg-white/5 cursor-pointer transition">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-white/5 rounded-lg text-gray-400"><Bell className="w-4 h-4" /></div>
+                  <span className="text-sm font-medium text-gray-200">Notifications</span>
+                </div>
+                <ChevronDown className="w-4 h-4 text-gray-500 -rotate-90" />
+              </div>
+              <div className="p-4 flex items-center justify-between hover:bg-white/5 cursor-pointer transition">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-white/5 rounded-lg text-gray-400"><Settings className="w-4 h-4" /></div>
+                  <span className="text-sm font-medium text-gray-200">Account Settings</span>
+                </div>
+                <ChevronDown className="w-4 h-4 text-gray-500 -rotate-90" />
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        {/* RIGHT COLUMN: MAIN CONTENT SECTIONS */}
+        <div className="lg:col-span-8 space-y-8">
+          
+          {/* ABOUT ME */}
+          <div className="stagger-animate glass-panel rounded-[24px] p-6 sm:p-8 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-4">
+              {editingSection === 'bio' ? (
+                <div className="flex gap-2">
+                  <button onClick={() => { setEditingSection(null); fetchProfile(); }} className="px-3 py-1.5 text-xs font-bold text-gray-400 hover:text-white transition">Cancel</button>
+                  <button onClick={() => handleSaveSection('bio')} disabled={saving} className="px-4 py-1.5 text-xs font-bold bg-primary hover:bg-primary-light text-white rounded-lg transition">{saving ? 'Saving...' : 'Save'}</button>
+                </div>
+              ) : (
+                <button onClick={() => setEditingSection('bio')} className="p-2 text-gray-500 hover:text-primary bg-white/5 hover:bg-primary/10 rounded-xl transition opacity-0 group-hover:opacity-100"><Edit3 className="w-4 h-4" /></button>
+              )}
+            </div>
+            
+            <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2"><UserIcon className="w-5 h-5 text-primary" /> About Me</h2>
+            
+            {editingSection === 'bio' ? (
+              <textarea 
+                value={form.bio} 
+                onChange={e => setForm({...form, bio: e.target.value})} 
+                className="w-full bg-black/20 border border-white/10 rounded-xl p-4 text-sm text-white focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all resize-y min-h-[120px]" 
+                placeholder="Tell us your story..."
+              />
+            ) : (
+              <p className="text-sm text-gray-300 leading-relaxed whitespace-pre-wrap max-w-3xl">
+                {form.bio || <span className="text-gray-500 italic">No bio added yet. Write something awesome about yourself!</span>}
+              </p>
+            )}
+          </div>
+
+          {/* CAREER GOAL CARD */}
+          <div className="stagger-animate relative rounded-[24px] overflow-hidden bg-gradient-to-br from-indigo-500 to-purple-600 p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl">
+            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mix-blend-overlay"></div>
+            <div className="relative z-10 max-w-md text-center md:text-left">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-white text-xs font-bold uppercase tracking-wider mb-4 border border-white/20">
+                <Target className="w-3 h-3" /> Career Goal
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-black text-white mb-2 leading-tight">
+                Aspiring <br className="hidden md:block"/> <span className="text-amber-300">{desiredRoles[0] || 'Software Engineer'}</span>
+              </h2>
+              <p className="text-indigo-100 text-sm">Keep building. Your future company is searching for someone exactly like you.</p>
+            </div>
+            <div className="relative z-10">
+              <div className="w-24 h-24 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 flex items-center justify-center transform rotate-12 hover:rotate-0 hover:scale-110 transition-all duration-500 shadow-xl cursor-pointer" onClick={() => setEditingSection('career')}>
+                <RocketIcon className="w-12 h-12 text-white drop-shadow-lg" />
+              </div>
+            </div>
+            
+            {editingSection === 'career' && (
+              <div className="absolute inset-0 bg-black/90 backdrop-blur-xl z-20 p-8 flex flex-col justify-center">
+                <h3 className="text-white font-bold mb-4">Edit Career Goal</h3>
+                <div className="flex gap-2">
+                   <select 
+                      onChange={e => { if(e.target.value && !desiredRoles.includes(e.target.value)) setDesiredRoles([e.target.value]); e.target.value=''; }} 
+                      className="input-glass text-sm flex-1 bg-white/5 border-white/20"
+                    >
+                      <option value="" className="text-black">Select a role...</option>
+                      {ALL_DESIRED_ROLES.map(r => <option key={r} value={r} className="text-black">{r}</option>)}
+                    </select>
+                </div>
+                <div className="flex gap-2 mt-4 justify-end">
+                  <button onClick={() => { setEditingSection(null); fetchProfile(); }} className="px-4 py-2 text-xs font-bold text-gray-400 hover:text-white transition">Cancel</button>
+                  <button onClick={() => handleSaveSection('career')} disabled={saving} className="px-6 py-2 text-xs font-bold bg-white text-black rounded-lg transition">{saving ? 'Saving...' : 'Save Goal'}</button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* SKILLS */}
+          <div className="stagger-animate glass-panel rounded-[24px] p-6 sm:p-8 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-4">
+              {editingSection === 'skills' ? (
+                <div className="flex gap-2">
+                  <button onClick={() => { setEditingSection(null); fetchProfile(); }} className="px-3 py-1.5 text-xs font-bold text-gray-400 hover:text-white transition">Cancel</button>
+                  <button onClick={() => handleSaveSection('skills')} disabled={saving} className="px-4 py-1.5 text-xs font-bold bg-primary hover:bg-primary-light text-white rounded-lg transition">{saving ? 'Saving...' : 'Save'}</button>
+                </div>
+              ) : (
+                <button onClick={() => setEditingSection('skills')} className="p-2 text-gray-500 hover:text-primary bg-white/5 hover:bg-primary/10 rounded-xl transition opacity-0 group-hover:opacity-100"><Edit3 className="w-4 h-4" /></button>
+              )}
+            </div>
+            
+            <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2"><Zap className="w-5 h-5 text-amber-400" /> Superpowers (Skills)</h2>
+            
+            {editingSection === 'skills' ? (
+              <div className="space-y-6">
+                <div className="flex flex-wrap gap-2">
+                  {skills.map((skill, idx) => (
+                    <div key={idx} className="flex items-center justify-between pl-3 pr-1 py-1 bg-white/10 border border-white/20 rounded-xl">
+                      <span className="text-white text-sm font-medium mr-2">{skill}</span>
+                      <button onClick={() => setSkills(skills.filter(s => s !== skill))} className="p-1 text-gray-400 hover:text-rose-400 bg-black/20 rounded-lg transition"><X className="w-3 h-3" /></button>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <input type="text" value={customSkill} onChange={e => setCustomSkill(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); if (customSkill.trim() && !skills.includes(customSkill.trim())) { setSkills([...skills, customSkill.trim()]); setCustomSkill(''); } } }} placeholder="Add a custom skill..." className="input-glass w-full text-sm bg-black/20" />
+                  <button onClick={() => { if (customSkill.trim() && !skills.includes(customSkill.trim())) { setSkills([...skills, customSkill.trim()]); setCustomSkill(''); } }} className="px-6 py-2 bg-white/10 hover:bg-white/20 rounded-xl text-sm font-bold text-white transition">Add</button>
+                </div>
+                <div className="pt-4 border-t border-white/10">
+                  <p className="text-xs text-gray-400 uppercase font-bold mb-3">Suggestions</p>
+                  <div className="flex flex-wrap gap-2">
+                    {ALL_SKILLS.filter(s => !skills.includes(s)).slice(0, 15).map(skill => (
+                      <button key={skill} onClick={() => setSkills([...skills, skill])} className="text-xs px-3 py-1.5 rounded-full border border-white/10 hover:border-primary hover:bg-primary/10 text-gray-400 hover:text-primary transition flex items-center gap-1"><Plus className="w-3 h-3" /> {skill}</button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div>
+                {skills.length > 0 ? (
+                  <div className="flex flex-wrap gap-3">
+                    {skills.map((skill, idx) => (
+                      <div key={idx} className="px-4 py-2 bg-gradient-to-r from-white/5 to-white/10 border border-white/10 hover:border-white/30 rounded-xl text-white text-sm font-semibold shadow-lg hover:shadow-[0_0_15px_rgba(255,255,255,0.1)] hover:-translate-y-0.5 cursor-default transition-all duration-300">
+                        {skill}
                       </div>
                     ))}
                   </div>
-                ) : <p className="text-gray-400 italic text-sm">No projects added yet.</p>}
+                ) : (
+                  <p className="text-sm text-gray-500 italic">"Every superhero starts somewhere ⚡. Add your skills!"</p>
+                )}
               </div>
             )}
-          </Section>
+          </div>
 
-          {/* Social Links & Resume */}
-          <Section 
-            title="Links & Resume" icon="🔗" 
-            isEditing={editingSection === 'links'} 
-            onEdit={() => setEditingSection('links')} 
-            onSave={() => handleSaveSection('links')} 
-            onCancel={() => { setEditingSection(null); fetchProfile(); }} 
-            saving={saving}
-          >
-            {editingSection === 'links' ? (
-              <div className="space-y-4 animate-fade-in">
+          {/* PROJECTS */}
+          <div className="stagger-animate glass-panel rounded-[24px] p-6 sm:p-8 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-4">
+              {editingSection === 'projects' ? (
+                <div className="flex gap-2 z-20 relative">
+                  <button onClick={() => { setEditingSection(null); fetchProfile(); }} className="px-3 py-1.5 text-xs font-bold text-gray-400 hover:text-white transition">Cancel</button>
+                  <button onClick={() => handleSaveSection('projects')} disabled={saving} className="px-4 py-1.5 text-xs font-bold bg-primary hover:bg-primary-light text-white rounded-lg transition">{saving ? 'Saving...' : 'Save'}</button>
+                </div>
+              ) : (
+                <button onClick={() => setEditingSection('projects')} className="p-2 text-gray-500 hover:text-primary bg-white/5 hover:bg-primary/10 rounded-xl transition opacity-0 group-hover:opacity-100 z-20 relative"><Edit3 className="w-4 h-4" /></button>
+              )}
+            </div>
+            
+            <h2 className="text-xl font-bold text-white mb-2 flex items-center gap-2"><LayoutDashboard className="w-5 h-5 text-emerald-400" /> Featured Projects</h2>
+            <p className="text-xs text-gray-500 italic mb-6">"Build something cooler than your final year project 😄"</p>
+            
+            {editingSection === 'projects' ? (
+              <div className="space-y-4">
+                {projects.map((proj, idx) => (
+                  <div key={idx} className="p-5 bg-black/20 border border-white/10 rounded-2xl relative">
+                    <button onClick={() => setProjects(projects.filter((_, i) => i !== idx))} className="absolute top-4 right-4 p-1 text-gray-500 hover:text-rose-400 bg-white/5 rounded-lg transition"><X className="w-4 h-4" /></button>
+                    <div className="grid gap-4 max-w-lg">
+                      <input type="text" value={proj.title} onChange={e => { const p = [...projects]; p[idx] = { ...p[idx], title: e.target.value }; setProjects(p); }} placeholder="Project Title" className="input-glass text-sm font-bold bg-transparent" />
+                      <textarea value={proj.description} onChange={e => { const p = [...projects]; p[idx] = { ...p[idx], description: e.target.value }; setProjects(p); }} placeholder="Description" className="input-glass text-sm h-20 resize-none bg-transparent" />
+                      <input type="url" value={proj.link} onChange={e => { const p = [...projects]; p[idx] = { ...p[idx], link: e.target.value }; setProjects(p); }} placeholder="https://github.com/..." className="input-glass text-sm bg-transparent" />
+                    </div>
+                  </div>
+                ))}
+                <button onClick={() => setProjects([...projects, { title: '', description: '', link: '' }])} className="w-full py-4 border-2 border-dashed border-white/20 rounded-2xl text-gray-400 text-sm font-bold hover:bg-white/5 hover:border-white/40 hover:text-white transition flex items-center justify-center gap-2"><Plus className="w-4 h-4" /> Add New Project</button>
+              </div>
+            ) : (
+              <div>
+                {projects.length > 0 ? (
+                  <div className="grid sm:grid-cols-2 gap-6">
+                    {projects.map((proj, idx) => (
+                      <div key={idx} className="group/card relative rounded-2xl bg-white/5 border border-white/10 overflow-hidden hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(0,0,0,0.4)] hover:border-white/20 transition-all duration-500 flex flex-col h-full">
+                        <div className="h-32 bg-gradient-to-br from-gray-800 to-black relative overflow-hidden flex items-center justify-center">
+                          <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-20 mix-blend-overlay"></div>
+                          <LayoutDashboard className="w-12 h-12 text-gray-700 group-hover/card:scale-110 group-hover/card:text-gray-500 transition-transform duration-500" />
+                        </div>
+                        <div className="p-5 flex flex-col flex-1">
+                          <h4 className="font-bold text-white text-lg mb-2">{proj.title || 'Untitled Project'}</h4>
+                          <p className="text-gray-400 text-sm flex-1 mb-4 line-clamp-3">{proj.description}</p>
+                          {proj.link && (
+                            <a href={proj.link} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold transition-colors w-full mt-auto">
+                              <Globe className="w-3 h-3" /> View Project
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center p-8 border border-dashed border-white/10 rounded-2xl text-gray-500">No projects added yet.</div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* EDUCATION & EXPERIENCE TIMELINE (UI Only) */}
+          <div className="stagger-animate glass-panel rounded-[24px] p-6 sm:p-8 relative">
+            <div className="absolute top-0 right-0 p-4">
+              <button onClick={() => setEditingSection('personal')} className="p-2 text-gray-500 hover:text-primary bg-white/5 hover:bg-primary/10 rounded-xl transition"><Edit3 className="w-4 h-4" /></button>
+            </div>
+            
+            <h2 className="text-xl font-bold text-white mb-8 flex items-center gap-2"><GraduationCap className="w-5 h-5 text-indigo-400" /> Journey</h2>
+            
+            {editingSection === 'personal' ? (
+              <div className="space-y-4 mb-8 bg-black/20 p-5 rounded-2xl border border-white/10">
+                <h3 className="text-sm font-bold text-white mb-4">Edit Education</h3>
                 <div className="grid sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-[11px] font-bold text-gray-400 uppercase mb-1">GitHub URL</label>
-                    <input type="url" value={form.github_url} onChange={e => setForm({...form, github_url: e.target.value})} className="input-glass w-full text-sm" placeholder="https://github.com/..." />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-bold text-gray-400 uppercase mb-1">LinkedIn URL</label>
-                    <input type="url" value={form.linkedin_url} onChange={e => setForm({...form, linkedin_url: e.target.value})} className="input-glass w-full text-sm" placeholder="https://linkedin.com/in/..." />
-                  </div>
-                  <div className="col-span-2">
-                    <label className="block text-[11px] font-bold text-gray-400 uppercase mb-1">Portfolio URL</label>
-                    <input type="url" value={form.portfolio_url} onChange={e => setForm({...form, portfolio_url: e.target.value})} className="input-glass w-full text-sm" placeholder="https://yourwebsite.com" />
-                  </div>
+                  <input type="text" value={form.college} onChange={e => setForm({...form, college: e.target.value})} placeholder="College Name" className="input-glass text-sm bg-transparent" />
+                  <input type="text" value={form.branch} onChange={e => setForm({...form, branch: e.target.value})} placeholder="Degree / Branch" className="input-glass text-sm bg-transparent" />
+                  <select value={form.year} onChange={e => setForm({...form, year: e.target.value})} className="input-glass text-sm bg-transparent">
+                    <option value="" className="text-black">Select Year</option>
+                    <option value="1" className="text-black">1st Year</option>
+                    <option value="2" className="text-black">2nd Year</option>
+                    <option value="3" className="text-black">3rd Year</option>
+                    <option value="4" className="text-black">4th Year</option>
+                    <option value="Graduated" className="text-black">Graduated</option>
+                  </select>
+                </div>
+                <div className="flex gap-2 justify-end mt-4">
+                  <button onClick={() => { setEditingSection(null); fetchProfile(); }} className="px-3 py-1.5 text-xs font-bold text-gray-400 hover:text-white transition">Cancel</button>
+                  <button onClick={() => handleSaveSection('personal')} disabled={saving} className="px-4 py-1.5 text-xs font-bold bg-primary hover:bg-primary-light text-white rounded-lg transition">{saving ? 'Saving...' : 'Save'}</button>
+                </div>
+              </div>
+            ) : null}
+
+            <div className="relative pl-8 md:pl-0 space-y-8 before:absolute before:inset-0 before:ml-10 md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-primary/50 before:via-white/10 before:to-transparent">
+              
+              {/* Education Node */}
+              <div className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group">
+                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-black border-2 border-indigo-500 shadow-[0_0_15px_rgba(99,102,241,0.5)] z-10 shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 absolute -left-4 md:static">
+                  <GraduationCap className="w-4 h-4 text-indigo-400" />
+                </div>
+                <div className="w-full md:w-[calc(50%-2rem)] p-5 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all shadow-lg hover:-translate-y-1">
+                  <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider mb-1 block">Education</span>
+                  <h4 className="font-bold text-white text-lg">{form.college || 'Add your college'}</h4>
+                  <p className="text-gray-400 text-sm mt-1">{form.branch || 'Add your degree/branch'}</p>
+                  <p className="text-gray-500 text-xs mt-2">{form.year ? `Class of ${form.year}` : ''}</p>
+                </div>
+              </div>
+
+              {/* Experience Placeholder Node */}
+              <div className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group">
+                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-black border-2 border-gray-600 z-10 shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 absolute -left-4 md:static opacity-50">
+                  <Briefcase className="w-4 h-4 text-gray-400" />
+                </div>
+                <div className="w-full md:w-[calc(50%-2rem)] p-5 rounded-2xl border border-dashed border-white/10 text-center opacity-50 hover:opacity-100 transition-opacity cursor-not-allowed">
+                  <h4 className="font-bold text-gray-400 text-sm mb-1">Add Experience</h4>
+                  <p className="text-gray-500 text-xs">This feature is coming soon.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* LINKS & RESUME */}
+          <div className="stagger-animate glass-panel rounded-[24px] p-6 sm:p-8 relative overflow-hidden group">
+             <div className="absolute top-0 right-0 p-4">
+              {editingSection === 'links' ? (
+                <div className="flex gap-2">
+                  <button onClick={() => { setEditingSection(null); fetchProfile(); }} className="px-3 py-1.5 text-xs font-bold text-gray-400 hover:text-white transition">Cancel</button>
+                  <button onClick={() => handleSaveSection('links')} disabled={saving} className="px-4 py-1.5 text-xs font-bold bg-primary hover:bg-primary-light text-white rounded-lg transition">{saving ? 'Saving...' : 'Save'}</button>
+                </div>
+              ) : (
+                <button onClick={() => setEditingSection('links')} className="p-2 text-gray-500 hover:text-primary bg-white/5 hover:bg-primary/10 rounded-xl transition opacity-0 group-hover:opacity-100"><Edit3 className="w-4 h-4" /></button>
+              )}
+            </div>
+
+            <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2"><LinkIcon className="w-5 h-5 text-blue-400" /> Connect & Resume</h2>
+
+            {editingSection === 'links' ? (
+              <div className="space-y-6">
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <input type="url" value={form.github_url} onChange={e => setForm({...form, github_url: e.target.value})} placeholder="GitHub URL" className="input-glass text-sm bg-transparent" />
+                  <input type="url" value={form.linkedin_url} onChange={e => setForm({...form, linkedin_url: e.target.value})} placeholder="LinkedIn URL" className="input-glass text-sm bg-transparent" />
+                  <input type="url" value={form.portfolio_url} onChange={e => setForm({...form, portfolio_url: e.target.value})} placeholder="Portfolio URL" className="input-glass text-sm bg-transparent sm:col-span-2" />
                 </div>
                 
-                <div className="pt-4 border-t border-white/5 mt-4">
-                  <label className="block text-[11px] font-bold text-gray-400 uppercase mb-2">Upload Resume (PDF)</label>
-                  <div className="flex items-center gap-4">
-                    <label className="cursor-pointer bg-white/5 hover:bg-white/10 border border-white/10 text-white text-sm font-bold py-2 px-4 rounded-xl transition">
-                      {uploadingResume ? `Uploading ${Math.round(resumeProgress)}%` : 'Choose File'}
-                      <input type="file" accept="application/pdf" className="hidden" onChange={handleResumeUpload} disabled={uploadingResume} />
-                    </label>
-                    {form.resume_url && !uploadingResume && (
-                      <span className="text-green-400 text-xs font-bold flex items-center gap-1">
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                        Resume Attached
-                      </span>
-                    )}
+                <div className="p-5 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-between">
+                  <div>
+                    <h4 className="text-white font-bold text-sm">Resume (PDF)</h4>
+                    <p className="text-gray-400 text-xs mt-1">Upload your latest CV.</p>
                   </div>
-                  {form.resume_url && (
-                    <div className="mt-2 text-xs text-gray-500 truncate">{form.resume_url}</div>
-                  )}
+                  <label className="cursor-pointer bg-primary hover:bg-primary-light text-white text-xs font-bold py-2.5 px-5 rounded-xl transition shadow-[0_0_15px_rgba(79,70,229,0.3)] hover:shadow-[0_0_25px_rgba(79,70,229,0.5)]">
+                    {uploadingResume ? `Uploading ${Math.round(resumeProgress)}%` : (form.resume_url ? 'Replace File' : 'Upload File')}
+                    <input type="file" accept="application/pdf" className="hidden" onChange={handleResumeUpload} disabled={uploadingResume} />
+                  </label>
                 </div>
               </div>
             ) : (
-              <div className="space-y-4 animate-fade-in flex flex-wrap gap-3">
-                {form.github_url && <a href={form.github_url} target="_blank" rel="noreferrer" className="flex items-center gap-2 bg-[#24292e] text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-black transition"><i className="fab fa-github"></i> GitHub</a>}
-                {form.linkedin_url && <a href={form.linkedin_url} target="_blank" rel="noreferrer" className="flex items-center gap-2 bg-[#0077b5] text-white px-4 py-2 rounded-lg text-sm font-bold hover:opacity-90 transition"><i className="fab fa-linkedin"></i> LinkedIn</a>}
-                {form.portfolio_url && <a href={form.portfolio_url} target="_blank" rel="noreferrer" className="flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-2 rounded-lg text-sm font-bold hover:opacity-90 transition"><i className="fas fa-globe"></i> Portfolio</a>}
-                {form.resume_url && <a href={form.resume_url} target="_blank" rel="noreferrer" className="flex items-center gap-2 bg-white/10 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-white/20 transition"><i className="fas fa-file-pdf"></i> View Resume</a>}
-                {(!form.github_url && !form.linkedin_url && !form.portfolio_url && !form.resume_url) && <p className="text-gray-400 italic text-sm">No links or resume provided.</p>}
+              <div className="flex flex-wrap gap-4">
+                {form.github_url && (
+                  <a href={form.github_url} target="_blank" rel="noreferrer" className="flex items-center gap-3 px-5 py-3 bg-[#24292e] text-white rounded-2xl font-bold text-sm hover:-translate-y-1 hover:shadow-[0_10px_20px_rgba(36,41,46,0.4)] transition-all">
+                    <i className="fab fa-github text-lg"></i> GitHub
+                  </a>
+                )}
+                {form.linkedin_url && (
+                  <a href={form.linkedin_url} target="_blank" rel="noreferrer" className="flex items-center gap-3 px-5 py-3 bg-[#0a66c2] text-white rounded-2xl font-bold text-sm hover:-translate-y-1 hover:shadow-[0_10px_20px_rgba(10,102,194,0.4)] transition-all">
+                    <i className="fab fa-linkedin text-lg"></i> LinkedIn
+                  </a>
+                )}
+                {form.portfolio_url && (
+                  <a href={form.portfolio_url} target="_blank" rel="noreferrer" className="flex items-center gap-3 px-5 py-3 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-2xl font-bold text-sm hover:-translate-y-1 hover:shadow-[0_10px_20px_rgba(236,72,153,0.4)] transition-all">
+                    <Globe className="w-5 h-5" /> Portfolio
+                  </a>
+                )}
+                {form.resume_url ? (
+                  <a href={form.resume_url} target="_blank" rel="noreferrer" className="flex items-center gap-3 px-5 py-3 bg-white/10 text-white border border-white/20 rounded-2xl font-bold text-sm hover:-translate-y-1 hover:bg-white/20 hover:shadow-[0_10px_20px_rgba(255,255,255,0.1)] transition-all w-full sm:w-auto">
+                    <FileText className="w-5 h-5 text-emerald-400" /> View Resume
+                  </a>
+                ) : (
+                  <div className="flex items-center gap-3 px-5 py-3 bg-white/5 text-gray-500 border border-dashed border-white/20 rounded-2xl font-bold text-sm w-full sm:w-auto">
+                    <FileText className="w-5 h-5" /> No Resume Uploaded
+                  </div>
+                )}
               </div>
             )}
-          </Section>
+          </div>
 
         </div>
       </div>
     </div>
   );
 };
+
+// Dummy icon for Career Goal
+const RocketIcon = ({ className }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/>
+    <path d="m12 15-3-3a22 22 0 0 1 3.82-13.82 2 2 0 0 1 3.18 3.18A22 22 0 0 1 12 15z"/>
+    <path d="m9 21.5 1.5-1.5"/>
+    <path d="m21.5 9-1.5 1.5"/>
+  </svg>
+);
 
 export default Profile;
