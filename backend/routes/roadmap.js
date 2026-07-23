@@ -97,7 +97,7 @@ router.post("/generate", auth, async (req, res) => {
       You are an expert career advisor. Generate a highly personalized learning roadmap for a student aiming to become a ${goal}.
       
       Student Context:
-      - Current Skills: ${(p.skills || []).join(", ") || "Beginner"}
+      - Current Skills: ${(p.skills || []).map(s => typeof s === 'string' ? s : (s.name || '')).join(", ") || "Beginner"}
       - Experience Level: ${p.experienceLevel || "Beginner"}
       - Daily Learning Time: 2 hours
       - Target Placement: 6 months
@@ -139,6 +139,12 @@ router.post("/generate", auth, async (req, res) => {
         text = text.replace(/```$/, '').trim();
         
         roadmapData = JSON.parse(text);
+        if (Array.isArray(roadmapData)) {
+          roadmapData = { goal: goal, overall_progress: 0, steps: roadmapData };
+        }
+        if (!roadmapData.steps || !Array.isArray(roadmapData.steps)) {
+          throw new Error("Invalid roadmap structure");
+        }
       } catch (aiError) {
         console.error("AI Generation failed:", aiError);
         // Fallback
