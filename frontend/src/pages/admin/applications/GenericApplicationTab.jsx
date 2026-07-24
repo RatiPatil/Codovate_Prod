@@ -1,9 +1,9 @@
 import React, { useRef, useState } from 'react';
-import { DataTable } from '../../../../components/admin/ui/DataTable';
-import { Modal } from '../../../../components/admin/ui/Modal';
-import { Badge } from '../../../../components/admin/ui/Badge';
+import { DataTable } from '../../../components/admin/ui/DataTable';
+import { Modal } from '../../../components/admin/ui/Modal';
+import { Badge } from '../../../components/admin/ui/Badge';
 import { ChevronRight, Download, CheckCircle, XCircle } from 'lucide-react';
-import { Button } from '../../../../components/admin/ui/Button';
+import { Button } from '../../../components/admin/ui/Button';
 
 export const GenericApplicationTab = ({ 
   title, 

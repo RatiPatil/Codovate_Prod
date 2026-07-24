@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { useSearch } from '../../context/SearchContext';
+import { useSearch } from "../../../context/SearchContext";
 import { Search, X } from 'lucide-react';
 
 const GlobalSearchModal = () => {

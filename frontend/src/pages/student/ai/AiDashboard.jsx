@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { aiApi } from '../../api/aiApi';
+import { aiApi } from '../../../api/aiApi';
 import { BrainCircuit, Briefcase, TrendingUp, AlertTriangle, ChevronRight } from 'lucide-react';
 import { Button } from '../../../components/admin/ui/Button';
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useRole } from '../../../../context/RoleContext';
-import { analyticsApi } from '../../../../api/analyticsApi';
-import { StatCard } from '../../../../components/admin/widgets/StatCard';
+import { useRole } from '../../../context/RoleContext';
+import { analyticsApi } from '../../../api/analyticsApi';
+import { StatCard } from '../../../components/admin/widgets/StatCard';
 import { Activity, Users, Building, Briefcase, Award, TrendingUp, DollarSign } from 'lucide-react';
 
 const SuperAdminBI = ({ data, loading }) => (

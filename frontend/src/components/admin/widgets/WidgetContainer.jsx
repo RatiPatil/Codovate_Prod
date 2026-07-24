@@ -1,7 +1,7 @@
 import React from 'react';
 import { RefreshCw, AlertCircle } from 'lucide-react';
-import { Button } from './Button';
-import { Card, CardHeader, CardTitle, CardBody } from './Card';
+import { Button } from "../ui/Button";
+import { Card, CardHeader, CardTitle, CardBody } from "../ui/Card";
 
 /**
  * Reusable Widget Container
