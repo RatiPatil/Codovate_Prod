@@ -22,9 +22,14 @@ api.interceptors.response.use(
       localStorage.removeItem('rememberMe');
       sessionStorage.removeItem('token');
       sessionStorage.removeItem('user');
+      window.localStorage.setItem('logoutEvent', Date.now());
       if (window.location.pathname !== '/login' && window.location.pathname !== '/admin-login') {
         window.location.href = '/login';
       }
+    } else if (err.response?.status === 403) {
+      console.warn('[Axios] 403 Forbidden:', err.response?.data?.message || 'Access Denied');
+      // If they get a 403 on an initial load, we might want to redirect them
+      // For API calls, they can be handled locally by the component.
     }
     return Promise.reject(err);
   }

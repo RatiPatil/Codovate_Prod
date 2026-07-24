@@ -1,36 +1,44 @@
 import { useState, useEffect, useRef } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useRole } from '../context/RoleContext';
 import { useSocket } from '../context/SocketContext';
 import api from '../api/axios';
 
 const navItems = [
-  { path: '/dashboard', label: 'Dashboard', icon: '⊞' },
-  { path: '/opportunities', label: 'Opportunities', icon: '🔍' },
-  { path: '/applications', label: 'Applications', icon: '📋' },
-  { path: '/calendar', label: 'Calendar', icon: '📆' },
-  { path: '/teams', label: 'Teams', icon: '🤝' },
-  { path: '/community', label: 'College Community', icon: '🏫' },
-  { path: '/events', label: 'Events', icon: '📅' },
-  { path: '/chat', label: 'Messages', icon: '💬' },
-  { path: '/activity', label: 'Activity Feed', icon: '⚡' },
-  { path: '/mentors', label: 'Mentors', icon: '👨‍🏫' },
-  { path: '/leaderboard', label: 'Leaderboard', icon: '🏆' },
-  { path: '/rewards', label: 'Rewards', icon: '💎' },
-  { path: '/projects', label: 'Project Hub', icon: '🚀' },
-  { path: '/resume', label: 'Resume Builder', icon: '📄' },
-  { path: '/placement', label: 'Placement Prep', icon: '🎯' },
-  { path: '/notifications', label: 'Notifications', icon: '🔔' },
-  { path: '/roadmap', label: 'AI Roadmap', icon: '🗺️' },
-  { path: '/coach', label: 'Career Coach', icon: '🤖' },
-  { path: '/profile', label: 'Profile', icon: '👤' },
+  { path: '/dashboard', label: 'Dashboard', icon: '⊞', reqPerm: 'dashboard:read' },
+  { path: '/opportunities', label: 'Opportunities', icon: '🔍', reqPerm: 'jobs:read' },
+  { path: '/applications', label: 'Applications', icon: '📋', reqPerm: 'applications:read' },
+  { path: '/calendar', label: 'Calendar', icon: '📆', reqPerm: 'dashboard:read' },
+  { path: '/teams', label: 'Teams', icon: '🤝', reqPerm: 'teams:read' },
+  { path: '/community', label: 'College Community', icon: '🏫', reqPerm: 'teams:read' },
+  { path: '/events', label: 'Events', icon: '📅', reqPerm: 'events:read' },
+  { path: '/chat', label: 'Messages', icon: '💬', reqPerm: 'dashboard:read' },
+  { path: '/activity', label: 'Activity Feed', icon: '⚡', reqPerm: 'dashboard:read' },
+  { path: '/mentors', label: 'Mentors', icon: '👨‍🏫', reqPerm: 'mentors:read' },
+  { path: '/leaderboard', label: 'Leaderboard', icon: '🏆', reqPerm: 'dashboard:read' },
+  { path: '/rewards', label: 'Rewards', icon: '💎', reqPerm: 'dashboard:read' },
+  { path: '/projects', label: 'Project Hub', icon: '🚀', reqPerm: 'projects:read' },
+  { path: '/resume', label: 'Resume Builder', icon: '📄', reqPerm: 'resume:read' },
+  { path: '/placement', label: 'Placement Prep', icon: '🎯', reqPerm: 'assessments:read' },
+  { path: '/notifications', label: 'Notifications', icon: '🔔', reqPerm: 'notifications:read' },
+  { path: '/roadmap', label: 'AI Roadmap', icon: '🗺️', reqPerm: 'learning:read' },
+  { path: '/coach', label: 'Career Coach', icon: '🤖', reqPerm: 'learning:read' },
+  { path: '/profile', label: 'Profile', icon: '👤', reqPerm: 'students:read' },
 ];
 
 const Sidebar = ({ mobileOpen, setMobileOpen }) => {
   const { user, logout } = useAuth();
+  const { hasPermission } = useRole();
   const navigate = useNavigate();
   const { isConnected, socket } = useSocket();
   const [unreadCount, setUnreadCount] = useState(0);
+
+  // Filter items based on user's permissions
+  const visibleNavItems = navItems.filter(item => {
+    if (!item.reqPerm) return true;
+    return hasPermission(item.reqPerm);
+  });
 
   useEffect(() => {
     fetchNotifications();
@@ -92,7 +100,7 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
 
       {/* Nav Links */}
       <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto custom-scrollbar">
-        {navItems.map((item) => (
+        {visibleNavItems.map((item) => (
           <NavLink
             key={item.path}
             to={item.path}

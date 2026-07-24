@@ -1,6 +1,12 @@
 import { Suspense, lazy, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { RoleProvider } from './context/RoleContext';
+import { FeatureFlagProvider } from './context/FeatureFlagContext';
+import { SessionProvider } from './context/SessionContext';
+import { OrganizationProvider } from './context/OrganizationContext';
+import { SidebarProvider } from './context/SidebarContext';
+import { SearchProvider } from './context/SearchContext';
 import { SocketProvider } from './context/SocketContext';
 import { ToastProvider } from './components/ui/ToastProvider';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -28,7 +34,25 @@ const AdminLogin = lazy(() => import('./pages/AdminLogin'));
 const RecruiterLogin = lazy(() => import('./pages/RecruiterLogin'));
 const TeamsLayout = lazy(() => import('./pages/teams/TeamsLayout'));
 const Workspace = lazy(() => import('./pages/teams/Workspace'));
-const Mentors = lazy(() => import('./pages/Mentors'));
+// Admin Layouts & Views
+const AdminLayout = lazy(() => import('./layouts/AdminLayout'));
+const AdminSandbox = lazy(() => import('./pages/AdminSandbox'));
+const SuperAdminDashboard = lazy(() => import('./pages/admin/SuperAdminDashboard'));
+const UserManagement = lazy(() => import('./pages/admin/users/UserManagement'));
+const OrganizationManagement = lazy(() => import('./pages/admin/organizations/OrganizationManagement'));
+const CollegeManagement = lazy(() => import('./pages/admin/colleges/CollegeManagement'));
+const AcademicStructure = lazy(() => import('./pages/admin/academic/AcademicStructure'));
+const StudentManagement = lazy(() => import('./pages/admin/students/StudentManagement'));
+const StaffManagement = lazy(() => import('./pages/admin/staff/StaffManagement'));
+const PlacementManagement = lazy(() => import('./pages/admin/placements/PlacementManagement'));
+const CompanyManagement = lazy(() => import('./pages/admin/companies/CompanyManagement'));
+const RecruiterManagement = lazy(() => import('./pages/admin/recruiters/RecruiterManagement'));
+const JobManagement = lazy(() => import('./pages/admin/jobs/JobManagement'));
+const ApplicationManagement = lazy(() => import('./pages/admin/applications/ApplicationManagement'));
+const InterviewManagement = lazy(() => import('./pages/admin/interviews/InterviewManagement'));
+const OfferManagement = lazy(() => import('./pages/admin/offers/OfferManagement'));
+const PlacementRecordsManagement = lazy(() => import('./pages/admin/placement-records/PlacementRecordsManagement'));
+const AnalyticsCommandCenter = lazy(() => import('./pages/admin/analytics/AnalyticsCommandCenter'));
 const Leaderboard = lazy(() => import('./pages/Leaderboard'));
 const Gamification = lazy(() => import('./pages/Gamification'));
 const ResumeBuilder = lazy(() => import('./pages/ResumeBuilder'));
@@ -37,6 +61,7 @@ const Roadmap = lazy(() => import('./pages/Roadmap'));
 const CareerCoach = lazy(() => import('./pages/CareerCoach'));
 const LearningModule = lazy(() => import('./pages/LearningModule'));
 const ProjectHub = lazy(() => import('./pages/ProjectHub'));
+const AiDashboard = lazy(() => import('./pages/student/ai/AiDashboard'));
 const DashboardRouter = lazy(() => import('./components/DashboardRouter'));
 const MentorRouter = lazy(() => import('./components/MentorRouter'));
 const PublicPortfolio = lazy(() => import('./pages/PublicPortfolio'));
@@ -74,9 +99,15 @@ function App() {
     <GlobalErrorBoundary>
       <ToastProvider>
         <AuthProvider>
-          <SocketProvider>
-            <GlobalNotifications />
-            <Toaster position="top-right" toastOptions={{
+          <SessionProvider>
+            <OrganizationProvider>
+              <SidebarProvider>
+                <SearchProvider>
+                  <RoleProvider>
+                    <FeatureFlagProvider>
+                      <SocketProvider>
+                <GlobalNotifications />
+                <Toaster position="top-right" toastOptions={{
               style: {
                 background: '#333',
                 color: '#fff',
@@ -239,6 +270,13 @@ function App() {
                     </ProtectedRoute>
                   } />
 
+                  {/* Student Dedicated Routes */}
+                  <Route path="/student/ai-dashboard" element={
+                    <ProtectedRoute requireRole="student">
+                      <Layout><AiDashboard /></Layout>
+                    </ProtectedRoute>
+                  } />
+
                   <Route path="/admin/*" element={
                     <ProtectedRoute requireOnboarding={false}>
                       <DashboardRouter />
@@ -252,13 +290,45 @@ function App() {
                     </ProtectedRoute>
                   } />
                   
+                  {/* ───────────────────────────────────────────────────────── */}
+                  {/* ENTERPRISE ADMIN CONSOLE                                */}
+                  {/* ───────────────────────────────────────────────────────── */}
+                  <Route path="/admin" element={<ProtectedRoute requiredRole="super_admin" />}>
+                    <Route element={<AdminLayout />}>
+                      <Route path="dashboard" element={<SuperAdminDashboard />} />
+                      <Route path="users" element={<UserManagement />} />
+                      <Route path="organizations" element={<OrganizationManagement />} />
+                      <Route path="colleges" element={<CollegeManagement />} />
+                      <Route path="academic" element={<AcademicStructure />} />
+                      <Route path="students" element={<StudentManagement />} />
+                      <Route path="staff" element={<StaffManagement />} />
+                      <Route path="placements" element={<PlacementManagement />} />
+                      <Route path="companies" element={<CompanyManagement />} />
+                      <Route path="recruiters" element={<RecruiterManagement />} />
+                      <Route path="jobs" element={<JobManagement />} />
+                      <Route path="applications" element={<ApplicationManagement />} />
+                      <Route path="interviews" element={<InterviewManagement />} />
+                      <Route path="offers" element={<OfferManagement />} />
+                      <Route path="placement-records" element={<PlacementRecordsManagement />} />
+                      <Route path="analytics" element={<AnalyticsCommandCenter />} />
+                      <Route path="sandbox" element={<AdminSandbox />} />
+                      {/* Future modules will mount here */}
+                    </Route>
+                  </Route>
+                  
                   <Route path="/p/:username" element={<PublicPortfolio />} />
 
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
               </Suspense>
             </BrowserRouter>
-          </SocketProvider>
+                      </SocketProvider>
+                    </FeatureFlagProvider>
+                  </RoleProvider>
+                </SearchProvider>
+              </SidebarProvider>
+            </OrganizationProvider>
+          </SessionProvider>
         </AuthProvider>
       </ToastProvider>
     </GlobalErrorBoundary>

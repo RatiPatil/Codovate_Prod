@@ -45,7 +45,11 @@ app.use((req, res, next) => {
   next();
 });
 
-const protect = require("./middleware/auth");
+// ─── RBAC Middleware ─────────────────────────────────────────
+const { authenticate, requireRole } = require("./middleware");
+
+// Legacy alias for backward compatibility (used in some route files)
+const protect = authenticate;
 
 // ─── SECURITY: Rate limit auth endpoints ───
 const authLimiter = rateLimit({
@@ -56,77 +60,116 @@ const authLimiter = rateLimit({
   message: { message: "Too many requests. Please try again after 15 minutes." },
 });
 
+// ═══════════════════════════════════════════════════════════════
+//  AUTH ROUTES (No RBAC — public endpoints)
+// ═══════════════════════════════════════════════════════════════
 app.use("/api/auth", authLimiter, require("./routes/auth"));
 app.use("/api/mentor-auth", require("./routes/mentorAuth"));
 
-app.use("/api/admin",         protect, require("./routes/admin"));
-app.use("/api/admin/users",   protect, require("./routes/adminUsers"));
-app.use("/api/admin/students", protect, require("./routes/adminStudents"));
-app.use("/api/admin/colleges",protect, require("./routes/adminColleges"));
-app.use("/api/admin/companies",protect, require("./routes/adminCompanies"));
-app.use("/api/admin/mentors", protect, require("./routes/adminMentors"));
-app.use("/api/admin/opportunities", protect, require("./routes/adminOpportunities"));
-app.use("/api/admin/projects", protect, require("./routes/adminProjects"));
-app.use("/api/admin/certificates", protect, require("./routes/adminCertificates"));
-app.use("/api/admin/notifications", protect, require("./routes/adminNotifications"));
-app.use("/api/admin/health", protect, require("./routes/adminHealth"));
-app.use("/api/admin/settings", protect, require("./routes/adminSettings"));
+// ═══════════════════════════════════════════════════════════════
+//  ENTERPRISE IAM & RBAC MANAGEMENT
+// ═══════════════════════════════════════════════════════════════
+app.use("/api/rbac", authenticate, requireRole(['super_admin', 'admin']), require("./routes/rbac"));
+app.use("/api/iam", require("./routes/iam")); // Some IAM routes (like bootstrap) are public
 
-// College Admin Scoped Routes
-app.use("/api/college-admin/dashboard", protect, require("./routes/collegeAdminDashboard"));
-app.use("/api/college-admin/students", protect, require("./routes/collegeAdminStudents"));
-app.use("/api/college-admin/faculty", protect, require("./routes/collegeAdminFaculty"));
-app.use("/api/college-admin/projects", protect, require("./routes/collegeAdminProjects"));
-app.use("/api/college-admin/certificates", protect, require("./routes/collegeAdminCertificates"));
-app.use("/api/college-admin/events", protect, require("./routes/collegeAdminEvents"));
-app.use("/api/college-admin/notifications", protect, require("./routes/collegeAdminNotifications"));
-app.use("/api/college-admin/reports", protect, require("./routes/collegeAdminReports"));
+// ═══════════════════════════════════════════════════════════════
+//  STUDENT ROUTES
+// ═══════════════════════════════════════════════════════════════
+app.use("/api/student/ai", authenticate, requireRole(['student', 'admin', 'super_admin']), require("./routes/aiRecommendations"));
 
-// Company Admin Scoped Routes
-app.use("/api/company-admin/opportunities", protect, require("./routes/companyAdminOpportunities"));
-app.use("/api/company-admin/analytics", protect, require("./routes/companyAdminAnalytics"));
-app.use("/api/company-admin/applications", protect, require("./routes/companyAdminApplications"));
-app.use("/api/company-admin/interviews", protect, require("./routes/companyAdminInterviews"));
-app.use("/api/company-admin/notifications", protect, require("./routes/companyAdminNotifications"));
-app.use("/api/company-admin/talent", protect, require("./routes/companyAdminTalent"));
-app.use("/api/admin/company/dashboard", protect, require("./routes/companyAdminDashboard"));
-app.use("/api/students",      require("./routes/students"));
-app.use("/api/teams",         protect, require("./routes/teams"));
-app.use("/api/workspace",     protect, require("./routes/teamWorkspace"));
-app.use("/api/opportunities", protect, require("./routes/opportunities"));
-app.use("/api/applications",  require("./routes/applications"));
-app.use("/api/onboarding",    require("./routes/onboarding"));
-app.use("/api/notifications", require("./routes/notifications"));
+app.use("/api/policies", require("./routes/policies"));
 
-app.use("/api/teams",         require("./routes/teams"));
-app.use("/api/mentors",       require("./routes/mentors"));
-app.use("/api/mentor-interactions", require("./routes/mentorInteractions"));
-app.use("/api/mentor-resources", require("./routes/mentorResources"));
-app.use("/api/mentor-queries", require("./routes/mentorQueries"));
-app.use("/api/mentor-reviews", require("./routes/mentor-reviews"));
-app.use("/api/project-mentorships", require("./routes/project-mentorships"));
-app.use("/api/networking",    require("./routes/networking"));
-app.use("/api/leaderboard",   require("./routes/leaderboard"));
-app.use("/api/chat",          require("./routes/chat"));
-app.use("/api/roadmap",       require("./routes/roadmap"));
-app.use("/api/ai",            require("./routes/ai"));
-app.use("/api/resume",        require("./routes/resume"));
-app.use("/api/colleges",      require("./routes/colleges"));
-app.use("/api/companies",     require("./routes/companies"));
-app.use("/api/projects",      require("./routes/projects"));
-app.use("/api/portfolio",     require("./routes/portfolio"));
-app.use("/api/certificates",  require("./routes/certificates"));
-app.use("/api/skills",        require("./routes/skills"));
-app.use("/api/achievements",  require("./routes/achievements"));
-app.use("/api/activity",      require("./routes/activity"));
-app.use("/api/gamification",  require("./routes/gamification"));
-app.use("/api/dashboard",     require("./routes/dashboard"));
-app.use("/api/coding",        require("./routes/coding"));
-app.use("/api/assessments",   require("./routes/assessments"));
-app.use("/api/interviews",    require("./routes/interviews"));
-app.use("/api/events",        require("./routes/events"));
-app.use("/api/community",     require("./routes/community"));
-app.use("/api/calendar",      require("./routes/calendar"));
+// ═══════════════════════════════════════════════════════════════
+//  SUPER ADMIN ROUTES
+// ═══════════════════════════════════════════════════════════════
+app.use("/api/admin",              authenticate, requireRole(['super_admin', 'admin']), require("./routes/admin"));
+app.use("/api/admin/users",        authenticate, requireRole(['super_admin', 'admin']), require("./routes/enterpriseUsers"));
+app.use("/api/admin/organizations",authenticate, requireRole(['super_admin', 'admin']), require("./routes/enterpriseOrganizations"));
+app.use("/api/admin/colleges",     authenticate, requireRole(['super_admin', 'admin', 'college_admin']), require("./routes/enterpriseColleges"));
+app.use("/api/admin/academic",     authenticate, requireRole(['super_admin', 'admin', 'college_admin']), require("./routes/enterpriseAcademic"));
+app.use("/api/admin/students",     authenticate, requireRole(['super_admin', 'admin', 'college_admin']), require("./routes/enterpriseStudents"));
+app.use("/api/admin/faculty",      authenticate, requireRole(['super_admin', 'admin', 'college_admin']), require("./routes/enterpriseFaculty"));
+app.use("/api/admin/mentors",      authenticate, requireRole(['super_admin', 'admin', 'college_admin']), require("./routes/enterpriseMentors"));
+app.use("/api/admin/placements",   authenticate, requireRole(['super_admin', 'admin', 'college_admin', 'tpo']), require("./routes/enterprisePlacements"));
+app.use("/api/admin/companies",    authenticate, requireRole(['super_admin', 'admin', 'company_admin', 'tpo']), require("./routes/enterpriseCompanies"));
+app.use("/api/admin/recruiters",   authenticate, requireRole(['super_admin', 'admin', 'company_admin', 'tpo']), require("./routes/enterpriseRecruiters"));
+app.use("/api/admin/jobs",         authenticate, requireRole(['super_admin', 'admin', 'company_admin', 'tpo']), require("./routes/enterpriseJobs"));
+app.use("/api/admin/applications", authenticate, requireRole(['super_admin', 'admin', 'company_admin', 'tpo', 'recruiter', 'college_admin']), require("./routes/enterpriseApplications"));
+app.use("/api/admin/interviews",   authenticate, requireRole(['super_admin', 'admin', 'company_admin', 'tpo', 'recruiter', 'college_admin']), require("./routes/enterpriseInterviews"));
+app.use("/api/admin/offers",       authenticate, requireRole(['super_admin', 'admin', 'company_admin', 'tpo', 'recruiter', 'college_admin']), require("./routes/enterpriseOffers"));
+app.use("/api/admin/placement-records", authenticate, requireRole(['super_admin', 'admin', 'company_admin', 'tpo', 'recruiter', 'college_admin']), require("./routes/enterprisePlacementRecords"));
+app.use("/api/analytics",          authenticate, requireRole(['super_admin', 'admin', 'company_admin', 'tpo', 'recruiter', 'college_admin']), require("./routes/enterpriseAnalytics"));
+app.use("/api/admin/opportunities",authenticate, requireRole(['super_admin', 'admin', 'company_admin']), require("./routes/adminOpportunities"));
+app.use("/api/admin/projects",     authenticate, requireRole(['super_admin', 'admin', 'college_admin']), require("./routes/adminProjects"));
+app.use("/api/admin/certificates", authenticate, requireRole(['super_admin', 'admin', 'college_admin']), require("./routes/adminCertificates"));
+app.use("/api/admin/notifications",authenticate, requireRole(['super_admin', 'admin']), require("./routes/adminNotifications"));
+app.use("/api/admin/health",       authenticate, requireRole(['super_admin', 'admin', 'support_admin']), require("./routes/adminHealth"));
+app.use("/api/admin/settings",     authenticate, requireRole(['super_admin', 'admin', 'support_admin']), require("./routes/adminSettings"));
+app.use("/api/dashboard/super-admin", authenticate, requireRole(['super_admin']), require("./routes/superAdminDashboard"));
+
+// ═══════════════════════════════════════════════════════════════
+//  COLLEGE ADMIN SCOPED ROUTES
+// ═══════════════════════════════════════════════════════════════
+app.use("/api/college-admin/dashboard",     authenticate, requireRole(['college_admin', 'super_admin', 'admin']), require("./routes/collegeAdminDashboard"));
+app.use("/api/college-admin/students",      authenticate, requireRole(['college_admin', 'super_admin', 'admin']), require("./routes/collegeAdminStudents"));
+app.use("/api/college-admin/faculty",       authenticate, requireRole(['college_admin', 'super_admin', 'admin']), require("./routes/collegeAdminFaculty"));
+app.use("/api/college-admin/projects",      authenticate, requireRole(['college_admin', 'super_admin', 'admin']), require("./routes/collegeAdminProjects"));
+app.use("/api/college-admin/certificates",  authenticate, requireRole(['college_admin', 'super_admin', 'admin']), require("./routes/collegeAdminCertificates"));
+app.use("/api/college-admin/events",        authenticate, requireRole(['college_admin', 'super_admin', 'admin']), require("./routes/collegeAdminEvents"));
+app.use("/api/college-admin/notifications", authenticate, requireRole(['college_admin', 'super_admin', 'admin']), require("./routes/collegeAdminNotifications"));
+app.use("/api/college-admin/reports",       authenticate, requireRole(['college_admin', 'super_admin', 'admin']), require("./routes/collegeAdminReports"));
+
+// ═══════════════════════════════════════════════════════════════
+//  COMPANY ADMIN / RECRUITER SCOPED ROUTES
+// ═══════════════════════════════════════════════════════════════
+app.use("/api/company-admin/opportunities",  authenticate, requireRole(['company_admin', 'recruiter', 'super_admin', 'admin']), require("./routes/companyAdminOpportunities"));
+app.use("/api/company-admin/analytics",      authenticate, requireRole(['company_admin', 'recruiter', 'super_admin', 'admin']), require("./routes/companyAdminAnalytics"));
+app.use("/api/company-admin/applications",   authenticate, requireRole(['company_admin', 'recruiter', 'super_admin', 'admin']), require("./routes/companyAdminApplications"));
+app.use("/api/company-admin/interviews",     authenticate, requireRole(['company_admin', 'recruiter', 'super_admin', 'admin']), require("./routes/companyAdminInterviews"));
+app.use("/api/company-admin/notifications",  authenticate, requireRole(['company_admin', 'recruiter', 'super_admin', 'admin']), require("./routes/companyAdminNotifications"));
+app.use("/api/company-admin/talent",         authenticate, requireRole(['company_admin', 'recruiter', 'super_admin', 'admin']), require("./routes/companyAdminTalent"));
+app.use("/api/admin/company/dashboard",      authenticate, requireRole(['company_admin', 'recruiter', 'super_admin', 'admin']), require("./routes/companyAdminDashboard"));
+
+// ═══════════════════════════════════════════════════════════════
+//  AUTHENTICATED USER ROUTES (All roles with valid JWT)
+// ═══════════════════════════════════════════════════════════════
+app.use("/api/students",           authenticate, require("./routes/students"));
+app.use("/api/teams",              authenticate, require("./routes/teams"));
+app.use("/api/workspace",          authenticate, require("./routes/teamWorkspace"));
+app.use("/api/opportunities",      authenticate, require("./routes/opportunities"));
+app.use("/api/applications",       authenticate, require("./routes/applications"));
+app.use("/api/onboarding",         authenticate, require("./routes/onboarding"));
+app.use("/api/notifications",      authenticate, require("./routes/notifications"));
+app.use("/api/mentors",            authenticate, require("./routes/mentors"));
+app.use("/api/mentor-interactions", authenticate, require("./routes/mentorInteractions"));
+app.use("/api/mentor-resources",   authenticate, require("./routes/mentorResources"));
+app.use("/api/mentor-queries",     authenticate, require("./routes/mentorQueries"));
+app.use("/api/mentor-reviews",     authenticate, require("./routes/mentor-reviews"));
+app.use("/api/project-mentorships", authenticate, require("./routes/project-mentorships"));
+app.use("/api/networking",         authenticate, require("./routes/networking"));
+app.use("/api/leaderboard",        authenticate, require("./routes/leaderboard"));
+app.use("/api/chat",               authenticate, require("./routes/chat"));
+app.use("/api/roadmap",            authenticate, require("./routes/roadmap"));
+app.use("/api/ai",                 authenticate, require("./routes/ai"));
+app.use("/api/resume",             authenticate, require("./routes/resume"));
+app.use("/api/colleges",           authenticate, require("./routes/colleges"));
+app.use("/api/companies",          authenticate, require("./routes/companies"));
+app.use("/api/projects",           authenticate, require("./routes/projects"));
+app.use("/api/portfolio",          authenticate, require("./routes/portfolio"));
+app.use("/api/certificates",       authenticate, require("./routes/certificates"));
+app.use("/api/skills",             authenticate, require("./routes/skills"));
+app.use("/api/achievements",       authenticate, require("./routes/achievements"));
+app.use("/api/activity",           authenticate, require("./routes/activity"));
+app.use("/api/gamification",       authenticate, require("./routes/gamification"));
+app.use("/api/dashboard",          authenticate, require("./routes/dashboard"));
+app.use("/api/coding",             authenticate, require("./routes/coding"));
+app.use("/api/assessments",        authenticate, require("./routes/assessments"));
+app.use("/api/interviews",         authenticate, require("./routes/interviews"));
+app.use("/api/events",             authenticate, require("./routes/events"));
+app.use("/api/community",          authenticate, require("./routes/community"));
+app.use("/api/calendar",           authenticate, require("./routes/calendar"));
+
+
 
 app.get("/", (req, res) => {
   res.json({ message: "Codovate API running 🚀", realtime: true });

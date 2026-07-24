@@ -6,6 +6,18 @@ const { db, admin } = require("../config/firebase");
 require("dotenv").config();
 
 const { getAuth } = require("firebase-admin/auth");
+const { logLoginHistory, getClientIP } = require("../middleware/auditLog");
+const { ROLE_REDIRECTS } = require("../config/roleDefinitions");
+
+// ─── Helper: Set Firebase Custom Claims for Firestore Rules ──
+async function setCustomClaims(uid, role) {
+  if (!uid) return;
+  try {
+    await getAuth().setCustomUserClaims(uid, { role });
+  } catch (e) {
+    console.warn('[AUTH] Failed to set custom claims:', e.message);
+  }
+}
 
 // ─── SECURITY: Admin seeder endpoint removed (was publicly accessible) ───
 // Use a protected CLI script or one-time migration for admin seeding instead.
@@ -77,6 +89,8 @@ router.post("/google", async (req, res) => {
       });
       
       await batch.commit();
+      // Set Firebase custom claims for Firestore rules
+      if (uid) setCustomClaims(uid, 'student');
       console.log("✅ Auto-registered new user via Google:", email);
     } else {
       const userDoc = snapshot.docs[0];
@@ -127,12 +141,28 @@ router.post("/google", async (req, res) => {
       { expiresIn: "7d" }
     );
 
+    // Log login history
+    logLoginHistory({
+      userId: user.id, email: user.email, provider: 'google',
+      ipAddress: getClientIP(req), userAgent: req.headers['user-agent'],
+      status: 'success',
+    });
+
+    // Set Firebase custom claims
+    if (uid) setCustomClaims(uid, user.role);
+
     res.json({
       token,
-      user: { id: user.id, name: user.name, email: user.email, role: user.role, avatar: user.avatar }
+      user: { id: user.id, name: user.name, email: user.email, role: user.role, avatar: user.avatar },
+      redirect: ROLE_REDIRECTS[user.role] || '/dashboard',
     });
   } catch (err) {
     console.error("Google Auth error:", err);
+    logLoginHistory({
+      email: req.body?.email || 'unknown', provider: 'google',
+      ipAddress: getClientIP(req), userAgent: req.headers['user-agent'],
+      status: 'failed', failureReason: err.message,
+    });
     res.status(401).json({ message: "Auth Error: " + err.message });
   }
 });
@@ -305,12 +335,25 @@ router.post("/phone", async (req, res) => {
       { expiresIn: "7d" }
     );
 
+    // Log login history
+    logLoginHistory({
+      userId: user.id, phone: user.phone, provider: 'phone',
+      ipAddress: getClientIP(req), userAgent: req.headers['user-agent'],
+      status: 'success',
+    });
+
     res.json({
       token,
-      user: { id: user.id, name: user.name, phone: user.phone, email: user.email, role: user.role, avatar: user.avatar }
+      user: { id: user.id, name: user.name, phone: user.phone, email: user.email, role: user.role, avatar: user.avatar },
+      redirect: ROLE_REDIRECTS[user.role] || '/dashboard',
     });
   } catch (err) {
     console.error("Phone Auth error:", err);
+    logLoginHistory({
+      phone: req.body?.phone || 'unknown', provider: 'phone',
+      ipAddress: getClientIP(req), userAgent: req.headers['user-agent'],
+      status: 'failed', failureReason: err.message,
+    });
     res.status(401).json({ message: "Auth Error: " + err.message });
   }
 });
@@ -586,6 +629,13 @@ router.post("/login", async (req, res) => {
       { expiresIn: "7d" }
     );
 
+    // Log login history
+    logLoginHistory({
+      userId: user.id, email: user.email, provider: 'local',
+      ipAddress: getClientIP(req), userAgent: req.headers['user-agent'],
+      status: 'success',
+    });
+
     console.log(`✅ User logged in [${user.role}]:`, email);
     res.json({
       token,
@@ -596,10 +646,16 @@ router.post("/login", async (req, res) => {
         role: user.role,
         college_id: user.college_id || null,
         company_id: user.company_id || null,
-      }
+      },
+      redirect: ROLE_REDIRECTS[user.role] || '/dashboard',
     });
   } catch (err) {
     console.error("Login error:", err.message);
+    logLoginHistory({
+      email: req.body?.email || 'unknown', provider: 'local',
+      ipAddress: getClientIP(req), userAgent: req.headers['user-agent'],
+      status: 'failed', failureReason: err.message,
+    });
     res.status(500).json({ message: "Server error: " + err.message });
   }
 });
@@ -672,6 +728,13 @@ router.post("/admin-login", async (req, res) => {
       { expiresIn: "7d" }
     );
 
+    // Log login history
+    logLoginHistory({
+      userId: user.id, email: user.email, provider: 'admin_local',
+      ipAddress: getClientIP(req), userAgent: req.headers['user-agent'],
+      status: 'success',
+    });
+
     console.log(`✅ Admin [${user.role}] logged in: ${email}`);
     res.json({
       token,
@@ -682,10 +745,16 @@ router.post("/admin-login", async (req, res) => {
         role: user.role,
         college_id: user.college_id || null,
         company_id: user.company_id || null,
-      }
+      },
+      redirect: ROLE_REDIRECTS[user.role] || '/admin',
     });
   } catch (err) {
     console.error("Admin Login error:", err.message);
+    logLoginHistory({
+      email: req.body?.email || 'unknown', provider: 'admin_local',
+      ipAddress: getClientIP(req), userAgent: req.headers['user-agent'],
+      status: 'failed', failureReason: err.message,
+    });
     res.status(500).json({ message: "Server error: " + err.message });
   }
 });

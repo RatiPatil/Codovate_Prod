@@ -95,6 +95,51 @@ service cloud.firestore {
       allow update, delete: if isAuthenticated() && resource.data.user_id == request.auth.uid;
     }
 
+    // 6. RBAC System Collections
+    match /roles/{roleId} {
+      allow read: if isAuthenticated(); // Frontend needs to read role permissions
+      allow write: if false; // Only backend admin API can modify roles
+    }
+    
+    match /featureFlags/{flagId} {
+      allow read: if isAuthenticated(); // Frontend needs to read feature flags
+      allow write: if false; // Only backend admin API can modify flags
+    }
+    
+    match /auditLogs/{logId} {
+      allow read, write: if false; // Only backend has access
+    }
+    
+    match /loginHistory/{logId} {
+      allow read, write: if false; // Only backend has access
+    }
+
+    // Enterprise IAM Collections
+    match /system_config/{configId} {
+      allow read, write: if false; // Only backend
+    }
+    match /adminInvitations/{inviteId} {
+      allow read, write: if false; // Only backend
+    }
+    match /sessions/{sessionId} {
+      // Users can only read their own session data
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow write: if false; // Created/Updated by backend
+    }
+    match /securityPolicies/{policyId} {
+      // Anyone authenticated can read global or their org's policy
+      allow read: if isAuthenticated();
+      allow write: if false; // Managed by backend
+    }
+    match /organizations/{orgId} {
+      allow read: if isAuthenticated(); // Frontend needs to read org names
+      allow write: if false; // Managed by backend
+    }
+    match /departments/{deptId} {
+      allow read: if isAuthenticated();
+      allow write: if false;
+    }
+
     // Default deny for everything else
     match /{document=**} {
       allow read, write: if false;
