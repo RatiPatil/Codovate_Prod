@@ -6,6 +6,11 @@ const { getCommunityUpdates } = require("../services/communityService");
 const { awardPoints, updatePlacementScore } = require("../utils/scoring");
 const eventBus = require("../events/eventBus");
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 router.get("/", auth, async (req, res) => {
   if (!["admin", "super_admin", "college_admin", "company_admin"].includes(req.user.role)) return res.status(403).json({ message: "Admin only." });
   try {
@@ -17,16 +22,16 @@ router.get("/", auth, async (req, res) => {
     ]);
 
     const profiles = {};
-    profilesSnap.docs.forEach(d => profiles[d.id] = d.data());
+    profilesSnap.docs.forEach(d => profiles[d.id] = mapDoc(d));
     
     const analytics = {};
-    analyticsSnap.docs.forEach(d => analytics[d.id] = d.data());
+    analyticsSnap.docs.forEach(d => analytics[d.id] = mapDoc(d));
     
     const careers = {};
-    careerSnap.docs.forEach(d => careers[d.id] = d.data());
+    careerSnap.docs.forEach(d => careers[d.id] = mapDoc(d));
 
     const students = usersSnap.docs.map(doc => {
-      const u = doc.data();
+      const u = mapDoc(doc);
       const p = profiles[doc.id] || {};
 
       let joinedAt = null;
@@ -80,8 +85,8 @@ router.get("/profile", auth, async (req, res) => {
       return res.status(404).json({ message: "User not found." });
     }
 
-    const u = userDoc.data();
-    const p = profileDoc.exists ? profileDoc.data() : {};
+    const u = mapDoc(userDoc);
+    const p = profileDoc.exists ? mapDoc(profileDoc) : {};
 
     // Flatten Phase 3 Schema for Frontend Compatibility
     res.json({
@@ -119,7 +124,7 @@ router.put("/profile", auth, async (req, res) => {
     const profileRef = db.collection("profiles").doc(uid);
     const profileDoc = await profileRef.get();
     
-    const currentProfile = profileDoc.exists ? profileDoc.data() : {};
+    const currentProfile = profileDoc.exists ? mapDoc(profileDoc) : {};
     
     // Group fields for Phase 3 Profile Schema
     const profileUpdates = {
@@ -218,7 +223,7 @@ router.get("/activity", auth, async (req, res) => {
     // Applications
     const appsSnap = await db.collection("applications").where("student_id", "==", uid).get();
     appsSnap.docs.forEach(doc => {
-      const d = doc.data();
+      const d = mapDoc(doc);
       const ts = d.applied_at?.toDate ? d.applied_at.toDate() : new Date(d.applied_at || 0);
       activities.push({ type: 'application', title: `Applied to ${d.title || 'an opportunity'}`, company: d.company, time: ts, icon: '📨' });
     });
@@ -226,9 +231,9 @@ router.get("/activity", auth, async (req, res) => {
     // Team joins
     const teamsSnap = await db.collection("team_members").where("user_id", "==", uid).get();
     for (const doc of teamsSnap.docs) {
-      const tm = doc.data();
+      const tm = mapDoc(doc);
       const teamDoc = await db.collection("teams").doc(tm.team_id).get();
-      const teamName = teamDoc.exists ? teamDoc.data().name : 'a team';
+      const teamName = teamDoc.exists ? mapDoc(teamDoc).name : 'a team';
       const ts = tm.joined_at?.toDate ? tm.joined_at.toDate() : new Date(tm.joined_at || 0);
       activities.push({ type: 'team_join', title: `Joined team "${teamName}"`, time: ts, icon: '🤝' });
     }
@@ -236,12 +241,12 @@ router.get("/activity", auth, async (req, res) => {
     // Mentor bookings
     const bookSnap = await db.collection("mentorSessions").where("student_id", "==", uid).get();
     for (const doc of bookSnap.docs) {
-      const b = doc.data();
+      const b = mapDoc(doc);
       const mentorDoc = b.mentor_id ? await db.collection("mentors").doc(b.mentor_id).get() : null;
       let mentorName = 'a mentor';
       if (mentorDoc?.exists) {
-        const userDoc = await db.collection("users").doc(mentorDoc.data().user_id).get();
-        mentorName = userDoc.exists ? userDoc.data().name : 'a mentor';
+        const userDoc = await db.collection("users").doc(mapDoc(mentorDoc).user_id).get();
+        mentorName = userDoc.exists ? mapDoc(userDoc).name : 'a mentor';
       }
       const ts = b.created_at?.toDate ? b.created_at.toDate() : new Date(b.created_at || 0);
       activities.push({ type: 'mentor_booking', title: `Booked session with ${mentorName}`, time: ts, icon: '👨‍🏫' });
@@ -270,12 +275,12 @@ router.get("/stats", auth, async (req, res) => {
     ]);
 
     // Calculate leaderboard rank
-    const allUsersSnap = await db.collection("users").where("role", "==", "student").where("is_active", "==", true).get();
+    const allUsersSnap = await db.collection("users").where("role", "==", "student").where("recordStatus", "==", "ACTIVE").get();
     let userPoints = 0;
     const allPoints = [];
 
     for (const doc of allUsersSnap.docs) {
-      const u = doc.data();
+      const u = mapDoc(doc);
       const completionPts = (u.profileCompleted || 0) * 10;
       const appsForUser = await db.collection("applications").where("student_id", "==", doc.id).get();
       const appPts = appsForUser.size * 50;
@@ -291,7 +296,7 @@ router.get("/stats", auth, async (req, res) => {
 
     let joinedAt = new Date();
     if (userDoc.exists) {
-      const d = userDoc.data();
+      const d = mapDoc(userDoc);
       if (d.createdAt) {
         joinedAt = d.createdAt.toDate ? d.createdAt.toDate() : new Date(d.createdAt);
       }
@@ -306,7 +311,7 @@ router.get("/stats", auth, async (req, res) => {
       rank: rank || '—',
       points: userPoints,
       daysOnPlatform,
-      selected: appsSnap.docs.filter(d => d.data().status === 'Selected').length,
+      selected: appsSnap.docs.filter(d => mapDoc(d).status === 'Selected').length,
     });
   } catch (err) {
     console.error("Stats error:", err.message);
@@ -329,8 +334,8 @@ router.get("/workspace", auth, async (req, res) => {
       return res.status(404).json({ message: "User not found." });
     }
 
-    const u = userDoc.data();
-    const p = profileDoc.exists ? profileDoc.data() : {};
+    const u = mapDoc(userDoc);
+    const p = profileDoc.exists ? mapDoc(profileDoc) : {};
 
     // 1. Fetch Real Data Counts and Updates using aggregate queries for performance
     const [appsSnap, teamsSnap, bookingsSnap, communityUpdates] = await Promise.all([
@@ -340,9 +345,9 @@ router.get("/workspace", auth, async (req, res) => {
       getCommunityUpdates(uid)
     ]);
 
-    const appsCount = appsSnap.data().count;
-    const teamsCount = teamsSnap.data().count;
-    const mentorsCount = bookingsSnap.data().count;
+    const appsCount = mapDoc(appsSnap).count;
+    const teamsCount = mapDoc(teamsSnap).count;
+    const mentorsCount = mapDoc(bookingsSnap).count;
 
     // Calculate real points based on stats
     const profilePoints = (u.profileCompleted || p.profileCompletion || 0) * 10;
@@ -354,7 +359,7 @@ router.get("/workspace", auth, async (req, res) => {
     let mission = { tasks: [], estimated_time: null, reward: null };
     
     if (roadmapDoc.exists) {
-      const roadmapData = roadmapDoc.data();
+      const roadmapData = mapDoc(roadmapDoc);
       const activeStep = roadmapData.steps?.find(s => s.status === 'in_progress' || s.status === 'pending');
       
       if (activeStep) {
@@ -443,7 +448,7 @@ router.get("/workspace", auth, async (req, res) => {
     let activeStepId = null;
     
     if (roadmapDoc.exists) {
-      const roadmapData = roadmapDoc.data();
+      const roadmapData = mapDoc(roadmapDoc);
       const s = roadmapData.steps?.find(s => s.status === 'in_progress' || s.status === 'pending');
       if (s) {
         activeTopic = s.title;
@@ -466,7 +471,7 @@ router.get("/workspace", auth, async (req, res) => {
     // B. Project Recommendation
     const projectsSnap = await db.collection("projects").limit(1).get();
     if (!projectsSnap.empty) {
-       const prj = projectsSnap.docs[0].data();
+       const prj = mapDoc(projectsSnap.docs[0]);
        recommendations.push({
          id: projectsSnap.docs[0].id,
          type: 'project',
@@ -480,7 +485,7 @@ router.get("/workspace", auth, async (req, res) => {
     // C. Internship Recommendation (from DB)
     const oppsSnap = await db.collection("opportunities").where("status", "==", "Active").limit(1).get();
     if (!oppsSnap.empty) {
-      const opp = oppsSnap.docs[0].data();
+      const opp = mapDoc(oppsSnap.docs[0]);
       recommendations.push({
         id: oppsSnap.docs[0].id,
         type: 'job',
@@ -496,11 +501,11 @@ router.get("/workspace", auth, async (req, res) => {
     const mentorsSnap = await db.collection("mentors").limit(1).get();
     if (!mentorsSnap.empty) {
       const mentorDoc = mentorsSnap.docs[0];
-      const m = mentorDoc.data();
+      const m = mapDoc(mentorDoc);
       let mName = "Expert Mentor";
       if (m.user_id) {
          const mu = await db.collection("users").doc(m.user_id).get();
-         if (mu.exists) mName = mu.data().name;
+         if (mu.exists) mName = mapDoc(mu).name;
       }
       recommendations.push({
         id: mentorDoc.id,
@@ -516,7 +521,7 @@ router.get("/workspace", auth, async (req, res) => {
     // E. Team Recommendation
     const teamsRecSnap = await db.collection("teams").where("status", "==", "Recruiting").limit(1).get();
     if (!teamsRecSnap.empty) {
-      const team = teamsRecSnap.docs[0].data();
+      const team = mapDoc(teamsRecSnap.docs[0]);
       recommendations.push({
         id: teamsRecSnap.docs[0].id,
         type: 'team',
@@ -531,7 +536,7 @@ router.get("/workspace", auth, async (req, res) => {
     // F. Teammate Recommendation
     const profilesSnap = await db.collection("profiles").where("role", "==", "student").limit(1).get();
     if (!profilesSnap.empty) {
-      const pData = profilesSnap.docs[0].data();
+      const pData = mapDoc(profilesSnap.docs[0]);
       if (profilesSnap.docs[0].id !== uid) {
         recommendations.push({
           id: profilesSnap.docs[0].id,
@@ -547,7 +552,7 @@ router.get("/workspace", auth, async (req, res) => {
     // G. Hackathon Recommendation
     const hackathonsSnap = await db.collection("events").where("type", "==", "Hackathon").limit(1).get();
     if (!hackathonsSnap.empty) {
-      const hack = hackathonsSnap.docs[0].data();
+      const hack = mapDoc(hackathonsSnap.docs[0]);
       recommendations.push({
         id: hackathonsSnap.docs[0].id,
         type: 'event',
@@ -561,7 +566,7 @@ router.get("/workspace", auth, async (req, res) => {
     // H. Community Recommendation
     const commsSnap = await db.collection("communities").limit(1).get();
     if (!commsSnap.empty) {
-      const comm = commsSnap.docs[0].data();
+      const comm = mapDoc(commsSnap.docs[0]);
       recommendations.push({
         id: commsSnap.docs[0].id,
         type: 'community',
@@ -594,9 +599,9 @@ router.get("/workspace", auth, async (req, res) => {
     // Learning Progress (25%)
     let learnScore = 0;
     if (roadmapDoc.exists) {
-      learnScore = (roadmapDoc.data().overall_progress || 0) * 0.25;
+      learnScore = (mapDoc(roadmapDoc).overall_progress || 0) * 0.25;
       readinessScore += learnScore;
-      const activeStep = roadmapDoc.data().steps?.find(s => s.status === 'in_progress' || s.status === 'pending');
+      const activeStep = mapDoc(roadmapDoc).steps?.find(s => s.status === 'in_progress' || s.status === 'pending');
       if (activeStep) improvements.push(activeStep.title);
     } else {
       improvements.push('AI Career Roadmap');
@@ -694,9 +699,9 @@ router.get("/gamification", auth, async (req, res) => {
       db.collection("userRoadmaps").doc(uid).get()
     ]);
 
-    const u = userDoc.exists ? userDoc.data() : {};
-    const p = profileDoc.exists ? profileDoc.data() : {};
-    const roadmapData = roadmapDoc.exists ? roadmapDoc.data() : null;
+    const u = userDoc.exists ? mapDoc(userDoc) : {};
+    const p = profileDoc.exists ? mapDoc(profileDoc) : {};
+    const roadmapData = roadmapDoc.exists ? mapDoc(roadmapDoc) : null;
 
     // Base XP Calculation
     let xp = 0;
@@ -770,7 +775,7 @@ router.get("/gamification", auth, async (req, res) => {
           
        let rank = 1;
        collegeUsersSnap.forEach(doc => {
-         const data = doc.data();
+         const data = mapDoc(doc);
          collegeRanking.push({
            rank: rank++,
            name: data.name || 'Student',
@@ -842,7 +847,7 @@ router.post("/career-goal", auth, async (req, res) => {
 router.get("/daily-tasks", auth, async (req, res) => {
   try {
     const doc = await db.collection("dailyTasks").doc(req.user.id).get();
-    const data = doc.exists ? doc.data() : { tasks: [], estimated_time: null, reward: null };
+    const data = doc.exists ? mapDoc(doc) : { tasks: [], estimated_time: null, reward: null };
 
     res.json(data);
   } catch (err) {
@@ -855,7 +860,7 @@ router.get("/daily-tasks", auth, async (req, res) => {
 router.get("/placement-readiness", auth, async (req, res) => {
   try {
     const doc = await db.collection("placementReadiness").doc(req.user.id).get();
-    res.json(doc.exists ? doc.data() : { score: 0, improvements: [] });
+    res.json(doc.exists ? mapDoc(doc) : { score: 0, improvements: [] });
   } catch (err) {
     console.error("Error fetching placement readiness:", err);
     res.status(500).json({ message: "Server error" });
@@ -866,7 +871,7 @@ router.get("/placement-readiness", auth, async (req, res) => {
 router.get("/recommendations", auth, async (req, res) => {
   try {
     const doc = await db.collection("aiRecommendations").doc(req.user.id).get();
-    res.json(doc.exists ? doc.data() : { recommendations: [] });
+    res.json(doc.exists ? mapDoc(doc) : { recommendations: [] });
   } catch (err) {
     console.error("Error fetching recommendations:", err);
     res.status(500).json({ message: "Server error" });
@@ -884,7 +889,7 @@ router.get("/weekly-report", auth, async (req, res) => {
     if (reportsSnap.empty) {
       return res.json({ report: null });
     }
-    const reports = reportsSnap.docs.map(d => d.data());
+    const reports = mapDocs(reportsSnap);
     reports.sort((a, b) => new Date(b.generatedAt) - new Date(a.generatedAt));
     res.json(reports[0]);
   } catch (err) {

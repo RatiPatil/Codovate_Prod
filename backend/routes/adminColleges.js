@@ -3,6 +3,11 @@ const router = express.Router();
 const { db, admin, FieldValue } = require('../config/firebase');
 const { body, validationResult, checkExact, matchedData } = require('express-validator');
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 // Middleware to ensure super_admin
 const superAdminOnly = (req, res, next) => {
   if (req.user.role !== 'super_admin' && req.user.role !== 'admin') {
@@ -17,7 +22,7 @@ router.get('/', async (req, res) => {
     const snapshot = await db.collection('colleges').get();
     const colleges = [];
     snapshot.forEach(doc => {
-      colleges.push({ id: doc.id, ...doc.data() });
+      colleges.push({ id: doc.id, ...mapDoc(doc) });
     });
     res.json(colleges);
   } catch (error) {
@@ -82,7 +87,7 @@ router.put('/:id', superAdminOnly, [
     await docRef.update(updateData);
     
     const updated = await docRef.get();
-    res.json(updated.data());
+    res.json(mapDoc(updated));
   } catch (error) {
     console.error("College PUT error:", error);
     res.status(500).json({ message: 'Server error' });

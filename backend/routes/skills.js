@@ -4,6 +4,11 @@ const { db } = require("../config/firebase");
 const auth = require("../middleware/auth");
 const { syncDashboard } = require("../services/dashboardService");
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 // ─── GET /api/skills ───────────────────────────────────────────────────────
 router.get("/", auth, async (req, res) => {
   try {
@@ -11,7 +16,7 @@ router.get("/", auth, async (req, res) => {
     if (!doc.exists) {
       return res.json({ technical: [], soft: [], tools: [], languages: [] });
     }
-    res.json(doc.data());
+    res.json(mapDoc(doc));
   } catch (err) {
     console.error("Fetch skills error:", err);
     res.status(500).json({ message: "Failed to load skills." });
@@ -37,7 +42,7 @@ router.put("/", auth, async (req, res) => {
     const profileRef = db.collection("profiles").doc(req.user.id);
     const pDoc = await profileRef.get();
     if (pDoc.exists) {
-      const existingSkills = pDoc.data().skills || [];
+      const existingSkills = mapDoc(pDoc).skills || [];
       // This is a naive merge, but helps keep legacy endpoints alive.
       // In a strict migration, we might replace this entirely.
       const newLegacySkills = [...new Set([...existingSkills, ...(technical || []), ...(tools || [])])];

@@ -11,6 +11,11 @@ const {
   CourseRepository
 } = require('../core/academic');
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 // Helper generator to avoid 6x repetitive CRUD boilerplate
 const generateCrudRouter = (Repository, exportFilename) => {
   const r = express.Router();
@@ -91,12 +96,12 @@ router.get('/metrics', async (req, res, next) => {
     ]);
 
     return ApiResponse.success(res, 200, "Academic metrics retrieved", {
-      departments: deptSnap.data().count,
-      programs: progSnap.data().count,
-      academicYears: yearSnap.data().count,
-      semesters: semSnap.data().count,
-      divisions: divSnap.data().count,
-      courses: courseSnap.data().count,
+      departments: mapDoc(deptSnap).count,
+      programs: mapDoc(progSnap).count,
+      academicYears: mapDoc(yearSnap).count,
+      semesters: mapDoc(semSnap).count,
+      divisions: mapDoc(divSnap).count,
+      courses: mapDoc(courseSnap).count,
     });
   } catch (err) {
     next(err);

@@ -3,6 +3,11 @@ const router = express.Router();
 const { db } = require('../config/firebase');
 const auth = require('../middleware/auth');
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 // GET /api/company-admin/talent
 // Fetch and filter students for recruiters
 router.get('/', auth, async (req, res) => {
@@ -20,12 +25,12 @@ router.get('/', auth, async (req, res) => {
     const shortlistSnapshot = await db.collection('shortlists')
       .where('recruiter_id', '==', req.user.id)
       .get();
-    const shortlistedIds = new Set(shortlistSnapshot.docs.map(doc => doc.data().student_id));
+    const shortlistedIds = new Set(shortlistSnapshot.docs.map(doc => mapDoc(doc).student_id));
     
     let matchedDocs = [];
     
     snapshot.forEach(doc => {
-      const rawData = doc.data();
+      const rawData = mapDoc(doc);
       const pd = rawData.profile_data || {};
       const data = { ...rawData, ...pd };
 
@@ -84,7 +89,7 @@ router.get('/', auth, async (req, res) => {
       try {
         const readinessDoc = await db.collection('placementReadiness').doc(doc.id).get();
         if (readinessDoc.exists) {
-          readinessData = readinessDoc.data();
+          readinessData = mapDoc(readinessDoc);
         }
       } catch (err) {
         console.error(`Failed to fetch readiness for ${doc.id}`);

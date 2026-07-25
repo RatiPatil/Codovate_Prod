@@ -3,6 +3,11 @@ const router = express.Router();
 const { db } = require("../config/firebase");
 const auth = require("../middleware/auth");
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 router.post("/save", auth, async (req, res) => {
   try {
     const {
@@ -184,14 +189,14 @@ router.get("/status", auth, async (req, res) => {
     let completionScore = 0;
 
     if (userDoc.exists) {
-      const u = userDoc.data();
+      const u = mapDoc(userDoc);
       isCompleted = u.onboardingCompleted === true || u.onboardingCompleted === "true" || u.onboarding_completed === true || u.onboarding_completed === "true";
       completionScore = u.profileCompleted || 0;
     }
     
     // Fallback logic could go here if we were migrating data.
     
-    const u = userDoc.exists ? userDoc.data() : {};
+    const u = userDoc.exists ? mapDoc(userDoc) : {};
 
     res.json({
       onboarding_completed: isCompleted,

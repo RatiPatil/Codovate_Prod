@@ -8,14 +8,19 @@ require('dotenv').config();
 
 const { getConfiguredModel, genAI } = require("../utils/aiConfig");
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 async function ensureUserQuestions(uid) {
   const userQsSnap = await db.collection("codingQuestions").where("uid", "==", uid).get();
   if (!userQsSnap.empty) {
-    return userQsSnap.docs.map(d => d.data());
+    return mapDocs(userQsSnap);
   }
 
   const profileDoc = await db.collection("profiles").doc(uid).get();
-  const p = profileDoc.exists ? profileDoc.data() : {};
+  const p = profileDoc.exists ? mapDoc(profileDoc) : {};
   const goal = p.careerGoal || "Software Engineer";
   const skills = p.skills || [];
   
@@ -73,7 +78,7 @@ router.get('/dashboard', auth, async (req, res) => {
   try {
     const uid = req.user.id;
     const userDoc = await db.collection("users").doc(uid).get();
-    const userData = userDoc.exists ? userDoc.data() : {};
+    const userData = userDoc.exists ? mapDoc(userDoc) : {};
 
     let streak = userData.codingStreak || 0;
     const lastActive = userData.lastActiveDate ? userData.lastActiveDate.toDate() : null;
@@ -99,7 +104,7 @@ router.get('/dashboard', auth, async (req, res) => {
     const weeklyChallenge = userProblems.find(p => p.type === 'weekly') || CODING_PROBLEMS[1];
     
     const solvedSnap = await db.collection("codingProgress").where("uid", "==", uid).where("passed", "==", true).get();
-    const solvedIds = solvedSnap.docs.map(d => d.data().problemId);
+    const solvedIds = solvedSnap.docs.map(d => mapDoc(d).problemId);
 
     res.json({ stats, dailyChallenge, weeklyChallenge, solvedIds });
   } catch (err) {
@@ -114,12 +119,12 @@ router.get('/progress', auth, async (req, res) => {
     const uid = req.user.id;
     const statsDoc = await db.collection("codingStats").doc(uid).get();
     let stats = { totalXp: 0, coinsEarned: 0, streak: 0, completedCount: 0 };
-    if (statsDoc.exists) stats = statsDoc.data();
+    if (statsDoc.exists) stats = mapDoc(statsDoc);
 
     const submissionsSnapshot = await db.collection("codingSubmissions").where("uid", "==", uid).where("status", "==", "completed").get();
     const completed = [];
     submissionsSnapshot.forEach(doc => {
-      completed.push(doc.data().problemId);
+      completed.push(mapDoc(doc).problemId);
     });
     res.json({ completed, stats });
   } catch (err) {
@@ -133,7 +138,7 @@ router.get('/problems', auth, async (req, res) => {
   try {
     const uid = req.user.id;
     const solvedSnap = await db.collection("codingSubmissions").where("uid", "==", uid).where("status", "==", "completed").get();
-    const solvedIds = new Set(solvedSnap.docs.map(d => d.data().problemId));
+    const solvedIds = new Set(solvedSnap.docs.map(d => mapDoc(d).problemId));
 
     const userProblems = await ensureUserQuestions(uid);
     const problems = userProblems.map(p => ({
@@ -211,7 +216,7 @@ router.post('/submit', auth, async (req, res) => {
       const txResult = await db.runTransaction(async (t) => {
         const userDoc = await t.get(userRef);
         const statsDoc = await t.get(statsRef);
-        const userData = userDoc.exists ? userDoc.data() : {};
+        const userData = userDoc.exists ? mapDoc(userDoc) : {};
         
         let streak = userData.codingStreak || 0;
         let alreadyPracticedToday = false;

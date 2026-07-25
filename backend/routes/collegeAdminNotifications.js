@@ -3,6 +3,11 @@ const router = express.Router();
 const { db } = require('../config/firebase');
 const { body, validationResult } = require('express-validator');
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 const collegeAdminOnly = (req, res, next) => {
   if (req.user.role !== 'college_admin' && req.user.role !== 'super_admin') {
     return res.status(403).json({ message: 'College Admin access required.' });
@@ -23,7 +28,7 @@ router.get('/', collegeAdminOnly, async (req, res) => {
                              .get();
     const notes = [];
     snapshot.forEach(doc => {
-      notes.push({ id: doc.id, ...doc.data() });
+      notes.push({ id: doc.id, ...mapDoc(doc) });
     });
     res.json(notes);
   } catch (error) {
@@ -69,12 +74,12 @@ router.put('/:id', collegeAdminOnly, async (req, res) => {
     const docRef = db.collection('notifications').doc(req.params.id);
     const doc = await docRef.get();
     if (!doc.exists) return res.status(404).json({ message: 'Not found' });
-    if (doc.data().college_id !== targetCollegeId && req.user.role !== 'super_admin') return res.status(403).json({ message: 'Forbidden' });
+    if (mapDoc(doc).college_id !== targetCollegeId && req.user.role !== 'super_admin') return res.status(403).json({ message: 'Forbidden' });
     
     const updateData = { ...req.body };
     delete updateData.college_id;
     await docRef.update(updateData);
-    res.json((await docRef.get()).data());
+    res.json(mapDoc((await docRef.get())));
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
   }
@@ -86,7 +91,7 @@ router.delete('/:id', collegeAdminOnly, async (req, res) => {
     const docRef = db.collection('notifications').doc(req.params.id);
     const doc = await docRef.get();
     if (!doc.exists) return res.status(404).json({ message: 'Not found' });
-    if (doc.data().college_id !== targetCollegeId && req.user.role !== 'super_admin') return res.status(403).json({ message: 'Forbidden' });
+    if (mapDoc(doc).college_id !== targetCollegeId && req.user.role !== 'super_admin') return res.status(403).json({ message: 'Forbidden' });
     
     await docRef.delete();
     res.json({ message: 'Deleted' });

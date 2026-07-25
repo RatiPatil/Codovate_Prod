@@ -4,6 +4,11 @@ const { db, FieldValue } = require('../config/firebase');
 const auth = require('../middleware/auth');
 const admin = require('firebase-admin');
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 // GET: Fetch chats list for the current user
 // Includes direct chats (connections) and team chats
 router.get('/list', auth, async (req, res) => {
@@ -20,11 +25,11 @@ router.get('/list', auth, async (req, res) => {
 
     sent.forEach(doc => {
       connectionIds.add(doc.id);
-      fetchUserIds.add(doc.data().receiver_id);
+      fetchUserIds.add(mapDoc(doc).receiver_id);
     });
     received.forEach(doc => {
       connectionIds.add(doc.id);
-      fetchUserIds.add(doc.data().sender_id);
+      fetchUserIds.add(mapDoc(doc).sender_id);
     });
 
     // Fetch user details for direct chats
@@ -32,14 +37,14 @@ router.get('/list', auth, async (req, res) => {
     for (const uid of fetchUserIds) {
       const uDoc = await db.collection('students').doc(uid).get();
       if (uDoc.exists) {
-        usersData[uid] = uDoc.data();
+        usersData[uid] = mapDoc(uDoc);
         const authDoc = await db.collection('users').doc(uid).get();
-        if(authDoc.exists) usersData[uid].name = authDoc.data().name;
+        if(authDoc.exists) usersData[uid].name = mapDoc(authDoc).name;
       }
     }
 
     sent.forEach(doc => {
-      const peerId = doc.data().receiver_id;
+      const peerId = mapDoc(doc).receiver_id;
       if (usersData[peerId]) {
         chats.push({
           id: `direct_${doc.id}`,
@@ -50,13 +55,13 @@ router.get('/list', auth, async (req, res) => {
             name: usersData[peerId].name || usersData[peerId].full_name,
             avatar: usersData[peerId].profile_photo || null
           },
-          last_activity: doc.data().updated_at || doc.data().created_at
+          last_activity: mapDoc(doc).updated_at || mapDoc(doc).created_at
         });
       }
     });
 
     received.forEach(doc => {
-      const peerId = doc.data().sender_id;
+      const peerId = mapDoc(doc).sender_id;
       if (usersData[peerId]) {
         chats.push({
           id: `direct_${doc.id}`,
@@ -67,7 +72,7 @@ router.get('/list', auth, async (req, res) => {
             name: usersData[peerId].name || usersData[peerId].full_name,
             avatar: usersData[peerId].profile_photo || null
           },
-          last_activity: doc.data().updated_at || doc.data().created_at
+          last_activity: mapDoc(doc).updated_at || mapDoc(doc).created_at
         });
       }
     });
@@ -75,10 +80,10 @@ router.get('/list', auth, async (req, res) => {
     // 2. Get Team Chats
     const myTeamsSnap = await db.collection('team_members').where('user_id', '==', userId).get();
     for (const doc of myTeamsSnap.docs) {
-      const teamId = doc.data().team_id;
+      const teamId = mapDoc(doc).team_id;
       const teamDoc = await db.collection('teams').doc(teamId).get();
       if (teamDoc.exists) {
-        const tData = teamDoc.data();
+        const tData = mapDoc(teamDoc);
         chats.push({
           id: `team_${teamId}`,
           type: 'team',
@@ -116,7 +121,7 @@ router.get('/:chatId/messages', auth, async (req, res) => {
       // Verify access
       const connDoc = await db.collection('student_connections').doc(connId).get();
       if (!connDoc.exists) return res.status(404).json({ message: "Connection not found" });
-      const conn = connDoc.data();
+      const conn = mapDoc(connDoc);
       if (conn.sender_id !== req.user.id && conn.receiver_id !== req.user.id) {
         return res.status(403).json({ message: "Forbidden" });
       }
@@ -136,10 +141,10 @@ router.get('/:chatId/messages', auth, async (req, res) => {
 
     const messagesSnap = await messagesRef.orderBy('timestamp', 'asc').get();
     const messages = [];
-    messagesSnap.forEach(doc => messages.push({ id: doc.id, ...doc.data() }));
+    messagesSnap.forEach(doc => messages.push({ id: doc.id, ...mapDoc(doc) }));
 
     // Mark as read for current user
-    const unread = messagesSnap.docs.filter(d => !d.data().read_by?.includes(req.user.id));
+    const unread = messagesSnap.docs.filter(d => !mapDoc(d).read_by?.includes(req.user.id));
     for (const doc of unread) {
       await doc.ref.update({
         read_by: FieldValue.arrayUnion(req.user.id)
@@ -169,7 +174,7 @@ router.post('/:chatId/messages', auth, async (req, res) => {
       
       const connDoc = await db.collection('student_connections').doc(connId).get();
       if (!connDoc.exists) return res.status(404).json({ message: "Connection not found" });
-      if (connDoc.data().sender_id !== req.user.id && connDoc.data().receiver_id !== req.user.id) return res.status(403).json({ message: "Forbidden" });
+      if (mapDoc(connDoc).sender_id !== req.user.id && mapDoc(connDoc).receiver_id !== req.user.id) return res.status(403).json({ message: "Forbidden" });
 
       parentRef = db.collection('student_connections').doc(connId);
       messagesRef = parentRef.collection('messages');

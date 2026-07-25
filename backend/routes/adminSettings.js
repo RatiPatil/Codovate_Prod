@@ -3,6 +3,11 @@ const router = express.Router();
 const { db } = require('../config/firebase');
 const { body, validationResult } = require('express-validator');
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 const superAdminOnly = (req, res, next) => {
   if (req.user.role !== 'super_admin' && req.user.role !== 'admin') {
     return res.status(403).json({ message: 'Super Admin access required.' });
@@ -32,7 +37,7 @@ router.get('/', superAdminOnly, async (req, res) => {
       return res.json(defaultSettings);
     }
 
-    res.json(doc.data());
+    res.json(mapDoc(doc));
   } catch (error) {
     res.status(500).json({ message: 'Server error fetching settings' });
   }
@@ -55,7 +60,7 @@ router.put('/', superAdminOnly, [
     await docRef.set(req.body, { merge: true });
     
     const updated = await docRef.get();
-    res.json(updated.data());
+    res.json(mapDoc(updated));
   } catch (error) {
     res.status(500).json({ message: 'Server error updating settings' });
   }

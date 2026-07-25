@@ -4,6 +4,11 @@ const { db, FieldValue } = require('../config/firebase');
 const auth = require('../middleware/auth');
 const admin = require('firebase-admin');
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 // GET /api/events
 router.get('/', auth, async (req, res) => {
   try {
@@ -12,14 +17,14 @@ router.get('/', auth, async (req, res) => {
     
     // Also fetch saved events and rsvp status for the user
     const userDoc = await db.collection('students').doc(req.user.id).get();
-    const savedEvents = userDoc.data()?.saved_events || [];
-    const rsvpEvents = userDoc.data()?.rsvp_events || [];
+    const savedEvents = mapDoc(userDoc)?.saved_events || [];
+    const rsvpEvents = mapDoc(userDoc)?.rsvp_events || [];
     
     snapshot.forEach(doc => {
       events.push({
         id: doc.id,
-        ...doc.data(),
-        date: doc.data().date?.toDate ? doc.data().date.toDate().toISOString() : doc.data().date,
+        ...mapDoc(doc),
+        date: mapDoc(doc).date?.toDate ? mapDoc(doc).date.toDate().toISOString() : mapDoc(doc).date,
         is_saved: savedEvents.includes(doc.id),
         is_rsvp: rsvpEvents.includes(doc.id)
       });
@@ -41,7 +46,7 @@ router.post('/:id/rsvp', auth, async (req, res) => {
     const [eventDoc, userDoc] = await Promise.all([eventRef.get(), userRef.get()]);
     if (!eventDoc.exists) return res.status(404).json({ message: "Event not found" });
     
-    const rsvpEvents = userDoc.data()?.rsvp_events || [];
+    const rsvpEvents = mapDoc(userDoc)?.rsvp_events || [];
     const isRSVP = rsvpEvents.includes(req.params.id);
     
     if (isRSVP) {
@@ -58,7 +63,7 @@ router.post('/:id/rsvp', auth, async (req, res) => {
       await db.collection("activityLogs").add({
         uid: req.user.id,
         type: "event_rsvp",
-        title: `Registered for ${eventDoc.data().title}`,
+        title: `Registered for ${mapDoc(eventDoc).title}`,
         createdAt: new Date()
       });
       
@@ -76,7 +81,7 @@ router.post('/:id/save', auth, async (req, res) => {
     const userRef = db.collection('students').doc(req.user.id);
     const userDoc = await userRef.get();
     
-    const savedEvents = userDoc.data()?.saved_events || [];
+    const savedEvents = mapDoc(userDoc)?.saved_events || [];
     const isSaved = savedEvents.includes(req.params.id);
     
     if (isSaved) {

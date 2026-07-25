@@ -1,5 +1,10 @@
 const { db } = require('../config/firebase');
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 let isInitialized = false;
 
 // Cache of current stats to avoid re-calculating everything on every change if possible,
@@ -20,7 +25,7 @@ const initializeAdminRealtime = (io) => {
     let mentors = 0;
     
     snapshot.forEach(doc => {
-      const data = doc.data();
+      const data = mapDoc(doc);
       if (data.role === 'student') students++;
       if (data.role === 'mentor') mentors++;
     });
@@ -56,7 +61,7 @@ const initializeAdminRealtime = (io) => {
     // Group opportunities by company_id
     const companyOpps = {};
     snapshot.forEach(doc => {
-      const data = doc.data();
+      const data = mapDoc(doc);
       if (data.company_id) {
         if (!companyOpps[data.company_id]) companyOpps[data.company_id] = { jobs: 0, internships: 0 };
         if (data.type === 'job') companyOpps[data.company_id].jobs++;
@@ -77,7 +82,7 @@ const initializeAdminRealtime = (io) => {
   db.collection('applications').onSnapshot(snapshot => {
     const companyApps = {};
     snapshot.forEach(doc => {
-      const data = doc.data();
+      const data = mapDoc(doc);
       if (data.company_id) {
         if (!companyApps[data.company_id]) companyApps[data.company_id] = { total: 0, shortlisted: 0, selected: 0 };
         companyApps[data.company_id].total++;

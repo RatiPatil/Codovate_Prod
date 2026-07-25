@@ -2,6 +2,11 @@ const express = require('express');
 const router = express.Router();
 const { db } = require('../config/firebase');
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 const collegeAdminOnly = (req, res, next) => {
   if (req.user.role !== 'college_admin' && req.user.role !== 'super_admin') {
     return res.status(403).json({ message: 'College Admin access required.' });
@@ -29,14 +34,14 @@ router.get('/', collegeAdminOnly, async (req, res) => {
     const studentDocs = snapshot.docs;
     
     const students = await Promise.all(studentDocs.map(async (doc) => {
-      const data = doc.data();
+      const data = mapDoc(doc);
       const uid = doc.id;
       
       // Fetch readiness score
       let readinessScore = 0;
       try {
         const rDoc = await db.collection('placementReadiness').doc(uid).get();
-        if (rDoc.exists) readinessScore = rDoc.data().score || 0;
+        if (rDoc.exists) readinessScore = mapDoc(rDoc).score || 0;
       } catch (e) {}
       
       // Fetch coding stats
@@ -45,8 +50,8 @@ router.get('/', collegeAdminOnly, async (req, res) => {
       try {
         const cDoc = await db.collection('codingStats').doc(uid).get();
         if (cDoc.exists) {
-          codingScore = cDoc.data().rating || 0;
-          problemsSolved = cDoc.data().totalSolved || 0;
+          codingScore = mapDoc(cDoc).rating || 0;
+          problemsSolved = mapDoc(cDoc).totalSolved || 0;
         }
       } catch (e) {}
       
@@ -54,7 +59,7 @@ router.get('/', collegeAdminOnly, async (req, res) => {
       let resumeCompleted = false;
       try {
         const pDoc = await db.collection('profiles').doc(uid).get();
-        if (pDoc.exists && pDoc.data().socialLinks?.resume) {
+        if (pDoc.exists && mapDoc(pDoc).socialLinks?.resume) {
           resumeCompleted = true;
         }
       } catch (e) {}
@@ -64,7 +69,7 @@ router.get('/', collegeAdminOnly, async (req, res) => {
         email: data.email,
         name: data.profile_data?.name || 'Unknown',
         status: data.status,
-        is_active: data.is_active,
+        is_active: data.recordStatus === 'ACTIVE',
         college_id: data.college_id,
         created_at: data.created_at,
         readiness_score: readinessScore,
@@ -98,7 +103,7 @@ router.post('/', collegeAdminOnly, async (req, res) => {
       email: email.toLowerCase(),
       role: 'student',
       status: status || 'active',
-      is_active: status !== 'suspended' && status !== 'banned',
+      recordStatus: (status !== 'suspended' && status !== 'banned') ? 'ACTIVE' : 'SUSPENDED',
       college_id: targetCollegeId,
       created_at: new Date(),
       profile_data: {
@@ -128,7 +133,7 @@ router.put('/:id/status', collegeAdminOnly, async (req, res) => {
     if (!doc.exists) return res.status(404).json({ message: 'Student not found' });
     
     // Ensure the student belongs to this college admin
-    if (doc.data().college_id !== targetCollegeId && req.user.role !== 'super_admin') {
+    if (mapDoc(doc).college_id !== targetCollegeId && req.user.role !== 'super_admin') {
        return res.status(403).json({ message: 'Cannot modify a student from another college.' });
     }
 

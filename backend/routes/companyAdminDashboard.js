@@ -2,6 +2,11 @@ const express = require('express');
 const router = express.Router();
 const { db } = require('../config/firebase');
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 const companyAdminOnly = (req, res, next) => {
   if (req.user.role !== 'company_admin' && req.user.role !== 'super_admin') {
     return res.status(403).json({ message: 'Company Admin access required.' });
@@ -20,18 +25,18 @@ router.get('/', companyAdminOnly, async (req, res) => {
     
     // Total Candidates (all students on platform)
     const totalCandidatesSnap = await db.collection('students').count().get();
-    const totalCandidates = totalCandidatesSnap.data().count;
+    const totalCandidates = mapDoc(totalCandidatesSnap).count;
 
     // Saved Candidates
     const savedCandidatesSnap = await db.collection('shortlists').where('recruiter_id', '==', recruiterId).count().get();
-    const savedCandidates = savedCandidatesSnap.data().count;
+    const savedCandidates = mapDoc(savedCandidatesSnap).count;
 
     // Active Jobs & Internships
     const opportunitiesSnap = await db.collection('opportunities').where('company_id', '==', targetCompanyId).get();
     let activeJobs = 0;
     let activeInternships = 0;
     opportunitiesSnap.forEach(doc => {
-      const data = doc.data();
+      const data = mapDoc(doc);
       if (data.type === 'Job') activeJobs++;
       if (data.type === 'Internship') activeInternships++;
     });
@@ -44,7 +49,7 @@ router.get('/', companyAdminOnly, async (req, res) => {
     
     applicationsSnap.forEach(doc => {
       totalApplications++;
-      const data = doc.data();
+      const data = mapDoc(doc);
       if (data.status === 'shortlisted') shortlistedCandidates++;
       if (data.status === 'selected') selectedCandidates++;
     });
@@ -54,7 +59,7 @@ router.get('/', companyAdminOnly, async (req, res) => {
       .where('company_id', '==', targetCompanyId)
       .where('status', '==', 'scheduled')
       .count().get();
-    const interviewsScheduled = interviewsSnap.data().count;
+    const interviewsScheduled = mapDoc(interviewsSnap).count;
 
     res.json({
       activeJobs,

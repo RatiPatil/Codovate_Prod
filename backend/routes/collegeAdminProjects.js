@@ -2,6 +2,11 @@ const express = require('express');
 const router = express.Router();
 const { db } = require('../config/firebase');
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 const collegeAdminOnly = (req, res, next) => {
   if (req.user.role !== 'college_admin' && req.user.role !== 'super_admin') {
     return res.status(403).json({ message: 'College Admin access required.' });
@@ -26,7 +31,7 @@ router.get('/', collegeAdminOnly, async (req, res) => {
     
     const projects = [];
     snapshot.forEach(doc => {
-      projects.push({ id: doc.id, ...doc.data() });
+      projects.push({ id: doc.id, ...mapDoc(doc) });
     });
     
     res.json(projects);

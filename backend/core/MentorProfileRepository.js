@@ -3,6 +3,11 @@ const { admin } = require('../config/firebase');
 const AppError = require('../utils/AppError');
 const UserRepository = require('./UserRepository');
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 class MentorProfileRepository extends FirestoreRepository {
   constructor() { super('mentor_profiles'); }
 
@@ -54,9 +59,9 @@ class MentorProfileRepository extends FirestoreRepository {
       ]);
 
       return {
-        total: totalSnap.data().count,
-        active: activeSnap.data().count,
-        industry: industrySnap.data().count
+        total: mapDoc(totalSnap).count,
+        active: mapDoc(activeSnap).count,
+        industry: mapDoc(industrySnap).count
       };
     } catch (err) {
       throw new AppError('Failed to aggregate mentor metrics', 500);

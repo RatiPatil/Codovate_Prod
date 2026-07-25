@@ -1,5 +1,10 @@
 const { db } = require('../config/firebase');
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 async function getCommunityUpdates(uid) {
   try {
     const updates = [];
@@ -11,7 +16,7 @@ async function getCommunityUpdates(uid) {
         updates.push({
           id: `team_${doc.id}`,
           type: 'team',
-          title: doc.data().name || 'Team Update',
+          title: mapDoc(doc).name || 'Team Update',
           description: 'New activity in your team workspace.',
           linkUrl: '/teams',
           icon: '👥',
@@ -26,7 +31,7 @@ async function getCommunityUpdates(uid) {
     // In our architecture, events are saved in `students -> saved_events`, but let's mock the "next event" for dashboard.
     const eventsSnap = await db.collection("events").orderBy("date", "asc").limit(1).get();
     if (!eventsSnap.empty) {
-      const ev = eventsSnap.docs[0].data();
+      const ev = mapDoc(eventsSnap.docs[0]);
       updates.push({
         id: `event_${eventsSnap.docs[0].id}`,
         type: 'event',

@@ -18,7 +18,11 @@ router.post("/login", async (req, res) => {
     if (snapshot.empty)
       return res.status(401).json({ message: "Invalid email or password." });
 
-    const mentor = snapshot.docs[0].data();
+    if (snapshot.size > 1) {
+      console.warn(`[AUTH] Duplicate accounts detected. Size: ${snapshot.size}`);
+    }
+
+    const mentor = mapDoc(snapshot.docs[0]);
 
     if (!mentor.is_active)
       return res.status(403).json({ message: "Your account has been suspended. Please contact the administrator." });
@@ -67,12 +71,17 @@ router.post("/login", async (req, res) => {
 
 const auth = require('../middleware/auth');
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 router.get("/me", auth, async (req, res) => {
   if (req.user.role !== 'mentor') return res.status(403).json({ message: 'Forbidden' });
   try {
     const doc = await db.collection('mentors').doc(req.user.id).get();
     if (!doc.exists) return res.status(404).json({ message: 'Mentor not found' });
-    const { password_hash, ...safeData } = doc.data();
+    const { password_hash, ...safeData } = mapDoc(doc);
     res.json(safeData);
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
@@ -99,7 +108,7 @@ router.post("/change-password", auth, async (req, res) => {
     const doc = await db.collection('mentors').doc(req.user.id).get();
     if (!doc.exists) return res.status(404).json({ message: 'Mentor not found' });
     
-    const mentor = doc.data();
+    const mentor = mapDoc(doc);
     const match = await bcrypt.compare(current_password, mentor.password_hash);
     if (!match) return res.status(400).json({ message: 'Incorrect current password' });
     

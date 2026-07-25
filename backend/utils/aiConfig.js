@@ -1,6 +1,11 @@
 const { db } = require('../config/firebase');
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 const genAI = process.env.GEMINI_API_KEY
   ? new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
   : null;
@@ -14,7 +19,7 @@ const getConfiguredModel = async () => {
   try {
     const doc = await db.collection('platform_settings').doc('global_config').get();
     if (doc.exists) {
-      const data = doc.data();
+      const data = mapDoc(doc);
       if (data.ai_model) modelName = data.ai_model;
       if (data.ai_temperature !== undefined) temperature = parseFloat(data.ai_temperature);
     }

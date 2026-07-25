@@ -1,5 +1,10 @@
 const { db } = require("../config/firebase");
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 /**
  * Awards points to a student and logs the transaction in point_ledger.
  * Prevents duplicate actions if checkDuplicate is true.
@@ -34,9 +39,9 @@ const awardPoints = async (studentId, action, points, checkDuplicate = true) => 
       
       if (!studentDoc.exists) throw new Error("Student not found");
 
-      const currentPoints = studentDoc.data().total_points || 0;
-      const weeklyPoints = studentDoc.data().weekly_points || 0;
-      const monthlyPoints = studentDoc.data().monthly_points || 0;
+      const currentPoints = mapDoc(studentDoc).total_points || 0;
+      const weeklyPoints = mapDoc(studentDoc).weekly_points || 0;
+      const monthlyPoints = mapDoc(studentDoc).monthly_points || 0;
 
       transaction.update(studentRef, {
         total_points: currentPoints + points,
@@ -70,7 +75,7 @@ const updatePlacementScore = async (studentId) => {
     const doc = await studentRef.get();
     if (!doc.exists) return;
     
-    const data = doc.data();
+    const data = mapDoc(doc);
     const profile = data.profile_data || {};
     
     // Formula: 50% Profile Completeness, 50% Points/Engagement (Cap at 500 points for full 50%)

@@ -3,6 +3,11 @@ const router = express.Router();
 const { db } = require('../config/firebase');
 const { body, validationResult } = require('express-validator');
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 const superAdminOnly = (req, res, next) => {
   if (req.user.role !== 'super_admin' && req.user.role !== 'admin') {
     return res.status(403).json({ message: 'Super Admin access required.' });
@@ -16,7 +21,7 @@ router.get('/', superAdminOnly, async (req, res) => {
     const snapshot = await db.collection('opportunities').get();
     const opps = [];
     snapshot.forEach(doc => {
-      opps.push({ id: doc.id, ...doc.data() });
+      opps.push({ id: doc.id, ...mapDoc(doc) });
     });
     res.json(opps);
   } catch (error) {
@@ -102,7 +107,7 @@ router.put('/:id', superAdminOnly, [
     
     await docRef.update(updateData);
     const updated = await docRef.get();
-    res.json(updated.data());
+    res.json(mapDoc(updated));
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
   }
@@ -142,7 +147,7 @@ router.get('/import-history', superAdminOnly, async (req, res) => {
     const snapshot = await db.collection('import_history').orderBy('created_at', 'desc').limit(50).get();
     const history = [];
     snapshot.forEach(doc => {
-      history.push({ id: doc.id, ...doc.data() });
+      history.push({ id: doc.id, ...mapDoc(doc) });
     });
     res.json(history);
   } catch (error) {

@@ -2,6 +2,11 @@ const { db } = require('../config/firebase');
 const os = require('os');
 const AppError = require('../utils/AppError');
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 /**
  * Super Admin Dashboard Analytics Service
  * Utilizes highly optimized .count().get() queries to prevent massive document reads.
@@ -61,7 +66,7 @@ class DashboardAnalyticsService {
         .limit(limit)
         .get();
 
-      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      return snapshot.docs.map(doc => ({ id: doc.id, ...mapDoc(doc) }));
     } catch (err) {
       console.error('[DashboardAnalyticsService] Recent Activity Error:', err);
       throw new AppError('Failed to fetch recent activity', 500);

@@ -3,6 +3,11 @@ const { admin } = require('../config/firebase');
 const AppError = require('../utils/AppError');
 const UserRepository = require('./UserRepository');
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 class TpoProfileRepository extends FirestoreRepository {
   constructor() { super('tpo_profiles'); }
 
@@ -60,8 +65,8 @@ class TpoProfileRepository extends FirestoreRepository {
       ]);
 
       return {
-        total: totalSnap.data().count,
-        active: activeSnap.data().count
+        total: mapDoc(totalSnap).count,
+        active: mapDoc(activeSnap).count
       };
     } catch (err) {
       throw new AppError('Failed to aggregate TPO metrics', 500);

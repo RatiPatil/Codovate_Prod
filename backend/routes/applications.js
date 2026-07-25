@@ -11,17 +11,17 @@ router.get("/", auth, async (req, res) => {
     
     let applications = [];
     for (const doc of appsSnapshot.docs) {
-      const app = doc.data();
+      const app = mapDoc(doc);
       app.id = doc.id;
       
       const studentDoc = await db.collection("profiles").doc(app.user_id).get();
-      const s = studentDoc.exists ? studentDoc.data() : {};
+      const s = studentDoc.exists ? mapDoc(studentDoc) : {};
       
       const userDoc = await db.collection("users").doc(app.user_id).get();
-      const u = userDoc.exists ? userDoc.data() : {};
+      const u = userDoc.exists ? mapDoc(userDoc) : {};
       
       const oppDoc = await db.collection("opportunities").doc(app.opportunity_id).get();
-      const o = oppDoc.exists ? oppDoc.data() : {};
+      const o = oppDoc.exists ? mapDoc(oppDoc) : {};
       
       applications.push({
         ...app,
@@ -60,7 +60,7 @@ router.post("/", auth, async (req, res) => {
     if (!oppDoc.exists)
       return res.status(404).json({ message: "Opportunity not found." });
       
-    const opp = oppDoc.data();
+    const opp = mapDoc(oppDoc);
     if (!opp.is_active)
       return res.status(400).json({ message: "Opportunity is closed." });
 
@@ -79,7 +79,7 @@ router.post("/", auth, async (req, res) => {
 
     // Get student details (Not explicitly needed for the app object anymore, but keeping for checks if needed)
     const studentDoc = await db.collection("profiles").doc(req.user.id).get();
-    const student = studentDoc.exists ? studentDoc.data() : {};
+    const student = studentDoc.exists ? mapDoc(studentDoc) : {};
 
     // Create application
     const newAppRef = db.collection("applications").doc();
@@ -173,7 +173,7 @@ router.post("/external", auth, async (req, res) => {
     if (!oppDoc.exists)
       return res.status(404).json({ message: "Opportunity not found." });
       
-    const opp = oppDoc.data();
+    const opp = mapDoc(oppDoc);
 
     // Check if already tracked
     const existingApps = await db.collection("applications")
@@ -188,7 +188,7 @@ router.post("/external", auth, async (req, res) => {
 
     // Fetch Student Name
     const studentDoc = await db.collection("profiles").doc(req.user.id).get();
-    const studentName = studentDoc.exists ? (studentDoc.data().personalInfo?.name || 'Unknown Student') : 'Unknown Student';
+    const studentName = studentDoc.exists ? (mapDoc(studentDoc).personalInfo?.name || 'Unknown Student') : 'Unknown Student';
 
     const newAppRef = db.collection("applications").doc();
     const application = {
@@ -228,12 +228,12 @@ router.get("/my", auth, async (req, res) => {
     
     let applications = [];
     for (const doc of appsSnapshot.docs) {
-      const app = doc.data();
+      const app = mapDoc(doc);
       app.id = doc.id;
       
       const oppDoc = await db.collection("opportunities").doc(app.opportunity_id).get();
       if (oppDoc.exists) {
-        const o = oppDoc.data();
+        const o = mapDoc(oppDoc);
         applications.push({
           ...app,
           title: o.title,
@@ -284,16 +284,22 @@ router.put("/:id/status", auth, async (req, res) => {
     // Scoring Engine Integration for Selection
     if (status === "Selected") {
       const { awardPoints, updatePlacementScore } = require("../utils/scoring");
-      await awardPoints(appDoc.data().user_id, `selected_internship_${req.params.id}`, 500, true);
-      await updatePlacementScore(appDoc.data().user_id);
+
+      const {
+        mapDoc: mapDoc,
+        mapDocs: mapDocs
+      } = require('../utils/firestoreMapper');
+
+      await awardPoints(mapDoc(appDoc).user_id, `selected_internship_${req.params.id}`, 500, true);
+      await updatePlacementScore(mapDoc(appDoc).user_id);
     }
     
-    const app = appDoc.data();
+    const app = mapDoc(appDoc);
     app.id = appDoc.id;
 
     // Get opportunity details
     const oppDoc = await db.collection("opportunities").doc(app.opportunity_id).get();
-    const opp = oppDoc.exists ? oppDoc.data() : {};
+    const opp = oppDoc.exists ? mapDoc(oppDoc) : {};
 
     // Create notification
     const notifRef = db.collection("notifications").doc();
@@ -337,7 +343,7 @@ router.delete("/:id", auth, async (req, res) => {
     if (!appDoc.exists)
       return res.status(404).json({ message: "Application not found." });
 
-    const app = appDoc.data();
+    const app = mapDoc(appDoc);
 
     if (app.user_id !== req.user.id)
       return res.status(403).json({ message: "Not authorized." });
@@ -366,7 +372,7 @@ router.put("/:id/track", auth, async (req, res) => {
     if (!appDoc.exists)
       return res.status(404).json({ message: "Application not found." });
 
-    const app = appDoc.data();
+    const app = mapDoc(appDoc);
 
     if (app.user_id !== req.user.id)
       return res.status(403).json({ message: "Not authorized." });
@@ -389,7 +395,7 @@ router.put("/:id/track", auth, async (req, res) => {
       ...updateData
     });
 
-    res.json(updatedDoc.data());
+    res.json(mapDoc(updatedDoc));
   } catch (err) {
     console.error("Tracker update error:", err.message);
     res.status(500).json({ message: "Server error." });

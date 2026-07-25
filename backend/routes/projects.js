@@ -8,6 +8,11 @@ const eventBus = require("../events/eventBus");
 
 const { getConfiguredModel, genAI } = require("../utils/aiConfig");
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 const adminOnly = (req, res, next) => {
   if (!["admin", "super_admin", "college_admin", "company_admin"].includes(req.user.role)) {
     return res.status(403).json({ message: "Admin access required." });
@@ -16,7 +21,7 @@ const adminOnly = (req, res, next) => {
 };
 
 const serializeProject = (doc) => {
-  const d = doc.data();
+  const d = mapDoc(doc);
   return {
     id: doc.id,
     ...d,
@@ -78,7 +83,7 @@ router.get("/public/:uid", async (req, res) => {
 router.get("/invites", auth, async (req, res) => {
   try {
     const snap = await db.collection("projectInvites").where("toEmail", "==", req.user.email).get();
-    res.json(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    res.json(snap.docs.map(doc => ({ id: doc.id, ...mapDoc(doc) })));
   } catch (err) {
     res.status(500).json({ message: "Server error" });
   }
@@ -90,10 +95,10 @@ router.post("/invites/:id/accept", auth, async (req, res) => {
     const inviteRef = db.collection("projectInvites").doc(req.params.id);
     const doc = await inviteRef.get();
     if (!doc.exists) return res.status(404).json({ message: "Invite not found" });
-    if (doc.data().toEmail !== req.user.email) return res.status(403).json({ message: "Unauthorized" });
+    if (mapDoc(doc).toEmail !== req.user.email) return res.status(403).json({ message: "Unauthorized" });
 
     // Add to project teamMembers
-    await db.collection("projects").doc(doc.data().projectId).update({
+    await db.collection("projects").doc(mapDoc(doc).projectId).update({
       teamMembers: FieldValue.arrayUnion(req.user.name || req.user.email)
     });
 
@@ -109,7 +114,7 @@ router.post("/invites/:id/reject", auth, async (req, res) => {
   try {
     const inviteRef = db.collection("projectInvites").doc(req.params.id);
     const doc = await inviteRef.get();
-    if (doc.exists && doc.data().toEmail === req.user.email) {
+    if (doc.exists && mapDoc(doc).toEmail === req.user.email) {
       await inviteRef.delete();
     }
     res.json({ success: true });
@@ -125,11 +130,11 @@ router.post("/:id/invite", auth, async (req, res) => {
   
   try {
     const projectDoc = await db.collection("projects").doc(req.params.id).get();
-    if (!projectDoc.exists || projectDoc.data().uid !== req.user.id) return res.status(403).json({ message: "Unauthorized" });
+    if (!projectDoc.exists || mapDoc(projectDoc).uid !== req.user.id) return res.status(403).json({ message: "Unauthorized" });
 
     await db.collection("projectInvites").add({
       projectId: req.params.id,
-      projectTitle: projectDoc.data().title,
+      projectTitle: mapDoc(projectDoc).title,
       fromName: req.user.name || req.user.email,
       toEmail: email,
       createdAt: FieldValue.serverTimestamp()
@@ -155,7 +160,7 @@ router.post("/", auth, async (req, res) => {
     if (!title) return res.status(400).json({ message: "Title is required." });
 
     const profileDoc = await db.collection("profiles").doc(uid).get();
-    const authorName = profileDoc.exists ? profileDoc.data().name || "" : "";
+    const authorName = profileDoc.exists ? mapDoc(profileDoc).name || "" : "";
 
     const projectData = {
       uid, authorName, title, description, problemStatement, solution, features,
@@ -170,7 +175,7 @@ router.post("/", auth, async (req, res) => {
     await db.runTransaction(async (t) => {
       const userRef = db.collection("users").doc(uid);
       const userDoc = await t.get(userRef);
-      const userData = userDoc.exists ? userDoc.data() : {};
+      const userData = userDoc.exists ? mapDoc(userDoc) : {};
       
       t.set(ref, projectData);
       
@@ -207,7 +212,7 @@ router.put("/:id", auth, async (req, res) => {
     const ref = db.collection("projects").doc(req.params.id);
     const doc = await ref.get();
     if (!doc.exists) return res.status(404).json({ message: "Not found." });
-    if (doc.data().uid !== uid) return res.status(403).json({ message: "Not authorized." });
+    if (mapDoc(doc).uid !== uid) return res.status(403).json({ message: "Not authorized." });
 
     const allowed = ["title","description","problemStatement","solution","features",
       "skillsLearned","techStack","githubUrl","liveUrl",
@@ -231,7 +236,7 @@ router.delete("/:id", auth, async (req, res) => {
     const ref = db.collection("projects").doc(req.params.id);
     const doc = await ref.get();
     if (!doc.exists) return res.status(404).json({ message: "Not found." });
-    if (doc.data().uid !== uid) return res.status(403).json({ message: "Not authorized." });
+    if (mapDoc(doc).uid !== uid) return res.status(403).json({ message: "Not authorized." });
 
     await ref.delete();
     await db.collection("careerProfiles").doc(uid).update({
@@ -294,8 +299,8 @@ router.post("/ai-suggest", auth, async (req, res) => {
       db.collection("userRoadmaps").doc(uid).get(),
     ]);
 
-    const c = careerDoc.exists ? careerDoc.data() : {};
-    const roadmap = roadmapDoc.exists ? roadmapDoc.data() : null;
+    const c = careerDoc.exists ? mapDoc(careerDoc) : {};
+    const roadmap = roadmapDoc.exists ? mapDoc(roadmapDoc) : null;
     const goal = c.career_goal || c.desired_roles?.[0] || "Software Engineer";
     const skills = c.skills || [];
     const activeStep = roadmap?.steps?.find((s) => s.status === "in_progress" || s.status === "pending");
@@ -333,7 +338,7 @@ router.post("/:id/analyze", auth, async (req, res) => {
     const doc = await ref.get();
     if (!doc.exists) return res.status(404).json({ message: "Not found." });
     
-    const project = doc.data();
+    const project = mapDoc(doc);
     if (project.uid !== uid) return res.status(403).json({ message: "Not authorized." });
 
     if (!genAI) {
@@ -388,7 +393,7 @@ router.get("/admin", auth, adminOnly, async (req, res) => {
   try {
     const snap = await db.collection("projects").get();
     const projects = snap.docs.map((doc) => {
-      const p = doc.data();
+      const p = mapDoc(doc);
       return { id: doc.id, title: p.title || "Untitled", author: p.authorName || "Unknown", tech: p.techStack || "—", likes: p.likes || 0, status: p.status || "pending", is_featured: p.featured || false, created_at: p.createdAt?.toDate?.()?.toISOString() || null };
     });
     projects.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));

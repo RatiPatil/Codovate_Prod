@@ -3,6 +3,11 @@ const router = express.Router();
 const { db } = require("../config/firebase");
 const auth = require("../middleware/auth");
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 router.get("/profile", auth, async (req, res) => {
   try {
     const userDoc = await db.collection("users").doc(req.user.id).get();
@@ -11,9 +16,9 @@ router.get("/profile", auth, async (req, res) => {
       return res.status(404).json({ message: "User not found." });
     }
 
-    const u = userDoc.data();
+    const u = mapDoc(userDoc);
     const profileDoc = await db.collection("student_profiles").doc(req.user.id).get();
-    const sp = profileDoc.exists ? profileDoc.data() : {};
+    const sp = profileDoc.exists ? mapDoc(profileDoc) : {};
 
     res.json({
       id: u.id,

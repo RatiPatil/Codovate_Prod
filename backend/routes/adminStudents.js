@@ -4,6 +4,11 @@ const { db, FieldValue } = require('../config/firebase');
 const auth = require('../middleware/auth');
 const { body, validationResult } = require('express-validator');
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 // Middleware to ensure super_admin
 const superAdminOnly = (req, res, next) => {
   if (req.user.role !== 'super_admin' && req.user.role !== 'admin') {
@@ -43,7 +48,7 @@ router.get('/dashboard', async (req, res) => {
     // We also need applications to see who applied
     const appsSnap = await db.collection('applications').get();
     appsSnap.forEach(doc => {
-      applied.add(doc.data().student_id);
+      applied.add(mapDoc(doc).student_id);
     });
 
     // Chart aggregations
@@ -51,13 +56,13 @@ router.get('/dashboard', async (req, res) => {
     const profileCompletionTiers = { '0-25%': 0, '26-50%': 0, '51-75%': 0, '76-100%': 0 };
 
     studentsSnap.forEach(doc => {
-      const data = doc.data();
+      const data = mapDoc(doc);
       const profile = data.profile_data || {};
       
       total++;
       if (data.status === 'suspended') suspended++;
       else if (data.status === 'deleted') deleted++;
-      else if (data.is_active || !data.status || data.status === 'active') active++;
+      else if (data.recordStatus === 'ACTIVE' || !data.status || data.status === 'active') active++;
 
       if (data.is_verified) verified++;
       
@@ -125,19 +130,19 @@ router.get('/', async (req, res) => {
     
     const usersLoginMap = {};
     usersSnap.forEach(doc => {
-      usersLoginMap[doc.id] = doc.data().last_login_at || doc.data().updated_at;
+      usersLoginMap[doc.id] = mapDoc(doc).last_login_at || mapDoc(doc).updated_at;
     });
     
     // We'll also prefetch some application counts to make the list rich
     const appsSnap = await db.collection('applications').get();
     const applicationCounts = {};
     appsSnap.forEach(doc => {
-      const sid = doc.data().student_id;
+      const sid = mapDoc(doc).student_id;
       applicationCounts[sid] = (applicationCounts[sid] || 0) + 1;
     });
 
     const students = studentsSnap.docs.map(doc => {
-      const data = doc.data();
+      const data = mapDoc(doc);
       const profile = data.profile_data || {};
       
       return {
@@ -152,7 +157,7 @@ router.get('/', async (req, res) => {
         skills: profile.skills || [],
         profile_completion: profile.profile_completion || 0,
         applications_count: applicationCounts[doc.id] || 0,
-        status: data.status || (data.is_active ? 'active' : 'inactive'),
+        status: data.status || (data.recordStatus === 'ACTIVE' ? 'active' : 'inactive'),
         is_verified: !!data.is_verified,
         created_at: safeDate(data.created_at),
         last_login: safeDate(data.last_login_at || usersLoginMap[doc.id] || data.updated_at)
@@ -174,15 +179,15 @@ router.get('/:id', async (req, res) => {
     const doc = await db.collection('students').doc(req.params.id).get();
     if (!doc.exists) return res.status(404).json({ message: "Student not found" });
 
-    const data = doc.data();
+    const data = mapDoc(doc);
     
     // Fetch applications
     const appsSnap = await db.collection('applications').where('student_id', '==', req.params.id).get();
-    const applications = appsSnap.docs.map(a => ({ id: a.id, ...a.data(), applied_at: safeDate(a.data().applied_at) }));
+    const applications = appsSnap.docs.map(a => ({ id: a.id, ...mapDoc(a), applied_at: safeDate(mapDoc(a).applied_at) }));
 
     // Fetch projects
     const projectsSnap = await db.collection('projects').where('user_id', '==', req.params.id).get();
-    const projects = projectsSnap.docs.map(p => ({ id: p.id, ...p.data(), created_at: safeDate(p.data().created_at) }));
+    const projects = projectsSnap.docs.map(p => ({ id: p.id, ...mapDoc(p), created_at: safeDate(mapDoc(p).created_at) }));
 
     // Fetch login history (Mocked from audit_logs if login_history isn't explicitly tracked everywhere)
     const loginsSnap = await db.collection('audit_logs')
@@ -194,8 +199,8 @@ router.get('/:id', async (req, res) => {
       
     const loginHistory = loginsSnap.docs.map(l => ({
       id: l.id,
-      ...l.data(),
-      created_at: safeDate(l.data().created_at)
+      ...mapDoc(l),
+      created_at: safeDate(mapDoc(l).created_at)
     }));
     
     // If empty, generate a dummy one for demonstration
@@ -235,7 +240,7 @@ router.put('/:id/status', async (req, res) => {
 
     if (status !== undefined) {
       updatePayload.status = status;
-      updatePayload.is_active = (status === 'active' || status === 'verified');
+      updatePayload.recordStatus = (status === 'active' || status === 'verified') ? 'ACTIVE' : 'SUSPENDED';
     }
     
     if (is_verified !== undefined) {
@@ -276,13 +281,13 @@ router.post('/bulk-action', async (req, res) => {
       const ref = db.collection('students').doc(id);
       
       if (action === 'verify') {
-        batch.update(ref, { is_verified: true, status: 'active', is_active: true, updated_at: FieldValue.serverTimestamp() });
+        batch.update(ref, { is_verified: true, status: 'active', recordStatus: 'ACTIVE', updated_at: FieldValue.serverTimestamp() });
       } else if (action === 'suspend') {
-        batch.update(ref, { status: 'suspended', is_active: false, updated_at: FieldValue.serverTimestamp() });
+        batch.update(ref, { status: 'suspended', recordStatus: 'SUSPENDED', updated_at: FieldValue.serverTimestamp() });
       } else if (action === 'delete') {
-        batch.update(ref, { status: 'deleted', is_active: false, updated_at: FieldValue.serverTimestamp() });
+        batch.update(ref, { status: 'deleted', recordStatus: 'DELETED', updated_at: FieldValue.serverTimestamp() });
       } else if (action === 'restore') {
-        batch.update(ref, { status: 'active', is_active: true, updated_at: FieldValue.serverTimestamp() });
+        batch.update(ref, { status: 'active', recordStatus: 'ACTIVE', updated_at: FieldValue.serverTimestamp() });
       }
     });
 

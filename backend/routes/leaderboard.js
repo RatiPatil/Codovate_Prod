@@ -3,12 +3,17 @@ const router = express.Router();
 const { db } = require("../config/firebase");
 const auth = require("../middleware/auth");
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 router.get("/", auth, async (req, res) => {
   try {
     const { filter = 'overall', college, course, skill, limit = 50 } = req.query;
 
     const [usersSnap, profilesSnap, analyticsSnap, careerSnap] = await Promise.all([
-      db.collection("users").where("role", "==", "student").where("is_active", "==", true).get(),
+      db.collection("users").where("role", "==", "student").where("recordStatus", "==", "ACTIVE").get(),
       db.collection("profiles").get(),
       db.collection("analytics").get(),
       db.collection("careerProfiles").get()
@@ -16,17 +21,17 @@ router.get("/", auth, async (req, res) => {
 
     // Build lookup maps
     const profiles = {};
-    profilesSnap.docs.forEach(d => profiles[d.id] = d.data());
+    profilesSnap.docs.forEach(d => profiles[d.id] = mapDoc(d));
     
     const analytics = {};
-    analyticsSnap.docs.forEach(d => analytics[d.id] = d.data());
+    analyticsSnap.docs.forEach(d => analytics[d.id] = mapDoc(d));
     
     const careers = {};
-    careerSnap.docs.forEach(d => careers[d.id] = d.data());
+    careerSnap.docs.forEach(d => careers[d.id] = mapDoc(d));
 
     let students = [];
     usersSnap.docs.forEach((doc) => {
-      const u = doc.data();
+      const u = mapDoc(doc);
       const p = profiles[doc.id] || {};
       const a = analytics[doc.id] || {};
       const c = careers[doc.id] || {};
@@ -78,9 +83,9 @@ router.get("/", auth, async (req, res) => {
       ]);
       return {
         ...s,
-        applications_count: appsSnap.data().count,
-        projects_count: projectsSnap.data().count,
-        certificates_count: certsSnap.data().count
+        applications_count: mapDoc(appsSnap).count,
+        projects_count: mapDoc(projectsSnap).count,
+        certificates_count: mapDoc(certsSnap).count
       };
     }));
 
@@ -92,9 +97,9 @@ router.get("/", auth, async (req, res) => {
         db.collection("projects").where("student_id", "==", currentUser.id).count().get(),
         db.collection("certificates").where("student_id", "==", currentUser.id).count().get()
       ]);
-      currentUser.applications_count = appsSnap.data().count;
-      currentUser.projects_count = projectsSnap.data().count;
-      currentUser.certificates_count = certsSnap.data().count;
+      currentUser.applications_count = mapDoc(appsSnap).count;
+      currentUser.projects_count = mapDoc(projectsSnap).count;
+      currentUser.certificates_count = mapDoc(certsSnap).count;
     }
 
     res.json({

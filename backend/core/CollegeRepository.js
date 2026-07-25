@@ -2,6 +2,11 @@ const FirestoreRepository = require('./Repository');
 const { db } = require('../config/firebase');
 const AppError = require('../utils/AppError');
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 /**
  * CollegeRepository
  * Extends the generic FirestoreRepository to handle college-specific domain logic.
@@ -83,10 +88,10 @@ class CollegeRepository extends FirestoreRepository {
       ]);
 
       return {
-        total: totalSnap.data().count,
-        active: activeSnap.data().count,
-        autonomous: autonomousSnap.data().count,
-        archived: archivedSnap.data().count,
+        total: mapDoc(totalSnap).count,
+        active: mapDoc(activeSnap).count,
+        autonomous: mapDoc(autonomousSnap).count,
+        archived: mapDoc(archivedSnap).count,
       };
     } catch (err) {
       throw new AppError('Failed to aggregate college metrics', 500);

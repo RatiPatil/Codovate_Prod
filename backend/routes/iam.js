@@ -6,6 +6,11 @@ const { getAuth } = require("firebase-admin/auth");
 const { authenticate, authorize } = require("../middleware");
 const { logLoginHistory, getClientIP } = require("../middleware/auditLog");
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 // Helper for sending basic email (mocked for this architecture)
 const mockSendEmail = async (email, link) => {
   console.log(`[EMAIL MOCK] Sent to: ${email} | Link: ${link}`);
@@ -26,7 +31,7 @@ router.post("/bootstrap", async (req, res) => {
     const sysConfigRef = db.collection("system_config").doc("bootstrap");
     const sysConfig = await sysConfigRef.get();
     
-    if (sysConfig.exists && sysConfig.data().bootstrap_completed) {
+    if (sysConfig.exists && mapDoc(sysConfig).bootstrap_completed) {
       return res.status(403).json({ message: "System is already bootstrapped." });
     }
 
@@ -43,7 +48,7 @@ router.post("/bootstrap", async (req, res) => {
       email,
       name,
       role: "super_admin",
-      lifecycle: "EMAIL_PENDING",
+      recordStatus: "EMAIL_PENDING",
       createdAt: new Date().toISOString(),
       mustResetPassword: true, // Force password change on first login
       authProvider: "email"
@@ -142,7 +147,7 @@ router.get("/invites/verify", async (req, res) => {
       return res.status(404).json({ message: "Invalid or expired invitation." });
     }
 
-    const invite = invitesSnapshot.docs[0].data();
+    const invite = mapDoc(invitesSnapshot.docs[0]);
     if (new Date(invite.expiresAt) < new Date()) {
       return res.status(400).json({ message: "Invitation has expired." });
     }
@@ -174,7 +179,7 @@ router.post("/invites/accept", async (req, res) => {
     if (invitesSnapshot.empty) return res.status(404).json({ message: "Invalid invitation." });
 
     const inviteDoc = invitesSnapshot.docs[0];
-    const invite = inviteDoc.data();
+    const invite = mapDoc(inviteDoc);
 
     if (new Date(invite.expiresAt) < new Date()) {
       return res.status(400).json({ message: "Invitation has expired." });
@@ -195,7 +200,7 @@ router.post("/invites/accept", async (req, res) => {
       role: invite.role,
       orgId: invite.orgId,
       deptId: invite.deptId,
-      lifecycle: "ACTIVE", // Automatically active since invited
+      recordStatus: "ACTIVE", // Automatically active since invited
       createdAt: new Date().toISOString()
     };
     
@@ -224,7 +229,7 @@ router.delete("/sessions/:sessionId", authenticate, async (req, res) => {
     
     if (!session.exists) return res.status(404).json({ message: "Session not found." });
     
-    if (session.data().userId !== req.user.uid && req.user.role !== 'super_admin') {
+    if (mapDoc(session).userId !== req.user.uid && req.user.role !== 'super_admin') {
       return res.status(403).json({ message: "Forbidden" });
     }
 
@@ -282,12 +287,12 @@ router.post("/users/:id/lifecycle", authenticate, authorize("users:manage"), asy
     if (!userSnap.exists) return res.status(404).json({ message: "User not found." });
 
     // Super Admins cannot be easily modified without extreme care
-    if (userSnap.data().role === 'super_admin' && req.user.role !== 'super_admin') {
+    if (mapDoc(userSnap).role === 'super_admin' && req.user.role !== 'super_admin') {
       return res.status(403).json({ message: "Cannot modify Super Admin lifecycle." });
     }
 
     await userRef.update({ 
-      lifecycle: status, 
+      recordStatus: status, 
       lifecycleUpdatedAt: new Date().toISOString(),
       lifecycleUpdatedBy: req.user.uid
     });

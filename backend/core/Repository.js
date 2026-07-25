@@ -3,6 +3,11 @@ const QueryEngine = require('./QueryEngine');
 const AuditService = require('./AuditService');
 const AppError = require('../utils/AppError');
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 /**
  * FirestoreRepository
  * 
@@ -25,7 +30,7 @@ class FirestoreRepository {
     const doc = await this.collection.doc(id).get();
     if (!doc.exists) return null;
     
-    const data = doc.data();
+    const data = mapDoc(doc);
     // Soft delete check
     if (data.recordStatus === 'DELETED') return null;
     
@@ -56,7 +61,7 @@ class FirestoreRepository {
 
     const snapshot = await q.get();
     
-    const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const data = snapshot.docs.map(doc => ({ id: doc.id, ...mapDoc(doc) }));
     
     let nextCursor = null;
     if (data.length === limit) {
@@ -114,7 +119,7 @@ class FirestoreRepository {
     
     if (!docSnap.exists) throw new AppError('Document not found', 404);
     
-    const oldData = docSnap.data();
+    const oldData = mapDoc(docSnap);
     if (oldData.recordStatus === 'DELETED') throw new AppError('Cannot update a deleted record', 400);
 
     const now = new Date().toISOString();
@@ -152,7 +157,7 @@ class FirestoreRepository {
     const docSnap = await docRef.get();
     if (!docSnap.exists) throw new AppError('Document not found', 404);
     
-    const oldData = docSnap.data();
+    const oldData = mapDoc(docSnap);
 
     const updateData = {
       recordStatus: 'DELETED',
@@ -178,7 +183,7 @@ class FirestoreRepository {
     const docSnap = await docRef.get();
     if (!docSnap.exists) throw new AppError('Document not found', 404);
     
-    const oldData = docSnap.data();
+    const oldData = mapDoc(docSnap);
 
     const updateData = {
       recordStatus: 'RESTORED',
@@ -204,7 +209,7 @@ class FirestoreRepository {
     const docSnap = await docRef.get();
     if (!docSnap.exists) throw new AppError('Document not found', 404);
     
-    const oldData = docSnap.data();
+    const oldData = mapDoc(docSnap);
 
     const updateData = {
       recordStatus: 'ARCHIVED',

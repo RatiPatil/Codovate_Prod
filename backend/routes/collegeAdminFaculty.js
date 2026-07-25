@@ -3,6 +3,11 @@ const router = express.Router();
 const { db } = require('../config/firebase');
 const { body, validationResult } = require('express-validator');
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 const collegeAdminOnly = (req, res, next) => {
   if (req.user.role !== 'college_admin' && req.user.role !== 'super_admin') {
     return res.status(403).json({ message: 'College Admin access required.' });
@@ -25,7 +30,7 @@ router.get('/', collegeAdminOnly, async (req, res) => {
     
     const faculty = [];
     snapshot.forEach(doc => {
-      faculty.push({ id: doc.id, ...doc.data() });
+      faculty.push({ id: doc.id, ...mapDoc(doc) });
     });
     
     res.json(faculty);
@@ -79,7 +84,7 @@ router.put('/:id', collegeAdminOnly, [
     const doc = await docRef.get();
     
     if (!doc.exists) return res.status(404).json({ message: 'Faculty not found' });
-    if (doc.data().college_id !== targetCollegeId && req.user.role !== 'super_admin') {
+    if (mapDoc(doc).college_id !== targetCollegeId && req.user.role !== 'super_admin') {
        return res.status(403).json({ message: 'Cannot modify faculty from another college.' });
     }
 
@@ -88,7 +93,7 @@ router.put('/:id', collegeAdminOnly, [
 
     await docRef.update(updateData);
     const updated = await docRef.get();
-    res.json(updated.data());
+    res.json(mapDoc(updated));
   } catch (error) {
     res.status(500).json({ message: 'Server error updating faculty' });
   }
@@ -102,7 +107,7 @@ router.delete('/:id', collegeAdminOnly, async (req, res) => {
     const doc = await docRef.get();
     
     if (!doc.exists) return res.status(404).json({ message: 'Faculty not found' });
-    if (doc.data().college_id !== targetCollegeId && req.user.role !== 'super_admin') {
+    if (mapDoc(doc).college_id !== targetCollegeId && req.user.role !== 'super_admin') {
        return res.status(403).json({ message: 'Cannot delete faculty from another college.' });
     }
 

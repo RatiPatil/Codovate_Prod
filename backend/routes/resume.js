@@ -12,6 +12,12 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 // ─── Gemini AI Client ─────────────────────────────────────────────────────────
 const { GoogleGenerativeAI } = require("@google/generative-ai");
+
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 let genAI = null;
 let model = null;
 
@@ -54,7 +60,7 @@ const enhanceBulletFallback = (text, context) => {
 router.post("/generate", auth, async (req, res) => {
   try {
     const profileDoc = await db.collection("profiles").doc(req.user.id).get();
-    const p = profileDoc.exists ? profileDoc.data() : {};
+    const p = profileDoc.exists ? mapDoc(profileDoc) : {};
 
     const personalInfo = req.body.personalInfo || p.personalInfo || {};
     const education = req.body.education || p.education || [];
@@ -224,7 +230,7 @@ router.get("/", auth, async (req, res) => {
   try {
     const doc = await db.collection("resumes").doc(req.user.id).get();
     if (!doc.exists) return res.json(null);
-    res.json(doc.data());
+    res.json(mapDoc(doc));
   } catch (err) {
     res.status(500).json({ message: "Load failed." });
   }
@@ -257,7 +263,7 @@ router.get("/", auth, async (req, res) => {
   try {
     const doc = await db.collection("resumes").doc(req.user.id).get();
     if (!doc.exists) return res.json(null);
-    res.json(doc.data());
+    res.json(mapDoc(doc));
   } catch (err) {
     res.status(500).json({ message: "Failed to load resume." });
   }
@@ -272,7 +278,7 @@ router.get("/versions", auth, async (req, res) => {
       .get();
       
     const versions = snapshot.docs.map(doc => {
-      const data = doc.data();
+      const data = mapDoc(doc);
       return { id: doc.id, versionName: data.versionName, pdfUrl: data.pdfUrl, templateId: data.templateId, createdAt: data.createdAt?.toDate() };
     });
     res.json(versions);
@@ -286,10 +292,10 @@ router.get("/versions", auth, async (req, res) => {
 router.get("/versions/:id", auth, async (req, res) => {
   try {
     const doc = await db.collection("resumeVersions").doc(req.params.id).get();
-    if (!doc.exists || doc.data().uid !== req.user.id) {
+    if (!doc.exists || mapDoc(doc).uid !== req.user.id) {
       return res.status(404).json({ message: "Version not found." });
     }
-    res.json(doc.data());
+    res.json(mapDoc(doc));
   } catch (err) {
     res.status(500).json({ message: "Failed to load version." });
   }
@@ -300,7 +306,7 @@ router.delete("/versions/:id", auth, async (req, res) => {
   try {
     const docRef = db.collection("resumeVersions").doc(req.params.id);
     const doc = await docRef.get();
-    if (!doc.exists || doc.data().uid !== req.user.id) {
+    if (!doc.exists || mapDoc(doc).uid !== req.user.id) {
       return res.status(404).json({ message: "Version not found." });
     }
     await docRef.delete();
@@ -314,7 +320,7 @@ router.delete("/versions/:id", auth, async (req, res) => {
 router.get("/reviews", auth, async (req, res) => {
   try {
     const snapshot = await db.collection("resumeReviews").where("uid", "==", req.user.id).orderBy("createdAt", "desc").get();
-    const reviews = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const reviews = snapshot.docs.map(doc => ({ id: doc.id, ...mapDoc(doc) }));
     res.json(reviews);
   } catch (err) {
     console.error("Load reviews error:", err.message);

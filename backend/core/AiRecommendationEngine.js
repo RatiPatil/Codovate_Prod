@@ -2,6 +2,11 @@ const JobRepository = require('./JobRepository');
 const AppError = require('../utils/AppError');
 const db = require('../config/firebase');
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 class AiRecommendationEngine {
   
   /**
@@ -77,7 +82,7 @@ class AiRecommendationEngine {
     // 1. Fetch Student Profile
     const studentDoc = await db.collection('users').doc(studentId).get();
     if (!studentDoc.exists) throw new AppError('Student not found', 404);
-    const studentProfile = studentDoc.data();
+    const studentProfile = mapDoc(studentDoc);
 
     // 2. Fetch Active Jobs (Limit for performance)
     const activeJobs = await JobRepository.collection.where('status', '==', 'PUBLISHED').limit(50).get();
@@ -85,7 +90,7 @@ class AiRecommendationEngine {
     // 3. Score all jobs
     const recommendations = [];
     for (const doc of activeJobs.docs) {
-      const job = { id: doc.id, ...doc.data() };
+      const job = { id: doc.id, ...mapDoc(doc) };
       const matchData = await this.calculateJobMatch(studentProfile, job);
       if (matchData.matchScore >= 40) { // Only recommend if score > 40%
         recommendations.push(matchData);

@@ -3,6 +3,11 @@ const { db, admin } = require('../config/firebase');
 const AppError = require('../utils/AppError');
 const UserRepository = require('./UserRepository');
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 /**
  * StudentProfileRepository
  * Extends the generic FirestoreRepository to handle Student Profiles.
@@ -93,10 +98,10 @@ class StudentProfileRepository extends FirestoreRepository {
       ]);
 
       return {
-        total: totalSnap.data().count,
-        placed: placedSnap.data().count,
-        placementReady: readySnap.data().count,
-        archived: archivedSnap.data().count,
+        total: mapDoc(totalSnap).count,
+        placed: mapDoc(placedSnap).count,
+        placementReady: mapDoc(readySnap).count,
+        archived: mapDoc(archivedSnap).count,
       };
     } catch (err) {
       throw new AppError('Failed to aggregate student metrics', 500);

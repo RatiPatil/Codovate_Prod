@@ -18,6 +18,11 @@ require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 const { db } = require('../config/firebase');
 const { ROLE_DEFINITIONS, DEFAULT_FEATURE_FLAGS } = require('../config/roleDefinitions');
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 const isDryRun = process.argv.includes('--dry-run');
 const isForce = process.argv.includes('--force');
 
@@ -64,7 +69,7 @@ async function seedRoles() {
       continue;
     }
 
-    roleDoc.createdAt = existing.exists ? (existing.data().createdAt || now) : now;
+    roleDoc.createdAt = existing.exists ? (mapDoc(existing).createdAt || now) : now;
     await docRef.set(roleDoc, { merge: !isForce });
     console.log(`  ✅ Seeded role: ${roleId} (${roleDef.permissions.length} permissions)`);
     rolesCreated++;
@@ -96,7 +101,7 @@ async function seedRoles() {
       continue;
     }
 
-    flagDoc.createdAt = existing.exists ? (existing.data().createdAt || now) : now;
+    flagDoc.createdAt = existing.exists ? (mapDoc(existing).createdAt || now) : now;
     await docRef.set(flagDoc, { merge: !isForce });
     console.log(`  ✅ Seeded flag: ${flag.key} (enabled: ${flag.enabled})`);
     flagsCreated++;

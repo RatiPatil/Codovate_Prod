@@ -3,6 +3,11 @@ const router = express.Router();
 const { db } = require("../config/firebase");
 const { authenticate, authorize } = require("../middleware");
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 /**
  * ORGANIZATIONS API
  */
@@ -34,7 +39,7 @@ router.post("/", authenticate, authorize("system:manage"), async (req, res) => {
 router.get("/", authenticate, authorize("colleges:read", { any: true }), async (req, res) => {
   try {
     const orgs = await db.collection("organizations").get();
-    const result = orgs.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const result = orgs.docs.map(doc => ({ id: doc.id, ...mapDoc(doc) }));
     res.status(200).json(result);
   } catch (err) {
     res.status(500).json({ message: "Internal Server Error" });
@@ -74,7 +79,7 @@ router.get("/:orgId/departments", authenticate, async (req, res) => {
   try {
     const { orgId } = req.params;
     const depts = await db.collection("departments").where("orgId", "==", orgId).get();
-    const result = depts.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const result = depts.docs.map(doc => ({ id: doc.id, ...mapDoc(doc) }));
     res.status(200).json(result);
   } catch (err) {
     res.status(500).json({ message: "Internal Server Error" });

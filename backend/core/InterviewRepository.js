@@ -1,6 +1,11 @@
 const FirestoreRepository = require('./Repository');
 const AppError = require('../utils/AppError');
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 class InterviewRepository extends FirestoreRepository {
   constructor() { super('interviews'); }
 
@@ -33,10 +38,10 @@ class InterviewRepository extends FirestoreRepository {
       ]);
 
       return {
-        total: totalSnap.data().count,
-        scheduled: scheduledSnap.data().count,
-        pendingFeedback: pendingFeedbackSnap.data().count,
-        passed: passedSnap.data().count
+        total: mapDoc(totalSnap).count,
+        scheduled: mapDoc(scheduledSnap).count,
+        pendingFeedback: mapDoc(pendingFeedbackSnap).count,
+        passed: mapDoc(passedSnap).count
       };
     } catch (err) {
       throw new AppError('Failed to aggregate Interview metrics', 500);
@@ -48,7 +53,7 @@ class InterviewRepository extends FirestoreRepository {
     const doc = await docRef.get();
     if (!doc.exists) throw new AppError('Interview not found', 404);
 
-    const data = doc.data();
+    const data = mapDoc(doc);
     if (data.recordStatus !== 'COMPLETED' && data.recordStatus !== 'FEEDBACK_SUBMITTED') {
       throw new AppError('Interview must be COMPLETED before submitting feedback', 400);
     }

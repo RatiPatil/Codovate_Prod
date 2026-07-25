@@ -3,6 +3,11 @@ const router = express.Router();
 const { db } = require("../config/firebase");
 const auth = require("../middleware/auth");
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 const adminOnly = (req, res, next) => {
   if (!["admin", "super_admin", "college_admin", "company_admin"].includes(req.user.role)) {
     return res.status(403).json({ message: "Admin access required." });
@@ -17,7 +22,7 @@ router.get("/", auth, adminOnly, async (req, res) => {
     const companies = [];
 
     snapshot.docs.forEach(doc => {
-      const c = doc.data();
+      const c = mapDoc(doc);
       companies.push({
         id: doc.id,
         name: c.name || "Unknown Company",
@@ -57,7 +62,7 @@ router.put("/:id/status", auth, adminOnly, async (req, res) => {
       action: "COMPANY_STATUS_UPDATED",
       module: "companies",
       entity_id: req.params.id,
-      details: { name: doc.data().name, new_status: status },
+      details: { name: mapDoc(doc).name, new_status: status },
       created_at: new Date()
     });
 

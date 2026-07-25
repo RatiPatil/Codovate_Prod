@@ -1,6 +1,11 @@
 const FirestoreRepository = require('./Repository');
 const AppError = require('../utils/AppError');
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 class HiringTeamRepository extends FirestoreRepository {
   constructor() { super('hiring_teams'); }
 
@@ -28,8 +33,8 @@ class HiringTeamRepository extends FirestoreRepository {
       ]);
 
       return {
-        total: totalSnap.data().count,
-        active: activeSnap.data().count
+        total: mapDoc(totalSnap).count,
+        active: mapDoc(activeSnap).count
       };
     } catch (err) {
       throw new AppError('Failed to aggregate Hiring Team metrics', 500);

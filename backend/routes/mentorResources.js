@@ -3,6 +3,11 @@ const router = express.Router();
 const { db } = require('../config/firebase');
 const auth = require('../middleware/auth');
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 const mentorOnly = (req, res, next) => {
   if (req.user.role !== 'mentor') {
     return res.status(403).json({ message: 'Mentor access required.' });
@@ -23,7 +28,7 @@ router.get('/', auth, async (req, res) => {
     
     const snapshot = await query.get();
     const resources = [];
-    snapshot.forEach(doc => resources.push({ id: doc.id, ...doc.data() }));
+    snapshot.forEach(doc => resources.push({ id: doc.id, ...mapDoc(doc) }));
     
     // Sort by created desc
     resources.sort((a, b) => {
@@ -76,7 +81,7 @@ router.delete('/:id', mentorOnly, async (req, res) => {
     const doc = await docRef.get();
     
     if (!doc.exists) return res.status(404).json({ message: 'Not found' });
-    if (doc.data().mentor_id !== req.user.id) return res.status(403).json({ message: 'Forbidden' });
+    if (mapDoc(doc).mentor_id !== req.user.id) return res.status(403).json({ message: 'Forbidden' });
     
     await docRef.delete();
     res.json({ message: 'Deleted' });
@@ -91,7 +96,7 @@ router.post('/:id/download', auth, async (req, res) => {
     const docRef = db.collection('mentorResources').doc(req.params.id);
     const doc = await docRef.get();
     if (doc.exists) {
-      await docRef.update({ downloads: (doc.data().downloads || 0) + 1 });
+      await docRef.update({ downloads: (mapDoc(doc).downloads || 0) + 1 });
     }
     res.json({ message: 'Count updated' });
   } catch (error) {

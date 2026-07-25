@@ -3,6 +3,11 @@ const router = express.Router();
 const { db, admin, FieldValue } = require('../config/firebase');
 const { body, validationResult, checkExact, matchedData } = require('express-validator');
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 // Middleware to ensure super_admin
 const superAdminOnly = (req, res, next) => {
   if (req.user.role !== 'super_admin' && req.user.role !== 'admin') {
@@ -19,13 +24,13 @@ router.get('/', async (req, res) => {
     const users = [];
     
     usersSnapshot.forEach(doc => {
-      const u = doc.data();
+      const u = mapDoc(doc);
       users.push({
         id: doc.id,
         name: u.name,
         email: u.email,
         role: u.role,
-        status: u.status || (u.is_active ? 'active' : 'inactive'),
+        status: u.status || (u.recordStatus === 'ACTIVE' ? 'active' : 'inactive'),
         college_id: u.college_id,
         company_id: u.company_id,
         created_at: u.created_at
@@ -33,14 +38,14 @@ router.get('/', async (req, res) => {
     });
 
     studentsSnapshot.forEach(doc => {
-      const s = doc.data();
+      const s = mapDoc(doc);
       const sp = s.profile_data || {};
       users.push({
         id: doc.id,
         name: sp.name || s.name || 'Anonymous',
         email: s.email,
         role: s.role || 'student',
-        status: s.status || (s.is_active ? 'active' : 'inactive'),
+        status: s.status || (s.recordStatus === 'ACTIVE' ? 'active' : 'inactive'),
         college_id: s.college_id,
         company_id: s.company_id,
         created_at: s.created_at
@@ -81,7 +86,7 @@ router.post('/', superAdminOnly, [
       email,
       role,
       status,
-      is_active: status === 'active',
+      recordStatus: status === 'active' ? 'ACTIVE' : (status === 'inactive' ? 'DISABLED' : 'SUSPENDED'),
       college_id: college_id || null,
       company_id: company_id || null,
       created_at: FieldValue.serverTimestamp(),
@@ -130,14 +135,14 @@ router.put('/:id', superAdminOnly, [
     }
 
     if (updateData.status) {
-      updateData.is_active = updateData.status === 'active';
+      updateData.recordStatus = updateData.status === 'active' ? 'ACTIVE' : (updateData.status === 'inactive' ? 'DISABLED' : 'SUSPENDED');
     }
 
     updateData.updated_at = FieldValue.serverTimestamp();
 
     await userRef.update(updateData);
     const updated = await userRef.get();
-    res.json(updated.data());
+    res.json(mapDoc(updated));
   } catch (error) {
     console.error("User PUT error:", error);
     res.status(500).json({ message: 'Server error' });
@@ -158,12 +163,12 @@ router.put('/:id/suspend', superAdminOnly, async (req, res) => {
       if (!doc.exists) return res.status(404).json({ message: 'User not found' });
     }
 
-    const userData = doc.data();
+    const userData = mapDoc(doc);
 
     const batch = db.batch();
     batch.update(userRef, { 
       status: 'suspended', 
-      is_active: false,
+      recordStatus: 'SUSPENDED',
       updated_at: FieldValue.serverTimestamp()
     });
 
@@ -200,12 +205,12 @@ router.put('/:id/unsuspend', superAdminOnly, async (req, res) => {
       if (!doc.exists) return res.status(404).json({ message: 'User not found' });
     }
 
-    const userData = doc.data();
+    const userData = mapDoc(doc);
 
     const batch = db.batch();
     batch.update(userRef, { 
       status: 'active', 
-      is_active: true,
+      recordStatus: 'ACTIVE',
       updated_at: FieldValue.serverTimestamp()
     });
 
@@ -246,7 +251,7 @@ router.put('/:id/status', superAdminOnly, [
     const { status } = matchedData(req);
     await userRef.update({ 
       status, 
-      is_active: status === 'active',
+      recordStatus: status === 'active' ? 'ACTIVE' : (status === 'inactive' ? 'DISABLED' : 'SUSPENDED'),
       updated_at: FieldValue.serverTimestamp()
     });
     res.json({ message: 'Status updated' });

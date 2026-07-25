@@ -3,6 +3,11 @@ const router = express.Router();
 const { db } = require('../config/firebase');
 const { body, validationResult } = require('express-validator');
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 const companyAdminOnly = (req, res, next) => {
   if (req.user.role !== 'company_admin' && req.user.role !== 'super_admin') {
     return res.status(403).json({ message: 'Company Admin access required.' });
@@ -33,7 +38,7 @@ router.get('/', companyAdminOnly, async (req, res) => {
     const snapshot = await query.get();
     const ops = [];
     snapshot.forEach(doc => {
-      ops.push({ id: doc.id, ...doc.data() });
+      ops.push({ id: doc.id, ...mapDoc(doc) });
     });
     res.json(ops);
   } catch (error) {
@@ -54,7 +59,7 @@ router.post('/', companyAdminOnly, [
     
     // Fetch company name
     const compDoc = await db.collection('companies').doc(targetCompanyId).get();
-    const compName = compDoc.exists ? compDoc.data().name : 'Unknown Company';
+    const compName = compDoc.exists ? mapDoc(compDoc).name : 'Unknown Company';
     
     // Format type to Title Case so frontend filters match it
     const typeMap = {
@@ -97,7 +102,7 @@ router.put('/:id', companyAdminOnly, async (req, res) => {
     const docRef = db.collection('opportunities').doc(req.params.id);
     const doc = await docRef.get();
     if (!doc.exists) return res.status(404).json({ message: 'Not found' });
-    if (doc.data().company_id !== targetCompanyId && req.user.role !== 'super_admin') return res.status(403).json({ message: 'Forbidden' });
+    if (mapDoc(doc).company_id !== targetCompanyId && req.user.role !== 'super_admin') return res.status(403).json({ message: 'Forbidden' });
     
     const updateData = { ...req.body };
     delete updateData.company_id;
@@ -110,7 +115,7 @@ router.put('/:id', companyAdminOnly, async (req, res) => {
       updateData.type = typeMap[updateData.type] || updateData.type;
     }
     await docRef.update(updateData);
-    res.json((await docRef.get()).data());
+    res.json(mapDoc((await docRef.get())));
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
   }
@@ -122,7 +127,7 @@ router.delete('/:id', companyAdminOnly, async (req, res) => {
     const docRef = db.collection('opportunities').doc(req.params.id);
     const doc = await docRef.get();
     if (!doc.exists) return res.status(404).json({ message: 'Not found' });
-    if (doc.data().company_id !== targetCompanyId && req.user.role !== 'super_admin') return res.status(403).json({ message: 'Forbidden' });
+    if (mapDoc(doc).company_id !== targetCompanyId && req.user.role !== 'super_admin') return res.status(403).json({ message: 'Forbidden' });
     
     await docRef.delete();
     res.json({ message: 'Deleted' });

@@ -3,6 +3,11 @@ const router = express.Router();
 const { db } = require('../config/firebase');
 const { body, validationResult } = require('express-validator');
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 const superAdminOnly = (req, res, next) => {
   if (req.user.role !== 'super_admin' && req.user.role !== 'admin') {
     return res.status(403).json({ message: 'Super Admin access required.' });
@@ -18,7 +23,7 @@ router.get('/', superAdminOnly, async (req, res) => {
                              .get();
     const notifications = [];
     snapshot.forEach(doc => {
-      notifications.push({ id: doc.id, ...doc.data() });
+      notifications.push({ id: doc.id, ...mapDoc(doc) });
     });
     
     // Sort in memory to avoid needing composite indexes for MVP
@@ -81,7 +86,7 @@ router.put('/:id', superAdminOnly, [
 
     await docRef.update(req.body);
     const updated = await docRef.get();
-    res.json(updated.data());
+    res.json(mapDoc(updated));
   } catch (error) {
     res.status(500).json({ message: 'Server error updating notification' });
   }

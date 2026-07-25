@@ -43,9 +43,9 @@ router.post("/google", async (req, res) => {
         name: (name || 'Google User').trim().toUpperCase(),
         email: email.toLowerCase(),
         avatar: picture || '',
-        role: 'student',
-        is_active: true,
-        is_verified: true,
+        role: "student",
+        recordStatus: 'ACTIVE',
+        is_verified: false,
         authUid: uid,
         providers: ['google'],
         claimed: true,
@@ -94,9 +94,9 @@ router.post("/google", async (req, res) => {
       console.log("✅ Auto-registered new user via Google:", email);
     } else {
       const userDoc = snapshot.docs[0];
-      user = userDoc.data();
+      user = mapDoc(userDoc);
       
-      if (user.is_active === false) return res.status(403).json({ message: "Your account has been suspended. Please contact the administrator." });
+      if (user.recordStatus !== 'ACTIVE') return res.status(403).json({ message: "Your account has been suspended. Please contact the administrator." });
       
       // AUTH-006: Prevent Identity Orphaning
       if (user.authUid && user.authUid !== uid) {
@@ -190,7 +190,7 @@ router.post("/phone", async (req, res) => {
         name: 'Student', // Default name, they can change it in profile
         phone: phone_number,
         role: 'student',
-        is_active: true,
+        recordStatus: 'ACTIVE',
         is_verified: true,
         authUid: uid,
         providers: ['phone'],
@@ -238,9 +238,9 @@ router.post("/phone", async (req, res) => {
       console.log("✅ Auto-registered new user via Phone:", phone_number);
     } else {
       const userDoc = snapshot.docs[0];
-      user = userDoc.data();
+      user = mapDoc(userDoc);
       
-      if (user.is_active === false) return res.status(403).json({ message: "Your account has been suspended. Please contact the administrator." });
+      if (user.recordStatus !== 'ACTIVE') return res.status(403).json({ message: "Your account has been suspended. Please contact the administrator." });
       
       const providers = user.providers || [];
       if (!providers.includes('phone')) providers.push('phone');
@@ -360,6 +360,11 @@ router.post("/phone", async (req, res) => {
 
 const authMiddleware = require("../middleware/auth");
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 router.post("/sync-providers", authMiddleware, async (req, res) => {
   try {
     const { providers } = req.body;
@@ -470,7 +475,7 @@ router.post("/signup", async (req, res) => {
       password_hash: hash,
       role: 'student',
       is_verified: false,
-      is_active: true,
+      recordStatus: 'ACTIVE',
       authUid: firebaseAuthUid,
       providers: ['local'],
       onboardingCompleted: false,
@@ -562,9 +567,13 @@ router.post("/login", async (req, res) => {
     if (snapshot.empty)
       return res.status(401).json({ message: "Invalid email or password." });
 
-    const user = snapshot.docs[0].data();
+    if (snapshot.size > 1) {
+      console.warn(`[AUTH] Duplicate accounts detected. Size: ${snapshot.size}`);
+    }
 
-    if (!user.is_active)
+    const user = mapDoc(snapshot.docs[0]);
+
+    if (user.recordStatus !== 'ACTIVE')
       return res.status(403).json({ message: "Your account has been suspended. Please contact the administrator." });
 
     if (!user.is_verified) {
@@ -676,12 +685,16 @@ router.post("/admin-login", async (req, res) => {
     if (snapshot.empty)
       return res.status(401).json({ message: "Invalid email or password." });
 
-    const user = snapshot.docs[0].data();
+    if (snapshot.size > 1) {
+      console.warn(`[AUTH] Duplicate accounts detected. Size: ${snapshot.size}`);
+    }
+
+    const user = mapDoc(snapshot.docs[0]);
 
     if (!ADMIN_ROLES.includes(user.role))
       return res.status(403).json({ message: "Access Denied: Admin privileges required." });
 
-    if (!user.is_active)
+    if (user.recordStatus !== 'ACTIVE')
       return res.status(403).json({ message: "Your account has been suspended. Please contact the administrator." });
 
     if (!user.password_hash)

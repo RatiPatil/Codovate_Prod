@@ -4,14 +4,19 @@ const { db, FieldValue } = require('../config/firebase');
 const auth = require('../middleware/auth');
 const admin = require('firebase-admin');
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 // Helper to log user details
 const getUserDetails = async (userId) => {
   const userDoc = await db.collection('profiles').doc(userId).get();
   if (userDoc.exists) {
     return {
-      name: userDoc.data().personalInfo?.name || 'Anonymous',
-      avatar: userDoc.data().personalInfo?.avatar || null,
-      college: userDoc.data().education?.[0]?.college || 'Student'
+      name: mapDoc(userDoc).personalInfo?.name || 'Anonymous',
+      avatar: mapDoc(userDoc).personalInfo?.avatar || null,
+      college: mapDoc(userDoc).education?.[0]?.college || 'Student'
     };
   }
   return { name: 'Anonymous', avatar: null, college: 'Student' };
@@ -36,17 +41,17 @@ router.get('/posts', auth, async (req, res) => {
       .where('user_id', '==', req.user.id)
       .get();
       
-    const bookmarkedPostIds = new Set(bookmarksSnap.docs.map(d => d.data().post_id));
+    const bookmarkedPostIds = new Set(bookmarksSnap.docs.map(d => mapDoc(d).post_id));
     
     // Also fetch user's upvotes
     const upvotesSnap = await db.collection('community_upvotes')
       .where('user_id', '==', req.user.id)
       .get();
       
-    const upvotedPostIds = new Set(upvotesSnap.docs.map(d => d.data().post_id));
+    const upvotedPostIds = new Set(upvotesSnap.docs.map(d => mapDoc(d).post_id));
 
     const posts = await Promise.all(postsSnap.docs.map(async (doc) => {
-      const data = doc.data();
+      const data = mapDoc(doc);
       return {
         id: doc.id,
         ...data,
@@ -177,7 +182,7 @@ router.post('/posts/:id/vote', auth, async (req, res) => {
       const postDoc = await t.get(postRef);
       
       if (!postDoc.exists) throw new Error("Post not found");
-      const post = postDoc.data();
+      const post = mapDoc(postDoc);
       if (post.type !== 'poll') throw new Error("Post is not a poll");
       
       const newOptions = [...post.poll_options];

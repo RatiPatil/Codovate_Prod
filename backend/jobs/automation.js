@@ -1,6 +1,11 @@
 const cron = require("node-cron");
 const { db, admin } = require("../config/firebase");
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 // Utility to calculate Placement Readiness
 const calculatePlacementReadiness = async (uid, u, p, appsCount) => {
   let readinessScore = 0;
@@ -28,7 +33,7 @@ const calculatePlacementReadiness = async (uid, u, p, appsCount) => {
   // Roadmap/Learning Progress (20%)
   const roadmapDoc = await db.collection("userRoadmaps").doc(uid).get();
   if (roadmapDoc.exists) {
-    const rData = roadmapDoc.data();
+    const rData = mapDoc(roadmapDoc);
     const roadmapProgress = rData.overall_progress || 0;
     readinessScore += (roadmapProgress / 100) * 20;
     if (roadmapProgress < 50) improvements.push('Roadmap progress');
@@ -64,8 +69,8 @@ const runDailyPipeline = async () => {
           db.collection("applications").where("studentId", "==", uid).get(),
         ]);
 
-        const p = profileDoc.exists ? profileDoc.data() : {};
-        const u = userDoc.data();
+        const p = profileDoc.exists ? mapDoc(profileDoc) : {};
+        const u = mapDoc(userDoc);
         const appsCount = appsSnap.size;
 
         // --- STEP 1 & 2: Roadmap Check & Generate Daily Tasks ---
@@ -73,7 +78,7 @@ const runDailyPipeline = async () => {
         const roadmapDoc = await db.collection("userRoadmaps").doc(uid).get();
         
         if (roadmapDoc.exists) {
-          const roadmapData = roadmapDoc.data();
+          const roadmapData = mapDoc(roadmapDoc);
           const activeStep = roadmapData.steps?.find(s => s.status === 'in_progress' || s.status === 'pending');
           
           if (activeStep) {
@@ -116,7 +121,7 @@ const runDailyPipeline = async () => {
         const recommendations = [];
         let activeTopic = "Programming Basics";
         if (roadmapDoc.exists) {
-          const s = roadmapDoc.data().steps?.find(s => s.status === 'in_progress' || s.status === 'pending');
+          const s = mapDoc(roadmapDoc).steps?.find(s => s.status === 'in_progress' || s.status === 'pending');
           if (s) activeTopic = s.title;
         }
         
@@ -162,10 +167,10 @@ const runDailyPipeline = async () => {
         xp += (p.skills?.length || 0) * 100;
         xp += (p.projects?.length || 0) * 300;
         
-        if (roadmapDoc.exists) xp += (roadmapDoc.data().overall_progress || 0) * 20;
+        if (roadmapDoc.exists) xp += (mapDoc(roadmapDoc).overall_progress || 0) * 20;
 
         await db.collection("userGoals").doc(uid).set({
-          weeklyGoal: { title: "Complete 3 Roadmap Modules", current: roadmapDoc.exists ? Math.floor(((roadmapDoc.data().overall_progress || 0) / 100) * 10) % 3 : 0, target: 3 },
+          weeklyGoal: { title: "Complete 3 Roadmap Modules", current: roadmapDoc.exists ? Math.floor(((mapDoc(roadmapDoc).overall_progress || 0) / 100) * 10) % 3 : 0, target: 3 },
           monthlyChallenge: { title: "Apply to 5 Opportunities", current: appsCount, target: 5 },
           dailyStreak: (u.profileCompleted || p.profileCompletion || 0) >= 80 ? 14 : 1,
           totalXP: Math.round(xp),
@@ -202,7 +207,7 @@ const runRecruiterPipeline = async () => {
     const interviewsSnap = await db.collection("interviews").where("status", "==", "scheduled").get();
     
     const reminderPromises = interviewsSnap.docs.map(async (doc) => {
-      const interview = doc.data();
+      const interview = mapDoc(doc);
       const iDate = new Date(interview.date);
       // If interview is within next 24 hours
       if (iDate > new Date() && iDate < tomorrow) {
@@ -228,7 +233,7 @@ const runRecruiterPipeline = async () => {
       
       appsSnap.forEach(appDoc => {
         total++;
-        const s = appDoc.data().status;
+        const s = mapDoc(appDoc).status;
         if (s === 'shortlisted') shortlisted++;
         if (s === 'interview') interviewed++;
         if (s === 'hired' || s === 'selected') hired++;

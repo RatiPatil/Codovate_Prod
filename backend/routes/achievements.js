@@ -3,6 +3,11 @@ const router = express.Router();
 const { db } = require("../config/firebase");
 const auth = require("../middleware/auth");
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 // ─── GET /api/achievements ─────────────────────────────────────────────────
 router.get("/", auth, async (req, res) => {
   try {
@@ -11,7 +16,7 @@ router.get("/", auth, async (req, res) => {
       .orderBy("earnedAt", "desc")
       .get();
       
-    const achievements = snapshot.docs.map(doc => doc.data());
+    const achievements = mapDocs(snapshot);
     res.json(achievements);
   } catch (err) {
     console.error("Fetch achievements error:", err);

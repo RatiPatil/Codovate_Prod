@@ -3,6 +3,11 @@ const router = express.Router();
 const { db } = require("../config/firebase");
 const { authenticate, authorize } = require("../middleware");
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 /**
  * SECURITY POLICIES API
  */
@@ -23,12 +28,12 @@ router.get("/:policyId", authenticate, async (req, res) => {
       // If org policy doesn't exist, return global as fallback
       if (policyId !== 'global') {
         const globalPolicy = await db.collection("securityPolicies").doc("global").get();
-        return res.status(200).json(globalPolicy.data() || {});
+        return res.status(200).json(mapDoc(globalPolicy) || {});
       }
       return res.status(404).json({ message: "Policy not found." });
     }
 
-    res.status(200).json(policyDoc.data());
+    res.status(200).json(mapDoc(policyDoc));
   } catch (err) {
     res.status(500).json({ message: "Internal Server Error" });
   }

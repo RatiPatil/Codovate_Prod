@@ -1,5 +1,5 @@
 import { Suspense, lazy, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { RoleProvider } from './context/RoleContext';
 import { FeatureFlagProvider } from './context/FeatureFlagContext';
@@ -35,6 +35,7 @@ const RecruiterLogin = lazy(() => import('./pages/RecruiterLogin'));
 const TeamsLayout = lazy(() => import('./pages/teams/TeamsLayout'));
 const Workspace = lazy(() => import('./pages/teams/Workspace'));
 // Admin Layouts & Views
+const Mentors = lazy(() => import('./pages/Mentors'));
 const AdminLayout = lazy(() => import('./layouts/AdminLayout'));
 const AdminSandbox = lazy(() => import('./pages/AdminSandbox'));
 const SuperAdminDashboard = lazy(() => import('./pages/admin/SuperAdminDashboard'));
@@ -98,24 +99,24 @@ function App() {
   return (
     <GlobalErrorBoundary>
       <ToastProvider>
-        <AuthProvider>
-          <SessionProvider>
-            <OrganizationProvider>
-              <SidebarProvider>
-                <SearchProvider>
-                  <RoleProvider>
-                    <FeatureFlagProvider>
-                      <SocketProvider>
-                <GlobalNotifications />
-                <Toaster position="top-right" toastOptions={{
-              style: {
-                background: '#333',
-                color: '#fff',
-              }
-            }} />
-            <BrowserRouter>
-              <Suspense fallback={<GlobalLoader />}>
-                <Routes>
+        <BrowserRouter>
+          <AuthProvider>
+            <SessionProvider>
+              <OrganizationProvider>
+                <SidebarProvider>
+                  <SearchProvider>
+                    <RoleProvider>
+                      <FeatureFlagProvider>
+                        <SocketProvider>
+                          <GlobalNotifications />
+                          <Toaster position="top-right" toastOptions={{
+                            style: {
+                              background: '#333',
+                              color: '#fff',
+                            }
+                          }} />
+                          <Suspense fallback={<GlobalLoader />}>
+                            <Routes>
                   <Route path="/" element={<Home />} />
                   <Route path="/login" element={<Login />} />
                   <Route path="/recruiter-login" element={<RecruiterLogin />} />
@@ -277,11 +278,7 @@ function App() {
                     </ProtectedRoute>
                   } />
 
-                  <Route path="/admin/*" element={
-                    <ProtectedRoute requireOnboarding={false}>
-                      <DashboardRouter />
-                    </ProtectedRoute>
-                  } />
+
 
                   <Route path="/mentor/login" element={<MentorLogin />} />
                   <Route path="/mentor/*" element={
@@ -291,10 +288,9 @@ function App() {
                   } />
                   
                   {/* ───────────────────────────────────────────────────────── */}
-                  {/* ENTERPRISE ADMIN CONSOLE                                */}
-                  {/* ───────────────────────────────────────────────────────── */}
-                  <Route path="/admin" element={<ProtectedRoute requiredRole="super_admin" />}>
+                  <Route path="/admin" element={<ProtectedRoute requiredRole="super_admin" requireOnboarding={false}><Outlet /></ProtectedRoute>}>
                     <Route element={<AdminLayout />}>
+                      <Route index element={<Navigate to="dashboard" replace />} />
                       <Route path="dashboard" element={<SuperAdminDashboard />} />
                       <Route path="users" element={<UserManagement />} />
                       <Route path="organizations" element={<OrganizationManagement />} />
@@ -319,17 +315,17 @@ function App() {
                   <Route path="/p/:username" element={<PublicPortfolio />} />
 
                   <Route path="*" element={<Navigate to="/" replace />} />
-                </Routes>
-              </Suspense>
-            </BrowserRouter>
-                      </SocketProvider>
-                    </FeatureFlagProvider>
-                  </RoleProvider>
-                </SearchProvider>
-              </SidebarProvider>
-            </OrganizationProvider>
-          </SessionProvider>
-        </AuthProvider>
+                            </Routes>
+                          </Suspense>
+                        </SocketProvider>
+                      </FeatureFlagProvider>
+                    </RoleProvider>
+                  </SearchProvider>
+                </SidebarProvider>
+              </OrganizationProvider>
+            </SessionProvider>
+          </AuthProvider>
+        </BrowserRouter>
       </ToastProvider>
     </GlobalErrorBoundary>
   );

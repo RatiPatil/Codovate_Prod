@@ -1,6 +1,11 @@
 const FirestoreRepository = require('./Repository');
 const AppError = require('../utils/AppError');
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 class OfferRepository extends FirestoreRepository {
   constructor() { super('offers'); }
 
@@ -34,10 +39,10 @@ class OfferRepository extends FirestoreRepository {
       ]);
 
       return {
-        total: totalSnap.data().count,
-        released: releasedSnap.data().count,
-        accepted: acceptedSnap.data().count,
-        rejected: rejectedSnap.data().count
+        total: mapDoc(totalSnap).count,
+        released: mapDoc(releasedSnap).count,
+        accepted: mapDoc(acceptedSnap).count,
+        rejected: mapDoc(rejectedSnap).count
       };
     } catch (err) {
       throw new AppError('Failed to aggregate Offer metrics', 500);
@@ -49,7 +54,7 @@ class OfferRepository extends FirestoreRepository {
     const doc = await docRef.get();
     if (!doc.exists) throw new AppError('Offer not found', 404);
 
-    const data = doc.data();
+    const data = mapDoc(doc);
     const timeline = data.timeline || [];
     timeline.push({
       stage: newStatus,

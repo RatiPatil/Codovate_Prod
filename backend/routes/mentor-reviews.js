@@ -3,6 +3,11 @@ const router = express.Router();
 const { db } = require("../config/firebase");
 const auth = require("../middleware/auth");
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 // Add a portfolio/resume review
 router.post("/:student_id", auth, async (req, res) => {
   try {
@@ -32,7 +37,7 @@ router.post("/:student_id", auth, async (req, res) => {
     const mentorDocs = await db.collection("mentors").where("user_id", "==", req.user.id).get();
     if (!mentorDocs.empty) {
       const mentorRef = db.collection("mentors").doc(mentorDocs.docs[0].id);
-      const mData = mentorDocs.docs[0].data();
+      const mData = mapDoc(mentorDocs.docs[0]);
       await mentorRef.update({
         total_reviews: (mData.total_reviews || 0) + 1
       });
@@ -53,7 +58,7 @@ router.get("/student/:student_id", async (req, res) => {
       .orderBy("created_at", "desc")
       .get();
       
-    const reviews = snapshot.docs.map(doc => doc.data());
+    const reviews = mapDocs(snapshot);
     res.json(reviews);
   } catch (err) {
     console.error("Get reviews error:", err);
@@ -89,7 +94,7 @@ router.post("/mentor/:mentor_id", auth, async (req, res) => {
     const mentorDoc = await mentorRef.get();
     
     if (mentorDoc.exists) {
-      const mData = mentorDoc.data();
+      const mData = mapDoc(mentorDoc);
       const currentTotalReviews = mData.total_reviews_received || 0;
       const currentAvg = mData.rating || 0;
       
@@ -118,7 +123,7 @@ router.get("/mentor/:mentor_id", async (req, res) => {
       .get();
       
     const reviews = snapshot.docs.map(doc => {
-      const data = doc.data();
+      const data = mapDoc(doc);
       return {
         ...data,
         created_at: data.created_at?.toDate ? data.created_at.toDate().toISOString() : data.created_at

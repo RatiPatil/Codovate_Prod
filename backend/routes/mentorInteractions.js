@@ -3,6 +3,11 @@ const router = express.Router();
 const { db } = require('../config/firebase');
 const auth = require('../middleware/auth');
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 // Middleware to ensure only mentor can access
 const mentorOnly = (req, res, next) => {
   if (req.user.role !== 'mentor') {
@@ -21,18 +26,18 @@ router.get('/students', mentorOnly, async (req, res) => {
       .get();
       
     const studentIds = new Set();
-    queriesSnap.forEach(doc => studentIds.add(doc.data().student_id));
+    queriesSnap.forEach(doc => studentIds.add(mapDoc(doc).student_id));
     
     // Fetch student details
     const students = [];
     for (const sid of studentIds) {
       const sDoc = await db.collection('students').doc(sid).get();
       if (sDoc.exists) {
-        const sData = sDoc.data();
+        const sData = mapDoc(sDoc);
         const userDoc = await db.collection('users').doc(sid).get();
         students.push({
           id: sid,
-          name: userDoc.exists ? userDoc.data().name : 'Unknown',
+          name: userDoc.exists ? mapDoc(userDoc).name : 'Unknown',
           college: sData.college_name || 'N/A',
           skills: sData.profile_data?.skills || [],
           resume_url: sData.resume_url || null,
@@ -67,7 +72,7 @@ router.get('/dashboard-stats', mentorOnly, async (req, res) => {
     const studentIds = new Set();
     
     queriesSnap.forEach(doc => {
-      const data = doc.data();
+      const data = mapDoc(doc);
       studentIds.add(data.student_id);
       if (data.status === 'Assigned' || data.status === 'In Progress') {
         pending_requests++;
@@ -114,7 +119,7 @@ router.get('/chats', mentorOnly, async (req, res) => {
       
     const chats = [];
     queriesSnap.forEach(doc => {
-      chats.push({ id: doc.id, ...doc.data() });
+      chats.push({ id: doc.id, ...mapDoc(doc) });
     });
     
     // Sort by created descending
@@ -142,7 +147,7 @@ router.put('/chats/:id', mentorOnly, async (req, res) => {
     const doc = await docRef.get();
     if (!doc.exists) return res.status(404).json({ message: 'Chat not found' });
     
-    if (doc.data().mentor_id !== req.user.id) {
+    if (mapDoc(doc).mentor_id !== req.user.id) {
       return res.status(403).json({ message: 'Forbidden' });
     }
 
@@ -155,7 +160,7 @@ router.put('/chats/:id', mentorOnly, async (req, res) => {
     
     // Notify student via socket
     if (req.io) {
-      req.io.to(`user_${doc.data().student_id}`).emit('chat_update', { id: doc.id, ...updateData });
+      req.io.to(`user_${mapDoc(doc).student_id}`).emit('chat_update', { id: doc.id, ...updateData });
     }
 
     res.json({ message: 'Chat updated successfully' });
@@ -175,7 +180,7 @@ router.get('/chats/:chatId/messages', auth, async (req, res) => {
       .get();
       
     const messages = [];
-    messagesSnap.forEach(doc => messages.push({ id: doc.id, ...doc.data() }));
+    messagesSnap.forEach(doc => messages.push({ id: doc.id, ...mapDoc(doc) }));
     res.json(messages);
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
@@ -201,8 +206,8 @@ router.post('/chats/:chatId/messages', auth, async (req, res) => {
     const chatDoc = await db.collection('mentorQueries').doc(req.params.chatId).get();
     
     if (req.io) {
-      const room1 = `user_${chatDoc.data().student_id}`;
-      const room2 = `user_${chatDoc.data().mentor_id}`; // For mentor connections
+      const room1 = `user_${mapDoc(chatDoc).student_id}`;
+      const room2 = `user_${mapDoc(chatDoc).mentor_id}`; // For mentor connections
       req.io.to(room1).to(room2).emit('new_message', { chatId: req.params.chatId, message: msg });
     }
     
@@ -222,14 +227,14 @@ router.delete('/chats/:chatId/messages/:messageId', auth, async (req, res) => {
       
     const msgDoc = await msgRef.get();
     if (!msgDoc.exists) return res.status(404).json({ message: 'Not found' });
-    if (msgDoc.data().sender_id !== req.user.id) return res.status(403).json({ message: 'Forbidden' });
+    if (mapDoc(msgDoc).sender_id !== req.user.id) return res.status(403).json({ message: 'Forbidden' });
     
     await msgRef.delete();
     
     if (req.io) {
       const chatDoc = await db.collection('mentorQueries').doc(req.params.chatId).get();
-      const room1 = `user_${chatDoc.data().student_id}`;
-      const room2 = `user_${chatDoc.data().mentor_id}`;
+      const room1 = `user_${mapDoc(chatDoc).student_id}`;
+      const room2 = `user_${mapDoc(chatDoc).mentor_id}`;
       req.io.to(room1).to(room2).emit('message_deleted', { chatId: req.params.chatId, messageId: req.params.messageId });
     }
     

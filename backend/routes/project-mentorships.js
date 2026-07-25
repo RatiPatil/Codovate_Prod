@@ -3,6 +3,11 @@ const router = express.Router();
 const { db } = require("../config/firebase");
 const auth = require("../middleware/auth");
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 // Invite a mentor to a project
 router.post("/invite", auth, async (req, res) => {
   try {
@@ -13,7 +18,7 @@ router.post("/invite", auth, async (req, res) => {
 
     // Ensure project belongs to student
     const projectDoc = await db.collection("projects").doc(project_id).get();
-    if (!projectDoc.exists || projectDoc.data().userId !== req.user.id) {
+    if (!projectDoc.exists || mapDoc(projectDoc).userId !== req.user.id) {
       return res.status(403).json({ message: "Not authorized or project not found." });
     }
 
@@ -21,7 +26,7 @@ router.post("/invite", auth, async (req, res) => {
     const inviteData = {
       id: inviteRef.id,
       project_id,
-      project_title: projectDoc.data().title,
+      project_title: mapDoc(projectDoc).title,
       student_id: req.user.id,
       student_name: req.user.name,
       mentor_id,
@@ -58,10 +63,10 @@ router.get("/mentor", auth, async (req, res) => {
       .get();
 
     const invites = await Promise.all(snapshot.docs.map(async doc => {
-      const data = doc.data();
+      const data = mapDoc(doc);
       // Fetch full project data
       const pDoc = await db.collection("projects").doc(data.project_id).get();
-      data.project = pDoc.exists ? pDoc.data() : null;
+      data.project = pDoc.exists ? mapDoc(pDoc) : null;
       return data;
     }));
 

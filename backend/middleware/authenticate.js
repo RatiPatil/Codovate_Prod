@@ -13,6 +13,12 @@
 const jwt = require('jsonwebtoken');
 const { db } = require('../config/firebase');
 const { WILDCARD } = require('../config/permissions');
+
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 require('dotenv').config();
 
 // ─── In-Memory Permission Cache ─────────────────────────────
@@ -38,7 +44,7 @@ async function loadPermissions(roleId) {
   try {
     const roleDoc = await db.collection('roles').doc(roleId).get();
     if (roleDoc.exists) {
-      const permissions = roleDoc.data().permissions || [];
+      const permissions = mapDoc(roleDoc).permissions || [];
       permissionCache.set(roleId, { permissions, fetchedAt: Date.now() });
       return permissions;
     }

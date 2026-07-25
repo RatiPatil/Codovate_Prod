@@ -3,6 +3,12 @@ const router = express.Router();
 const { db } = require('../config/firebase');
 const auth = require('../middleware/auth');
 const { GoogleGenerativeAI } = require("@google/generative-ai");
+
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 // Helper: No longer expiring chats
@@ -21,18 +27,18 @@ router.get('/discover', auth, async (req, res) => {
     
     const excludedUserIds = new Set();
     sent.forEach(doc => {
-      const d = doc.data();
+      const d = mapDoc(doc);
       if (d.status !== 'rejected') excludedUserIds.add(d.receiver_id);
     });
     received.forEach(doc => {
-      const d = doc.data();
+      const d = mapDoc(doc);
       if (d.status !== 'rejected') excludedUserIds.add(d.sender_id);
     });
 
     // Exclude blocked users (if array exists on user doc)
     const currentUserDoc = await db.collection('students').doc(req.user.id).get();
     if (currentUserDoc.exists) {
-      const data = currentUserDoc.data();
+      const data = mapDoc(currentUserDoc);
       const blocked = data.blocked_users || [];
       blocked.forEach(id => excludedUserIds.add(id));
     }
@@ -61,7 +67,7 @@ router.get('/discover', auth, async (req, res) => {
       // Exclude already connected, pending, or blocked users
       if (excludedUserIds.has(doc.id)) return;
       
-      const rawData = doc.data();
+      const rawData = mapDoc(doc);
       const pd = rawData.profile_data || {};
       const data = { ...rawData, ...pd }; // Merge profile_data into top level
 
@@ -133,7 +139,7 @@ router.get('/ai-match', auth, async (req, res) => {
     // 1. Fetch current user
     const currentUserDoc = await db.collection('students').doc(req.user.id).get();
     if (!currentUserDoc.exists) return res.status(404).json({ message: "User not found" });
-    const userData = currentUserDoc.data();
+    const userData = mapDoc(currentUserDoc);
     const userProfile = {
       skills: userData.skills || [],
       goals: userData.career_goal || '',
@@ -146,7 +152,7 @@ router.get('/ai-match', auth, async (req, res) => {
     
     snapshot.forEach(doc => {
       if (doc.id === req.user.id) return;
-      const data = doc.data();
+      const data = mapDoc(doc);
       candidates.push({
         id: doc.id,
         name: data.name || data.full_name || 'Anonymous',
@@ -226,10 +232,10 @@ router.post('/connect', auth, async (req, res) => {
     if (!existingSender.empty || !existingReceiver.empty) {
       // If there's an existing one, check status
       const existing = !existingSender.empty ? existingSender.docs[0] : existingReceiver.docs[0];
-      if (existing.data().status === 'pending') {
+      if (mapDoc(existing).status === 'pending') {
         return res.status(400).json({ message: 'Connection request already pending.' });
       }
-      if (existing.data().status === 'accepted') {
+      if (mapDoc(existing).status === 'accepted') {
         return res.status(400).json({ message: 'Already connected.' });
       }
       // If 'rejected' or 'expired', we can create a new one, so we just delete the old one
@@ -285,7 +291,7 @@ router.put('/connect/:id', auth, async (req, res) => {
     const doc = await docRef.get();
     if (!doc.exists) return res.status(404).json({ message: 'Connection not found' });
     
-    const data = doc.data();
+    const data = mapDoc(doc);
     if (data.receiver_id !== req.user.id) return res.status(403).json({ message: 'Unauthorized' });
 
     if (action === 'reject') {
@@ -342,12 +348,12 @@ router.get('/connections', auth, async (req, res) => {
     
     const extract = async (docs) => {
       for (const doc of docs) {
-        const d = doc.data();
+        const d = mapDoc(doc);
         if (d.status === 'rejected' || d.status === 'expired') continue; // Don't show
         
         const otherId = d.sender_id === req.user.id ? d.receiver_id : d.sender_id;
         const otherDoc = await db.collection('students').doc(otherId).get();
-        const rawOtherData = otherDoc.exists ? otherDoc.data() : { name: 'Unknown' };
+        const rawOtherData = otherDoc.exists ? mapDoc(otherDoc) : { name: 'Unknown' };
         const pd = rawOtherData.profile_data || {};
         const otherData = { ...rawOtherData, ...pd };
         

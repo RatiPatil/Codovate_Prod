@@ -2,6 +2,11 @@ const express = require('express');
 const router = express.Router();
 const { db } = require('../config/firebase');
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 const collegeAdminOnly = (req, res, next) => {
   if (req.user.role !== 'college_admin' && req.user.role !== 'super_admin') {
     return res.status(403).json({ message: 'College Admin access required.' });
@@ -31,17 +36,17 @@ router.get('/', collegeAdminOnly, async (req, res) => {
     
     for (const doc of studentsSnap.docs) {
       const uid = doc.id;
-      const data = doc.data();
+      const data = mapDoc(doc);
       const rDoc = await db.collection('placementReadiness').doc(uid).get();
       if (rDoc.exists) {
-        totalScore += rDoc.data().score || 0;
+        totalScore += mapDoc(rDoc).score || 0;
         studentsWithScore++;
       }
       
       // We will count it as a hackathon participant if they have hackathons listed in their profile or projects
       // For now, let's look at their projects
       const pDoc = await db.collection('profiles').doc(uid).get();
-      if (pDoc.exists && pDoc.data().projects && pDoc.data().projects.length > 0) {
+      if (pDoc.exists && mapDoc(pDoc).projects && mapDoc(pDoc).projects.length > 0) {
         // Just mock some hackathon count based on projects for presentation
         hackathonParticipants++;
       }

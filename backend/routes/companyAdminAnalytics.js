@@ -2,6 +2,11 @@ const express = require('express');
 const router = express.Router();
 const { db } = require('../config/firebase');
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 const companyAdminOnly = (req, res, next) => {
   if (req.user.role !== 'company_admin' && req.user.role !== 'super_admin') {
     return res.status(403).json({ message: 'Company Admin access required.' });
@@ -43,7 +48,7 @@ router.get('/', companyAdminOnly, async (req, res) => {
     let scoredCandidates = 0;
 
     for (const doc of applicationsSnap.docs) {
-      const data = doc.data();
+      const data = mapDoc(doc);
       totalApplications++;
 
       // Populate Funnel
@@ -70,7 +75,7 @@ router.get('/', companyAdminOnly, async (req, res) => {
       try {
         const studentDoc = await db.collection('students').doc(data.user_id).get();
         if (studentDoc.exists) {
-          const studentData = studentDoc.data();
+          const studentData = mapDoc(studentDoc);
           const skills = studentData.skills || [];
           
           // Count Skills
@@ -86,7 +91,7 @@ router.get('/', companyAdminOnly, async (req, res) => {
           if (data.opportunity_id) {
             const oppDoc = await db.collection('opportunities').doc(data.opportunity_id).get();
             if (oppDoc.exists) {
-              const oppData = oppDoc.data();
+              const oppData = mapDoc(oppDoc);
               const reqSkills = oppData.skills || [];
               if (reqSkills.length > 0) {
                 let matches = 0;

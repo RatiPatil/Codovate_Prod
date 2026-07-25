@@ -18,11 +18,16 @@ const { ROLE_DEFINITIONS, ROLE_PRIORITIES } = require('../config/roleDefinitions
 const { clearPermissionCache } = require('../middleware/authenticate');
 const { logAuditDirect, AUDIT_ACTIONS } = require('../middleware/auditLog');
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 // ─── GET /roles — List all roles ────────────────────────────
 router.get('/roles', async (req, res) => {
   try {
     const snapshot = await db.collection('roles').orderBy('priority', 'asc').get();
-    const roles = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const roles = snapshot.docs.map(doc => ({ id: doc.id, ...mapDoc(doc) }));
     res.json({ roles });
   } catch (err) {
     console.error('[RBAC] List roles error:', err);
@@ -35,7 +40,7 @@ router.get('/roles/:roleId', async (req, res) => {
   try {
     const doc = await db.collection('roles').doc(req.params.roleId).get();
     if (!doc.exists) return res.status(404).json({ message: 'Role not found.' });
-    res.json({ role: { id: doc.id, ...doc.data() } });
+    res.json({ role: { id: doc.id, ...mapDoc(doc) } });
   } catch (err) {
     console.error('[RBAC] Get role error:', err);
     res.status(500).json({ message: 'Failed to fetch role.' });
@@ -105,7 +110,7 @@ router.get('/permissions', (req, res) => {
 router.get('/users/me/permissions', async (req, res) => {
   try {
     const roleDoc = await db.collection('roles').doc(req.user.role).get();
-    const permissions = roleDoc.exists ? (roleDoc.data().permissions || []) : [];
+    const permissions = roleDoc.exists ? (mapDoc(roleDoc).permissions || []) : [];
     
     res.json({
       role: req.user.role,
@@ -124,9 +129,9 @@ router.get('/users/:userId/permissions', async (req, res) => {
     const userDoc = await db.collection('users').doc(req.params.userId).get();
     if (!userDoc.exists) return res.status(404).json({ message: 'User not found.' });
 
-    const userData = userDoc.data();
+    const userData = mapDoc(userDoc);
     const roleDoc = await db.collection('roles').doc(userData.role).get();
-    const permissions = roleDoc.exists ? (roleDoc.data().permissions || []) : [];
+    const permissions = roleDoc.exists ? (mapDoc(roleDoc).permissions || []) : [];
 
     res.json({
       userId: req.params.userId,
@@ -164,7 +169,7 @@ router.put('/users/:userId/role', async (req, res) => {
     const userDoc = await userRef.get();
     if (!userDoc.exists) return res.status(404).json({ message: 'User not found.' });
 
-    const oldRole = userDoc.data().role;
+    const oldRole = mapDoc(userDoc).role;
 
     await userRef.update({
       role: roleId,
@@ -179,7 +184,7 @@ router.put('/users/:userId/role', async (req, res) => {
       action: AUDIT_ACTIONS.ROLE_CHANGE,
       resource: 'user',
       resourceId: req.params.userId,
-      details: { oldRole, newRole: roleId, targetEmail: userDoc.data().email },
+      details: { oldRole, newRole: roleId, targetEmail: mapDoc(userDoc).email },
     });
 
     res.json({ message: `User role changed from "${oldRole}" to "${roleId}".` });
@@ -206,7 +211,7 @@ router.get('/audit-logs', async (req, res) => {
     }
 
     const snapshot = await query.limit(limitNum).get();
-    const logs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const logs = snapshot.docs.map(doc => ({ id: doc.id, ...mapDoc(doc) }));
 
     res.json({ 
       logs, 
@@ -231,7 +236,7 @@ router.get('/login-history', async (req, res) => {
     if (status) query = query.where('status', '==', status);
 
     const snapshot = await query.limit(limitNum).get();
-    const logs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const logs = snapshot.docs.map(doc => ({ id: doc.id, ...mapDoc(doc) }));
 
     res.json({ logs, count: logs.length });
   } catch (err) {
@@ -244,7 +249,7 @@ router.get('/login-history', async (req, res) => {
 router.get('/feature-flags', async (req, res) => {
   try {
     const snapshot = await db.collection('featureFlags').get();
-    const flags = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const flags = snapshot.docs.map(doc => ({ id: doc.id, ...mapDoc(doc) }));
     res.json({ flags });
   } catch (err) {
     console.error('[RBAC] Feature flags error:', err);

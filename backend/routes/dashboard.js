@@ -4,6 +4,11 @@ const { db } = require("../config/firebase");
 const auth = require("../middleware/auth");
 const { syncDashboard } = require("../services/dashboardService");
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 // ─── GET /api/dashboard ────────────────────────────────────────────────────
 router.get("/", auth, async (req, res) => {
   try {
@@ -13,10 +18,10 @@ router.get("/", auth, async (req, res) => {
     if (!doc.exists) {
       await syncDashboard(req.user.id);
       const newDoc = await db.collection("dashboard").doc(req.user.id).get();
-      return res.json(newDoc.data());
+      return res.json(mapDoc(newDoc));
     }
 
-    res.json(doc.data());
+    res.json(mapDoc(doc));
   } catch (err) {
     console.error("Fetch dashboard error:", err);
     res.status(500).json({ message: "Failed to load dashboard." });

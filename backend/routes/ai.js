@@ -4,6 +4,11 @@ const { db, admin, FieldValue } = require("../config/firebase");
 const auth = require("../middleware/auth");
 const { getConfiguredModel, genAI } = require("../utils/aiConfig");
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 const parseJSON = (text) => {
   let t = text.trim();
   if (t.startsWith("```json")) t = t.slice(7);
@@ -22,7 +27,7 @@ router.get("/skill-gap", auth, async (req, res) => {
     // Check cache first (re-generate only if older than 24h)
     const cached = await db.collection("aiSkillGap").doc(uid).get();
     if (cached.exists) {
-      const data = cached.data();
+      const data = mapDoc(cached);
       const ageMs = Date.now() - (data.updatedAt?.toMillis?.() || 0);
       if (ageMs < 24 * 60 * 60 * 1000) return res.json(data);
     }
@@ -32,8 +37,8 @@ router.get("/skill-gap", auth, async (req, res) => {
       db.collection("analytics").doc(uid).get(),
     ]);
 
-    const c = careerDoc.exists ? careerDoc.data() : {};
-    const a = analyticsDoc.exists ? analyticsDoc.data() : {};
+    const c = careerDoc.exists ? mapDoc(careerDoc) : {};
+    const a = analyticsDoc.exists ? mapDoc(analyticsDoc) : {};
 
     const goal = c.career_goal || c.desired_roles?.[0] || "Software Engineer";
     const currentSkills = c.skills || [];
@@ -118,9 +123,9 @@ router.post("/coach", auth, async (req, res) => {
       db.collection("userRoadmaps").doc(uid).get(),
     ]);
 
-    const c = careerDoc.exists ? careerDoc.data() : {};
-    const a = analyticsDoc.exists ? analyticsDoc.data() : {};
-    const roadmap = roadmapDoc.exists ? roadmapDoc.data() : null;
+    const c = careerDoc.exists ? mapDoc(careerDoc) : {};
+    const a = analyticsDoc.exists ? mapDoc(analyticsDoc) : {};
+    const roadmap = roadmapDoc.exists ? mapDoc(roadmapDoc) : null;
 
     const goal = c.career_goal || c.desired_roles?.[0] || "Software Engineer";
     const skills = c.skills || [];
@@ -222,10 +227,10 @@ router.get("/weekly-report", auth, async (req, res) => {
         db.collection("placementReadiness").doc(uid).get(),
       ]);
 
-    const a = analyticsDoc.exists ? analyticsDoc.data() : {};
-    const roadmap = roadmapDoc.exists ? roadmapDoc.data() : null;
-    const c = careerDoc.exists ? careerDoc.data() : {};
-    const readiness = readinessDoc.exists ? readinessDoc.data() : {};
+    const a = analyticsDoc.exists ? mapDoc(analyticsDoc) : {};
+    const roadmap = roadmapDoc.exists ? mapDoc(roadmapDoc) : null;
+    const c = careerDoc.exists ? mapDoc(careerDoc) : {};
+    const readiness = readinessDoc.exists ? mapDoc(readinessDoc) : {};
 
     const goal = c.career_goal || c.desired_roles?.[0] || "Software Engineer";
     const roadmapProgress = roadmap?.overall_progress || 0;
@@ -299,7 +304,7 @@ router.get("/career-advisor", auth, async (req, res) => {
   const uid = req.user.id;
   try {
     const careerDoc = await db.collection("careerProfiles").doc(uid).get();
-    const c = careerDoc.exists ? careerDoc.data() : {};
+    const c = careerDoc.exists ? mapDoc(careerDoc) : {};
 
     const goal = c.career_goal || c.desired_roles?.[0] || "Software Engineer";
     const currentSkills = c.skills || [];

@@ -3,6 +3,11 @@ const { admin } = require('../config/firebase');
 const AppError = require('../utils/AppError');
 const UserRepository = require('./UserRepository');
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 class RecruiterProfileRepository extends FirestoreRepository {
   constructor() { super('recruiter_profiles'); }
 
@@ -53,8 +58,8 @@ class RecruiterProfileRepository extends FirestoreRepository {
       ]);
 
       return {
-        total: totalSnap.data().count,
-        active: activeSnap.data().count
+        total: mapDoc(totalSnap).count,
+        active: mapDoc(activeSnap).count
       };
     } catch (err) {
       throw new AppError('Failed to aggregate Recruiter metrics', 500);

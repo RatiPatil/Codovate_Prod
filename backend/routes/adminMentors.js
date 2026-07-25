@@ -4,6 +4,11 @@ const { db } = require('../config/firebase');
 const { body, validationResult } = require('express-validator');
 const bcrypt = require('bcrypt');
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 const superAdminOnly = (req, res, next) => {
   if (req.user.role !== 'super_admin' && req.user.role !== 'admin') {
     return res.status(403).json({ message: 'Super Admin access required.' });
@@ -16,7 +21,7 @@ router.get('/', superAdminOnly, async (req, res) => {
   try {
     const snapshot = await db.collection('mentors').get();
     const mentors = snapshot.docs.map(doc => {
-      const data = doc.data();
+      const data = mapDoc(doc);
       delete data.password_hash; // never send password hash to client
       return { id: doc.id, ...data };
     });
@@ -81,7 +86,7 @@ router.post('/', superAdminOnly, [
         portfolio: data.portfolio || ''
       },
       status: 'active',
-      is_active: true,
+      recordStatus: 'ACTIVE',
       created_at: new Date(),
       last_login_at: null,
       stats: {
@@ -119,7 +124,7 @@ router.put('/:id', superAdminOnly, async (req, res) => {
 
     // Status overrides
     if (updateData.status) {
-      updateData.is_active = updateData.status === 'active';
+      updateData.recordStatus = updateData.status === 'active' ? 'ACTIVE' : (updateData.status === 'inactive' ? 'DISABLED' : 'SUSPENDED');
     }
 
     await docRef.update(updateData);
@@ -149,7 +154,7 @@ router.delete('/:id', superAdminOnly, async (req, res) => {
 router.post('/:id/suspend', superAdminOnly, async (req, res) => {
   try {
     const docRef = db.collection('mentors').doc(req.params.id);
-    await docRef.update({ status: 'suspended', is_active: false });
+    await docRef.update({ status: 'suspended', recordStatus: 'SUSPENDED' });
     res.json({ message: 'Mentor suspended successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
@@ -160,7 +165,7 @@ router.post('/:id/suspend', superAdminOnly, async (req, res) => {
 router.post('/:id/activate', superAdminOnly, async (req, res) => {
   try {
     const docRef = db.collection('mentors').doc(req.params.id);
-    await docRef.update({ status: 'active', is_active: true });
+    await docRef.update({ status: 'active', recordStatus: 'ACTIVE' });
     res.json({ message: 'Mentor activated successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Server error' });

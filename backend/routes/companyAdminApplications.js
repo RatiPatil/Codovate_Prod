@@ -2,6 +2,11 @@ const express = require('express');
 const router = express.Router();
 const { db } = require('../config/firebase');
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 const companyAdminOnly = (req, res, next) => {
   if (req.user.role !== 'company_admin' && req.user.role !== 'super_admin') {
     return res.status(403).json({ message: 'Company Admin access required.' });
@@ -22,16 +27,16 @@ router.get('/', companyAdminOnly, async (req, res) => {
     const apps = [];
     
     for (const doc of snapshot.docs) {
-      const app = doc.data();
+      const app = mapDoc(doc);
       app.id = doc.id;
       
       const studentDoc = await db.collection("profiles").doc(app.user_id).get();
-      const s = studentDoc.exists ? studentDoc.data() : {};
+      const s = studentDoc.exists ? mapDoc(studentDoc) : {};
       const userDoc = await db.collection("users").doc(app.user_id).get();
-      const u = userDoc.exists ? userDoc.data() : {};
+      const u = userDoc.exists ? mapDoc(userDoc) : {};
       
       const oppDoc = await db.collection("opportunities").doc(app.opportunity_id).get();
-      const o = oppDoc.exists ? oppDoc.data() : {};
+      const o = oppDoc.exists ? mapDoc(oppDoc) : {};
       
       // Phase 6: Calculate match score based on skills overlap
       let match_score = 0;
@@ -64,9 +69,9 @@ router.put('/:id/status', companyAdminOnly, async (req, res) => {
     const docRef = db.collection('applications').doc(req.params.id);
     const doc = await docRef.get();
     if (!doc.exists) return res.status(404).json({ message: 'Not found' });
-    if (doc.data().company_id !== targetCompanyId && req.user.role !== 'super_admin') return res.status(403).json({ message: 'Forbidden' });
+    if (mapDoc(doc).company_id !== targetCompanyId && req.user.role !== 'super_admin') return res.status(403).json({ message: 'Forbidden' });
     
-    const appData = doc.data();
+    const appData = mapDoc(doc);
     await docRef.update({ status, updated_at: new Date() });
     
     // Phase 6: Update application status hooks & Notify student
@@ -106,7 +111,7 @@ router.put('/:id/status', companyAdminOnly, async (req, res) => {
       created_at: new Date()
     });
     
-    res.json((await docRef.get()).data());
+    res.json(mapDoc((await docRef.get())));
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
   }
@@ -118,7 +123,7 @@ router.delete('/:id', companyAdminOnly, async (req, res) => {
     const docRef = db.collection('applications').doc(req.params.id);
     const doc = await docRef.get();
     if (!doc.exists) return res.status(404).json({ message: 'Not found' });
-    if (doc.data().company_id !== targetCompanyId && req.user.role !== 'super_admin') return res.status(403).json({ message: 'Forbidden' });
+    if (mapDoc(doc).company_id !== targetCompanyId && req.user.role !== 'super_admin') return res.status(403).json({ message: 'Forbidden' });
     
     await docRef.delete();
     res.json({ message: 'Deleted' });

@@ -2,6 +2,11 @@ const FirestoreRepository = require('./Repository');
 const AppError = require('../utils/AppError');
 const OfferRepository = require('./OfferRepository');
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 class PlacementRepository extends FirestoreRepository {
   constructor() { super('placements'); }
 
@@ -39,7 +44,7 @@ class PlacementRepository extends FirestoreRepository {
       let total = 0, joined = 0, highestCtc = 0, sumCtc = 0;
       
       allSnap.forEach(doc => {
-        const d = doc.data();
+        const d = mapDoc(doc);
         total++;
         if (d.recordStatus === 'JOINED') joined++;
         if (d.ctc > highestCtc) highestCtc = d.ctc;
@@ -62,7 +67,7 @@ class PlacementRepository extends FirestoreRepository {
     const doc = await docRef.get();
     if (!doc.exists) throw new AppError('Placement Record not found', 404);
 
-    const data = doc.data();
+    const data = mapDoc(doc);
     const timeline = data.timeline || [];
     timeline.push({
       stage: newStatus,

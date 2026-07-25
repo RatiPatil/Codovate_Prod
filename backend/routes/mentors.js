@@ -10,22 +10,22 @@ router.get("/", auth, async (req, res) => {
     const mentorsSnapshot = await db.collection("mentors").get();
     console.log(`[GET /mentors] Found ${mentorsSnapshot.size} total mentors in DB.`);
     
-    // Filter active mentors in-memory to catch those with status 'active' but missing is_active flag
+    // Filter active mentors in-memory
     const activeDocs = mentorsSnapshot.docs.filter(doc => {
-      const data = doc.data();
-      return data.is_active === true || data.status === 'active';
+      const data = mapDoc(doc);
+      return data.recordStatus === 'ACTIVE' || data.status === 'active';
     });
     console.log(`[GET /mentors] Filtered to ${activeDocs.length} active mentors.`);
 
     const mentors = await Promise.all(activeDocs.map(async (doc) => {
-      const m = doc.data();
+      const m = mapDoc(doc);
       m.id = doc.id;
       
       if (m.user_id) {
         const userDoc = await db.collection("users").doc(m.user_id).get();
         if (userDoc.exists) {
-          m.name = userDoc.data().name;
-          m.email = userDoc.data().email;
+          m.name = mapDoc(userDoc).name;
+          m.email = mapDoc(userDoc).email;
         }
       }
       return m;
@@ -45,23 +45,23 @@ router.get("/ai-recommend", auth, async (req, res) => {
     // Get student profile
     const studentDoc = await db.collection("students").doc(req.user.id).get();
     if (!studentDoc.exists) return res.status(404).json({ message: "Student profile not found" });
-    const studentData = studentDoc.data();
+    const studentData = mapDoc(studentDoc);
     const currentSkills = (studentData.skills || []).map(s => typeof s === 'string' ? s : (s.name || ''));
     const careerGoal = studentData.career_goal || '';
 
     // Fetch active mentors
     const mentorsSnapshot = await db.collection("mentors").get();
-    const activeDocs = mentorsSnapshot.docs.filter(doc => doc.data().is_active === true || doc.data().status === 'active');
-    
+    const activeDocs = mentorsSnapshot.docs.filter(doc => mapDoc(doc).recordStatus === 'ACTIVE' || mapDoc(doc).status === 'active');
+
     if (activeDocs.length === 0) return res.json({ recommended: null });
 
     const mentors = await Promise.all(activeDocs.map(async (doc) => {
-      const m = doc.data();
+      const m = mapDoc(doc);
       m.id = doc.id;
       if (m.user_id) {
         const userDoc = await db.collection("users").doc(m.user_id).get();
         if (userDoc.exists) {
-          m.name = userDoc.data().name;
+          m.name = mapDoc(userDoc).name;
         }
       }
       return m;
@@ -69,6 +69,12 @@ router.get("/ai-recommend", auth, async (req, res) => {
 
     // Define AI payload
     const { model } = require("../utils/aiConfig");
+
+    const {
+      mapDoc: mapDoc,
+      mapDocs: mapDocs
+    } = require('../utils/firestoreMapper');
+
     const prompt = `
     You are an AI Mentor Matchmaker.
     Student Profile:
@@ -93,7 +99,7 @@ router.get("/ai-recommend", auth, async (req, res) => {
 
     const aiMatch = JSON.parse(text);
     const recommendedMentor = mentors.find(m => m.id === aiMatch.mentor_id);
-    
+
     if (recommendedMentor) {
       recommendedMentor.ai_reasoning = aiMatch.reasoning;
       res.json({ recommended: recommendedMentor });
@@ -144,8 +150,8 @@ router.post("/:id/book", auth, async (req, res) => {
     if (req.io) {
       req.io.to(`user_${req.user.id}`).emit('new_booking', booking);
       const mDoc = await db.collection("mentors").doc(req.params.id).get();
-      if (mDoc.exists && mDoc.data().user_id) {
-        req.io.to(`admin_mentor_${mDoc.data().user_id}`).emit('new_booking', booking);
+      if (mDoc.exists && mapDoc(mDoc).user_id) {
+        req.io.to(`admin_mentor_${mapDoc(mDoc).user_id}`).emit('new_booking', booking);
       }
     }
 
@@ -176,11 +182,11 @@ router.get("/requests", auth, async (req, res) => {
       .get();
 
     const requests = await Promise.all(snapshot.docs.map(async (doc) => {
-      const data = doc.data();
+      const data = mapDoc(doc);
       const studentDoc = await db.collection("profiles").doc(data.student_id).get();
-      const s = studentDoc.exists ? studentDoc.data() : {};
+      const s = studentDoc.exists ? mapDoc(studentDoc) : {};
       const userDoc = await db.collection("users").doc(data.student_id).get();
-      const u = userDoc.exists ? userDoc.data() : {};
+      const u = userDoc.exists ? mapDoc(userDoc) : {};
       return {
         id: doc.id,
         ...data,
@@ -215,7 +221,7 @@ router.put("/requests/:id", auth, async (req, res) => {
       updated_at: new Date()
     });
 
-    const updatedDoc = (await bookingRef.get()).data();
+    const updatedDoc = mapDoc((await bookingRef.get()));
     
     if (req.io && status === 'accepted') {
       req.io.to(`user_${updatedDoc.student_id}`).emit('student_booking_confirmed', {
@@ -239,17 +245,17 @@ router.get("/my-sessions", auth, async (req, res) => {
       .get();
 
     const sessions = await Promise.all(snap.docs.map(async (doc) => {
-      const b = doc.data();
+      const b = mapDoc(doc);
       let mentorData = { name: "Unknown Mentor", expertise: [], hourly_rate: 0 };
       
       if (b.mentor_id) {
         const mentorDoc = await db.collection("mentors").doc(b.mentor_id).get();
         if (mentorDoc.exists) {
-          const md = mentorDoc.data();
+          const md = mapDoc(mentorDoc);
           let name = "Unknown";
           if (md.user_id) {
             const userDoc = await db.collection("users").doc(md.user_id).get();
-            name = userDoc.exists ? userDoc.data().name : "Unknown";
+            name = userDoc.exists ? mapDoc(userDoc).name : "Unknown";
           }
           mentorData = {
             name,

@@ -3,6 +3,11 @@ const router = express.Router();
 const { db } = require('../config/firebase');
 const { body, validationResult } = require('express-validator');
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 const companyAdminOnly = (req, res, next) => {
   if (req.user.role !== 'company_admin' && req.user.role !== 'super_admin') {
     return res.status(403).json({ message: 'Company Admin access required.' });
@@ -21,7 +26,7 @@ router.get('/', companyAdminOnly, async (req, res) => {
     const snapshot = await db.collection('interviews').where('company_id', '==', targetCompanyId).get();
     const items = [];
     snapshot.forEach(doc => {
-      items.push({ id: doc.id, ...doc.data() });
+      items.push({ id: doc.id, ...mapDoc(doc) });
     });
     res.json(items);
   } catch (error) {
@@ -62,12 +67,12 @@ router.put('/:id', companyAdminOnly, async (req, res) => {
     const docRef = db.collection('interviews').doc(req.params.id);
     const doc = await docRef.get();
     if (!doc.exists) return res.status(404).json({ message: 'Not found' });
-    if (doc.data().company_id !== targetCompanyId && req.user.role !== 'super_admin') return res.status(403).json({ message: 'Forbidden' });
+    if (mapDoc(doc).company_id !== targetCompanyId && req.user.role !== 'super_admin') return res.status(403).json({ message: 'Forbidden' });
     
     const updateData = { ...req.body };
     delete updateData.company_id;
     await docRef.update(updateData);
-    res.json((await docRef.get()).data());
+    res.json(mapDoc((await docRef.get())));
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
   }
@@ -79,7 +84,7 @@ router.delete('/:id', companyAdminOnly, async (req, res) => {
     const docRef = db.collection('interviews').doc(req.params.id);
     const doc = await docRef.get();
     if (!doc.exists) return res.status(404).json({ message: 'Not found' });
-    if (doc.data().company_id !== targetCompanyId && req.user.role !== 'super_admin') return res.status(403).json({ message: 'Forbidden' });
+    if (mapDoc(doc).company_id !== targetCompanyId && req.user.role !== 'super_admin') return res.status(403).json({ message: 'Forbidden' });
     
     await docRef.delete();
     res.json({ message: 'Deleted' });

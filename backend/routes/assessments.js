@@ -7,13 +7,18 @@ require('dotenv').config();
 
 const { getConfiguredModel, genAI } = require("../utils/aiConfig");
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 // GET /api/assessments
 // Returns past assessment results for the user
 router.get('/', auth, async (req, res) => {
   try {
     const uid = req.user.id;
     const snapshot = await db.collection("skillAssessments").where("uid", "==", uid).orderBy("createdAt", "desc").get();
-    const results = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const results = snapshot.docs.map(doc => ({ id: doc.id, ...mapDoc(doc) }));
     res.json(results);
   } catch (err) {
     console.error("Fetch assessments error:", err);
@@ -100,7 +105,7 @@ router.post('/submit', auth, async (req, res) => {
     const pendingDoc = await pendingRef.get();
     
     if (!pendingDoc.exists) return res.status(404).json({ message: "Assessment session not found" });
-    const pendingData = pendingDoc.data();
+    const pendingData = mapDoc(pendingDoc);
     
     if (pendingData.uid !== uid) return res.status(403).json({ message: "Unauthorized" });
 
@@ -188,7 +193,7 @@ Respond ONLY with a JSON object in this exact format:
         const userDoc = await t.get(userRef);
         const profileDoc = await t.get(profileRef);
         
-        const userData = userDoc.exists ? userDoc.data() : {};
+        const userData = userDoc.exists ? mapDoc(userDoc) : {};
         
         // Update user XP
         t.update(userRef, {
@@ -205,7 +210,7 @@ Respond ONLY with a JSON object in this exact format:
         
         // Sync verified skill to Profile/Resume
         if (profileDoc.exists) {
-          const profileData = profileDoc.data();
+          const profileData = mapDoc(profileDoc);
           let skills = profileData.skills || [];
           if (!skills.includes(pendingData.topic)) {
             skills.push(pendingData.topic);

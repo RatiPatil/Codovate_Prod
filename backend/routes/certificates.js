@@ -4,6 +4,11 @@ const { db } = require("../config/firebase");
 const auth = require("../middleware/auth");
 const eventBus = require("../events/eventBus");
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 // ─── POST /api/certificates ────────────────────────────────────────────────
 router.post("/", auth, async (req, res) => {
   try {
@@ -50,7 +55,7 @@ router.get("/", auth, async (req, res) => {
       .orderBy("createdAt", "desc")
       .get();
       
-    const certificates = snapshot.docs.map(doc => doc.data());
+    const certificates = mapDocs(snapshot);
     res.json(certificates);
   } catch (err) {
     console.error("Get certificates error:", err);
@@ -64,11 +69,11 @@ router.put("/:id", auth, async (req, res) => {
     const certRef = db.collection("certificates").doc(req.params.id);
     const doc = await certRef.get();
     
-    if (!doc.exists || doc.data().ownerUid !== req.user.id) {
+    if (!doc.exists || mapDoc(doc).ownerUid !== req.user.id) {
       return res.status(404).json({ message: "Certificate not found." });
     }
     
-    if (doc.data().verified) {
+    if (mapDoc(doc).verified) {
       return res.status(403).json({ message: "Cannot edit a verified certificate." });
     }
 
@@ -90,7 +95,7 @@ router.put("/:id", auth, async (req, res) => {
     await certRef.update(updateData);
     
     const updatedDoc = await certRef.get();
-    res.json(updatedDoc.data());
+    res.json(mapDoc(updatedDoc));
   } catch (err) {
     console.error("Update certificate error:", err);
     res.status(500).json({ message: "Failed to update certificate." });
@@ -103,7 +108,7 @@ router.delete("/:id", auth, async (req, res) => {
     const certRef = db.collection("certificates").doc(req.params.id);
     const doc = await certRef.get();
     
-    if (!doc.exists || doc.data().ownerUid !== req.user.id) {
+    if (!doc.exists || mapDoc(doc).ownerUid !== req.user.id) {
       return res.status(404).json({ message: "Certificate not found." });
     }
     

@@ -3,6 +3,11 @@ const router = express.Router();
 const { db } = require("../config/firebase");
 const auth = require("../middleware/auth");
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 // GET all calendar events for a user
 router.get("/", auth, async (req, res) => {
   try {
@@ -18,7 +23,7 @@ router.get("/", auth, async (req, res) => {
       .get();
       
     oppsSnapshot.forEach(doc => {
-      const opp = doc.data();
+      const opp = mapDoc(doc);
       if (opp.deadline) {
         calendarEvents.push({
           id: `opp_${doc.id}`,
@@ -44,7 +49,7 @@ router.get("/", auth, async (req, res) => {
     // 2. Fetch Events (Workshops, Company Drives)
     const eventsSnapshot = await db.collection("events").get();
     eventsSnapshot.forEach(doc => {
-      const ev = doc.data();
+      const ev = mapDoc(doc);
       if (ev.date || ev.start_time) {
         calendarEvents.push({
           id: `event_${doc.id}`,
@@ -63,7 +68,7 @@ router.get("/", auth, async (req, res) => {
       .get();
       
     mentorSessionsSnapshot.forEach(doc => {
-      const session = doc.data();
+      const session = mapDoc(doc);
       if (session.scheduled_time && session.status !== "Cancelled") {
         calendarEvents.push({
           id: `session_${doc.id}`,

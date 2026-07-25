@@ -3,6 +3,11 @@ const router = express.Router();
 const { db } = require("../config/firebase");
 const auth = require("../middleware/auth");
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 // Middleware to verify if user is a member of the team
 const verifyTeamMember = async (req, res, next) => {
   const { teamId } = req.params;
@@ -16,7 +21,7 @@ const verifyTeamMember = async (req, res, next) => {
       return res.status(403).json({ message: "Access denied. Not a team member." });
     }
     
-    req.teamRole = memberSnapshot.docs[0].data().role;
+    req.teamRole = mapDoc(memberSnapshot.docs[0]).role;
     next();
   } catch (err) {
     console.error("Team verification error:", err);
@@ -28,7 +33,7 @@ const verifyTeamMember = async (req, res, next) => {
 const logActivity = async (teamId, userId, action, details) => {
   try {
     const userDoc = await db.collection("profiles").doc(userId).get();
-    const userName = userDoc.exists ? (userDoc.data().personalInfo?.name || "A member") : "A member";
+    const userName = userDoc.exists ? (mapDoc(userDoc).personalInfo?.name || "A member") : "A member";
     
     await db.collection("team_activity").add({
       team_id: teamId,
@@ -54,7 +59,7 @@ router.get("/:teamId/tasks", auth, verifyTeamMember, async (req, res) => {
       .orderBy("created_at", "desc")
       .get();
       
-    const tasks = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const tasks = snapshot.docs.map(doc => ({ id: doc.id, ...mapDoc(doc) }));
     res.json(tasks);
   } catch (err) {
     console.error("Get tasks error:", err);
@@ -99,7 +104,7 @@ router.put("/:teamId/tasks/:taskId", auth, verifyTeamMember, async (req, res) =>
       return res.status(404).json({ message: "Task not found." });
     }
     
-    const oldStatus = taskDoc.data().status;
+    const oldStatus = mapDoc(taskDoc).status;
     const updates = { ...req.body, updated_at: new Date() };
     
     // Don't allow changing team_id
@@ -113,11 +118,11 @@ router.put("/:teamId/tasks/:taskId", auth, verifyTeamMember, async (req, res) =>
         req.params.teamId, 
         req.user.id, 
         "moved task", 
-        `"${taskDoc.data().title}" to ${updates.status}`
+        `"${mapDoc(taskDoc).title}" to ${updates.status}`
       );
     }
     
-    res.json({ id: req.params.taskId, ...taskDoc.data(), ...updates });
+    res.json({ id: req.params.taskId, ...mapDoc(taskDoc), ...updates });
   } catch (err) {
     console.error("Update task error:", err);
     res.status(500).json({ message: "Failed to update task." });
@@ -130,7 +135,7 @@ router.delete("/:teamId/tasks/:taskId", auth, verifyTeamMember, async (req, res)
     const taskDoc = await taskRef.get();
     
     if (taskDoc.exists) {
-      await logActivity(req.params.teamId, req.user.id, "deleted a task", taskDoc.data().title);
+      await logActivity(req.params.teamId, req.user.id, "deleted a task", mapDoc(taskDoc).title);
       await taskRef.delete();
     }
     
@@ -152,7 +157,7 @@ router.get("/:teamId/files", auth, verifyTeamMember, async (req, res) => {
       .orderBy("created_at", "desc")
       .get();
       
-    const files = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const files = snapshot.docs.map(doc => ({ id: doc.id, ...mapDoc(doc) }));
     res.json(files);
   } catch (err) {
     console.error("Get files error:", err);
@@ -196,7 +201,7 @@ router.get("/:teamId/announcements", auth, verifyTeamMember, async (req, res) =>
       .orderBy("created_at", "desc")
       .get();
       
-    const announcements = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const announcements = snapshot.docs.map(doc => ({ id: doc.id, ...mapDoc(doc) }));
     res.json(announcements);
   } catch (err) {
     console.error("Get announcements error:", err);
@@ -212,7 +217,7 @@ router.post("/:teamId/announcements", auth, verifyTeamMember, async (req, res) =
     const newAnnounceRef = db.collection("team_announcements").doc();
     
     const userDoc = await db.collection("profiles").doc(req.user.id).get();
-    const userName = userDoc.exists ? (userDoc.data().personalInfo?.name || "A member") : "A member";
+    const userName = userDoc.exists ? (mapDoc(userDoc).personalInfo?.name || "A member") : "A member";
     
     const announceData = {
       team_id: req.params.teamId,
@@ -245,7 +250,7 @@ router.get("/:teamId/activity", auth, verifyTeamMember, async (req, res) => {
       .limit(50)
       .get();
       
-    const activities = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const activities = snapshot.docs.map(doc => ({ id: doc.id, ...mapDoc(doc) }));
     res.json(activities);
   } catch (err) {
     console.error("Get activity error:", err);
@@ -264,24 +269,24 @@ router.get("/:teamId/dashboard", auth, verifyTeamMember, async (req, res) => {
       db.collection("team_members").where("team_id", "==", req.params.teamId).get()
     ]);
     
-    const tasks = tasksSnapshot.docs.map(d => d.data());
+    const tasks = mapDocs(tasksSnapshot);
     const totalTasks = tasks.length;
     const completedTasks = tasks.filter(t => t.status === "Done").length;
     
     // Collect members info
     const membersList = await Promise.all(membersSnapshot.docs.map(async d => {
-      const md = d.data();
+      const md = mapDoc(d);
       const pDoc = await db.collection("profiles").doc(md.user_id).get();
       return {
         id: md.user_id,
         role: md.role,
-        name: pDoc.exists ? pDoc.data().personalInfo?.name : "Unknown",
-        skills: pDoc.exists ? (pDoc.data().skills || []) : []
+        name: pDoc.exists ? mapDoc(pDoc).personalInfo?.name : "Unknown",
+        skills: pDoc.exists ? (mapDoc(pDoc).skills || []) : []
       };
     }));
     
     res.json({
-      team: { id: teamDoc.id, ...teamDoc.data() },
+      team: { id: teamDoc.id, ...mapDoc(teamDoc) },
       stats: {
         total_tasks: totalTasks,
         completed_tasks: completedTasks,

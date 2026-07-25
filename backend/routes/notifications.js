@@ -3,6 +3,11 @@ const router = express.Router();
 const { db } = require("../config/firebase");
 const auth = require("../middleware/auth");
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 // Get all notifications
 router.get("/", auth, async (req, res) => {
   try {
@@ -23,13 +28,13 @@ router.get("/", auth, async (req, res) => {
     let notifications = [];
     
     userSnapshot.forEach(doc => {
-      const data = doc.data();
+      const data = mapDoc(doc);
       data.id = doc.id;
       notifications.push(data);
     });
     
     globalSnapshot.forEach(doc => {
-      const data = doc.data();
+      const data = mapDoc(doc);
       data.id = doc.id;
       data.is_read = true; // For MVP, treat global announcements as read so they don't clutter
       notifications.push(data);
@@ -37,7 +42,7 @@ router.get("/", auth, async (req, res) => {
 
     if (collegeSnapshot) {
       collegeSnapshot.forEach(doc => {
-        const data = doc.data();
+        const data = mapDoc(doc);
         data.id = doc.id;
         data.is_read = true;
         notifications.push(data);
@@ -64,7 +69,7 @@ router.put("/:id/read", auth, async (req, res) => {
     const notifRef = db.collection("notifications").doc(req.params.id);
     const notifDoc = await notifRef.get();
     
-    if (notifDoc.exists && notifDoc.data().user_id === req.user.id) {
+    if (notifDoc.exists && mapDoc(notifDoc).user_id === req.user.id) {
       await notifRef.update({ is_read: true });
     }
     res.json({ message: "Marked as read." });

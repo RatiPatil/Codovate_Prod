@@ -4,16 +4,21 @@ const { db } = require("../config/firebase");
 const auth = require("../middleware/auth");
 const crypto = require("crypto");
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 // Get user's teams
 router.get("/my", auth, async (req, res) => {
   try {
     const tmSnapshot = await db.collection("team_members").where("user_id", "==", req.user.id).get();
     
     let teams = await Promise.all(tmSnapshot.docs.map(async (doc) => {
-      const tm = doc.data();
+      const tm = mapDoc(doc);
       const teamDoc = await db.collection("teams").doc(tm.team_id).get();
       if (!teamDoc.exists) return null;
-      const team = teamDoc.data();
+      const team = mapDoc(teamDoc);
       team.id = teamDoc.id;
       
       const [oppDoc, membersSnapshot] = await Promise.all([
@@ -21,7 +26,7 @@ router.get("/my", auth, async (req, res) => {
         db.collection("team_members").where("team_id", "==", team.id).get()
       ]);
       
-      team.opportunity_title = oppDoc && oppDoc.exists ? oppDoc.data().title : null;
+      team.opportunity_title = oppDoc && oppDoc.exists ? mapDoc(oppDoc).title : null;
       team.member_count = membersSnapshot.size;
       team.my_role = tm.role || 'member';
       
@@ -49,7 +54,7 @@ router.get("/all", auth, async (req, res) => {
     const teamsSnapshot = await db.collection("teams").where("status", "==", "Recruiting").get();
     
     let teams = await Promise.all(teamsSnapshot.docs.map(async (doc) => {
-      const team = doc.data();
+      const team = mapDoc(doc);
       team.id = doc.id;
       
       const [membersSnapshot, ownerDoc] = await Promise.all([
@@ -59,7 +64,7 @@ router.get("/all", auth, async (req, res) => {
       
       team.member_count = membersSnapshot.size;
       if (ownerDoc.exists) {
-        team.owner_name = ownerDoc.data().personalInfo?.name || 'Anonymous';
+        team.owner_name = mapDoc(ownerDoc).personalInfo?.name || 'Anonymous';
       }
 
       return team;
@@ -136,7 +141,7 @@ router.post("/join", auth, async (req, res) => {
     
     const teamDoc = teamSnapshot.docs[0];
     const team_id = teamDoc.id;
-    const teamData = teamDoc.data();
+    const teamData = mapDoc(teamDoc);
 
     // Check if already in team
     const checkSnapshot = await db.collection("team_members")
@@ -179,12 +184,12 @@ router.get("/:id/members", auth, async (req, res) => {
     
     let members = [];
     for (const doc of tmSnapshot.docs) {
-      const tm = doc.data();
+      const tm = mapDoc(doc);
       const studentDoc = await db.collection("profiles").doc(tm.user_id).get();
       let name = 'Unknown User';
       let email = '';
       if (studentDoc.exists) {
-        const pd = studentDoc.data();
+        const pd = mapDoc(studentDoc);
         name = pd.personalInfo?.name || 'Anonymous Student';
         email = pd.personalInfo?.email || '';
         members.push({
@@ -241,7 +246,7 @@ router.get("/discover", auth, async (req, res) => {
 
     let students = [];
     for (const doc of studentsSnap.docs) {
-      const s = doc.data();
+      const s = mapDoc(doc);
       if (doc.id === req.user.id) continue; // Exclude self
 
       const sp = s || {};
@@ -307,7 +312,7 @@ router.post("/:id/discussions", auth, async (req, res) => {
     if (memberCheck.empty) return res.status(403).json({ message: "You are not a member of this team." });
 
     const studentDoc = await db.collection("profiles").doc(req.user.id).get();
-    const s = studentDoc.exists ? studentDoc.data() : {};
+    const s = studentDoc.exists ? mapDoc(studentDoc) : {};
     const userName = s.personalInfo?.name || 'Anonymous';
 
     const msgRef = db.collection("team_discussions").doc();
@@ -339,7 +344,7 @@ router.get("/:id/discussions", auth, async (req, res) => {
       .get();
 
     const messages = snap.docs.map(doc => {
-      const d = doc.data();
+      const d = mapDoc(doc);
       return {
         ...d,
         created_at: d.created_at?.toDate ? d.created_at.toDate() : d.created_at,
@@ -363,7 +368,7 @@ router.put("/:id", auth, async (req, res) => {
       .where("team_id", "==", req.params.id)
       .where("user_id", "==", req.user.id)
       .get();
-    if (checkSnapshot.empty || checkSnapshot.docs[0].data().role !== 'leader') {
+    if (checkSnapshot.empty || mapDoc(checkSnapshot.docs[0]).role !== 'leader') {
       return res.status(403).json({ message: "Only team leaders can update team details." });
     }
 
@@ -393,7 +398,7 @@ router.put("/:id/members/:userId/role", auth, async (req, res) => {
       .where("team_id", "==", req.params.id)
       .where("user_id", "==", req.user.id)
       .get();
-    if (leaderCheck.empty || leaderCheck.docs[0].data().role !== 'leader') {
+    if (leaderCheck.empty || mapDoc(leaderCheck.docs[0]).role !== 'leader') {
       return res.status(403).json({ message: "Only team leaders can change roles." });
     }
 
@@ -417,7 +422,7 @@ router.delete("/:id/members/:userId", auth, async (req, res) => {
       .where("team_id", "==", req.params.id)
       .where("user_id", "==", req.user.id)
       .get();
-    if (leaderCheck.empty || leaderCheck.docs[0].data().role !== 'leader') {
+    if (leaderCheck.empty || mapDoc(leaderCheck.docs[0]).role !== 'leader') {
       return res.status(403).json({ message: "Only team leaders can remove members." });
     }
 
@@ -444,7 +449,7 @@ router.get("/:id/recommendations", auth, async (req, res) => {
   try {
     const teamDoc = await db.collection("teams").doc(req.params.id).get();
     if (!teamDoc.exists) return res.status(404).json({ message: "Team not found" });
-    const team = teamDoc.data();
+    const team = mapDoc(teamDoc);
     
     const reqSkills = team.required_skills || [];
     if (reqSkills.length === 0) return res.json([]);
@@ -453,7 +458,7 @@ router.get("/:id/recommendations", auth, async (req, res) => {
     const recommendations = [];
 
     profilesSnap.forEach(doc => {
-      const p = doc.data();
+      const p = mapDoc(doc);
       if (!p.skills) return;
       // Match if the user's skill names match any required skills (case-insensitive)
       const userSkillNames = p.skills.map(s => (s.name || s).toLowerCase());

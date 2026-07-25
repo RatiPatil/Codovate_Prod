@@ -3,6 +3,11 @@ const { admin, db } = require('../config/firebase');
 const AppError = require('../utils/AppError');
 const AuditService = require('./AuditService');
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 /**
  * UserRepository
  * Extends the generic FirestoreRepository to ensure sync with Firebase Auth.
@@ -150,10 +155,10 @@ class UserRepository extends FirestoreRepository {
       ]);
 
       return {
-        total: totalSnap.data().count,
-        active: onlineSnap.data().count,
-        suspended: suspendedSnap.data().count,
-        inactive: inactiveSnap.data().count,
+        total: mapDoc(totalSnap).count,
+        active: mapDoc(onlineSnap).count,
+        suspended: mapDoc(suspendedSnap).count,
+        inactive: mapDoc(inactiveSnap).count,
       };
     } catch (err) {
       throw new AppError('Failed to aggregate user metrics', 500);

@@ -4,6 +4,11 @@ const { db, FieldValue } = require('../config/firebase');
 const auth = require('../middleware/auth');
 const admin = require('firebase-admin');
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 // ─── GET /api/gamification ──────────────────────────────────────────────────
 // Returns overall gamification stats: streak, user badges, XP, challenges
 router.get('/', auth, async (req, res) => {
@@ -20,7 +25,7 @@ router.get('/', auth, async (req, res) => {
     // Fallback: the system might use 'users' instead of 'students' for base auth
     const uDoc = await db.collection('users').doc(uid).get();
     
-    const analytics = analyticsDoc.exists ? analyticsDoc.data() : {};
+    const analytics = analyticsDoc.exists ? mapDoc(analyticsDoc) : {};
     
     // Streak logic
     const lastActive = analytics.last_active ? (analytics.last_active.seconds * 1000 || analytics.last_active) : 0;
@@ -28,11 +33,11 @@ router.get('/', auth, async (req, res) => {
     
     // Map master badges
     const allBadges = [];
-    badgesSnap.forEach(b => allBadges.push({ id: b.id, ...b.data() }));
+    badgesSnap.forEach(b => allBadges.push({ id: b.id, ...mapDoc(b) }));
     
     // Map earned badges
     const earnedBadgeIds = [];
-    userBadgesSnap.forEach(ub => earnedBadgeIds.push(ub.data().badgeId));
+    userBadgesSnap.forEach(ub => earnedBadgeIds.push(mapDoc(ub).badgeId));
     
     const mappedBadges = allBadges.map(b => ({
       ...b,
@@ -69,7 +74,7 @@ router.post('/streak', auth, async (req, res) => {
     let xpGain = 10;
     
     if (doc.exists) {
-      const data = doc.data();
+      const data = mapDoc(doc);
       const lastActive = data.last_active ? (data.last_active.seconds ? data.last_active.seconds * 1000 : data.last_active) : 0;
       const currentStreak = data.streak_count || 0;
       

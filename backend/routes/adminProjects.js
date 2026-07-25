@@ -3,6 +3,11 @@ const router = express.Router();
 const { db } = require('../config/firebase');
 const { body, validationResult } = require('express-validator');
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 const superAdminOnly = (req, res, next) => {
   if (req.user.role !== 'super_admin' && req.user.role !== 'admin') {
     return res.status(403).json({ message: 'Super Admin access required.' });
@@ -16,7 +21,7 @@ router.get('/', superAdminOnly, async (req, res) => {
     const snapshot = await db.collection('projects').get();
     const projects = [];
     snapshot.forEach(doc => {
-      projects.push({ id: doc.id, ...doc.data() });
+      projects.push({ id: doc.id, ...mapDoc(doc) });
     });
     res.json(projects);
   } catch (error) {
@@ -74,7 +79,7 @@ router.put('/:id', superAdminOnly, [
 
     await docRef.update(updateData);
     const updated = await docRef.get();
-    res.json(updated.data());
+    res.json(mapDoc(updated));
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
   }

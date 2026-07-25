@@ -7,6 +7,11 @@ const { awardPoints, updatePlacementScore } = require("../utils/scoring");
 // Setup Gemini
 const { getConfiguredModel, genAI } = require("../utils/aiConfig");
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 // Helper to generate a fallback mock roadmap if no API key
 const generateMockRoadmap = (goal) => {
   return {
@@ -56,7 +61,7 @@ router.get("/career-roadmap", auth, async (req, res) => {
     if (!doc.exists) {
       return res.json(null);
     }
-    res.json(doc.data());
+    res.json(mapDoc(doc));
   } catch (err) {
     console.error("Error fetching roadmap:", err);
     res.status(500).json({ message: "Server error." });
@@ -70,7 +75,7 @@ router.get("/", auth, async (req, res) => {
     if (!doc.exists) {
       return res.json(null);
     }
-    res.json(doc.data());
+    res.json(mapDoc(doc));
   } catch (err) {
     console.error("Error fetching roadmap:", err);
     res.status(500).json({ message: "Server error." });
@@ -85,7 +90,7 @@ router.post("/generate", auth, async (req, res) => {
     // Fetch user context
     const profileDoc = await db.collection("profiles").doc(uid).get();
     
-    const p = profileDoc.data() || {};
+    const p = mapDoc(profileDoc) || {};
     const goal = p.careerGoal || "Software Engineer";
     
     let roadmapData = null;
@@ -182,7 +187,7 @@ router.put("/roadmap-progress", auth, async (req, res) => {
         throw new Error("Roadmap not found.");
       }
       
-      const data = doc.data();
+      const data = mapDoc(doc);
       let totalTasks = 0;
       let completedTasks = 0;
       let newlyCompletedStep = false;
@@ -257,7 +262,7 @@ router.put("/step", auth, async (req, res) => {
         throw new Error("Roadmap not found.");
       }
       
-      const data = doc.data();
+      const data = mapDoc(doc);
       let totalTasks = 0;
       let completedTasks = 0;
       let newlyCompletedStep = false;
@@ -331,7 +336,7 @@ router.post("/step/:stepId/generate-content", auth, async (req, res) => {
       return res.status(404).json({ message: "Roadmap not found." });
     }
     
-    const data = doc.data();
+    const data = mapDoc(doc);
     const stepIndex = data.steps.findIndex(s => s.id === stepId);
     
     if (stepIndex === -1) {
@@ -428,7 +433,7 @@ router.put("/step/:stepId/content-progress", auth, async (req, res) => {
       const doc = await t.get(docRef);
       if (!doc.exists) throw new Error("Roadmap not found.");
       
-      const data = doc.data();
+      const data = mapDoc(doc);
       const newSteps = data.steps.map(step => {
         if (step.id !== stepId) return step;
         

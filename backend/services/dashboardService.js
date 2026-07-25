@@ -1,5 +1,10 @@
 const { db, admin } = require("../config/firebase");
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 /**
  * Calculates a lightweight aggregate of the user's dashboard data
  * and stores it in the `dashboard` collection for fast retrieval.
@@ -20,9 +25,9 @@ async function syncDashboard(uid) {
       db.collection("roadmaps").doc(uid).get() // if roadmaps exist per uid
     ]);
 
-    const profile = profileDoc.exists ? profileDoc.data() : {};
-    const resume = resumeDoc.exists ? resumeDoc.data() : {};
-    const portfolio = portfolioDoc.exists ? portfolioDoc.data() : {};
+    const profile = profileDoc.exists ? mapDoc(profileDoc) : {};
+    const resume = resumeDoc.exists ? mapDoc(resumeDoc) : {};
+    const portfolio = portfolioDoc.exists ? mapDoc(portfolioDoc) : {};
     
     // Calculate Profile Completion
     let completion = 0;
@@ -43,7 +48,7 @@ async function syncDashboard(uid) {
         { id: "1", title: "Complete Daily Coding Challenge", completed: false },
         { id: "2", title: "Review Mock Interview Feedback", completed: false }
       ],
-      roadmapProgress: roadmapSnapshot.exists ? (roadmapSnapshot.data().progress || 0) : 0,
+      roadmapProgress: roadmapSnapshot.exists ? (mapDoc(roadmapSnapshot).progress || 0) : 0,
       profileCompletion: completion,
       resumeScore: resume.atsScore || 0,
       portfolioViews: portfolio.views || 0,
@@ -58,7 +63,7 @@ async function syncDashboard(uid) {
         name: "Jane Doe",
         expertise: "Frontend Developer"
       },
-      recentActivity: activitySnapshot.docs.map(doc => doc.data()),
+      recentActivity: mapDocs(activitySnapshot),
       notifications: [], // Could be fetched if needed, or left for realtime feeds
       lastSynced: new Date()
     };
@@ -100,7 +105,7 @@ async function syncPlacementReadiness(uid) {
 
     // 1. Coding Score (max 25)
     if (codingStatsDoc.exists) {
-      const stats = codingStatsDoc.data();
+      const stats = mapDoc(codingStatsDoc);
       details.codingScore = Math.min(25, (stats.completedCount || 0) * 0.5 + (stats.streak || 0) * 1);
     }
 
@@ -108,7 +113,7 @@ async function syncPlacementReadiness(uid) {
     if (!assessmentsSnap.empty) {
       let totalAssessment = 0;
       assessmentsSnap.forEach(doc => {
-        totalAssessment += (doc.data().score || 0);
+        totalAssessment += (mapDoc(doc).score || 0);
       });
       const avg = totalAssessment / assessmentsSnap.size;
       details.assessmentScore = Math.min(25, (avg / 100) * 25);
@@ -116,7 +121,7 @@ async function syncPlacementReadiness(uid) {
 
     // 3. Resume Score (max 25)
     if (!resumeReviewsSnap.empty) {
-      const latestResume = resumeReviewsSnap.docs[0].data();
+      const latestResume = mapDoc(resumeReviewsSnap.docs[0]);
       details.resumeScore = Math.min(25, ((latestResume.atsScore || 0) / 100) * 25);
     }
 
@@ -124,7 +129,7 @@ async function syncPlacementReadiness(uid) {
     if (!mockInterviewsSnap.empty) {
       let totalInt = 0;
       mockInterviewsSnap.forEach(doc => {
-        const data = doc.data();
+        const data = mapDoc(doc);
         const avgScore = ((data.confidenceScore || 0) + (data.communicationScore || 0) + (data.technicalAccuracy || 0)) / 3;
         totalInt += avgScore;
       });

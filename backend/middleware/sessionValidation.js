@@ -1,5 +1,10 @@
 const { db } = require("../config/firebase");
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 /**
  * Validates that the current session token (if managed in DB) is still active.
  * 
@@ -18,7 +23,7 @@ const sessionValidation = async (req, res, next) => {
       return res.status(401).json({ message: "User account no longer exists." });
     }
 
-    const userData = userDoc.data();
+    const userData = mapDoc(userDoc);
     
     if (userData.lifecycle !== 'ACTIVE') {
       return res.status(403).json({ 

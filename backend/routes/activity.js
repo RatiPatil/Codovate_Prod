@@ -3,6 +3,11 @@ const router = express.Router();
 const { db } = require("../config/firebase");
 const auth = require("../middleware/auth");
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 // ─── GET /api/activity ───────────────────────────────────────────────────────
 router.get("/", auth, async (req, res) => {
   try {
@@ -12,7 +17,7 @@ router.get("/", auth, async (req, res) => {
       .limit(50) // Pagination limit to keep response fast
       .get();
       
-    const logs = snapshot.docs.map(doc => doc.data());
+    const logs = mapDocs(snapshot);
     res.json(logs);
   } catch (err) {
     console.error("Fetch activity logs error:", err);
@@ -30,12 +35,12 @@ router.get("/global", auth, async (req, res) => {
       
     const logs = [];
     for (const doc of snapshot.docs) {
-      const data = doc.data();
+      const data = mapDoc(doc);
       // Fetch user details for the feed
       const userDoc = await db.collection("students").doc(data.uid).get();
       if (userDoc.exists) {
-        data.user_name = userDoc.data().name;
-        data.user_avatar = userDoc.data().profile_picture || null;
+        data.user_name = mapDoc(userDoc).name;
+        data.user_avatar = mapDoc(userDoc).profile_picture || null;
       } else {
         data.user_name = "Anonymous Student";
       }

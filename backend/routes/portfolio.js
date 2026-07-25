@@ -4,6 +4,11 @@ const { db, admin, FieldValue } = require("../config/firebase");
 const auth = require("../middleware/auth");
 const { syncDashboard } = require("../services/dashboardService");
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 // ─── PUT /api/portfolio ──────────────────────────────────────────────────
 router.put("/", auth, async (req, res) => {
   try {
@@ -49,7 +54,7 @@ router.get("/", auth, async (req, res) => {
   try {
     const doc = await db.collection("portfolios").doc(req.user.id).get();
     if (!doc.exists) return res.json(null);
-    res.json(doc.data());
+    res.json(mapDoc(doc));
   } catch (err) {
     res.status(500).json({ message: "Failed to load settings." });
   }
@@ -80,10 +85,10 @@ router.get("/:username", async (req, res) => {
     }
     
     const userDoc = usersSnapshot.docs[0];
-    const user = userDoc.data();
+    const user = mapDoc(userDoc);
     
     // Check if account is active
-    if (user.is_active === false) {
+    if (user.recordStatus !== 'ACTIVE') {
       return res.status(403).json({ message: "Portfolio is currently unavailable." });
     }
     
@@ -110,14 +115,14 @@ router.get("/:username", async (req, res) => {
       db.collection("activityLogs").where("uid", "==", userId).orderBy("createdAt", "desc").limit(10).get()
     ]);
 
-    const profile = profileDoc.exists ? profileDoc.data() : null;
-    const resume = resumeDoc.exists ? resumeDoc.data() : null;
-    const portfolioSettings = portfolioDoc.exists ? portfolioDoc.data() : { public: true, featuredProjects: [], theme: "light" };
-    const skillsSet = skillsDoc.exists ? skillsDoc.data() : { technical: [], soft: [], tools: [], languages: [] };
+    const profile = profileDoc.exists ? mapDoc(profileDoc) : null;
+    const resume = resumeDoc.exists ? mapDoc(resumeDoc) : null;
+    const portfolioSettings = portfolioDoc.exists ? mapDoc(portfolioDoc) : { public: true, featuredProjects: [], theme: "light" };
+    const skillsSet = skillsDoc.exists ? mapDoc(skillsDoc) : { technical: [], soft: [], tools: [], languages: [] };
     
-    const certificates = certificatesSnapshot.docs.map(doc => doc.data());
-    const achievements = achievementsSnapshot.docs.map(doc => doc.data());
-    const activityLogs = activityLogsSnapshot.docs.map(doc => doc.data());
+    const certificates = mapDocs(certificatesSnapshot);
+    const achievements = mapDocs(achievementsSnapshot);
+    const activityLogs = mapDocs(activityLogsSnapshot);
 
     if (!portfolioSettings.public) {
       return res.status(403).json({ message: "This portfolio is private." });
@@ -127,9 +132,9 @@ router.get("/:username", async (req, res) => {
     if (portfolioSettings.featuredProjects && portfolioSettings.featuredProjects.length > 0) {
       projects = allProjectsSnapshot.docs
         .filter(doc => portfolioSettings.featuredProjects.includes(doc.id))
-        .map(doc => ({ id: doc.id, ...doc.data() }));
+        .map(doc => ({ id: doc.id, ...mapDoc(doc) }));
     } else {
-      projects = allProjectsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      projects = allProjectsSnapshot.docs.map(doc => ({ id: doc.id, ...mapDoc(doc) }));
     }
 
     // 3. Assemble unified relational tree

@@ -7,12 +7,17 @@ require('dotenv').config();
 
 const { getConfiguredModel, genAI } = require("../utils/aiConfig");
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 // GET /api/interviews/history
 // Returns user's past interviews
 router.get('/history', auth, async (req, res) => {
   try {
     const snapshot = await db.collection("mockInterviews").where("uid", "==", req.user.id).orderBy("createdAt", "desc").get();
-    const history = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const history = snapshot.docs.map(doc => ({ id: doc.id, ...mapDoc(doc) }));
     res.json(history);
   } catch (err) {
     res.status(500).json({ message: "Failed to fetch history" });
@@ -35,10 +40,10 @@ router.post('/start', auth, async (req, res) => {
       db.collection("projects").where("userId", "==", req.user.id).get()
     ]);
     
-    const profile = profileDoc.exists ? profileDoc.data() : {};
-    const resume = resumeDoc.exists ? resumeDoc.data() : {};
-    const skills = skillsDoc.exists ? skillsDoc.data() : {};
-    const projects = projectsSnap.docs.map(doc => doc.data());
+    const profile = profileDoc.exists ? mapDoc(profileDoc) : {};
+    const resume = resumeDoc.exists ? mapDoc(resumeDoc) : {};
+    const skills = skillsDoc.exists ? mapDoc(skillsDoc) : {};
+    const projects = mapDocs(projectsSnap);
 
     const candidateContext = {
       name: profile.personalInfo?.name || "Student",
@@ -92,7 +97,7 @@ router.post('/reply', auth, async (req, res) => {
     const sessionDoc = await sessionRef.get();
     if (!sessionDoc.exists) return res.status(404).json({ message: "Session not found" });
     
-    const sessionData = sessionDoc.data();
+    const sessionData = mapDoc(sessionDoc);
     if (sessionData.uid !== req.user.id) return res.status(403).json({ message: "Unauthorized" });
 
     const transcript = sessionData.transcript;
@@ -143,7 +148,7 @@ router.post('/end', auth, async (req, res) => {
     const sessionRef = db.collection("interviewSessions").doc(sessionId);
     const sessionDoc = await sessionRef.get();
     if (!sessionDoc.exists) return res.status(404).json({ message: "Session not found" });
-    const sessionData = sessionDoc.data();
+    const sessionData = mapDoc(sessionDoc);
 
     const chatHistory = sessionData.transcript.map(t => 
       `${t.role === 'interviewer' ? 'Interviewer' : 'Candidate'}: ${t.text}`

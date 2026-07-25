@@ -1,6 +1,11 @@
 const FirestoreRepository = require('./Repository');
 const AppError = require('../utils/AppError');
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 class PlacementDriveRepository extends FirestoreRepository {
   constructor() { super('placement_drives'); }
 
@@ -34,10 +39,10 @@ class PlacementDriveRepository extends FirestoreRepository {
       ]);
 
       return {
-        total: totalSnap.data().count,
-        drafts: draftSnap.data().count,
-        active: activeSnap.data().count,
-        completed: completedSnap.data().count
+        total: mapDoc(totalSnap).count,
+        drafts: mapDoc(draftSnap).count,
+        active: mapDoc(activeSnap).count,
+        completed: mapDoc(completedSnap).count
       };
     } catch (err) {
       throw new AppError('Failed to aggregate Placement Drive metrics', 500);

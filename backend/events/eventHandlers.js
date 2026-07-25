@@ -2,6 +2,11 @@ const eventBus = require("./eventBus");
 const { db, admin } = require("../config/firebase");
 const { syncDashboard } = require("../services/dashboardService");
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 /**
  * Log an activity
  */
@@ -43,7 +48,7 @@ eventBus.on("PROFILE_UPDATED", async ({ uid, profileData }) => {
           linkedin: profileData.socialLinks?.linkedin || "",
           portfolio: profileData.socialLinks?.portfolio || ""
         },
-        targetRole: profileData.headline || resumeDoc.data().targetRole
+        targetRole: profileData.headline || mapDoc(resumeDoc).targetRole
       }, { merge: true });
     }
 

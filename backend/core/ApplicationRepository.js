@@ -34,11 +34,11 @@ class ApplicationRepository extends FirestoreRepository {
       ]);
 
       return {
-        total: totalSnap.data().count,
-        underReview: reviewSnap.data().count,
-        shortlisted: shortlistSnap.data().count,
-        interviews: interviewSnap.data().count,
-        offers: offerSnap.data().count
+        total: mapDoc(totalSnap).count,
+        underReview: mapDoc(reviewSnap).count,
+        shortlisted: mapDoc(shortlistSnap).count,
+        interviews: mapDoc(interviewSnap).count,
+        offers: mapDoc(offerSnap).count
       };
     } catch (err) {
       throw new AppError('Failed to aggregate Application metrics', 500);
@@ -50,7 +50,7 @@ class ApplicationRepository extends FirestoreRepository {
     const doc = await docRef.get();
     if (!doc.exists) throw new AppError('Application not found', 404);
 
-    const data = doc.data();
+    const data = mapDoc(doc);
     const timeline = data.timeline || [];
     timeline.push({
       stage: newStage,
@@ -73,6 +73,12 @@ class ApplicationRepository extends FirestoreRepository {
       // We must append to timeline, but batch updates don't easily allow arrayUnion in this abstract pattern without FieldValue
       // For simplicity in the generic repository, we update status. A real system might do a transaction or use admin.firestore.FieldValue.arrayUnion
       const admin = require('firebase-admin');
+
+      const {
+        mapDoc: mapDoc,
+        mapDocs: mapDocs
+      } = require('../utils/firestoreMapper');
+
       batch.update(ref, {
         recordStatus: newStage,
         updatedAt: timestamp,

@@ -3,6 +3,11 @@ const router = express.Router();
 const { db } = require('../config/firebase');
 const auth = require('../middleware/auth');
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 // Helper to find an available mentor
 async function assignMentor(category = '') {
   console.log(`[AssignMentor] Starting mentor assignment process for category: ${category}...`);
@@ -11,8 +16,8 @@ async function assignMentor(category = '') {
   
   // Filter active mentors
   const activeMentors = mentorsSnapshot.docs.filter(doc => {
-    const data = doc.data();
-    return data.is_active === true || data.status === 'active';
+    const data = mapDoc(doc);
+    return data.recordStatus === 'ACTIVE' || data.status === 'active';
   });
   console.log(`[AssignMentor] Filtered down to ${activeMentors.length} active/approved mentors.`);
 
@@ -25,7 +30,7 @@ async function assignMentor(category = '') {
   let preferredMentors = activeMentors;
   if (category && category !== 'General') {
     const matchingMentors = activeMentors.filter(doc => {
-      const data = doc.data();
+      const data = mapDoc(doc);
       return Array.isArray(data.expertise) && data.expertise.some(exp => exp.toLowerCase() === category.toLowerCase());
     });
     if (matchingMentors.length > 0) {
@@ -65,7 +70,7 @@ async function checkEscalations() {
   const snapshot = await queriesRef.where('status', 'in', ['Assigned', 'In Progress']).get();
   
   for (const doc of snapshot.docs) {
-    const data = doc.data();
+    const data = mapDoc(doc);
     if (data.deadline_at) {
       const deadline = data.deadline_at.toDate ? data.deadline_at.toDate() : new Date(data.deadline_at);
       if (now > deadline) {
@@ -100,7 +105,7 @@ router.post('/', auth, async (req, res) => {
         .get();
         
       if (!sessionQueries.empty) {
-        assignedMentorId = sessionQueries.docs[0].data().mentor_id;
+        assignedMentorId = mapDoc(sessionQueries.docs[0]).mentor_id;
       }
     }
 
@@ -110,7 +115,7 @@ router.post('/', auth, async (req, res) => {
       
       if (target_mentor_id && target_mentor_id !== 'auto') {
         const mentorDoc = await db.collection('mentors').doc(target_mentor_id).get();
-        if (mentorDoc.exists && (mentorDoc.data().is_active === true || mentorDoc.data().status === 'active')) {
+        if (mentorDoc.exists && (mapDoc(mentorDoc).recordStatus === 'ACTIVE' || mapDoc(mentorDoc).status === 'active')) {
           assignedMentorId = target_mentor_id;
         } else {
           return res.status(400).json({ message: 'Selected mentor is not available.' });
@@ -177,7 +182,7 @@ router.get('/', auth, async (req, res) => {
 
     const snapshot = await queriesRef.get();
     let queries = [];
-    snapshot.forEach(doc => queries.push({ id: doc.id, ...doc.data() }));
+    snapshot.forEach(doc => queries.push({ id: doc.id, ...mapDoc(doc) }));
 
     // Sort by created_at DESC (newest first)
     queries.sort((a, b) => {
@@ -208,7 +213,7 @@ router.put('/:id/status', auth, async (req, res) => {
 
     if (!doc.exists) return res.status(404).json({ message: 'Query not found' });
     
-    const queryData = doc.data();
+    const queryData = mapDoc(doc);
 
     // Permissions: Only student (can close) or admin
     const isStudent = req.user.role === 'student' && queryData.student_id === req.user.id;
@@ -229,7 +234,7 @@ router.put('/:id/status', auth, async (req, res) => {
 
     await docRef.update(updateData);
 
-    const updatedDoc = (await docRef.get()).data();
+    const updatedDoc = mapDoc((await docRef.get()));
 
     // Notify the other party
     if (req.io) {

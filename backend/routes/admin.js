@@ -3,6 +3,11 @@ const router = express.Router();
 const { db } = require('../config/firebase');
 const { runDailyPipeline } = require('../jobs/automation');
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 // Super Admin Stats Endpoint
 router.get('/stats', async (req, res) => {
   try {
@@ -56,7 +61,7 @@ router.get('/stats', async (req, res) => {
     }
 
     studentsSnap.forEach(doc => {
-      const data = doc.data();
+      const data = mapDoc(doc);
       const createdAt = data.created_at?.toDate ? data.created_at.toDate() : (data.created_at ? new Date(data.created_at) : null);
       if (createdAt && !isNaN(createdAt.getTime())) {
         const mName = monthNames[createdAt.getMonth()];
@@ -133,7 +138,7 @@ router.get('/audit-logs', async (req, res) => {
       
     const logs = [];
     logsSnap.forEach(doc => {
-      logs.push({ id: doc.id, ...doc.data() });
+      logs.push({ id: doc.id, ...mapDoc(doc) });
     });
     
     res.json({ success: true, logs });
@@ -152,7 +157,7 @@ router.get('/content', async (req, res) => {
       
     const content = [];
     contentSnap.forEach(doc => {
-      content.push({ id: doc.id, ...doc.data() });
+      content.push({ id: doc.id, ...mapDoc(doc) });
     });
     
     res.json({ success: true, content });

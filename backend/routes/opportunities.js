@@ -18,7 +18,7 @@ router.get("/", auth, async (req, res) => {
     
     // Fetch student full context for heuristic matching
     const profileDoc = await db.collection("profiles").doc(req.user.id).get();
-    const profileData = profileDoc.exists ? profileDoc.data() : {};
+    const profileData = profileDoc.exists ? mapDoc(profileDoc) : {};
     const userSkills = (profileData.skills || []).map(s => typeof s === 'string' ? s.toLowerCase() : (s.name ? s.name.toLowerCase() : ''));
     const careerGoal = (profileData.careerGoal || "").toLowerCase();
     
@@ -26,14 +26,14 @@ router.get("/", auth, async (req, res) => {
     const projectsSnapshot = await db.collection("projects").where("userId", "==", req.user.id).limit(1).get();
     const hasProjects = !projectsSnapshot.empty;
     const codingDoc = await db.collection("codingStats").doc(req.user.id).get();
-    const hasGoodCodingScore = codingDoc.exists && (codingDoc.data().total_score > 200);
+    const hasGoodCodingScore = codingDoc.exists && (mapDoc(codingDoc).total_score > 200);
     // Note: Firestore doesn't support ILIKE or text search natively.
     // For MVP, we will fetch all matching the above and filter by search in memory.
     const snapshot = await opportunitiesRef.get();
     
     let opportunities = [];
     for (const doc of snapshot.docs) {
-      const opp = doc.data();
+      const opp = mapDoc(doc);
       opp.id = doc.id;
       
       // Filter by search text in memory
@@ -116,7 +116,7 @@ router.get("/:id", auth, async (req, res) => {
     if (!doc.exists)
       return res.status(404).json({ message: "Not found." });
 
-    const opp = doc.data();
+    const opp = mapDoc(doc);
     opp.id = doc.id;
 
     // Increment view count
@@ -138,7 +138,7 @@ router.get("/:id", auth, async (req, res) => {
 router.get("/bookmarks/my", auth, async (req, res) => {
   try {
     const snapshot = await db.collection("bookmarks").where("user_id", "==", req.user.id).get();
-    const bookmarks = snapshot.docs.map(doc => doc.data().opportunity_id);
+    const bookmarks = snapshot.docs.map(doc => mapDoc(doc).opportunity_id);
     res.json(bookmarks);
   } catch (err) {
     console.error("Get bookmarks error:", err.message);
@@ -187,6 +187,11 @@ router.post("/:id/bookmark", auth, async (req, res) => {
 });
 
 const { body, validationResult } = require("express-validator");
+
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
 
 // POST add opportunity (admin only) — triggers real-time
 router.post(
@@ -237,9 +242,9 @@ router.post(
     req.io.to("global").emit("new_opportunity", opp);
 
     // Send notification to all students
-    const studentsSnapshot = await db.collection("users").where("role", "==", "student").where("is_active", "==", true).get();
+    const studentsSnapshot = await db.collection("users").where("role", "==", "student").where("recordStatus", "==", "ACTIVE").get();
     for (const studentDoc of studentsSnapshot.docs) {
-      const s = studentDoc.data();
+      const s = mapDoc(studentDoc);
       const notifRef = db.collection("notifications").doc();
       await notifRef.set({
         id: notifRef.id,
@@ -297,7 +302,7 @@ router.put("/:id", auth, async (req, res) => {
 
     await oppRef.update(updateData);
     const updatedDoc = await oppRef.get();
-    const updatedOpp = updatedDoc.data();
+    const updatedOpp = mapDoc(updatedDoc);
     updatedOpp.id = updatedDoc.id;
 
     // 🔴 REAL-TIME: Emit update
@@ -338,19 +343,19 @@ router.get("/:id/ai-match", auth, async (req, res) => {
     const oppDoc = await db.collection("opportunities").doc(req.params.id).get();
     if (!oppDoc.exists) return res.status(404).json({ message: "Opportunity not found." });
     
-    const opp = oppDoc.data();
+    const opp = mapDoc(oppDoc);
     
     const profileDoc = await db.collection("profiles").doc(req.user.id).get();
-    const p = profileDoc.data() || {};
+    const p = mapDoc(profileDoc) || {};
     
     const projectsSnapshot = await db.collection("projects").where("userId", "==", req.user.id).get();
-    const projects = projectsSnapshot.docs.map(d => d.data());
+    const projects = mapDocs(projectsSnapshot);
     
     const codingDoc = await db.collection("codingStats").doc(req.user.id).get();
-    const codingStats = codingDoc.exists ? codingDoc.data() : {};
+    const codingStats = codingDoc.exists ? mapDoc(codingDoc) : {};
     
     const resumeDoc = await db.collection("resumes").doc(req.user.id).get();
-    const resumeScore = resumeDoc.exists ? resumeDoc.data().atsScore : "N/A";
+    const resumeScore = resumeDoc.exists ? mapDoc(resumeDoc).atsScore : "N/A";
     
     if (!genAI) {
       return res.json({

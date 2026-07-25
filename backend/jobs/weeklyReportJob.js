@@ -1,6 +1,11 @@
 const cron = require('node-cron');
 const { db } = require('../config/firebase');
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 /**
  * Weekly Report Job
  * Runs every Friday at 23:59 (11:59 PM)
@@ -18,7 +23,7 @@ function startWeeklyReportJob() {
       const weekEnding = new Date().toISOString();
 
       snapshot.forEach(doc => {
-        const data = doc.data();
+        const data = mapDoc(doc);
         const uid = data.uid;
         
         const reportRef = db.collection("weeklyReports").doc();

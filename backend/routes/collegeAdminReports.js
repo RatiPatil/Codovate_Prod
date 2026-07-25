@@ -2,6 +2,11 @@ const express = require('express');
 const router = express.Router();
 const { db } = require('../config/firebase');
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 const collegeAdminOnly = (req, res, next) => {
   if (req.user.role !== 'college_admin' && req.user.role !== 'super_admin') {
     return res.status(403).json({ message: 'College Admin access required.' });
@@ -24,7 +29,7 @@ router.get('/csv', collegeAdminOnly, async (req, res) => {
     // Generate CSV string with more details
     let csvContent = "Name,Email,Status,ProfileScore,Skills\n";
     studentsSnapshot.forEach(doc => {
-      const data = doc.data();
+      const data = mapDoc(doc);
       const profileData = data.profile_data || {};
       const score = profileData.profile_score || 0;
       const skills = (profileData.skills || []).join(';');
@@ -54,7 +59,7 @@ router.get('/analytics', collegeAdminOnly, async (req, res) => {
     const studentIds = new Set();
     
     studentsSnapshot.forEach(doc => {
-      const data = doc.data();
+      const data = mapDoc(doc);
       studentIds.add(doc.id);
       
       const pd = data.profile_data || {};
@@ -89,7 +94,7 @@ router.get('/analytics', collegeAdminOnly, async (req, res) => {
     const oppsSnapshot = await db.collection('opportunities').get();
     const oppTypes = {};
     oppsSnapshot.forEach(doc => {
-      oppTypes[doc.id] = doc.data().type;
+      oppTypes[doc.id] = mapDoc(doc).type;
     });
 
     // 3. Fetch Applications to aggregate Placements and Internships
@@ -110,7 +115,7 @@ router.get('/analytics', collegeAdminOnly, async (req, res) => {
     }
 
     appsSnapshot.forEach(doc => {
-      const app = doc.data();
+      const app = mapDoc(doc);
       const uid = app.user_id || app.student_id;
       if (!studentIds.has(uid)) return;
       

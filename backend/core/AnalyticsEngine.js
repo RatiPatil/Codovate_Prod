@@ -1,6 +1,11 @@
 const db = require('../config/firebase');
 const AppError = require('../utils/AppError');
 
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
 class AnalyticsEngine {
   
   /**
@@ -16,7 +21,7 @@ class AnalyticsEngine {
 
       const metrics = {};
       collections.forEach((col, index) => {
-        metrics[col] = counts[index].data().count;
+        metrics[col] = mapDoc(counts[index]).count;
       });
       
       // Calculate derived metrics
@@ -50,7 +55,7 @@ class AnalyticsEngine {
       let sumPackage = 0;
       
       placementsRef.forEach(doc => {
-        const p = doc.data();
+        const p = mapDoc(doc);
         if (p.recordStatus === 'JOINED' || p.recordStatus === 'OFFER_ACCEPTED') {
            totalPlaced++;
            if (p.ctc > highestPackage) highestPackage = p.ctc;
@@ -58,14 +63,14 @@ class AnalyticsEngine {
         }
       });
 
-      const totalStudents = studentsSnap.data().count;
+      const totalStudents = mapDoc(studentsSnap).count;
       const placementRate = totalStudents > 0 ? ((totalPlaced / totalStudents) * 100).toFixed(1) : 0;
       const avgPackage = totalPlaced > 0 ? (sumPackage / totalPlaced) : 0;
 
       return {
         students: totalStudents,
-        drives: drivesSnap.data().count,
-        applications: applicationsSnap.data().count,
+        drives: mapDoc(drivesSnap).count,
+        applications: mapDoc(applicationsSnap).count,
         totalPlaced,
         placementRate,
         highestPackage,
@@ -90,12 +95,12 @@ class AnalyticsEngine {
         db.collection('offers').where('companyId', '==', companyId).count().get()
       ]);
 
-      const totalApps = appsSnap.data().count;
-      const totalInterviews = interviewsSnap.data().count;
-      const totalOffers = offersSnap.data().count;
+      const totalApps = mapDoc(appsSnap).count;
+      const totalInterviews = mapDoc(interviewsSnap).count;
+      const totalOffers = mapDoc(offersSnap).count;
 
       return {
-        activeJobs: jobsSnap.data().count,
+        activeJobs: mapDoc(jobsSnap).count,
         totalApplications: totalApps,
         totalInterviews,
         totalOffers,
