@@ -1,5 +1,6 @@
 const admin = require('firebase-admin');
 const { getFirestore, FieldValue } = require('firebase-admin/firestore');
+const { getAuth } = require('firebase-admin/auth');
 require('dotenv').config();
 const fs = require('fs');
 
@@ -69,4 +70,4 @@ if (serviceAccount) {
   };
 }
 
-module.exports = { admin, db, FieldValue };
+module.exports = { admin, db, FieldValue, getAuth };

@@ -35,7 +35,7 @@ class StudentProfileRepository extends FirestoreRepository {
 
     if (!userId) {
       try {
-        authUser = await admin.auth().getUserByEmail(data.email);
+        authUser = await getAuth().getUserByEmail(data.email);
         userId = authUser.uid;
       } catch (err) {
         if (err.code !== 'auth/user-not-found') throw err;

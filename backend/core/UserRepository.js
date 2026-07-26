@@ -1,5 +1,5 @@
 const FirestoreRepository = require('./Repository');
-const { admin, db } = require('../config/firebase');
+const { admin, db, getAuth } = require('../config/firebase');
 const AppError = require('../utils/AppError');
 const AuditService = require('./AuditService');
 
@@ -27,7 +27,7 @@ class UserRepository extends FirestoreRepository {
 
     try {
       // 1. Create in Firebase Auth
-      const authRecord = await admin.auth().createUser({
+      const authRecord = await getAuth().createUser({
         email: data.email,
         password: data.password,
         displayName: `${data.firstName || ''} ${data.lastName || ''}`.trim(),
@@ -35,7 +35,7 @@ class UserRepository extends FirestoreRepository {
       });
 
       // 2. Assign custom claims
-      await admin.auth().setCustomUserClaims(authRecord.uid, {
+      await getAuth().setCustomUserClaims(authRecord.uid, {
         role: data.role || 'user',
         orgId: data.orgId || null,
         deptId: data.deptId || null,
@@ -85,13 +85,13 @@ class UserRepository extends FirestoreRepository {
       }
 
       if (needsAuthUpdate) {
-        await admin.auth().updateUser(id, authUpdates);
+        await getAuth().updateUser(id, authUpdates);
       }
 
       if (data.role || data.orgId || data.deptId) {
-        const userRecord = await admin.auth().getUser(id);
+        const userRecord = await getAuth().getUser(id);
         const currentClaims = userRecord.customClaims || {};
-        await admin.auth().setCustomUserClaims(id, {
+        await getAuth().setCustomUserClaims(id, {
           ...currentClaims,
           role: data.role || currentClaims.role,
           orgId: data.orgId || currentClaims.orgId,
@@ -123,10 +123,10 @@ class UserRepository extends FirestoreRepository {
     try {
       if (status === 'SUSPENDED' || status === 'DISABLED' || status === 'LOCKED') {
         // Disable in Auth & Revoke tokens to force logout immediately
-        await admin.auth().updateUser(id, { disabled: true });
-        await admin.auth().revokeRefreshTokens(id);
+        await getAuth().updateUser(id, { disabled: true });
+        await getAuth().revokeRefreshTokens(id);
       } else if (status === 'ACTIVE') {
-        await admin.auth().updateUser(id, { disabled: false });
+        await getAuth().updateUser(id, { disabled: false });
       }
 
       // Update Firestore to trigger audit logs

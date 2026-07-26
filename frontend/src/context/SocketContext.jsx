@@ -14,14 +14,19 @@ export const SocketProvider = ({ children }) => {
     if (!token) return;
 
     const getSocketUrl = () => {
-      if (import.meta.env.VITE_SOCKET_URL) return import.meta.env.VITE_SOCKET_URL;
-      if (import.meta.env.VITE_API_URL) return import.meta.env.VITE_API_URL.replace('/api', '');
-      return 'http://localhost:5000';
+      let url = import.meta.env.VITE_SOCKET_URL;
+      if (!url && import.meta.env.VITE_API_URL) {
+        url = import.meta.env.VITE_API_URL.replace(/\/api\/?$/, '');
+      }
+      if (!url) url = 'http://localhost:5000';
+
+      // Fix domain names with underscores (e.g. codovate_prod.onrender.com -> codovate-prod.onrender.com)
+      return url.replace(/([a-zA-Z0-9]+)_([a-zA-Z0-9-]+\.onrender\.com)/g, '$1-$2');
     };
     
     const socketUrl = getSocketUrl();
     const newSocket = io(socketUrl, {
-      transports: ['websocket'],
+      transports: ['polling', 'websocket'],
       reconnection: true,
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,
