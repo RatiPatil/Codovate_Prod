@@ -155,10 +155,10 @@ class UserRepository extends FirestoreRepository {
       ]);
 
       return {
-        total: mapDoc(totalSnap).count,
-        active: mapDoc(onlineSnap).count,
-        suspended: mapDoc(suspendedSnap).count,
-        inactive: mapDoc(inactiveSnap).count,
+        total: totalSnap.data().count,
+        active: onlineSnap.data().count,
+        suspended: suspendedSnap.data().count,
+        inactive: inactiveSnap.data().count,
       };
     } catch (err) {
       throw new AppError('Failed to aggregate user metrics', 500);

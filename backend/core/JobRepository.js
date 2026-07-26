@@ -34,10 +34,10 @@ class JobRepository extends FirestoreRepository {
       ]);
 
       return {
-        total: mapDoc(totalSnap).count,
-        active: mapDoc(activeSnap).count,
-        internships: mapDoc(internshipSnap).count,
-        jobs: mapDoc(totalSnap).count - mapDoc(internshipSnap).count
+        total: totalSnap.data().count,
+        active: activeSnap.data().count,
+        internships: internshipSnap.data().count,
+        jobs: totalSnap.data().count - internshipSnap.data().count
       };
     } catch (err) {
       throw new AppError('Failed to aggregate Job metrics', 500);

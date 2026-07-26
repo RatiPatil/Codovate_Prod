@@ -59,9 +59,9 @@ class MentorProfileRepository extends FirestoreRepository {
       ]);
 
       return {
-        total: mapDoc(totalSnap).count,
-        active: mapDoc(activeSnap).count,
-        industry: mapDoc(industrySnap).count
+        total: totalSnap.data().count,
+        active: activeSnap.data().count,
+        industry: industrySnap.data().count
       };
     } catch (err) {
       throw new AppError('Failed to aggregate mentor metrics', 500);

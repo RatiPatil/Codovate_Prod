@@ -63,14 +63,14 @@ class AnalyticsEngine {
         }
       });
 
-      const totalStudents = mapDoc(studentsSnap).count;
+      const totalStudents = studentsSnap.data().count;
       const placementRate = totalStudents > 0 ? ((totalPlaced / totalStudents) * 100).toFixed(1) : 0;
       const avgPackage = totalPlaced > 0 ? (sumPackage / totalPlaced) : 0;
 
       return {
         students: totalStudents,
-        drives: mapDoc(drivesSnap).count,
-        applications: mapDoc(applicationsSnap).count,
+        drives: drivesSnap.data().count,
+        applications: applicationsSnap.data().count,
         totalPlaced,
         placementRate,
         highestPackage,
@@ -95,12 +95,12 @@ class AnalyticsEngine {
         db.collection('offers').where('companyId', '==', companyId).count().get()
       ]);
 
-      const totalApps = mapDoc(appsSnap).count;
-      const totalInterviews = mapDoc(interviewsSnap).count;
-      const totalOffers = mapDoc(offersSnap).count;
+      const totalApps = appsSnap.data().count;
+      const totalInterviews = interviewsSnap.data().count;
+      const totalOffers = offersSnap.data().count;
 
       return {
-        activeJobs: mapDoc(jobsSnap).count,
+        activeJobs: jobsSnap.data().count,
         totalApplications: totalApps,
         totalInterviews,
         totalOffers,

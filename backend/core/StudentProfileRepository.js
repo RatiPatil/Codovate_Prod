@@ -98,10 +98,10 @@ class StudentProfileRepository extends FirestoreRepository {
       ]);
 
       return {
-        total: mapDoc(totalSnap).count,
-        placed: mapDoc(placedSnap).count,
-        placementReady: mapDoc(readySnap).count,
-        archived: mapDoc(archivedSnap).count,
+        total: totalSnap.data().count,
+        placed: placedSnap.data().count,
+        placementReady: readySnap.data().count,
+        archived: archivedSnap.data().count,
       };
     } catch (err) {
       throw new AppError('Failed to aggregate student metrics', 500);

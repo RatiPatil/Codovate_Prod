@@ -34,11 +34,11 @@ class ApplicationRepository extends FirestoreRepository {
       ]);
 
       return {
-        total: mapDoc(totalSnap).count,
-        underReview: mapDoc(reviewSnap).count,
-        shortlisted: mapDoc(shortlistSnap).count,
-        interviews: mapDoc(interviewSnap).count,
-        offers: mapDoc(offerSnap).count
+        total: totalSnap.data().count,
+        underReview: reviewSnap.data().count,
+        shortlisted: shortlistSnap.data().count,
+        interviews: interviewSnap.data().count,
+        offers: offerSnap.data().count
       };
     } catch (err) {
       throw new AppError('Failed to aggregate Application metrics', 500);

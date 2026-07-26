@@ -25,11 +25,11 @@ router.get('/', companyAdminOnly, async (req, res) => {
     
     // Total Candidates (all students on platform)
     const totalCandidatesSnap = await db.collection('students').count().get();
-    const totalCandidates = mapDoc(totalCandidatesSnap).count;
+    const totalCandidates = totalCandidatesSnap.data().count;
 
     // Saved Candidates
     const savedCandidatesSnap = await db.collection('shortlists').where('recruiter_id', '==', recruiterId).count().get();
-    const savedCandidates = mapDoc(savedCandidatesSnap).count;
+    const savedCandidates = savedCandidatesSnap.data().count;
 
     // Active Jobs & Internships
     const opportunitiesSnap = await db.collection('opportunities').where('company_id', '==', targetCompanyId).get();
@@ -59,7 +59,7 @@ router.get('/', companyAdminOnly, async (req, res) => {
       .where('company_id', '==', targetCompanyId)
       .where('status', '==', 'scheduled')
       .count().get();
-    const interviewsScheduled = mapDoc(interviewsSnap).count;
+    const interviewsScheduled = interviewsSnap.data().count;
 
     res.json({
       activeJobs,

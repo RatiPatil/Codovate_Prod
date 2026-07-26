@@ -88,10 +88,10 @@ class CollegeRepository extends FirestoreRepository {
       ]);
 
       return {
-        total: mapDoc(totalSnap).count,
-        active: mapDoc(activeSnap).count,
-        autonomous: mapDoc(autonomousSnap).count,
-        archived: mapDoc(archivedSnap).count,
+        total: totalSnap.data().count,
+        active: activeSnap.data().count,
+        autonomous: autonomousSnap.data().count,
+        archived: archivedSnap.data().count,
       };
     } catch (err) {
       throw new AppError('Failed to aggregate college metrics', 500);

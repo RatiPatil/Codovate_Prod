@@ -65,8 +65,8 @@ class TpoProfileRepository extends FirestoreRepository {
       ]);
 
       return {
-        total: mapDoc(totalSnap).count,
-        active: mapDoc(activeSnap).count
+        total: totalSnap.data().count,
+        active: activeSnap.data().count
       };
     } catch (err) {
       throw new AppError('Failed to aggregate TPO metrics', 500);

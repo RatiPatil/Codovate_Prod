@@ -96,12 +96,12 @@ router.get('/metrics', async (req, res, next) => {
     ]);
 
     return ApiResponse.success(res, 200, "Academic metrics retrieved", {
-      departments: mapDoc(deptSnap).count,
-      programs: mapDoc(progSnap).count,
-      academicYears: mapDoc(yearSnap).count,
-      semesters: mapDoc(semSnap).count,
-      divisions: mapDoc(divSnap).count,
-      courses: mapDoc(courseSnap).count,
+      departments: deptSnap.data().count,
+      programs: progSnap.data().count,
+      academicYears: yearSnap.data().count,
+      semesters: semSnap.data().count,
+      divisions: divSnap.data().count,
+      courses: courseSnap.data().count,
     });
   } catch (err) {
     next(err);

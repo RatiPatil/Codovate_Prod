@@ -34,9 +34,9 @@ class DriveRegistrationRepository extends FirestoreRepository {
       ]);
 
       return {
-        total: mapDoc(totalSnap).count,
-        shortlisted: mapDoc(shortlistedSnap).count,
-        offered: mapDoc(offeredSnap).count
+        total: totalSnap.data().count,
+        shortlisted: shortlistedSnap.data().count,
+        offered: offeredSnap.data().count
       };
     } catch (err) {
       throw new AppError('Failed to aggregate Registration metrics', 500);

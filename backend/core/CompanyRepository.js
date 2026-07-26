@@ -34,10 +34,10 @@ class CompanyRepository extends FirestoreRepository {
       ]);
 
       return {
-        total: mapDoc(totalSnap).count,
-        active: mapDoc(activeSnap).count,
-        startups: mapDoc(startupSnap).count,
-        mncs: mapDoc(mncSnap).count
+        total: totalSnap.data().count,
+        active: activeSnap.data().count,
+        startups: startupSnap.data().count,
+        mncs: mncSnap.data().count
       };
     } catch (err) {
       throw new AppError('Failed to aggregate Company metrics', 500);

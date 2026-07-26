@@ -39,10 +39,10 @@ class PlacementDriveRepository extends FirestoreRepository {
       ]);
 
       return {
-        total: mapDoc(totalSnap).count,
-        drafts: mapDoc(draftSnap).count,
-        active: mapDoc(activeSnap).count,
-        completed: mapDoc(completedSnap).count
+        total: totalSnap.data().count,
+        drafts: draftSnap.data().count,
+        active: activeSnap.data().count,
+        completed: completedSnap.data().count
       };
     } catch (err) {
       throw new AppError('Failed to aggregate Placement Drive metrics', 500);

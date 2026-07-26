@@ -39,10 +39,10 @@ class OfferRepository extends FirestoreRepository {
       ]);
 
       return {
-        total: mapDoc(totalSnap).count,
-        released: mapDoc(releasedSnap).count,
-        accepted: mapDoc(acceptedSnap).count,
-        rejected: mapDoc(rejectedSnap).count
+        total: totalSnap.data().count,
+        released: releasedSnap.data().count,
+        accepted: acceptedSnap.data().count,
+        rejected: rejectedSnap.data().count
       };
     } catch (err) {
       throw new AppError('Failed to aggregate Offer metrics', 500);

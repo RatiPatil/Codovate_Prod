@@ -345,9 +345,9 @@ router.get("/workspace", auth, async (req, res) => {
       getCommunityUpdates(uid)
     ]);
 
-    const appsCount = mapDoc(appsSnap).count;
-    const teamsCount = mapDoc(teamsSnap).count;
-    const mentorsCount = mapDoc(bookingsSnap).count;
+    const appsCount = appsSnap.data().count;
+    const teamsCount = teamsSnap.data().count;
+    const mentorsCount = bookingsSnap.data().count;
 
     // Calculate real points based on stats
     const profilePoints = (u.profileCompleted || p.profileCompletion || 0) * 10;

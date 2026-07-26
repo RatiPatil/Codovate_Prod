@@ -90,11 +90,11 @@ class OrganizationRepository extends FirestoreRepository {
       ]);
 
       return {
-        total: mapDoc(totalSnap).count,
-        active: mapDoc(activeSnap).count,
-        colleges: mapDoc(collegesSnap).count,
-        companies: mapDoc(companiesSnap).count,
-        archived: mapDoc(archivedSnap).count,
+        total: totalSnap.data().count,
+        active: activeSnap.data().count,
+        colleges: collegesSnap.data().count,
+        companies: companiesSnap.data().count,
+        archived: archivedSnap.data().count,
       };
     } catch (err) {
       throw new AppError('Failed to aggregate organization metrics', 500);

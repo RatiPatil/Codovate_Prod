@@ -38,10 +38,10 @@ class InterviewRepository extends FirestoreRepository {
       ]);
 
       return {
-        total: mapDoc(totalSnap).count,
-        scheduled: mapDoc(scheduledSnap).count,
-        pendingFeedback: mapDoc(pendingFeedbackSnap).count,
-        passed: mapDoc(passedSnap).count
+        total: totalSnap.data().count,
+        scheduled: scheduledSnap.data().count,
+        pendingFeedback: pendingFeedbackSnap.data().count,
+        passed: passedSnap.data().count
       };
     } catch (err) {
       throw new AppError('Failed to aggregate Interview metrics', 500);

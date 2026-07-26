@@ -83,9 +83,9 @@ router.get("/", auth, async (req, res) => {
       ]);
       return {
         ...s,
-        applications_count: mapDoc(appsSnap).count,
-        projects_count: mapDoc(projectsSnap).count,
-        certificates_count: mapDoc(certsSnap).count
+        applications_count: appsSnap.data().count,
+        projects_count: projectsSnap.data().count,
+        certificates_count: certsSnap.data().count
       };
     }));
 
@@ -97,9 +97,9 @@ router.get("/", auth, async (req, res) => {
         db.collection("projects").where("student_id", "==", currentUser.id).count().get(),
         db.collection("certificates").where("student_id", "==", currentUser.id).count().get()
       ]);
-      currentUser.applications_count = mapDoc(appsSnap).count;
-      currentUser.projects_count = mapDoc(projectsSnap).count;
-      currentUser.certificates_count = mapDoc(certsSnap).count;
+      currentUser.applications_count = appsSnap.data().count;
+      currentUser.projects_count = projectsSnap.data().count;
+      currentUser.certificates_count = certsSnap.data().count;
     }
 
     res.json({
