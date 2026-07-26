@@ -69,7 +69,7 @@ app.use("/api/mentor-auth", require("./routes/mentorAuth"));
 // ═══════════════════════════════════════════════════════════════
 //  ENTERPRISE IAM & RBAC MANAGEMENT
 // ═══════════════════════════════════════════════════════════════
-app.use("/api/rbac", authenticate, requireRole(['super_admin', 'admin']), require("./routes/rbac"));
+app.use("/api/rbac", authenticate, require("./routes/rbac"));
 app.use("/api/iam", require("./routes/iam")); // Some IAM routes (like bootstrap) are public
 
 // ═══════════════════════════════════════════════════════════════

@@ -17,11 +17,35 @@ const { ALL_PERMISSIONS, CATEGORIES, ACTIONS } = require('../config/permissions'
 const { ROLE_DEFINITIONS, ROLE_PRIORITIES } = require('../config/roleDefinitions');
 const { clearPermissionCache } = require('../middleware/authenticate');
 const { logAuditDirect, AUDIT_ACTIONS } = require('../middleware/auditLog');
+const requireRole = require('../middleware/requireRole');
 
 const {
   mapDoc: mapDoc,
   mapDocs: mapDocs
 } = require('../utils/firestoreMapper');
+
+// ─── PUBLIC (Authenticated) ROUTES ──────────────────────────
+
+// ─── GET /users/me/permissions — Get current user's permissions ─
+router.get('/users/me/permissions', async (req, res) => {
+  try {
+    const roleDoc = await db.collection('roles').doc(req.user.role).get();
+    const permissions = roleDoc.exists ? (mapDoc(roleDoc).permissions || []) : [];
+    
+    res.json({
+      role: req.user.role,
+      permissions,
+      isWildcard: permissions.includes('*'),
+    });
+  } catch (err) {
+    console.error('[RBAC] Get user permissions error:', err);
+    res.status(500).json({ message: 'Failed to fetch permissions.' });
+  }
+});
+
+// ─── ADMIN-ONLY ROUTES ────────────────────────────────────────
+router.use(requireRole(['super_admin', 'admin']));
+
 
 // ─── GET /roles — List all roles ────────────────────────────
 router.get('/roles', async (req, res) => {
@@ -106,22 +130,7 @@ router.get('/permissions', (req, res) => {
   });
 });
 
-// ─── GET /users/me/permissions — Get current user's permissions ─
-router.get('/users/me/permissions', async (req, res) => {
-  try {
-    const roleDoc = await db.collection('roles').doc(req.user.role).get();
-    const permissions = roleDoc.exists ? (mapDoc(roleDoc).permissions || []) : [];
-    
-    res.json({
-      role: req.user.role,
-      permissions,
-      isWildcard: permissions.includes('*'),
-    });
-  } catch (err) {
-    console.error('[RBAC] Get user permissions error:', err);
-    res.status(500).json({ message: 'Failed to fetch permissions.' });
-  }
-});
+
 
 // ─── GET /users/:userId/permissions — Get specific user's permissions ─
 router.get('/users/:userId/permissions', async (req, res) => {
