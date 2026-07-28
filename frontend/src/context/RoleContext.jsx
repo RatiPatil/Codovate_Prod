@@ -7,14 +7,14 @@ const RoleContext = createContext();
 export const useRole = () => useContext(RoleContext);
 
 export const RoleProvider = ({ children }) => {
-  const { user, isAuthenticated } = useAuth();
+  const { user, token } = useAuth();
   const [permissions, setPermissions] = useState([]);
   const [isWildcard, setIsWildcard] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchPermissions = async () => {
-      if (!isAuthenticated || !user) {
+      if (!token || !user) {
         setPermissions([]);
         setIsWildcard(false);
         setLoading(false);
@@ -36,7 +36,7 @@ export const RoleProvider = ({ children }) => {
     };
 
     fetchPermissions();
-  }, [isAuthenticated, user]);
+  }, [token, user]);
 
   /**
    * Check if user has ALL of the required permissions
