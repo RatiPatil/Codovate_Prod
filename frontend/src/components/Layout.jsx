@@ -31,6 +31,8 @@ const Layout = ({ children }) => {
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-primary/20 blur-[120px] pointer-events-none"></div>
       <div className="absolute bottom-[-10%] right-[-10%] w-[30%] h-[30%] rounded-full bg-primary-dark/20 blur-[100px] pointer-events-none"></div>
 
+      <Sidebar mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
+
       <div className="flex-1 flex flex-col overflow-hidden relative z-10">
         {/* Mobile Header */}
         <div className="md:hidden flex items-center justify-between px-4 py-3 glass-panel border-b-0 border-white/10 print:hidden">
@@ -49,8 +51,6 @@ const Layout = ({ children }) => {
           {children}
         </main>
       </div>
-      
-      <Sidebar mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
     </div>
   );
 };
