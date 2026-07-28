@@ -7,24 +7,9 @@ import api from '../api/axios';
 
 const navItems = [
   { path: '/dashboard', label: 'Dashboard', icon: '⊞', reqPerm: 'dashboard:read' },
+  { path: '/profile', label: 'Profile', icon: '👤', reqPerm: 'students:read' },
   { path: '/opportunities', label: 'Opportunities', icon: '🔍', reqPerm: 'jobs:read' },
   { path: '/applications', label: 'Applications', icon: '📋', reqPerm: 'applications:read' },
-  { path: '/calendar', label: 'Calendar', icon: '📆', reqPerm: 'dashboard:read' },
-  { path: '/teams', label: 'Teams', icon: '🤝', reqPerm: 'teams:read' },
-  { path: '/community', label: 'College Community', icon: '🏫', reqPerm: 'teams:read' },
-  { path: '/events', label: 'Events', icon: '📅', reqPerm: 'events:read' },
-  { path: '/chat', label: 'Messages', icon: '💬', reqPerm: 'dashboard:read' },
-  { path: '/activity', label: 'Activity Feed', icon: '⚡', reqPerm: 'dashboard:read' },
-  { path: '/mentors', label: 'Mentors', icon: '👨‍🏫', reqPerm: 'mentors:read' },
-  { path: '/leaderboard', label: 'Leaderboard', icon: '🏆', reqPerm: 'dashboard:read' },
-  { path: '/rewards', label: 'Rewards', icon: '💎', reqPerm: 'dashboard:read' },
-  { path: '/projects', label: 'Project Hub', icon: '🚀', reqPerm: 'projects:read' },
-  { path: '/resume', label: 'Resume Builder', icon: '📄', reqPerm: 'resume:read' },
-  { path: '/placement', label: 'Placement Prep', icon: '🎯', reqPerm: 'assessments:read' },
-  { path: '/notifications', label: 'Notifications', icon: '🔔', reqPerm: 'notifications:read' },
-  { path: '/roadmap', label: 'AI Roadmap', icon: '🗺️', reqPerm: 'learning:read' },
-  { path: '/coach', label: 'Career Coach', icon: '🤖', reqPerm: 'learning:read' },
-  { path: '/profile', label: 'Profile', icon: '👤', reqPerm: 'students:read' },
 ];
 
 const Sidebar = ({ mobileOpen, setMobileOpen }) => {

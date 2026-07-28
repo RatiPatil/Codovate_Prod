@@ -157,120 +157,12 @@ function App() {
                       <Layout><Applications /></Layout>
                     </ProtectedRoute>
                   } />
-                  <Route path="/calendar" element={
-                    <ProtectedRoute>
-                      <Layout><Calendar /></Layout>
-                    </ProtectedRoute>
-                  } />
                   <Route path="/profile" element={
                     <ProtectedRoute>
                       <Layout><Profile /></Layout>
                     </ProtectedRoute>
                   } />
-                  <Route path="/projects" element={
-                    <ProtectedRoute>
-                      <Layout><ProjectHub /></Layout>
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/teams" element={
-                    <ProtectedRoute>
-                      <Layout><TeamsLayout /></Layout>
-                    </ProtectedRoute>
-                  } />
-
-                  <Route path="/teams/:id/workspace" element={
-                    <ProtectedRoute>
-                      <Layout><Workspace /></Layout>
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/mentors" element={
-                    <ProtectedRoute>
-                      <Layout><Mentors /></Layout>
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/events" element={
-                    <ProtectedRoute>
-                      <Layout><Events /></Layout>
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/chat" element={
-                    <ProtectedRoute>
-                      <Layout><Chat /></Layout>
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/activity" element={
-                    <ProtectedRoute>
-                      <Layout><ActivityFeed /></Layout>
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/community" element={
-                    <ProtectedRoute>
-                      <Layout><Community /></Layout>
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/leaderboard" element={
-                    <ProtectedRoute>
-                      <Layout><Leaderboard /></Layout>
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/rewards" element={
-                    <ProtectedRoute>
-                      <Layout><Gamification /></Layout>
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/resume" element={
-                    <ProtectedRoute>
-                      <Layout><ResumeBuilder /></Layout>
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/notifications" element={
-                    <ProtectedRoute>
-                      <Layout><Notifications /></Layout>
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/roadmap" element={
-                    <ProtectedRoute>
-                      <Layout><Roadmap /></Layout>
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/roadmap/module/:stepId" element={
-                    <ProtectedRoute>
-                      <Layout><LearningModule /></Layout>
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/coach" element={
-                    <ProtectedRoute>
-                      <Layout><CareerCoach /></Layout>
-                    </ProtectedRoute>
-                  } />
                   
-                  {/* Placement Hub & Modules */}
-                  <Route path="/placement" element={
-                    <ProtectedRoute>
-                      <Layout><PlacementHub /></Layout>
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/placement/coding" element={
-                    <ProtectedRoute>
-                      <Layout><CodingPractice /></Layout>
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/placement/assessments" element={
-                    <ProtectedRoute>
-                      <Layout><SkillAssessments /></Layout>
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/placement/resume-review" element={
-                    <ProtectedRoute>
-                      <Layout><ResumeReview /></Layout>
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/placement/interview" element={
-                    <ProtectedRoute>
-                      <Layout><MockInterview /></Layout>
-                    </ProtectedRoute>
-                  } />
-
                   {/* Student Dedicated Routes */}
                   <Route path="/student/ai-dashboard" element={
                     <ProtectedRoute requireRole="student">
