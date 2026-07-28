@@ -30,8 +30,13 @@ const {
 router.get('/users/me/permissions', async (req, res) => {
   try {
     const roleDoc = await db.collection('roles').doc(req.user.role).get();
-    const permissions = roleDoc.exists ? (mapDoc(roleDoc).permissions || []) : [];
+    let permissions = roleDoc.exists ? (mapDoc(roleDoc).permissions || []) : [];
     
+    // Fallback to static role definitions if Firestore is not seeded
+    if (permissions.length === 0 && ROLE_DEFINITIONS[req.user.role]) {
+      permissions = ROLE_DEFINITIONS[req.user.role].permissions || [];
+    }
+
     res.json({
       role: req.user.role,
       permissions,
@@ -140,7 +145,11 @@ router.get('/users/:userId/permissions', async (req, res) => {
 
     const userData = mapDoc(userDoc);
     const roleDoc = await db.collection('roles').doc(userData.role).get();
-    const permissions = roleDoc.exists ? (mapDoc(roleDoc).permissions || []) : [];
+    let permissions = roleDoc.exists ? (mapDoc(roleDoc).permissions || []) : [];
+
+    if (permissions.length === 0 && ROLE_DEFINITIONS[userData.role]) {
+      permissions = ROLE_DEFINITIONS[userData.role].permissions || [];
+    }
 
     res.json({
       userId: req.params.userId,
