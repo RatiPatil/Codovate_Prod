@@ -176,7 +176,7 @@ const Login = () => {
 
         <div className="relative z-20">
           <Link to="/" className="inline-flex items-center gap-3">
-            <Logo variant="light" size="lg" />
+            <Logo size="xl" className="drop-shadow-2xl" />
           </Link>
         </div>
 
@@ -211,7 +211,7 @@ const Login = () => {
         {/* Mobile Logo */}
         <div className="lg:hidden absolute top-8 left-6">
           <Link to="/" className="inline-flex items-center gap-2">
-            <Logo variant="light" size="md" />
+            <Logo size="lg" className="drop-shadow-xl" />
           </Link>
         </div>
 

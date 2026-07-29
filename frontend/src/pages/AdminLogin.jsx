@@ -63,7 +63,7 @@ const AdminLogin = () => {
         {/* Header */}
         <div className="text-center">
           <div className="flex justify-center mb-6">
-            <Logo variant="dark" size="xl" />
+            <Logo size="xl" className="drop-shadow-2xl" />
           </div>
           <h1 className="text-3xl font-black text-white tracking-tight">Admin Portal</h1>
           <p className="text-gray-500 text-xs font-bold uppercase tracking-[0.2em] mt-1">Restricted Access — Codovate HQ</p>

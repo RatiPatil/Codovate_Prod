@@ -26,8 +26,8 @@ const MentorSidebar = () => {
 
   return (
     <aside className="w-64 bg-[#0A0A1B] border-r border-white/10 h-screen sticky top-0 flex flex-col">
-      <div className="p-6">
-        <Logo variant="light" size="md" />
+      <div className="flex items-center justify-center py-8 border-b border-white/10 shrink-0">
+        <Logo size="xl" className="drop-shadow-[0_0_25px_rgba(32,21,255,0.4)]" />
       </div>
       
       <nav className="flex-1 px-4 space-y-2 mt-4">

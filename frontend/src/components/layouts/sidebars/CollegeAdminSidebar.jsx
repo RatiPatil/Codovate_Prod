@@ -29,8 +29,8 @@ const CollegeAdminSidebar = ({ mobileOpen, setMobileOpen }) => {
       
       <aside className={`fixed md:relative top-0 right-0 h-screen w-64 bg-[#080812] border-l border-white/5 z-50 transition-transform duration-300 flex flex-col ${mobileOpen ? 'translate-x-0' : 'translate-x-full md:translate-x-0'}`}>
         
-        <div className="h-24 flex items-center justify-center border-b border-white/5 shrink-0">
-          <img src="/favicon.png?v=3" alt="Codovate" className="h-14 w-auto object-contain drop-shadow-lg" />
+        <div className="h-28 flex items-center justify-center border-b border-white/5 shrink-0">
+          <img src="/favicon.png?v=3" alt="Codovate" className="h-[100px] w-auto object-contain drop-shadow-[0_0_25px_rgba(32,21,255,0.4)]" draggable={false} />
         </div>
 
         <nav className="flex-1 overflow-y-auto py-6 px-4 space-y-1">

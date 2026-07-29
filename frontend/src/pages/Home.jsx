@@ -183,7 +183,7 @@ const Home = () => {
       
       {/* Absolute Logo (No Navbar) */}
       <Link to="/" className="absolute top-6 left-6 md:top-8 md:left-8 z-50 flex items-center gap-2 md:gap-3 cursor-pointer">
-        <Logo variant="light" size="lg" />
+        <Logo size="lg" className="drop-shadow-xl" />
       </Link>
 
       <div className="absolute top-7 right-6 md:top-10 md:right-8 z-50 flex items-center gap-4 md:gap-6">

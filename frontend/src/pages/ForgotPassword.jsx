@@ -86,7 +86,7 @@ const ForgotPassword = () => {
       <div ref={formRef} className="w-full max-w-md relative z-10">
         <div className="mb-8 text-center">
           <Link to="/" className="inline-flex items-center gap-2 mb-6">
-            <Logo variant="light" size="lg" />
+            <Logo size="xl" className="drop-shadow-2xl" />
           </Link>
           <h2 className="text-3xl font-bold text-white mb-2">Reset Password</h2>
           <p className="text-gray-400 text-sm">Enter your email and we'll send you a reset link.</p>

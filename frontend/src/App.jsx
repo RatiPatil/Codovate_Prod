@@ -82,7 +82,7 @@ import Logo from './components/common/Logo';
 const GlobalLoader = () => (
   <div className="flex flex-col items-center justify-center h-screen bg-[#050510] gap-4">
     <div className="animate-pulse">
-      <Logo variant="light" size="lg" />
+      <Logo size="xl" className="drop-shadow-[0_0_40px_rgba(32,21,255,0.5)]" />
     </div>
     <div className="w-6 h-6 border-2 border-[#2015FF] border-t-transparent rounded-full animate-spin" />
   </div>

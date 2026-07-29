@@ -104,16 +104,16 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
     <div className="flex flex-col h-full">
 
       {/* Logo */}
-      <div className="px-5 pt-6 pb-6 lg:pt-8 flex items-center justify-center relative shrink-0">
+      <div className="flex items-center justify-center py-8 lg:py-10 relative shrink-0">
         <button
           onClick={() => navigate('/dashboard')}
           className="focus:outline-none transition-transform hover:scale-105 active:scale-95"
         >
-          {/* Official Codovate Icon Only */}
-          <img 
-            src="/favicon.png?v=3" 
-            alt="Codovate Icon" 
-            className="h-20 md:h-24 lg:h-32 object-contain drop-shadow-2xl" 
+          <img
+            src="/favicon.png?v=3"
+            alt="Codovate"
+            className="h-[60px] sm:h-[72px] lg:h-[90px] xl:h-[100px] w-auto object-contain select-none drop-shadow-2xl"
+            draggable={false}
           />
         </button>
 
