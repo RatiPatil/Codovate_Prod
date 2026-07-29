@@ -25,12 +25,8 @@ const MentorSidebar = ({ mobileOpen, setMobileOpen }) => {
       
       <aside className={`fixed md:relative top-0 right-0 h-screen w-64 bg-[#080812] border-l border-white/5 z-50 transition-transform duration-300 flex flex-col ${mobileOpen ? 'translate-x-0' : 'translate-x-full md:translate-x-0'}`}>
         
-        <div className="h-20 flex items-center gap-3 px-6 border-b border-white/5 shrink-0">
-          <img src="/favicon.png?v=3" alt="Codovate Logo" className="w-10 h-10 object-contain shrink-0 drop-shadow-md" />
-          <div>
-            <span className="text-white font-black text-lg tracking-tight block leading-tight">CODOVATE</span>
-            <span className="text-cyan-500 text-[10px] font-bold uppercase tracking-widest">Mentor Dashboard</span>
-          </div>
+        <div className="h-24 flex items-center justify-center border-b border-white/5 shrink-0">
+          <img src="/favicon.png?v=3" alt="Codovate" className="h-14 w-auto object-contain drop-shadow-lg" />
         </div>
 
         <nav className="flex-1 overflow-y-auto py-6 px-4 space-y-1">

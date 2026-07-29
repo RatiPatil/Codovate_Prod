@@ -116,16 +116,8 @@ const SidebarContent = ({ setMobileOpen }) => {
 
   return (
     <div className="flex flex-col h-full bg-[#030308] border-r border-white/5 relative overflow-hidden select-none">
-      <div className="px-6 py-6 border-b border-white/5 relative z-10 shrink-0">
-        <div className="flex items-center gap-3">
-          <img src="/favicon.png?v=3" alt="Codovate Logo" className="w-10 h-10 object-contain shrink-0 drop-shadow-md" />
-          <div className="min-w-0">
-            <p className="text-white font-black text-lg tracking-tight leading-none">CODOVATE</p>
-            <p className="text-[11px] font-bold uppercase tracking-widest mt-1 truncate" style={{ color: meta.color }}>
-              ADMIN PANEL
-            </p>
-          </div>
-        </div>
+      <div className="px-6 py-7 border-b border-white/5 relative z-10 shrink-0 flex flex-col items-center">
+        <img src="/favicon.png?v=3" alt="Codovate" className="h-16 w-auto object-contain drop-shadow-lg" />
       </div>
 
       <div className="px-6 py-5 border-b border-white/5 relative z-10 shrink-0">

@@ -14,11 +14,7 @@ const AdminLayout = ({ children }) => {
         {/* Mobile Header */}
         <div className="md:hidden flex items-center justify-between px-4 py-3.5 bg-[#050510] border-b border-white/5">
           <div className="flex items-center gap-2">
-            <img src="/favicon.png?v=3" alt="Codovate Logo" className="w-8 h-8 object-contain shrink-0 drop-shadow-md" />
-            <div>
-              <span className="text-white font-black text-sm tracking-tight">CODOVATE</span>
-              <span className="text-[#2015FF] text-[9px] font-bold uppercase ml-2">Admin</span>
-            </div>
+            <img src="/favicon.png?v=3" alt="Codovate" className="w-9 h-9 object-contain shrink-0 drop-shadow-md" />
           </div>
           <button onClick={() => setMobileOpen(true)} className="w-8 h-8 rounded-lg bg-white/5 text-gray-400 hover:text-white flex items-center justify-center transition-colors">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

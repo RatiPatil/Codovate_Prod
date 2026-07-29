@@ -1,34 +1,27 @@
 import React from 'react';
 
-const Logo = ({ variant = 'auto', className = '', size = 'md' }) => {
-  // variant: 'light' -> white text (for dark bg)
-  // variant: 'dark' -> dark text (for light bg)
-  // variant: 'auto' -> adapts via CSS classes (dark:text-white)
-
-  let textClass = 'text-gray-900 dark:text-white';
-  if (variant === 'light') textClass = 'text-white';
-  if (variant === 'dark') textClass = 'text-gray-900';
-
-  const sizeClasses = {
-    sm: { img: 'h-6', text: 'text-lg' },
-    md: { img: 'h-8', text: 'text-xl' },
-    lg: { img: 'h-10', text: 'text-2xl' },
-    xl: { img: 'h-14', text: 'text-3xl' },
+/**
+ * Icon-only brand mark. No text. Just the official Codovate gradient icon.
+ * size prop: 'sm' | 'md' | 'lg' | 'xl' | 'xxl'
+ */
+const Logo = ({ className = '', size = 'md' }) => {
+  const sizeMap = {
+    sm:  'h-8',
+    md:  'h-12',
+    lg:  'h-16',
+    xl:  'h-20',
+    xxl: 'h-28',
   };
 
-  const sz = sizeClasses[size] || sizeClasses.md;
+  const heightClass = sizeMap[size] || sizeMap.md;
 
   return (
-    <div className={`inline-flex items-center gap-2.5 ${className}`}>
-      <img 
-        src="/favicon.png?v=3" 
-        alt="Codovate Icon" 
-        className={`${sz.img} object-contain shrink-0`} 
-      />
-      <span className={`font-black tracking-tight ${sz.text} ${textClass}`}>
-        CODOVATE
-      </span>
-    </div>
+    <img
+      src="/favicon.png?v=3"
+      alt="Codovate"
+      className={`${heightClass} w-auto object-contain shrink-0 ${className}`}
+      draggable={false}
+    />
   );
 };
 
