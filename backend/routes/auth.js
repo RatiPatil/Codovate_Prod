@@ -576,19 +576,20 @@ router.post("/login", async (req, res) => {
     if (user.recordStatus !== 'ACTIVE')
       return res.status(403).json({ message: "Your account has been suspended. Please contact the administrator." });
 
-    if (!user.is_verified) {
-      try {
-        const fbUser = await getAuth().getUserByEmail(user.email);
-        if (fbUser.emailVerified) {
-          await usersRef.doc(user.id).update({ is_verified: true, updatedAt: new Date() });
-          user.is_verified = true;
-        } else {
-          return res.status(403).json({ message: "Please verify your email address before logging in. Check your inbox for the verification link." });
-        }
-      } catch (e) {
-        return res.status(403).json({ message: "Please verify your email address before logging in. Check your inbox for the verification link." });
-      }
-    }
+    // TEMPORARILY BYPASSED FOR PROD STABILIZATION
+    // if (!user.is_verified) {
+    //   try {
+    //     const fbUser = await getAuth().getUserByEmail(user.email);
+    //     if (fbUser.emailVerified) {
+    //       await usersRef.doc(user.id).update({ is_verified: true, updatedAt: new Date() });
+    //       user.is_verified = true;
+    //     } else {
+    //       return res.status(403).json({ message: "Please verify your email address before logging in. Check your inbox for the verification link." });
+    //     }
+    //   } catch (e) {
+    //     return res.status(403).json({ message: "Please verify your email address before logging in. Check your inbox for the verification link." });
+    //   }
+    // }
 
     // AUTH-002 FIX: Return provider-specific error message
     if (!user.password_hash) {
