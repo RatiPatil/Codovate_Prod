@@ -338,8 +338,11 @@ router.get("/workspace", auth, async (req, res) => {
     const p = profileDoc.exists ? mapDoc(profileDoc) : {};
 
     // 1. Fetch Real Data Counts, Applications, and Live Jobs in Parallel
-    const [appsSnap, recentAppsSnap, oppsSnap, teamsSnap, bookingsSnap, communityUpdates] = await Promise.all([
+    const [appsSnap, interviewsSnap, shortlistsSnap, offersSnap, recentAppsSnap, oppsSnap, teamsSnap, bookingsSnap, communityUpdates] = await Promise.all([
       db.collection("applications").where("user_id", "==", uid).count().get(),
+      db.collection("applications").where("user_id", "==", uid).where("status", "in", ["Interview", "Scheduled", "Interview Scheduled"]).count().get(),
+      db.collection("applications").where("user_id", "==", uid).where("status", "in", ["Under Review", "Shortlisted"]).count().get(),
+      db.collection("applications").where("user_id", "==", uid).where("status", "in", ["Offer", "Accepted"]).count().get(),
       db.collection("applications").where("user_id", "==", uid).limit(3).get(),
       db.collection("opportunities").limit(3).get(),
       db.collection("team_members").where("user_id", "==", uid).count().get(),
@@ -348,6 +351,9 @@ router.get("/workspace", auth, async (req, res) => {
     ]);
 
     const appsCount = appsSnap.data().count;
+    const interviewsCount = interviewsSnap.data().count;
+    const shortlistsCount = shortlistsSnap.data().count;
+    const offersCount = offersSnap.data().count;
     const teamsCount = teamsSnap.data().count;
     const mentorsCount = bookingsSnap.data().count;
 
@@ -712,6 +718,9 @@ router.get("/workspace", auth, async (req, res) => {
         has_interview,
         points: totalPoints,
         appsCount,
+        interviewsCount,
+        shortlistsCount,
+        offersCount,
         teamsCount,
         mentorsCount,
         joinedAt: joinedAt.toISOString(),
