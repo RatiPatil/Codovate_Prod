@@ -56,9 +56,8 @@ const Loader = ({ fullScreen = false, message = "Loading...", size = "md" }) => 
           className="absolute inset-4 rounded-full border-2 border-transparent border-t-blue-500 border-r-blue-500/50 opacity-80"
         />
         
-        {/* Center Glow & Logo */}
+        {/* Center Glow */}
         <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl animate-pulse pointer-events-none" />
-        <img src="/logo.png" alt="Codovate" className="absolute inset-3 m-auto object-contain w-8 h-8 opacity-90 animate-pulse" />
       </div>
       
       {message && (

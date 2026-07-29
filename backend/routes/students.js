@@ -337,64 +337,17 @@ router.get("/workspace", auth, async (req, res) => {
     const u = mapDoc(userDoc);
     const p = profileDoc.exists ? mapDoc(profileDoc) : {};
 
-    // 1. Fetch Real Data Counts, Applications, and Live Jobs in Parallel
-    const [appsSnap, interviewsSnap, shortlistsSnap, offersSnap, recentAppsSnap, oppsSnap, teamsSnap, bookingsSnap, communityUpdates] = await Promise.all([
+    // 1. Fetch Real Data Counts and Updates using aggregate queries for performance
+    const [appsSnap, teamsSnap, bookingsSnap, communityUpdates] = await Promise.all([
       db.collection("applications").where("user_id", "==", uid).count().get(),
-      db.collection("applications").where("user_id", "==", uid).where("status", "in", ["Interview", "Scheduled", "Interview Scheduled"]).count().get(),
-      db.collection("applications").where("user_id", "==", uid).where("status", "in", ["Under Review", "Shortlisted"]).count().get(),
-      db.collection("applications").where("user_id", "==", uid).where("status", "in", ["Offer", "Accepted"]).count().get(),
-      db.collection("applications").where("user_id", "==", uid).limit(3).get(),
-      db.collection("opportunities").limit(3).get(),
       db.collection("team_members").where("user_id", "==", uid).count().get(),
       db.collection("mentorSessions").where("student_id", "==", uid).count().get(),
       getCommunityUpdates(uid)
     ]);
 
     const appsCount = appsSnap.data().count;
-    const interviewsCount = interviewsSnap.data().count;
-    const shortlistsCount = shortlistsSnap.data().count;
-    const offersCount = offersSnap.data().count;
     const teamsCount = teamsSnap.data().count;
     const mentorsCount = bookingsSnap.data().count;
-
-    // Check if any application has reached interview or offer stage
-    let has_interview = false;
-    const recentApps = [];
-    for (const doc of recentAppsSnap.docs) {
-      const app = mapDoc(doc);
-      if (app.status === 'Interview' || app.status === 'Offer' || app.status === 'Accepted') {
-        has_interview = true;
-      }
-      let oppTitle = 'Opportunity';
-      let companyName = 'Company';
-      if (app.opportunity_id) {
-        const oDoc = await db.collection("opportunities").doc(app.opportunity_id).get();
-        if (oDoc.exists) {
-          const o = mapDoc(oDoc);
-          oppTitle = o.title || oppTitle;
-          companyName = o.company || companyName;
-        }
-      }
-      recentApps.push({
-        id: doc.id,
-        title: oppTitle,
-        company: companyName,
-        status: app.status || 'Applied',
-        applied_at: app.applied_at
-      });
-    }
-
-    const recommendedJobs = oppsSnap.docs.map(doc => {
-      const o = mapDoc(doc);
-      return {
-        id: doc.id,
-        title: o.title || 'Role Opportunity',
-        company: o.company || 'Tech Company',
-        location: o.location || 'Remote',
-        type: o.type || 'Full-time',
-        salary: o.salary || 'Competitive'
-      };
-    });
 
     // Calculate real points based on stats
     const profilePoints = (u.profileCompleted || p.profileCompletion || 0) * 10;
@@ -714,19 +667,12 @@ router.get("/workspace", auth, async (req, res) => {
         career_goal: p.careerGoal || p.desired_roles?.[0] || 'Software Engineer',
         profile_completion: profComp,
         has_resume: !!p.socialLinks?.resume || !!p.resume_url,
-        skills_count: (p.skills || []).length,
-        has_interview,
         points: totalPoints,
         appsCount,
-        interviewsCount,
-        shortlistsCount,
-        offersCount,
         teamsCount,
         mentorsCount,
         joinedAt: joinedAt.toISOString(),
       },
-      recentApps,
-      recommendedJobs,
       mission,
       recommendations,
       communityUpdates,
