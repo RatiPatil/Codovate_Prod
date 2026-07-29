@@ -144,18 +144,10 @@ const Signup = () => {
         password: form.password,
       });
       
-      // Attempt to sign in locally and send verification email
-      try {
-        await signInWithEmailAndPassword(auth, form.email.trim().toLowerCase(), form.password);
-        if (auth.currentUser) {
-          await sendEmailVerification(auth.currentUser);
-        }
-      } catch (fbErr) {
-        console.warn("Could not sign in to Firebase to send verification:", fbErr);
-      }
-
-      setIsSignupComplete(true);
-      addToast({ type: 'success', title: 'Account Created!', message: 'Please check your email to verify your account.' });
+      const { token, user: userData } = res.data;
+      login(token, userData, true);
+      addToast({ type: 'success', title: 'Account Created!', message: 'Welcome to Codovate!' });
+      navigate('/onboarding');
     } catch (err) {
       let msg = getFirebaseErrorMessage(err);
       if (err.isAxiosError && !err.response) {

@@ -339,7 +339,7 @@ router.get("/workspace", auth, async (req, res) => {
 
     // 1. Fetch Real Data Counts and Updates using aggregate queries for performance
     const [appsSnap, teamsSnap, bookingsSnap, communityUpdates] = await Promise.all([
-      db.collection("applications").where("student_id", "==", uid).count().get(),
+      db.collection("applications").where("user_id", "==", uid).count().get(),
       db.collection("team_members").where("user_id", "==", uid).count().get(),
       db.collection("mentorSessions").where("student_id", "==", uid).count().get(),
       getCommunityUpdates(uid)

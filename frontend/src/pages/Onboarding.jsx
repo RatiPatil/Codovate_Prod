@@ -200,9 +200,8 @@ export default function Onboarding() {
       setStep(TOTAL_STEPS + 2);
     } catch (err) {
       console.error(err);
-      showAlert(err.response?.data?.message || 'Failed to save profile');
-      // Fallback: stay on step 9 or go to dashboard
-      navigate('/dashboard');
+      showAlert(err.response?.data?.message || 'Failed to save profile. Please try again.');
+      setStep(TOTAL_STEPS); // Return to final step to allow retry
     } finally {
       setSaving(false);
     }
