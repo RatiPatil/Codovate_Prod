@@ -149,14 +149,14 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
       <div className="px-3 pb-3 shrink-0">
         <div
           className="rounded-2xl p-4 text-white relative overflow-hidden mb-2"
-          style={{ background: 'linear-gradient(135deg, #6c3aff 0%, #3a9bff 100%)' }}
+          style={{ background: 'linear-gradient(135deg, #6c3aff 0%, #3a9bff 100%)', color: '#ffffff' }}
         >
           {/* Decorative blobs */}
           <div className="absolute -top-5 -right-5 w-24 h-24 bg-white/10 rounded-full blur-xl pointer-events-none" />
           <div className="absolute -bottom-4 -left-4 w-16 h-16 bg-white/10 rounded-full blur-xl pointer-events-none" />
 
-          <p className="font-bold text-sm mb-0.5 relative z-10">Upgrade Your Profile</p>
-          <p className="text-white/70 text-[11px] leading-relaxed mb-3 relative z-10">
+          <p className="font-bold text-sm mb-0.5 relative z-10" style={{ color: '#ffffff' }}>Upgrade Your Profile</p>
+          <p className="text-[11px] leading-relaxed mb-3 relative z-10" style={{ color: 'rgba(255, 255, 255, 0.8)' }}>
             Complete your profile to get better opportunities
           </p>
 
@@ -165,7 +165,7 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
             <div className="relative">
               <CircularProgress pct={loadingPct ? 0 : profilePct} size={72} />
               <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-white font-bold text-[15px]">
+                <span className="font-bold text-[15px]" style={{ color: '#ffffff' }}>
                   {loadingPct ? '…' : `${profilePct}%`}
                 </span>
               </div>

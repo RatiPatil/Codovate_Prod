@@ -250,16 +250,7 @@ h1, h2, h3, h4, h5, h6 {
 .light h5 {
   color: #111827 !important;
 }
-
-/* Stats numbers (text-white, text-2xl) */
-.light .text-2xl.font-black.text-white {
-  color: #111827 !important;
-}
-
-/* "Edit Picture" overlay text & similar inline text-white */
-.light .text-white {
-  color: #111827 !important;
-}
+/* Profile page specific heading overrides for light mode */
 
 /* Input and textarea text in light mode */
 .light input:not([type="file"]),
