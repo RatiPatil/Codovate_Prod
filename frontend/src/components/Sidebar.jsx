@@ -113,7 +113,7 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
           <img 
             src="/favicon.png?v=3" 
             alt="Codovate Icon" 
-            className="h-14 md:h-16 lg:h-20 object-contain drop-shadow-2xl" 
+            className="h-20 md:h-24 lg:h-32 object-contain drop-shadow-2xl" 
           />
         </button>
 
