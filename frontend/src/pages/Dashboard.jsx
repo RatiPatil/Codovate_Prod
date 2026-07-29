@@ -1,522 +1,548 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { gsap } from 'gsap';
+import { Search, Bookmark, BookmarkCheck, MapPin, Clock, Sparkles, Briefcase, Users, Star, ShoppingBag, ArrowUpRight, ChevronRight } from 'lucide-react';
 import api from '../api/axios';
-import Loader from '../components/common/Loader';
-import ErrorState from '../components/common/ErrorState';
 import { useToast } from '../components/ui/ToastProvider';
 import { useAuth } from '../context/AuthContext';
 
+/* ── Skeleton placeholder ─────────────────────────────────────── */
+const Skel = ({ className = '' }) => (
+  <div className={`animate-pulse bg-gray-200 rounded-lg ${className}`} />
+);
+
+/* ── Circular SVG progress ring ───────────────────────────────── */
+const RingProgress = ({ pct = 0, size = 96 }) => {
+  const r = (size - 10) / 2;
+  const circ = 2 * Math.PI * r;
+  const dash = circ - (pct / 100) * circ;
+  return (
+    <svg width={size} height={size} className="-rotate-90">
+      <circle cx={size / 2} cy={size / 2} r={r} strokeWidth={8} fill="none" stroke="#e8e6ff" />
+      <circle
+        cx={size / 2} cy={size / 2} r={r} strokeWidth={8} fill="none"
+        stroke="url(#ringGrad)" strokeLinecap="round"
+        strokeDasharray={circ} strokeDashoffset={dash}
+        style={{ transition: 'stroke-dashoffset 1s cubic-bezier(.4,0,.2,1)' }}
+      />
+      <defs>
+        <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor="#6c3aff" />
+          <stop offset="100%" stopColor="#3a9bff" />
+        </linearGradient>
+      </defs>
+    </svg>
+  );
+};
+
+/* ── Stat label helpers ───────────────────────────────────────── */
+const statMeta = {
+  applications: {
+    Icon: Briefcase,
+    bg: 'bg-blue-50',
+    color: 'text-blue-600',
+    label: 'Applications',
+    weekLabel: (n) => n > 0 ? `↑ ${n} this week` : 'No change',
+  },
+  interviews: {
+    Icon: Users,
+    bg: 'bg-purple-50',
+    color: 'text-purple-600',
+    label: 'Interviews',
+    weekLabel: (n) => n > 0 ? `↑ ${n} this week` : 'No change',
+  },
+  shortlisted: {
+    Icon: Star,
+    bg: 'bg-indigo-50',
+    color: 'text-indigo-600',
+    label: 'Shortlisted',
+    weekLabel: (n) => n > 0 ? `↑ ${n} this week` : 'No change',
+  },
+  offers: {
+    Icon: ShoppingBag,
+    bg: 'bg-orange-50',
+    color: 'text-orange-500',
+    label: 'Offers',
+    weekLabel: (n) => n > 0 ? '🎉 Congratulations!' : 'Keep applying!',
+  },
+};
+
+/* ── Status badge colours for Application Tracker ─────────────── */
+const statusConfig = (status = '') => {
+  const s = status.toLowerCase();
+  if (s.includes('interview') || s.includes('scheduled')) return { label: 'Interview Scheduled', cls: 'bg-blue-50 text-blue-600 border-blue-200' };
+  if (s.includes('offer') || s.includes('accepted'))        return { label: 'Offer Received',      cls: 'bg-green-50 text-green-600 border-green-200' };
+  if (s.includes('review') || s.includes('shortlist'))      return { label: 'Under Review',         cls: 'bg-orange-50 text-orange-500 border-orange-200' };
+  if (s.includes('reject'))                                  return { label: 'Rejected',             cls: 'bg-red-50 text-red-500 border-red-200' };
+  return { label: 'Applied', cls: 'bg-emerald-50 text-emerald-600 border-emerald-200' };
+};
+
+/* ── Company logo tile (initial letter) ───────────────────────── */
+const COMPANY_COLORS = ['bg-red-500', 'bg-blue-600', 'bg-green-600', 'bg-orange-500', 'bg-purple-600', 'bg-pink-600', 'bg-teal-600'];
+const companyColor = (name = '') => COMPANY_COLORS[name.charCodeAt(0) % COMPANY_COLORS.length];
+
+const CompanyLogo = ({ name = '', size = 'md' }) => {
+  const sz = size === 'sm' ? 'w-9 h-9 text-xs' : 'w-11 h-11 text-sm';
+  return (
+    <div className={`${sz} ${companyColor(name)} rounded-xl flex items-center justify-center font-bold text-white shrink-0`}>
+      {name.charAt(0).toUpperCase() || '?'}
+    </div>
+  );
+};
+
+/* ── Time-ago helper ──────────────────────────────────────────── */
+const timeAgo = (dateStr) => {
+  if (!dateStr) return '';
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const d = Math.floor(diff / 86400000);
+  if (d < 1) return 'Today';
+  if (d === 1) return '1 day ago';
+  if (d < 7) return `${d} days ago`;
+  if (d < 30) return `${Math.floor(d / 7)} week${Math.floor(d / 7) > 1 ? 's' : ''} ago`;
+  return `${Math.floor(d / 30)} month${Math.floor(d / 30) > 1 ? 's' : ''} ago`;
+};
+
+/* ═══════════════════════════════════════════════════════════════ */
+/*  DASHBOARD                                                      */
+/* ═══════════════════════════════════════════════════════════════ */
 const Dashboard = () => {
-  const { user } = useAuth();
+  const { user }     = useAuth();
   const { addToast } = useToast();
-  const navigate = useNavigate();
-  const containerRef = useRef(null);
+  const navigate     = useNavigate();
 
-  const [workspace, setWorkspace] = useState(null);
-  const [opportunities, setOpportunities] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [applyingId, setApplyingId] = useState(null);
-  const [savedJobs, setSavedJobs] = useState(new Set());
-  const [searchQuery, setSearchQuery] = useState('');
+  const [workspace,    setWorkspace]    = useState(null);
+  const [opportunities,setOpportunities]= useState([]);
+  const [loading,      setLoading]      = useState(true);
+  const [error,        setError]        = useState(null);
+  const [applyingId,   setApplyingId]   = useState(null);
+  const [savedJobs,    setSavedJobs]    = useState(new Set());
+  const [search,       setSearch]       = useState('');
 
-  const fetchDashboardData = async () => {
+  /* ── Data fetch (parallel) ──────────────────────────────────── */
+  const fetchAll = useCallback(async () => {
+    setLoading(true);
+    setError(null);
     try {
-      setLoading(true);
-      setError(null);
-      
       const [wsRes, oppsRes] = await Promise.all([
         api.get('/students/workspace').catch(() => ({ data: null })),
-        api.get('/opportunities').catch(() => ({ data: [] }))
+        api.get('/opportunities').catch(() => ({ data: [] })),
       ]);
+      if (wsRes.data) setWorkspace(wsRes.data);
+      else setError('Could not load workspace data.');
 
-      if (wsRes.data) {
-        setWorkspace(wsRes.data);
-      } else {
-        setError('Unable to fetch workspace details.');
-      }
-
-      const oppsData = Array.isArray(oppsRes.data) 
-        ? oppsRes.data 
-        : (oppsRes.data?.opportunities || wsRes.data?.recommendedOpps || []);
-      setOpportunities(oppsData);
-
-    } catch (err) {
-      console.error('Dashboard loading error:', err);
-      setError('Failed to connect to Codovate services. Please retry.');
+      const raw = oppsRes.data;
+      const arr = Array.isArray(raw) ? raw : (raw?.opportunities || wsRes.data?.recommendedOpps || []);
+      setOpportunities(arr);
+    } catch {
+      setError('Connection failed. Please retry.');
     } finally {
       setLoading(false);
     }
-  };
-
-  useEffect(() => {
-    fetchDashboardData();
   }, []);
 
-  // Entrance animation
-  useEffect(() => {
-    if (!loading && workspace && containerRef.current) {
-      const cards = containerRef.current.querySelectorAll('.dash-card');
-      gsap.fromTo(cards,
-        { y: 25, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.6, stagger: 0.08, ease: 'power3.out' }
-      );
-    }
-  }, [loading, workspace]);
+  useEffect(() => { fetchAll(); }, [fetchAll]);
 
-  // Apply to Opportunity handler
+  /* ── Apply handler ──────────────────────────────────────────── */
   const handleApply = async (oppId) => {
+    setApplyingId(oppId);
     try {
-      setApplyingId(oppId);
       await api.post('/applications', { opportunity_id: oppId });
-      addToast({ type: 'success', title: 'Application Submitted!', message: 'Your profile was sent to the employer.' });
-      // Refresh dashboard workspace data to update application counts & status
-      fetchDashboardData();
-    } catch (err) {
-      const msg = err.response?.data?.message || 'Failed to submit application.';
-      addToast({ type: 'error', title: 'Application Error', message: msg });
-    } finally {
-      setApplyingId(null);
-    }
+      addToast({ type: 'success', title: 'Applied!', message: 'Application submitted successfully.' });
+      fetchAll();
+    } catch (e) {
+      addToast({ type: 'error', title: 'Error', message: e.response?.data?.message || 'Could not apply.' });
+    } finally { setApplyingId(null); }
   };
 
-  // Toggle Save Job handler
-  const toggleSave = (oppId) => {
+  /* ── Save toggle ────────────────────────────────────────────── */
+  const toggleSave = (id) => {
     setSavedJobs(prev => {
       const next = new Set(prev);
-      if (next.has(oppId)) {
-        next.delete(oppId);
-        addToast({ type: 'info', title: 'Removed', message: 'Job removed from saved list.' });
-      } else {
-        next.add(oppId);
-        addToast({ type: 'success', title: 'Saved!', message: 'Job saved to your bookmarks.' });
-      }
+      if (next.has(id)) { next.delete(id); addToast({ type: 'info', title: 'Removed from saved' }); }
+      else               { next.add(id);    addToast({ type: 'success', title: 'Saved!' }); }
       return next;
     });
   };
 
-  if (loading) return <Loader fullScreen />;
-  if (error && !workspace) return <ErrorState message={error} onRetry={fetchDashboardData} />;
-  if (!workspace) return null;
+  /* ── Derived values ─────────────────────────────────────────── */
+  const profile      = workspace?.profile || {};
+  const stats        = workspace?.stats   || { applications: 0, interviews: 0, shortlisted: 0, offers: 0 };
+  const applications = workspace?.applications || [];
+  const completionPct= profile.profile_completion ?? 0;
+  const studentName  = profile.name || user?.name || 'Student';
+  const aiAdvice     = workspace?.recommendations?.[0] || null;
 
-  const profile = workspace.profile || {};
-  const stats = workspace.stats || {
-    applications: profile.appsCount || 0,
-    interviews: 0,
-    shortlisted: 0,
-    offers: 0
-  };
-
-  const completionPct = profile.profile_completion || 0;
-  const hasResume = profile.has_resume;
-  const latestApp = workspace.latestApp;
-
-  // Determine Primary CTA based on onboarding & profile status
-  const getPrimaryCTA = () => {
-    if (completionPct < 80) {
-      return {
-        title: 'Complete Profile Details',
-        subtitle: 'Fill in your education & skills to stand out to top recruiters.',
-        btnText: 'Complete Profile',
-        badge: 'Required',
-        accent: 'from-amber-500/20 to-orange-500/20 border-amber-500/30',
-        action: () => navigate('/profile')
-      };
-    }
-    if (!hasResume) {
-      return {
-        title: 'Upload Your Resume',
-        subtitle: 'Add your resume to unlock 1-click application submissions.',
-        btnText: 'Upload Resume',
-        badge: 'Recommended',
-        accent: 'from-blue-500/20 to-indigo-500/20 border-blue-500/30',
-        action: () => navigate('/profile')
-      };
-    }
-    return {
-      title: 'Apply to Top Opportunities',
-      subtitle: `Your profile is ready! Explore live tier-1 internships tailored for ${profile.career_goal || 'you'}.`,
-      btnText: 'Explore Opportunities',
-      badge: 'Ready ✓',
-      accent: 'from-emerald-500/20 to-teal-500/20 border-emerald-500/30',
-      action: () => navigate('/opportunities')
-    };
-  };
-
-  const heroCTA = getPrimaryCTA();
-
-  // Helper to determine tracker timeline step
-  const getTrackerStep = (status) => {
-    if (!status) return 1;
-    const s = status.toLowerCase();
-    if (s.includes('offer') || s.includes('accepted')) return 4;
-    if (s.includes('interview')) return 3;
-    if (s.includes('review') || s.includes('shortlisted')) return 2;
-    return 1; // Applied
-  };
-
-  const trackerStep = latestApp ? getTrackerStep(latestApp.status) : 0;
-
-  // Filtered opportunities for Section 3
   const displayOpps = opportunities
-    .filter(o => !searchQuery || o.title?.toLowerCase().includes(searchQuery.toLowerCase()) || o.company?.toLowerCase().includes(searchQuery.toLowerCase()))
-    .slice(0, 4);
+    .filter(o =>
+      !search ||
+      o.title?.toLowerCase().includes(search.toLowerCase()) ||
+      o.company?.toLowerCase().includes(search.toLowerCase())
+    )
+    .slice(0, 3);
 
-  // Single AI Coach Recommendation
-  const aiAdvice = workspace.recommendations?.[0] || {
-    title: `Focus on ${profile.career_goal || 'Software Engineering'} core skills`,
-    description: 'Complete 2 hands-on practice projects this week to boost your match score by +15%.',
-    linkUrl: '/roadmap'
-  };
+  const trackerApps = applications.slice(0, 3);
 
+  /* ── Hero CTA logic ─────────────────────────────────────────── */
+  const heroCTA = completionPct < 80
+    ? { title: 'Your Next Step', sub: 'Complete your profile to unlock better opportunities', btn: 'Complete Profile', link: '/profile' }
+    : !profile.has_resume
+      ? { title: 'Upload Your Resume', sub: 'Add your resume to unlock 1-click applications', btn: 'Upload Resume', link: '/profile' }
+      : { title: 'Start Applying!', sub: `Your profile is ready. Explore opportunities tailored for ${profile.career_goal || 'you'}.`, btn: 'Browse Opportunities', link: '/opportunities' };
+
+  /* ── Loading skeleton ───────────────────────────────────────── */
+  if (loading) return (
+    <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-6">
+      <Skel className="h-8 w-48" />
+      <Skel className="h-5 w-64" />
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-5">
+        <div className="lg:col-span-3"><Skel className="h-44 w-full rounded-2xl" /></div>
+        <Skel className="h-44 w-full rounded-2xl" />
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {[1,2,3,4].map(i => <Skel key={i} className="h-24 w-full rounded-2xl" />)}
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
+        <Skel className="lg:col-span-3 h-72 w-full rounded-2xl" />
+        <Skel className="lg:col-span-2 h-72 w-full rounded-2xl" />
+      </div>
+    </div>
+  );
+
+  /* ── Error state ────────────────────────────────────────────── */
+  if (error && !workspace) return (
+    <div className="flex flex-col items-center justify-center h-96 gap-4">
+      <p className="text-gray-500 text-sm">{error}</p>
+      <button onClick={fetchAll} className="px-5 py-2 rounded-xl bg-primary text-white text-sm font-semibold hover:bg-primary-light transition-all">
+        Retry
+      </button>
+    </div>
+  );
+
+  /* ── Render ─────────────────────────────────────────────────── */
   return (
-    <div ref={containerRef} className="min-h-screen bg-[#050505] text-white p-4 md:p-8 pt-20 max-w-7xl mx-auto pb-32">
-      
-      {/* ── HEADER ─────────────────────────────────────────────────────────── */}
-      <header className="dash-card flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 pb-6 border-b border-white/10">
+    <div className="p-5 md:p-8 max-w-7xl mx-auto space-y-5 pb-12">
+
+      {/* ── PAGE TITLE + SEARCH ─────────────────────────────────── */}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
         <div>
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary mb-1">
-            <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-            Dashboard
-          </div>
-          <h1 className="text-2xl md:text-4xl font-black text-white tracking-tight">
-            Welcome back, <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-purple-400">{profile.name || user?.name || 'Student'}</span> 👋
-          </h1>
+          <h1 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight">Dashboard</h1>
+          <p className="text-gray-500 text-sm mt-0.5">Welcome back, {studentName}! 👋</p>
         </div>
+        <div className="relative w-full sm:w-auto">
+          <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+          <input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Search opportunities, skills, companies..."
+            className="pl-9 pr-4 py-2.5 rounded-xl bg-white border border-gray-200 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary w-full sm:w-80 shadow-sm transition-all"
+          />
+        </div>
+      </div>
 
-        <div className="flex items-center gap-3">
-          {/* Search Box */}
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Search opportunities..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="bg-white/5 border border-white/10 rounded-xl px-4 py-2 pl-9 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-primary w-48 md:w-64 transition-all"
-            />
-            <span className="absolute left-3 top-2.5 text-xs text-gray-400">🔍</span>
-          </div>
+      {/* ── ROW 1: HERO + PROFILE STRENGTH ──────────────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-5">
 
-          {/* Notifications Link */}
-          <Link to="/notifications" className="relative p-2.5 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all text-sm">
-            🔔
-          </Link>
+        {/* Hero Card */}
+        <div className="lg:col-span-3 bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col justify-between min-h-[172px] relative overflow-hidden">
+          {/* Soft background accent */}
+          <div className="absolute right-0 top-0 w-64 h-full bg-gradient-to-l from-indigo-50/60 to-transparent pointer-events-none" />
 
-          {/* Profile Menu */}
-          <Link to="/profile" className="flex items-center gap-2 p-1.5 pr-3 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all">
-            <div className="w-7 h-7 rounded-lg bg-primary/20 border border-primary/40 flex items-center justify-center text-primary font-bold text-xs">
-              {(profile.name || user?.name || 'S').charAt(0).toUpperCase()}
+          <div className="relative z-10">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-2xl">🚀</span>
+              <h2 className="text-lg font-bold text-gray-900">{heroCTA.title}</h2>
             </div>
-            <span className="text-xs font-semibold text-gray-300 hidden sm:inline">Profile</span>
-          </Link>
-        </div>
-      </header>
+            <p className="text-gray-500 text-sm mb-4 max-w-md">{heroCTA.sub}</p>
 
-      {/* ── MAIN LAYOUT GRID (LEFT CONTENT + RIGHT PANEL) ──────────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
-        {/* LEFT COLUMN (SECTIONS 1 TO 5) */}
-        <div className="lg:col-span-2 space-y-8">
-          
-          {/* SECTION 1: YOUR NEXT STEP (Hero Card) */}
-          <section className="dash-card relative overflow-hidden rounded-3xl border bg-gradient-to-br p-6 md:p-8 backdrop-blur-xl shadow-2xl transition-all hover:border-white/20">
-            <div className={`absolute inset-0 bg-gradient-to-r ${heroCTA.accent} pointer-events-none`} />
-            
-            <div className="relative z-10">
-              <div className="flex justify-between items-start mb-4">
-                <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-white/10 text-white border border-white/10">
-                  Your Next Step
-                </span>
-                <span className="px-3 py-1 rounded-full text-xs font-bold bg-primary/20 text-primary border border-primary/30">
-                  {heroCTA.badge}
-                </span>
-              </div>
-
-              <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">{heroCTA.title}</h2>
-              <p className="text-gray-300 text-sm mb-6 max-w-lg">{heroCTA.subtitle}</p>
-
-              {/* Progress Bar inside Hero */}
-              <div className="mb-6 max-w-md">
-                <div className="flex justify-between text-xs font-semibold text-gray-400 mb-1">
-                  <span>Profile Progress</span>
-                  <span className="text-primary font-bold">{completionPct}%</span>
-                </div>
-                <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
-                  <div 
-                    className="bg-gradient-to-r from-primary to-purple-400 h-full rounded-full transition-all duration-1000"
-                    style={{ width: `${completionPct}%` }}
+            {/* Progress bar */}
+            <div className="max-w-lg">
+              <div className="flex items-center gap-3 mb-1">
+                <div className="flex-1 h-2.5 bg-gray-100 rounded-full overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all duration-1000"
+                    style={{
+                      width: `${completionPct}%`,
+                      background: 'linear-gradient(90deg, #6c3aff, #3a9bff)',
+                    }}
                   />
                 </div>
+                <span className="text-sm font-bold shrink-0" style={{ color: '#6c3aff' }}>
+                  {completionPct}% Complete
+                </span>
               </div>
+            </div>
+          </div>
 
+          {/* Illustration + Buttons */}
+          <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center gap-3 mt-4">
+            {/* Decorative document SVG */}
+            <div className="hidden md:flex absolute right-24 top-1/2 -translate-y-1/2 opacity-70" aria-hidden>
+              <svg width="100" height="100" viewBox="0 0 100 100" fill="none">
+                <rect x="15" y="10" width="70" height="80" rx="8" fill="#e8e6ff" />
+                <rect x="25" y="28" width="50" height="5" rx="2.5" fill="#c4b5fd" />
+                <rect x="25" y="38" width="40" height="5" rx="2.5" fill="#c4b5fd" />
+                <rect x="25" y="48" width="45" height="5" rx="2.5" fill="#c4b5fd" />
+                <circle cx="70" cy="72" r="18" fill="#6c3aff" />
+                <path d="M63 72l5 5 9-9" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <circle cx="50" cy="18" r="14" fill="#818cf8" />
+                <circle cx="50" cy="16" r="6" fill="white" />
+                <path d="M41 30c0-5 4-8 9-8s9 3 9 8" stroke="white" strokeWidth="2" strokeLinecap="round" />
+              </svg>
+            </div>
+
+            <div className="flex items-center gap-3">
               <button
-                onClick={heroCTA.action}
-                className="px-6 py-3 rounded-xl bg-primary hover:bg-primary/90 text-white text-sm font-bold shadow-lg shadow-primary/30 transition-all transform hover:-translate-y-0.5"
+                onClick={() => navigate(heroCTA.link)}
+                className="px-5 py-2.5 rounded-xl text-white text-sm font-bold shadow-md hover:opacity-90 active:scale-95 transition-all"
+                style={{ background: 'linear-gradient(135deg, #6c3aff, #3a9bff)' }}
               >
-                {heroCTA.btnText} →
+                {heroCTA.btn}
               </button>
-            </div>
-          </section>
-
-          {/* SECTION 2: QUICK STATISTICS */}
-          <section className="dash-card">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-4">Quick Statistics</h3>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              
-              <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-4 text-center hover:bg-white/[0.05] transition-all">
-                <div className="text-2xl mb-1">📋</div>
-                <div className="text-2xl font-black text-white">{stats.applications}</div>
-                <div className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mt-1">Applications</div>
-              </div>
-
-              <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-4 text-center hover:bg-white/[0.05] transition-all">
-                <div className="text-2xl mb-1">🎙️</div>
-                <div className="text-2xl font-black text-white">{stats.interviews}</div>
-                <div className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mt-1">Interviews</div>
-              </div>
-
-              <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-4 text-center hover:bg-white/[0.05] transition-all">
-                <div className="text-2xl mb-1">⭐</div>
-                <div className="text-2xl font-black text-white">{stats.shortlisted}</div>
-                <div className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mt-1">Shortlisted</div>
-              </div>
-
-              <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-4 text-center hover:bg-white/[0.05] transition-all">
-                <div className="text-2xl mb-1">🎉</div>
-                <div className="text-2xl font-black text-emerald-400">{stats.offers}</div>
-                <div className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mt-1">Offers</div>
-              </div>
-
-            </div>
-          </section>
-
-          {/* SECTION 3: RECOMMENDED OPPORTUNITIES */}
-          <section className="dash-card">
-            <div className="flex justify-between items-center mb-4">
-              <div>
-                <h3 className="text-base font-bold text-white">Recommended Opportunities</h3>
-                <p className="text-xs text-gray-400">Handpicked based on your skills & career goal</p>
-              </div>
-              <Link to="/opportunities" className="text-xs font-semibold text-primary hover:underline">
-                View All →
+              <Link
+                to="/profile"
+                className="text-sm font-semibold flex items-center gap-1 hover:underline"
+                style={{ color: '#6c3aff' }}
+              >
+                View Profile <ChevronRight size={14} />
               </Link>
             </div>
+          </div>
+        </div>
 
-            {displayOpps.length === 0 ? (
-              <div className="bg-white/[0.02] border border-white/10 rounded-2xl p-8 text-center text-gray-400 text-sm">
-                No active opportunities found matching your search.
+        {/* Profile Strength Card */}
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col items-center justify-between text-center">
+          <p className="font-bold text-gray-800 text-sm mb-3">Profile Strength</p>
+          <div className="relative">
+            <RingProgress pct={completionPct} size={92} />
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <span className="text-xl font-black text-gray-900">{completionPct}%</span>
+              <span className="text-[10px] text-gray-400 font-semibold">
+                {completionPct >= 80 ? 'Strong' : completionPct >= 50 ? 'Good' : 'Weak'}
+              </span>
+            </div>
+          </div>
+          <button
+            onClick={() => navigate('/profile')}
+            className="mt-3 text-sm font-semibold flex items-center gap-1 hover:underline"
+            style={{ color: '#6c3aff' }}
+          >
+            Improve Profile <ChevronRight size={14} />
+          </button>
+        </div>
+
+      </div>
+
+      {/* ── ROW 2: STATS ────────────────────────────────────────── */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {(['applications', 'interviews', 'shortlisted', 'offers']).map(key => {
+          const meta = statMeta[key];
+          const val  = stats[key] ?? 0;
+          const wkly = stats[`${key}_this_week`] ?? 0;
+          return (
+            <button
+              key={key}
+              onClick={() => navigate(key === 'applications' || key === 'offers' ? '/applications' : '/applications')}
+              className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-start gap-3 text-left hover:shadow-md hover:border-gray-200 transition-all group"
+            >
+              <div className={`${meta.bg} ${meta.color} w-11 h-11 rounded-xl flex items-center justify-center shrink-0`}>
+                <meta.Icon size={20} strokeWidth={1.8} />
               </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {displayOpps.map((opp) => {
-                  const isApplying = applyingId === (opp.id || opp._id);
-                  const oppId = opp.id || opp._id;
-                  const isSaved = savedJobs.has(oppId);
-                  
-                  return (
-                    <div 
-                      key={oppId} 
-                      className="bg-white/[0.03] border border-white/10 rounded-2xl p-5 flex flex-col justify-between hover:border-white/20 hover:bg-white/[0.05] transition-all group"
-                    >
-                      <div>
-                        <div className="flex justify-between items-start mb-3">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center font-bold text-primary text-sm shrink-0">
-                              {opp.company ? opp.company.charAt(0).toUpperCase() : '🏢'}
-                            </div>
-                            <div>
-                              <h4 className="font-bold text-white text-sm group-hover:text-primary transition-colors">{opp.title}</h4>
-                              <p className="text-xs text-gray-400 font-medium">{opp.company || 'Tech Partner'}</p>
-                            </div>
-                          </div>
-                          
-                          <button 
-                            onClick={() => toggleSave(oppId)} 
-                            className={`p-1.5 rounded-lg border transition-all text-xs ${
-                              isSaved 
-                                ? 'bg-amber-500/20 border-amber-500/40 text-amber-400' 
-                                : 'bg-white/5 border-white/10 text-gray-400 hover:text-white'
-                            }`}
-                            title={isSaved ? 'Saved' : 'Save opportunity'}
-                          >
-                            {isSaved ? '★' : '☆'}
-                          </button>
-                        </div>
-
-                        <div className="flex flex-wrap gap-2 text-xs text-gray-400 mb-4">
-                          <span className="px-2 py-0.5 rounded bg-white/5 border border-white/10">📍 {opp.location || 'Remote'}</span>
-                          <span className="px-2 py-0.5 rounded bg-white/5 border border-white/10">💼 {opp.type || 'Full-Time'}</span>
-                          {opp.stipend && <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">💰 {opp.stipend}</span>}
-                        </div>
-                      </div>
-
-                      <button
-                        onClick={() => handleApply(oppId)}
-                        disabled={isApplying}
-                        className="w-full py-2.5 rounded-xl bg-primary/90 hover:bg-primary text-white text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2 disabled:opacity-50"
-                      >
-                        {isApplying ? (
-                          <>
-                            <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                            Applying...
-                          </>
-                        ) : (
-                          'Apply Now'
-                        )}
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </section>
-
-          {/* SECTION 4: APPLICATION TRACKER */}
-          <section className="dash-card bg-white/[0.02] border border-white/10 rounded-2xl p-6">
-            <div className="flex justify-between items-center mb-6">
               <div>
-                <h3 className="text-base font-bold text-white">Application Tracker</h3>
-                <p className="text-xs text-gray-400">
-                  {latestApp ? `Latest: ${latestApp.opportunity_title || latestApp.role || 'Application'}` : 'No active applications being tracked yet'}
+                <p className="text-xs text-gray-500 font-medium">{meta.label}</p>
+                <p className="text-2xl font-black text-gray-900 leading-tight">{val}</p>
+                <p className={`text-xs mt-0.5 font-medium ${key === 'offers' && val > 0 ? 'text-orange-500' : 'text-emerald-500'}`}>
+                  {meta.weekLabel(wkly)}
                 </p>
               </div>
-              <Link to="/applications" className="text-xs font-semibold text-primary hover:underline">
-                View Timeline →
-              </Link>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* ── ROW 3: OPPORTUNITIES + TRACKER ──────────────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
+
+        {/* Recommended Opportunities */}
+        <div className="lg:col-span-3 bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-bold text-gray-900 text-base">Recommended Opportunities</h3>
+            <Link
+              to="/opportunities"
+              className="text-xs font-semibold flex items-center gap-0.5 hover:underline"
+              style={{ color: '#6c3aff' }}
+            >
+              View All <ArrowUpRight size={13} />
+            </Link>
+          </div>
+
+          {displayOpps.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-40 gap-2 text-gray-400">
+              <Briefcase size={32} strokeWidth={1.2} className="text-gray-300" />
+              <p className="text-sm">{search ? 'No matches found' : 'No opportunities available right now'}</p>
             </div>
-
-            {/* Application Progress Timeline */}
-            <div className="relative flex items-center justify-between max-w-xl mx-auto py-4">
-              <div className="absolute top-1/2 left-0 right-0 h-1 bg-white/10 -translate-y-1/2 z-0" />
-              <div 
-                className="absolute top-1/2 left-0 h-1 bg-primary -translate-y-1/2 z-0 transition-all duration-700" 
-                style={{ width: `${trackerStep > 0 ? ((trackerStep - 1) / 3) * 100 : 0}%` }}
-              />
-
-              {[
-                { step: 1, label: 'Applied' },
-                { step: 2, label: 'Under Review' },
-                { step: 3, label: 'Interview' },
-                { step: 4, label: 'Offer' }
-              ].map((st) => {
-                const isActive = trackerStep >= st.step;
-                const isCurrent = trackerStep === st.step;
+          ) : (
+            <div className="divide-y divide-gray-50 space-y-0">
+              {displayOpps.map((opp) => {
+                const id      = opp.id || opp._id;
+                const saved   = savedJobs.has(id);
+                const applying = applyingId === id;
                 return (
-                  <div key={st.step} className="relative z-10 flex flex-col items-center">
-                    <div 
-                      className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-500 ${
-                        isCurrent 
-                          ? 'bg-primary text-white ring-4 ring-primary/30 scale-110' 
-                          : isActive 
-                            ? 'bg-primary text-white' 
-                            : 'bg-[#151515] border border-white/20 text-gray-500'
-                      }`}
-                    >
-                      {isActive ? '✓' : st.step}
+                  <div key={id} className="py-4 first:pt-0 last:pb-0">
+                    <div className="flex items-start gap-3">
+                      <CompanyLogo name={opp.company || opp.title} />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <h4 className="font-bold text-gray-900 text-sm">{opp.title}</h4>
+                            <p className="text-xs text-gray-500 mt-0.5">{opp.company || 'Tech Company'}</p>
+                            <div className="flex items-center flex-wrap gap-1.5 mt-1.5">
+                              {opp.location && (
+                                <span className="flex items-center gap-0.5 text-[11px] text-gray-400">
+                                  <MapPin size={10} /> {opp.location}
+                                </span>
+                              )}
+                              {(opp.type || opp.job_type) && (
+                                <span className="px-2 py-0.5 rounded-full text-[11px] font-medium text-purple-600 bg-purple-50">
+                                  {opp.type || opp.job_type}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex flex-col items-end gap-2 shrink-0">
+                            {(opp.stipend || opp.salary) && (
+                              <span className="text-xs font-bold text-gray-800">{opp.stipend || opp.salary} / month</span>
+                            )}
+                            <button
+                              onClick={() => toggleSave(id)}
+                              className="text-gray-300 hover:text-primary transition-colors"
+                              aria-label={saved ? 'Unsave' : 'Save'}
+                            >
+                              {saved
+                                ? <BookmarkCheck size={17} className="text-primary" />
+                                : <Bookmark size={17} />
+                              }
+                            </button>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between mt-2.5 gap-2">
+                          <span className="flex items-center gap-1 text-[11px] text-gray-400">
+                            <Clock size={10} /> Posted {timeAgo(opp.created_at || opp.createdAt)}
+                          </span>
+                          <button
+                            onClick={() => handleApply(id)}
+                            disabled={applying}
+                            className="px-4 py-1.5 rounded-xl text-white text-xs font-bold hover:opacity-90 active:scale-95 transition-all disabled:opacity-60 flex items-center gap-1.5"
+                            style={{ background: 'linear-gradient(135deg, #6c3aff, #3a9bff)' }}
+                          >
+                            {applying && <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />}
+                            Apply Now
+                          </button>
+                        </div>
+                      </div>
                     </div>
-                    <span className={`text-[11px] font-semibold mt-2 ${isActive ? 'text-white' : 'text-gray-500'}`}>
-                      {st.label}
-                    </span>
                   </div>
                 );
               })}
             </div>
-          </section>
-
-          {/* SECTION 5: AI CAREER COACH */}
-          <section className="dash-card bg-gradient-to-r from-purple-900/20 to-primary/20 border border-primary/30 rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-primary/20 border border-primary/40 flex items-center justify-center text-2xl shrink-0">
-                🤖
-              </div>
-              <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-purple-400">AI Career Recommendation</span>
-                <h4 className="text-white font-bold text-sm">{aiAdvice.title}</h4>
-                <p className="text-xs text-gray-300 mt-0.5">{aiAdvice.description}</p>
-              </div>
-            </div>
-
-            <button
-              onClick={() => navigate(aiAdvice.linkUrl || '/roadmap')}
-              className="px-5 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-white text-xs font-bold shrink-0 transition-all shadow-md"
-            >
-              Take Action →
-            </button>
-          </section>
-
+          )}
         </div>
 
-        {/* RIGHT PANEL (PROFILE STRENGTH & REWARD METRICS) */}
-        <div className="space-y-8">
-          
-          {/* PROFILE STRENGTH PANEL */}
-          <section className="dash-card bg-white/[0.03] border border-white/10 rounded-3xl p-6 text-center">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-6">Profile Strength</h3>
-
-            {/* Radial Percentage Visualizer */}
-            <div className="relative w-36 h-36 mx-auto mb-6 flex items-center justify-center">
-              <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-                <path
-                  className="text-white/10"
-                  strokeWidth="3.5"
-                  stroke="currentColor"
-                  fill="none"
-                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                />
-                <path
-                  className="text-primary transition-all duration-1000"
-                  strokeDasharray={`${completionPct}, 100`}
-                  strokeWidth="3.5"
-                  strokeLinecap="round"
-                  stroke="currentColor"
-                  fill="none"
-                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                />
-              </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-3xl font-black text-white">{completionPct}%</span>
-                <span className="text-[10px] text-gray-400 uppercase font-semibold">Completed</span>
-              </div>
-            </div>
-
-            <p className="text-xs text-gray-400 mb-6">
-              {completionPct >= 80 
-                ? 'Your profile is strong and visible to partner companies!' 
-                : 'Complete your profile to increase your application response rate.'}
-            </p>
-
-            <button
-              onClick={() => navigate('/profile')}
-              className="w-full py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-all border border-white/10"
+        {/* Application Tracker */}
+        <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-bold text-gray-900 text-base">Application Tracker</h3>
+            <Link
+              to="/applications"
+              className="text-xs font-semibold flex items-center gap-0.5 hover:underline"
+              style={{ color: '#6c3aff' }}
             >
-              Improve Profile
-            </button>
-          </section>
-
-          {/* CAREER GOAL CARD */}
-          <section className="dash-card bg-white/[0.03] border border-white/10 rounded-3xl p-6">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-4">Target Career Goal</h3>
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-xl">
-                🎯
-              </div>
-              <div>
-                <h4 className="text-white font-bold text-sm">{profile.career_goal || 'Software Engineer'}</h4>
-                <p className="text-xs text-gray-400">Target Role</p>
-              </div>
-            </div>
-            <Link to="/roadmap" className="text-xs text-primary font-semibold hover:underline block text-right mt-2">
-              View AI Roadmap →
+              View All <ArrowUpRight size={13} />
             </Link>
-          </section>
+          </div>
 
+          {trackerApps.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-40 gap-2 text-gray-400">
+              <ClipboardListIcon />
+              <p className="text-sm text-center">No applications yet.<br />Apply to get started!</p>
+              <Link to="/opportunities" className="text-xs font-semibold mt-1 hover:underline" style={{ color: '#6c3aff' }}>
+                Browse Opportunities
+              </Link>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {trackerApps.map((app) => {
+                const badge = statusConfig(app.status);
+                return (
+                  <div key={app.id || app._id} className="flex items-start gap-3">
+                    <CompanyLogo name={app.company_name || app.opportunity_title || 'C'} size="sm" />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <h4 className="font-bold text-gray-900 text-sm truncate">
+                            {app.company_name || app.opportunity_title || 'Application'}
+                          </h4>
+                          <p className="text-xs text-gray-500 truncate">{app.role || app.job_title || 'Position'}</p>
+                        </div>
+                        <div className="flex flex-col items-end gap-1 shrink-0">
+                          <span className={`px-2 py-0.5 rounded-full text-[11px] font-semibold border ${badge.cls}`}>
+                            {badge.label}
+                          </span>
+                          <span className="text-[11px] text-gray-400">{timeAgo(app.applied_at || app.createdAt)}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
+      </div>
+
+      {/* ── ROW 4: AI CAREER COACH ──────────────────────────────── */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col sm:flex-row items-center gap-4">
+        {/* Robot Illustration */}
+        <div
+          className="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shrink-0"
+          style={{ background: 'linear-gradient(135deg, #6c3aff22, #3a9bff22)' }}
+        >
+          🤖
+        </div>
+
+        <div className="flex-1 min-w-0">
+          <h3 className="font-bold text-gray-900 text-base">AI Career Coach</h3>
+          {aiAdvice ? (
+            <p className="text-sm text-gray-500 mt-0.5 line-clamp-2">
+              {aiAdvice.description || aiAdvice.title || aiAdvice}
+            </p>
+          ) : (
+            <p className="text-sm text-gray-500 mt-0.5">
+              Get personalised career recommendations based on your profile and goals.
+            </p>
+          )}
+        </div>
+
+        <button
+          onClick={() => navigate(aiAdvice?.linkUrl || '/career-coach')}
+          className="shrink-0 px-5 py-2.5 rounded-xl text-white text-sm font-bold flex items-center gap-2 hover:opacity-90 active:scale-95 transition-all shadow-md"
+          style={{ background: 'linear-gradient(135deg, #6c3aff, #3a9bff)' }}
+        >
+          <Sparkles size={15} />
+          Get AI Advice
+        </button>
       </div>
 
     </div>
   );
 };
+
+/* Small fallback icon for empty tracker */
+const ClipboardListIcon = () => (
+  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" />
+    <rect x="9" y="3" width="6" height="4" rx="1" />
+    <path d="M9 12h6M9 16h4" />
+  </svg>
+);
 
 export default Dashboard;
