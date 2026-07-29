@@ -25,7 +25,7 @@ const NAV_ITEMS = [
   { path: '/applications',  label: 'My Applications', Icon: ClipboardList,   reqPerm: 'applications:read' },
   { path: '/learning',      label: 'Learning',        Icon: BookOpen                                       },
   { path: '/resume-builder',label: 'Resume Builder',  Icon: FileText                                       },
-  { path: '/mock-interview',label: 'Mock Interviews', Icon: Video                                          },
+
   { path: '/career-coach',  label: 'AI Career Coach', Icon: Bot                                           },
   { path: '/profile',       label: 'Profile',         Icon: User,            reqPerm: 'students:read'     },
   { path: '/settings',      label: 'Settings',        Icon: Settings                                       },

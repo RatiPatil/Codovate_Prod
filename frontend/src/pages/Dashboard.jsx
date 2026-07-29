@@ -169,6 +169,17 @@ const Dashboard = () => {
   const applications = workspace?.applications || [];
   const completionPct= profile.profile_completion ?? 0;
   const studentName  = profile.name || user?.name || 'Student';
+  const firstName = studentName ? studentName.split(' ')[0] : 'Student';
+  const formattedFirstName = firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
+
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 12) return { title: 'Good Morning', icon: '🌅', subtitle: "Hope you're ready to achieve your goals today." };
+    if (hour >= 12 && hour < 17) return { title: 'Good Afternoon', icon: '☀️', subtitle: "Let's keep your career journey moving forward." };
+    if (hour >= 17 && hour < 21) return { title: 'Good Evening', icon: '🌇', subtitle: "Let's finish today's career goals." };
+    return { title: 'Good Night', icon: '🌙', subtitle: "Review your progress and prepare for tomorrow." };
+  };
+  const greeting = getGreeting();
   const aiAdvice     = workspace?.recommendations?.[0] || null;
 
   const displayOpps = opportunities
@@ -223,8 +234,11 @@ const Dashboard = () => {
 
       {/* ── PAGE TITLE + SEARCH ─────────────────────────────────── */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
-        <div>
-          <h1 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tight">Welcome back, {studentName}! 👋</h1>
+        <div className="animate-fade-in-up">
+          <h1 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tight">
+            {greeting.icon} {greeting.title}, {formattedFirstName}! 👋
+          </h1>
+          <p className="text-gray-500 text-sm mt-1">{greeting.subtitle}</p>
         </div>
         <div className="relative w-full sm:w-auto">
           <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
