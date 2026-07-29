@@ -18,17 +18,15 @@ import {
   X,
 } from 'lucide-react';
 
-// Exact 9 navigation items as per reference
+// Navigation items for student sidebar
 const NAV_ITEMS = [
   { path: '/dashboard',     label: 'Dashboard',       Icon: LayoutDashboard, reqPerm: 'dashboard:read'    },
   { path: '/opportunities', label: 'Opportunities',   Icon: Briefcase,       reqPerm: 'jobs:read'         },
   { path: '/applications',  label: 'My Applications', Icon: ClipboardList,   reqPerm: 'applications:read' },
   { path: '/learning',      label: 'Learning',        Icon: BookOpen                                       },
   { path: '/resume-builder',label: 'Resume Builder',  Icon: FileText                                       },
-
   { path: '/career-coach',  label: 'AI Career Coach', Icon: Bot                                           },
   { path: '/profile',       label: 'Profile',         Icon: User,            reqPerm: 'students:read'     },
-  { path: '/settings',      label: 'Settings',        Icon: Settings                                       },
 ];
 
 /* ── Circular progress ring ─────────────────────────────────────── */
@@ -111,23 +109,10 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
           onClick={() => navigate('/dashboard')}
           className="flex items-center gap-3 focus:outline-none"
         >
-          {/* Brand icon mark — gradient C + chevron */}
-          <div
-            className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-            style={{ background: 'linear-gradient(135deg, #7c3aed 0%, #2015ff 55%, #0ea5e9 100%)' }}
-          >
-            <svg viewBox="0 0 36 36" width="20" height="20" fill="none">
-              <path d="M26 18C26 22.4183 22.4183 26 18 26C13.5817 26 10 22.4183 10 18C10 13.5817 13.5817 10 18 10"
-                stroke="white" strokeWidth="3.2" strokeLinecap="round"/>
-              <path d="M20 15L24 18L20 21" stroke="white" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
+          {/* Official Codovate Logo */}
+          <div className="flex items-center justify-center shrink-0">
+            <img src="/logo.png" alt="Codovate Logo" className="h-8 object-contain" />
           </div>
-          <span
-            className="text-white font-bold text-[16px] tracking-[0.08em] uppercase select-none"
-            style={{ fontFamily: "'Outfit', sans-serif" }}
-          >
-            Codovate
-          </span>
         </button>
 
         {/* Mobile close */}

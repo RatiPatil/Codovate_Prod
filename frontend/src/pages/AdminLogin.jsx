@@ -19,6 +19,10 @@ const AdminLogin = () => {
   const bgRef = useRef(null);
 
   useEffect(() => {
+    document.title = 'Codovate | Admin Login';
+  }, []);
+
+  useEffect(() => {
     gsap.fromTo(bgRef.current, { opacity: 0 }, { opacity: 1, duration: 1.2 });
     gsap.fromTo(formRef.current, { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, ease: 'power3.out', delay: 0.2 });
   }, []);
@@ -57,9 +61,7 @@ const AdminLogin = () => {
 
         {/* Header */}
         <div className="text-center">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#2015FF]/15 border border-[#2015FF]/30 mb-5 shadow-[0_0_30px_rgba(32,21,255,0.3)]">
-            <span className="text-2xl">🛡️</span>
-          </div>
+          <img src="/logo.png" alt="Codovate Logo" className="h-14 mx-auto object-contain mb-5" />
           <h1 className="text-3xl font-black text-white tracking-tight">Admin Portal</h1>
           <p className="text-gray-500 text-xs font-bold uppercase tracking-[0.2em] mt-1">Restricted Access — Codovate HQ</p>
         </div>

@@ -79,8 +79,9 @@ const ActivityFeed = lazy(() => import('./pages/ActivityFeed'));
 import GlobalErrorBoundary from './components/common/GlobalErrorBoundary';
 
 const GlobalLoader = () => (
-  <div className="flex items-center justify-center h-screen bg-[#050510]">
-    <div className="w-8 h-8 border-2 border-[#2015FF] border-t-transparent rounded-full animate-spin" />
+  <div className="flex flex-col items-center justify-center h-screen bg-[#050510] gap-4">
+    <img src="/logo.png" alt="Codovate Logo" className="h-10 object-contain animate-pulse" />
+    <div className="w-6 h-6 border-2 border-[#2015FF] border-t-transparent rounded-full animate-spin" />
   </div>
 );
 

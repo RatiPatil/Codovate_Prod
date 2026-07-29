@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import AdminSidebar from './AdminSidebar';
 import AdminTopNav from './AdminTopNav';
@@ -9,6 +9,10 @@ import GlobalSearchModal from '../components/admin/ui/GlobalSearchModal';
 const AdminLayout = () => {
   const { isOpen, isMobileOpen, closeMobileSidebar } = useSidebar();
   const { isSearchOpen } = useSearch();
+
+  useEffect(() => {
+    document.title = 'Codovate | Admin Dashboard';
+  }, []);
 
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-200">
