@@ -17,7 +17,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  # ── 1. Backend Validation Job ──────────────────────────────────────────────
+  # ── 1. Backend Validation ──────────────────────────────────────────────────
   backend-ci:
     name: Backend CI & Validation
     runs-on: ubuntu-latest
@@ -38,13 +38,20 @@ jobs:
       - name: Install Backend Dependencies
         run: npm install --legacy-peer-deps
 
-      - name: Verify Backend Server Syntax
+      - name: Verify Backend Syntax
         run: node -c server.js
 
-  # ── 2. Frontend Build & Deploy Job ─────────────────────────────────────────
+      - name: Check Backend Routes Exist
+        run: |
+          test -f routes/opportunities.js && echo "✓ opportunities route"
+          test -f routes/students.js       && echo "✓ students route"
+          test -f routes/applications.js   && echo "✓ applications route"
+
+  # ── 2. Frontend Build & Deploy ─────────────────────────────────────────────
   frontend-build-deploy:
-    name: Frontend Build & GitHub Pages Deploy
+    name: Frontend Build & Deploy
     runs-on: ubuntu-latest
+    needs: backend-ci
     defaults:
       run:
         working-directory: ./frontend
@@ -65,7 +72,7 @@ jobs:
       - name: Install Frontend Dependencies
         run: npm install --legacy-peer-deps
 
-      - name: Build Frontend Asset Bundle
+      - name: Build Frontend (Vite)
         run: npm run build && cp ./dist/index.html ./dist/404.html
         env:
           VITE_FIREBASE_API_KEY: "AIzaSyCb1SUbOHd0iicYVPK_Y9Sfe33Ud0Tsg60"
@@ -78,11 +85,19 @@ jobs:
           VITE_API_URL: "https://codovate-prod.onrender.com/api"
           VITE_SOCKET_URL: "https://codovate-prod.onrender.com"
 
+      - name: Report Build Size
+        run: |
+          echo "=== Build output size ==="
+          du -sh ./dist
+          echo "=== JS chunks ==="
+          ls -lh ./dist/assets/*.js | tail -5
+
       - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: './frontend/dist'
 
+  # ── 3. Deploy to GitHub Pages ──────────────────────────────────────────────
   deploy-pages:
     name: Deploy to GitHub Pages
     environment:
