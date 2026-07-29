@@ -2,7 +2,8 @@ import { useEffect, useState, useCallback, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Search, MapPin, ChevronRight, ChevronDown, X, ArrowLeft,
-  Calendar, FileText, Clock, CheckCircle2, Circle, AlertCircle
+  Calendar, FileText, Clock, CheckCircle2, Circle, AlertCircle,
+  ArrowUpDown, SlidersHorizontal
 } from 'lucide-react';
 import api from '../api/axios';
 import { useSocket } from '../context/SocketContext';
@@ -10,17 +11,17 @@ import { useToast } from '../components/ui/ToastProvider';
 import { showConfirm } from '../utils/uiUtils';
 
 /* ─── Constants ────────────────────────────────────────────────── */
-const TIMELINE_STAGES = ['Applied', 'Under Review', 'Shortlisted', 'Interview', 'Offer', 'Accepted'];
+const TIMELINE_STAGES = ['Applied', 'Under Review', 'Shortlisted', 'Interview Scheduled', 'Offer', 'Accepted'];
 
 const STATUS_CONFIG = {
-  'Applied':               { label: 'Applied',               cls: 'bg-emerald-50 text-emerald-600 border-emerald-200',  dot: 'bg-emerald-500' },
+  'Applied':               { label: 'Applied',               cls: 'bg-green-50 text-green-600 border-green-200',  dot: 'bg-green-500' },
   'Under Review':          { label: 'Under Review',           cls: 'bg-orange-50 text-orange-500 border-orange-200',    dot: 'bg-orange-400'  },
   'Online Assessment':     { label: 'Online Assessment',      cls: 'bg-yellow-50 text-yellow-600 border-yellow-200',    dot: 'bg-yellow-500'  },
   'Shortlisted':           { label: 'Shortlisted',            cls: 'bg-blue-50 text-blue-600 border-blue-200',          dot: 'bg-blue-500'    },
   'Interview':             { label: 'Interview',              cls: 'bg-blue-50 text-blue-600 border-blue-200',          dot: 'bg-blue-500'    },
   'Interview Scheduled':   { label: 'Interview Scheduled',    cls: 'bg-blue-50 text-blue-600 border-blue-200',          dot: 'bg-blue-500'    },
-  'Offer':                 { label: 'Offer',                  cls: 'bg-violet-50 text-violet-600 border-violet-200',    dot: 'bg-violet-500'  },
-  'Accepted':              { label: 'Accepted',               cls: 'bg-violet-50 text-violet-600 border-violet-200',    dot: 'bg-violet-500'  },
+  'Offer':                 { label: 'Offer',                  cls: 'bg-purple-50 text-purple-600 border-purple-200',    dot: 'bg-purple-500'  },
+  'Accepted':              { label: 'Accepted',               cls: 'bg-purple-50 text-purple-600 border-purple-200',    dot: 'bg-purple-500'  },
   'Rejected':              { label: 'Rejected',               cls: 'bg-red-50 text-red-500 border-red-200',             dot: 'bg-red-500'     },
   'External Link Opened':  { label: 'External',               cls: 'bg-gray-50 text-gray-500 border-gray-200',          dot: 'bg-gray-400'    },
 };
@@ -100,7 +101,7 @@ const SkelCard = () => (
 
 /* ─── Donut Chart ──────────────────────────────────────────────── */
 const DonutChart = ({ data, total }) => {
-  const DONUT_COLORS = { Applied: '#10b981', 'Under Review': '#f97316', Interview: '#3b82f6', Offer: '#8b5cf6', Rejected: '#ef4444' };
+  const DONUT_COLORS = { Applied: '#22c55e', 'Under Review': '#fb923c', Interview: '#3b82f6', Offer: '#a855f7', Rejected: '#ef4444' };
   const r = 52, cx = 64, cy = 64;
   const circ = 2 * Math.PI * r;
   let offset = 0;
@@ -447,18 +448,29 @@ const Applications = () => {
       </div>
 
       {/* ── Tabs ─────────────────────────────────────────────── */}
-      <div className="flex items-center gap-0 border-b border-gray-200 mb-5">
-        {TABS.map((t, i) => (
-          <button
-            key={t.label}
-            onClick={() => setTab(i)}
-            className={`px-4 py-2.5 text-sm font-semibold border-b-2 transition-all whitespace-nowrap ${
-              tab === i ? 'border-primary text-primary' : 'border-transparent text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            {t.label}
-          </button>
-        ))}
+      <div className="flex items-center gap-2 border-b border-gray-200 mb-6 overflow-x-auto no-scrollbar">
+        {TABS.map((t, i) => {
+          const count = t.filter 
+            ? apps.filter(a => t.filter.some(f => (a.status || '').toLowerCase().includes(f.toLowerCase()))).length 
+            : apps.length;
+          
+          return (
+            <button
+              key={t.label}
+              onClick={() => setTab(i)}
+              className={`px-4 py-3 text-sm font-semibold border-b-2 transition-all whitespace-nowrap flex items-center gap-2 ${
+                tab === i ? 'border-primary text-primary' : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              {t.label}
+              <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
+                tab === i ? 'bg-primary/10 text-primary' : 'bg-gray-100 text-gray-500'
+              }`}>
+                {count}
+              </span>
+            </button>
+          );
+        })}
       </div>
 
       {/* ── Two-column layout ─────────────────────────────────── */}
@@ -468,11 +480,11 @@ const Applications = () => {
         <div className="flex-1 min-w-0">
 
           {/* Results bar */}
-          <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+          <div className="flex items-center justify-between mb-5 flex-wrap gap-2">
             <p className="text-sm text-gray-500 font-medium">
               Showing <span className="font-bold text-gray-900">{filtered.length}</span> application{filtered.length !== 1 ? 's' : ''}
             </p>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               {/* Search */}
               <div className="relative hidden sm:block">
                 <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -480,46 +492,57 @@ const Applications = () => {
                   value={search}
                   onChange={e => setSearch(e.target.value)}
                   placeholder="Search applications..."
-                  className="pl-8 pr-3 py-1.5 rounded-xl border border-gray-200 text-sm text-gray-700 bg-white focus:outline-none focus:border-primary w-44 transition-all"
+                  className="pl-8 pr-3 py-2 rounded-xl border border-gray-200 text-sm text-gray-700 bg-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary w-56 transition-all shadow-sm"
                 />
               </div>
               {/* Sort */}
-              <div className="relative flex items-center gap-1.5 text-sm text-gray-500">
+              <div className="relative flex items-center gap-2 text-sm text-gray-500">
                 <span className="hidden sm:inline">Sort by:</span>
                 <div className="relative">
                   <select
                     value={sort}
                     onChange={e => setSort(e.target.value)}
-                    className="appearance-none pl-3 pr-7 py-1.5 rounded-xl border border-gray-200 text-sm text-gray-700 bg-white focus:outline-none cursor-pointer"
+                    className="appearance-none pl-3 pr-8 py-2 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 bg-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary cursor-pointer shadow-sm transition-all"
                   >
                     {['Most Recent','Oldest','Company','Application Status'].map(o => <option key={o}>{o}</option>)}
                   </select>
-                  <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                  <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                </div>
+                <div className="flex items-center ml-1 bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+                  <button className="p-2 text-primary hover:bg-gray-50 border-r border-gray-200 transition-colors" title="Sort direction">
+                    <ArrowUpDown size={15} strokeWidth={2.5} />
+                  </button>
+                  <button className="p-2 text-primary hover:bg-gray-50 transition-colors" title="Filter view">
+                    <SlidersHorizontal size={15} strokeWidth={2.5} />
+                  </button>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Mobile search */}
-          <div className="relative sm:hidden mb-3">
+          <div className="relative sm:hidden mb-4">
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Search applications..."
-              className="w-full pl-8 pr-3 py-2 rounded-xl border border-gray-200 text-sm text-gray-700 bg-white focus:outline-none focus:border-primary"
+              className="w-full pl-8 pr-3 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-700 bg-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-sm"
             />
           </div>
 
           {/* Application list */}
           {filtered.length === 0 ? (
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-16 flex flex-col items-center gap-3 text-center">
-              <div className="text-3xl">🔍</div>
-              <p className="font-bold text-gray-700">No applications match your filters</p>
-              <button onClick={() => { setSearch(''); setTab(0); }} className="text-sm text-primary hover:underline font-medium">Clear filters</button>
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-16 flex flex-col items-center gap-4 text-center">
+              <div className="w-20 h-20 rounded-full bg-gray-50 flex items-center justify-center text-4xl">🔍</div>
+              <div>
+                <p className="font-bold text-gray-800 text-lg">No applications match your filters</p>
+                <p className="text-gray-400 text-sm mt-1">Try adjusting your search or filters.</p>
+              </div>
+              <button onClick={() => { setSearch(''); setTab(0); setFiltersApplied(false); }} className="px-6 py-2.5 rounded-xl border border-gray-200 text-gray-700 text-sm font-bold hover:bg-gray-50 transition-all">Clear Filters</button>
             </div>
           ) : (
-            <div className="space-y-2.5">
+            <div className="space-y-4">
               {filtered.map(app => {
                 const company = app.company || app.company_name || 'Company';
                 const title   = app.title || app.internship_title || app.opportunity_title || 'Position';
@@ -527,42 +550,42 @@ const Applications = () => {
                   <div
                     key={app.id}
                     onClick={() => setSelectedApp(app)}
-                    className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:border-gray-200 transition-all cursor-pointer group p-4"
+                    className="bg-white rounded-2xl border border-gray-100 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.05)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:border-primary/20 hover:-translate-y-0.5 transition-all duration-300 cursor-pointer group p-5 flex items-center gap-5"
                   >
-                    <div className="flex items-center gap-4">
-                      <Logo name={company} logo={app.logo} size={52} />
+                    <Logo name={company} logo={app.logo} size={56} />
 
-                      {/* Info */}
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-bold text-gray-900 text-[15px] truncate">{company}</h3>
-                        <p className="text-gray-500 text-sm truncate">{title}</p>
-                        <div className="flex items-center gap-2 flex-wrap mt-1">
-                          {app.location && (
-                            <span className="flex items-center gap-1 text-xs text-gray-400">
-                              <MapPin size={11} /> {app.location}
-                            </span>
-                          )}
-                          {app.type && (
-                            <span className={`px-2 py-0.5 rounded-full text-[11px] font-semibold ${
-                              (app.type || '').toLowerCase().includes('intern')
-                                ? 'bg-violet-100 text-violet-700'
-                                : 'bg-emerald-100 text-emerald-700'
-                            }`}>
-                              {app.type}
-                            </span>
-                          )}
-                        </div>
+                    {/* Info */}
+                    <div className="flex-1 min-w-0 flex flex-col justify-center">
+                      <h3 className="font-bold text-gray-900 text-base mb-0.5 truncate">{company}</h3>
+                      <p className="text-gray-600 text-sm font-medium truncate">{title}</p>
+                      <div className="flex items-center gap-3 flex-wrap mt-2">
+                        {app.location && (
+                          <span className="flex items-center gap-1 text-xs text-gray-500 font-medium">
+                            <MapPin size={12} className="text-gray-400" /> {app.location}
+                          </span>
+                        )}
+                        {app.type && (
+                          <span className={`px-2.5 py-1 rounded-full text-[10px] uppercase tracking-wide font-bold ${
+                            (app.type || '').toLowerCase().includes('intern')
+                              ? 'bg-purple-50 text-purple-600'
+                              : 'bg-green-50 text-green-600'
+                          }`}>
+                            {app.type}
+                          </span>
+                        )}
                       </div>
+                    </div>
 
-                      {/* Right: status + date + arrow */}
-                      <div className="flex flex-col items-end gap-1.5 shrink-0">
-                        <StatusBadge status={app.status} />
-                        <span className="text-[11px] text-gray-400 flex items-center gap-1">
-                          <Clock size={10} /> Applied {timeAgo(app.applied_at)}
-                        </span>
-                      </div>
+                    {/* Right: status + date + arrow */}
+                    <div className="flex flex-col items-end gap-2.5 shrink-0">
+                      <StatusBadge status={app.status} />
+                      <span className="text-[12px] text-gray-400 font-medium">
+                        Applied on {timeAgo(app.applied_at)}
+                      </span>
+                    </div>
 
-                      <ChevronRight size={18} className="text-gray-300 group-hover:text-primary transition-colors shrink-0" />
+                    <div className="pl-2">
+                      <ChevronRight size={20} className="text-gray-300 group-hover:text-primary group-hover:translate-x-0.5 transition-all shrink-0" />
                     </div>
                   </div>
                 );
@@ -583,10 +606,10 @@ const Applications = () => {
             <div className="space-y-2.5 mt-4">
               {Object.entries(overview).map(([key, val]) => {
                 const cfg = {
-                  Applied:       { color: '#10b981', dot: 'bg-emerald-500' },
-                  'Under Review':{ color: '#f97316', dot: 'bg-orange-400' },
+                  Applied:       { color: '#22c55e', dot: 'bg-green-500' },
+                  'Under Review':{ color: '#fb923c', dot: 'bg-orange-400' },
                   Interview:     { color: '#3b82f6', dot: 'bg-blue-500' },
-                  Offer:         { color: '#8b5cf6', dot: 'bg-violet-500' },
+                  Offer:         { color: '#a855f7', dot: 'bg-purple-500' },
                   Rejected:      { color: '#ef4444', dot: 'bg-red-500' },
                 }[key] || {};
                 return (
@@ -688,8 +711,7 @@ const Applications = () => {
 
             <button
               onClick={() => setFiltersApplied(true)}
-              className="w-full py-2.5 rounded-xl text-white text-sm font-bold hover:opacity-90 active:scale-95 transition-all"
-              style={{ background: 'linear-gradient(135deg,#6c3aff,#3a9bff)' }}
+              className="w-full py-2.5 rounded-xl text-white text-sm font-bold bg-[#4f46e5] hover:bg-[#4338ca] active:scale-95 transition-all"
             >
               Apply Filters
             </button>
