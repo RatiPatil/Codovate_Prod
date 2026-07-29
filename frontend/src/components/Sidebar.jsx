@@ -62,9 +62,8 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
       {/* Logo */}
       <div className="px-6 py-5 border-b border-white/10 flex justify-between items-center">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white font-bold text-sm">C</div>
+          <img src="/logo.png" alt="Codovate Logo" className="w-8 h-8 object-contain rounded-lg" />
           <span className="text-white font-bold text-lg">Codovate</span>
-
         </div>
       </div>
 

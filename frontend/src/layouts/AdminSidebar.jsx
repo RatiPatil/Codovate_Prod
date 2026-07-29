@@ -82,9 +82,7 @@ const AdminSidebar = () => {
       {/* Header */}
       <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-gray-700 shrink-0">
         <div className={`flex items-center gap-2 overflow-hidden ${!isOpen && 'lg:hidden'}`}>
-          <div className="w-8 h-8 bg-indigo-600 rounded-lg shrink-0 flex items-center justify-center text-white font-bold">
-            C
-          </div>
+          <img src="/logo.png" alt="Codovate Logo" className="w-8 h-8 object-contain rounded-lg shrink-0" />
           <span className="font-semibold text-lg whitespace-nowrap dark:text-white">Codovate Admin</span>
         </div>
 

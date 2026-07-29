@@ -11,6 +11,7 @@ import { SocketProvider } from './context/SocketContext';
 import { ToastProvider } from './components/ui/ToastProvider';
 import ProtectedRoute from './components/ProtectedRoute';
 import GlobalNotifications from './components/GlobalNotifications';
+import PageTitleManager from './components/common/PageTitleManager';
 import { Toaster } from 'react-hot-toast';
 
 // Direct Layout Imports
@@ -100,6 +101,7 @@ function App() {
     <GlobalErrorBoundary>
       <ToastProvider>
         <BrowserRouter>
+          <PageTitleManager />
           <AuthProvider>
             <SessionProvider>
               <OrganizationProvider>

@@ -171,7 +171,7 @@ const Login = () => {
 
         <div className="relative z-20">
           <Link to="/" className="inline-flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-primary/30">C</div>
+            <img src="/logo.png" alt="Codovate Logo" className="w-10 h-10 object-contain rounded-xl" />
             <span className="text-white font-bold text-2xl tracking-tight">Codovate</span>
           </Link>
         </div>
@@ -207,7 +207,7 @@ const Login = () => {
         {/* Mobile Logo */}
         <div className="lg:hidden absolute top-8 left-6">
           <Link to="/" className="inline-flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white font-bold text-sm">C</div>
+            <img src="/logo.png" alt="Codovate Logo" className="w-8 h-8 object-contain rounded-lg" />
             <span className="text-white font-bold text-lg">Codovate</span>
           </Link>
         </div>
