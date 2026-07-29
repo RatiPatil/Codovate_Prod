@@ -1,76 +1,80 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useRole } from '../context/RoleContext';
 import { useSocket } from '../context/SocketContext';
 import api from '../api/axios';
+import {
+  LayoutDashboard,
+  Briefcase,
+  ClipboardList,
+  BookOpen,
+  FileText,
+  Video,
+  Bot,
+  User,
+  Settings,
+  LogOut,
+  X,
+} from 'lucide-react';
 
-const navSections = [
-  {
-    title: 'Main',
-    items: [
-      { path: '/dashboard', label: 'Dashboard', icon: '⊞', reqPerm: 'dashboard:read' },
-      { path: '/profile', label: 'Profile', icon: '👤', reqPerm: 'students:read' },
-      { path: '/opportunities', label: 'Opportunities', icon: '🔍', reqPerm: 'jobs:read' },
-      { path: '/applications', label: 'Applications', icon: '📋', reqPerm: 'applications:read' },
-    ]
-  },
-  {
-    title: 'Career & Prep',
-    items: [
-      { path: '/roadmap', label: 'AI Roadmap', icon: '🗺️' },
-      { path: '/career-coach', label: 'Career Coach', icon: '🤖' },
-      { path: '/resume-builder', label: 'Resume Builder', icon: '📄' },
-      { path: '/mock-interview', label: 'Mock Interview', icon: '🎙️' },
-      { path: '/resume-review', label: 'Resume Review', icon: '📝' },
-    ]
-  },
-  {
-    title: 'Skills & Learning',
-    items: [
-      { path: '/learning', label: 'Learning Hub', icon: '📚' },
-      { path: '/skill-assessments', label: 'Skill Assessments', icon: '⚡' },
-      { path: '/coding-practice', label: 'Coding Practice', icon: '💻' },
-      { path: '/projecthub', label: 'Project Hub', icon: '📁' },
-    ]
-  },
-  {
-    title: 'Community & Mentors',
-    items: [
-      { path: '/mentors', label: 'Mentors', icon: '🎓' },
-      { path: '/community', label: 'Community', icon: '💬' },
-      { path: '/teams', label: 'Teams', icon: '👥' },
-      { path: '/events', label: 'Events', icon: '📅' },
-    ]
-  },
-  {
-    title: 'Progress & Activity',
-    items: [
-      { path: '/gamification', label: 'Rewards & Quests', icon: '🏆' },
-      { path: '/leaderboard', label: 'Leaderboard', icon: '📊' },
-      { path: '/calendar', label: 'Calendar', icon: '📆' },
-      { path: '/notifications', label: 'Notifications', icon: '🔔' },
-    ]
-  }
+// Exact 9 navigation items as per reference
+const NAV_ITEMS = [
+  { path: '/dashboard',     label: 'Dashboard',       Icon: LayoutDashboard, reqPerm: 'dashboard:read'    },
+  { path: '/opportunities', label: 'Opportunities',   Icon: Briefcase,       reqPerm: 'jobs:read'         },
+  { path: '/applications',  label: 'My Applications', Icon: ClipboardList,   reqPerm: 'applications:read' },
+  { path: '/learning',      label: 'Learning',        Icon: BookOpen                                       },
+  { path: '/resume-builder',label: 'Resume Builder',  Icon: FileText                                       },
+  { path: '/mock-interview',label: 'Mock Interviews', Icon: Video                                          },
+  { path: '/career-coach',  label: 'AI Career Coach', Icon: Bot                                           },
+  { path: '/profile',       label: 'Profile',         Icon: User,            reqPerm: 'students:read'     },
+  { path: '/settings',      label: 'Settings',        Icon: Settings                                       },
 ];
 
-const Sidebar = ({ mobileOpen, setMobileOpen }) => {
-  const { user, logout } = useAuth();
-  const { hasPermission } = useRole();
-  const navigate = useNavigate();
-  const { isConnected, socket } = useSocket();
-  const [unreadCount, setUnreadCount] = useState(0);
+/* ── Circular progress ring ─────────────────────────────────────── */
+const CircularProgress = ({ pct = 0, size = 72 }) => {
+  const r = (size - 8) / 2;
+  const circ = 2 * Math.PI * r;
+  const dash = circ - (pct / 100) * circ;
+  return (
+    <svg width={size} height={size} className="transform -rotate-90">
+      <circle className="progress-ring__track" cx={size / 2} cy={size / 2} r={r} strokeWidth={6} />
+      <circle
+        className="progress-ring__fill"
+        cx={size / 2}
+        cy={size / 2}
+        r={r}
+        strokeWidth={6}
+        strokeDasharray={circ}
+        strokeDashoffset={dash}
+      />
+    </svg>
+  );
+};
 
+/* ── Sidebar Component ──────────────────────────────────────────── */
+const Sidebar = ({ mobileOpen, setMobileOpen }) => {
+  const { logout }          = useAuth();
+  const { hasPermission }   = useRole();
+  const navigate            = useNavigate();
+  const { socket }          = useSocket();
+
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [profilePct, setProfilePct]   = useState(0);
+  const [loadingPct, setLoadingPct]   = useState(true);
+
+  /* Notification count ------------------------------------------ */
   useEffect(() => {
-    fetchNotifications();
+    api.get('/notifications/unread/count')
+      .then(r => setUnreadCount(r.data?.count || 0))
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
     if (!socket) return;
-    socket.on('new_notification', () => {
-      setUnreadCount(prev => prev + 1);
-    });
-    return () => socket.off('new_notification');
+    const handler = () => setUnreadCount(p => p + 1);
+    socket.on('new_notification', handler);
+    return () => socket.off('new_notification', handler);
   }, [socket]);
 
   useEffect(() => {
@@ -79,13 +83,17 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
     return () => window.removeEventListener('notifications_read', handler);
   }, []);
 
-  const fetchNotifications = async () => {
-    try {
-      const countRes = await api.get('/notifications/unread/count');
-      setUnreadCount(countRes.data.count);
-    } catch (err) {
-      console.error("Failed to load notifications count", err);
-    }
+  /* Profile completion for upgrade card -------------------------- */
+  useEffect(() => {
+    api.get('/students/workspace')
+      .then(r => setProfilePct(r.data?.profile?.profile_completion || 0))
+      .catch(() => setProfilePct(0))
+      .finally(() => setLoadingPct(false));
+  }, []);
+
+  const isVisible = (item) => {
+    if (!item.reqPerm) return true;
+    return hasPermission(item.reqPerm);
   };
 
   const handleLogout = () => {
@@ -93,98 +101,142 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
     window.location.href = '/login';
   };
 
-  const isVisible = (item) => {
-    if (!item.reqPerm) return true;
-    return hasPermission(item.reqPerm);
-  };
-
+  /* Shared sidebar content --------------------------------------- */
   const Content = () => (
     <div className="flex flex-col h-full">
+
       {/* Logo */}
-      <div className="px-6 py-5 border-b border-white/10 flex justify-between items-center">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white font-bold text-sm">C</div>
-          <span className="text-white font-bold text-lg">Codovate</span>
-        </div>
-      </div>
-
-      {/* User */}
-      <div className="px-6 py-4 border-b border-white/10">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center text-primary font-bold text-sm shrink-0">
-              {user?.name?.charAt(0).toUpperCase()}
-            </div>
-            <div className="overflow-hidden">
-              <p className="text-white text-sm font-semibold truncate">{user?.name}</p>
-              <p className="text-gray-500 text-xs truncate">{user?.email}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Nav Links Grouped by Section */}
-      <nav className="flex-1 px-3 py-4 space-y-6 overflow-y-auto custom-scrollbar">
-        {navSections.map((section) => {
-          const visibleItems = section.items.filter(isVisible);
-          if (visibleItems.length === 0) return null;
-
-          return (
-            <div key={section.title} className="space-y-1">
-              <h4 className="px-4 text-[10px] font-bold tracking-wider text-gray-500 uppercase">{section.title}</h4>
-              {visibleItems.map((item) => (
-                <NavLink
-                  key={item.path}
-                  to={item.path}
-                  onClick={() => setMobileOpen && setMobileOpen(false)}
-                  className={({ isActive }) =>
-                    `flex items-center justify-between px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
-                      isActive
-                        ? 'bg-primary/90 text-white shadow-[0_4px_20px_rgba(32,21,255,0.4)] backdrop-blur-md'
-                        : 'text-gray-400 hover:text-white hover:bg-white/10 hover:translate-x-1'
-                    }`
-                  }
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="text-base">{item.icon}</span>
-                    <span>{item.label}</span>
-                  </div>
-                  {item.path === '/notifications' && unreadCount > 0 && (
-                    <span className="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse shrink-0"></span>
-                  )}
-                </NavLink>
-              ))}
-            </div>
-          );
-        })}
-      </nav>
-
-      {/* Logout */}
-      <div className="px-3 py-4 border-t border-white/10">
+      <div className="px-5 pt-6 pb-5 flex items-center justify-between shrink-0">
         <button
-          onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-gray-400 hover:text-red-400 hover:bg-red-500/20 transition-all duration-300 hover:translate-x-1"
+          onClick={() => navigate('/dashboard')}
+          className="flex items-center gap-3 focus:outline-none"
         >
-          <span>🚪</span> Logout
+          {/* Brand icon mark — gradient C + chevron */}
+          <div
+            className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+            style={{ background: 'linear-gradient(135deg, #7c3aed 0%, #2015ff 55%, #0ea5e9 100%)' }}
+          >
+            <svg viewBox="0 0 36 36" width="20" height="20" fill="none">
+              <path d="M26 18C26 22.4183 22.4183 26 18 26C13.5817 26 10 22.4183 10 18C10 13.5817 13.5817 10 18 10"
+                stroke="white" strokeWidth="3.2" strokeLinecap="round"/>
+              <path d="M20 15L24 18L20 21" stroke="white" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </div>
+          <span
+            className="text-white font-bold text-[16px] tracking-[0.08em] uppercase select-none"
+            style={{ fontFamily: "'Outfit', sans-serif" }}
+          >
+            Codovate
+          </span>
+        </button>
+
+        {/* Mobile close */}
+        <button
+          onClick={() => setMobileOpen && setMobileOpen(false)}
+          className="md:hidden text-white/30 hover:text-white transition-colors p-1 ml-2"
+          aria-label="Close menu"
+        >
+          <X size={17} />
         </button>
       </div>
+
+      {/* Navigation */}
+      <nav className="flex-1 px-3 py-2 space-y-0.5 overflow-y-auto sidebar-scroll">
+        {NAV_ITEMS.filter(isVisible).map(({ path, label, Icon }) => (
+          <NavLink
+            key={path}
+            to={path}
+            onClick={() => setMobileOpen && setMobileOpen(false)}
+            className={({ isActive }) => `nav-item-v3${isActive ? ' active' : ''}`}
+          >
+            <Icon size={18} strokeWidth={1.75} className="shrink-0" />
+            <span className="flex-1">{label}</span>
+            {path === '/notifications' && unreadCount > 0 && (
+              <span className="w-2 h-2 bg-red-400 rounded-full animate-pulse shrink-0" />
+            )}
+          </NavLink>
+        ))}
+      </nav>
+
+      {/* Upgrade Your Profile card */}
+      <div className="px-3 pb-3 shrink-0">
+        <div
+          className="rounded-2xl p-4 text-white relative overflow-hidden mb-2"
+          style={{ background: 'linear-gradient(135deg, #6c3aff 0%, #3a9bff 100%)' }}
+        >
+          {/* Decorative blobs */}
+          <div className="absolute -top-5 -right-5 w-24 h-24 bg-white/10 rounded-full blur-xl pointer-events-none" />
+          <div className="absolute -bottom-4 -left-4 w-16 h-16 bg-white/10 rounded-full blur-xl pointer-events-none" />
+
+          <p className="font-bold text-sm mb-0.5 relative z-10">Upgrade Your Profile</p>
+          <p className="text-white/70 text-[11px] leading-relaxed mb-3 relative z-10">
+            Complete your profile to get better opportunities
+          </p>
+
+          {/* Circular progress */}
+          <div className="flex justify-center mb-3 relative z-10">
+            <div className="relative">
+              <CircularProgress pct={loadingPct ? 0 : profilePct} size={72} />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-white font-bold text-[15px]">
+                  {loadingPct ? '…' : `${profilePct}%`}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <button
+            onClick={() => navigate('/profile')}
+            className="w-full bg-white font-bold text-[12px] rounded-xl py-2.5 hover:bg-white/90 active:scale-95 transition-all relative z-10 flex items-center justify-center gap-1"
+            style={{ color: '#3a1fff' }}
+          >
+            Complete Now <span>→</span>
+          </button>
+        </div>
+
+        {/* Logout */}
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200"
+          style={{ color: 'rgba(255,255,255,0.30)' }}
+          onMouseEnter={e => {
+            e.currentTarget.style.background = 'rgba(239,68,68,0.10)';
+            e.currentTarget.style.color = '#f87171';
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.background = 'transparent';
+            e.currentTarget.style.color = 'rgba(255,255,255,0.30)';
+          }}
+        >
+          <LogOut size={16} strokeWidth={1.75} />
+          <span>Logout</span>
+        </button>
+      </div>
+
     </div>
   );
 
   return (
     <>
       {/* Desktop */}
-      <aside className="hidden md:flex flex-col w-64 glass-panel border-r border-white/10 h-screen sticky top-0 shrink-0 z-20 print:hidden">
+      <aside className="hidden md:flex flex-col w-64 sidebar-v3 h-screen sticky top-0 shrink-0 z-20 print:hidden">
         <Content />
       </aside>
 
-      {/* Mobile Overlay */}
+      {/* Mobile overlay */}
       {mobileOpen && (
-        <div className="md:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-40" onClick={() => setMobileOpen(false)} />
+        <div
+          className="md:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
+          onClick={() => setMobileOpen(false)}
+        />
       )}
-      
-      {/* Mobile Drawer */}
-      <aside className={`md:hidden fixed top-0 left-0 h-screen w-64 glass-panel border-r border-white/10 z-50 shadow-[4px_0_24px_rgba(0,0,0,0.5)] transition-transform duration-300 print:hidden ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+
+      {/* Mobile drawer */}
+      <aside
+        className={`md:hidden fixed top-0 left-0 h-screen w-64 sidebar-v3 z-50 transition-transform duration-300 print:hidden ${
+          mobileOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
         <Content />
       </aside>
     </>
