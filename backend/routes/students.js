@@ -338,14 +338,37 @@ router.get("/workspace", auth, async (req, res) => {
     const p = profileDoc.exists ? mapDoc(profileDoc) : {};
 
     // 1. Fetch Real Data Counts and Updates using aggregate queries for performance
-    const [appsSnap, teamsSnap, bookingsSnap, communityUpdates] = await Promise.all([
-      db.collection("applications").where("user_id", "==", uid).count().get(),
+    const [userAppsSnap, teamsSnap, bookingsSnap, communityUpdates, oppsSnap] = await Promise.all([
+      db.collection("applications").where("user_id", "==", uid).get(),
       db.collection("team_members").where("user_id", "==", uid).count().get(),
       db.collection("mentorSessions").where("student_id", "==", uid).count().get(),
-      getCommunityUpdates(uid)
+      getCommunityUpdates(uid),
+      db.collection("opportunities").where("status", "==", "Active").limit(6).get()
     ]);
 
-    const appsCount = appsSnap.data().count;
+    const userApps = userAppsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const appsCount = userApps.length;
+    const interviewsCount = userApps.filter(a => ['Interview', 'Interview Scheduled'].includes(a.status)).length;
+    const shortlistedCount = userApps.filter(a => ['Shortlisted', 'Under Review'].includes(a.status)).length;
+    const offersCount = userApps.filter(a => ['Offer', 'Offered', 'Accepted'].includes(a.status)).length;
+
+    const stats = {
+      applications: appsCount,
+      interviews: interviewsCount,
+      shortlisted: shortlistedCount,
+      offers: offersCount
+    };
+
+    // Sort apps to get latest application for tracker timeline
+    userApps.sort((a, b) => {
+      const timeA = a.applied_at?.toMillis ? a.applied_at.toMillis() : new Date(a.applied_at || 0).getTime();
+      const timeB = b.applied_at?.toMillis ? b.applied_at.toMillis() : new Date(b.applied_at || 0).getTime();
+      return timeB - timeA;
+    });
+    const latestApp = userApps[0] || null;
+
+    const recommendedOpps = oppsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
     const teamsCount = teamsSnap.data().count;
     const mentorsCount = bookingsSnap.data().count;
 
@@ -673,6 +696,9 @@ router.get("/workspace", auth, async (req, res) => {
         mentorsCount,
         joinedAt: joinedAt.toISOString(),
       },
+      stats,
+      latestApp,
+      recommendedOpps,
       mission,
       recommendations,
       communityUpdates,
