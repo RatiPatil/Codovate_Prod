@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import Logo from '../components/common/Logo';
 import { gsap } from 'gsap';
 import api from '../api/axios';
 
@@ -51,12 +52,7 @@ const MentorLogin = () => {
       <div ref={formRef} className="w-full max-w-md relative z-10">
         <div className="text-center mb-8">
           <Link to="/" className="inline-block mb-4 hover:scale-105 transition-transform">
-            <span className="text-3xl font-black tracking-tight text-white flex items-center justify-center gap-2">
-              <svg className="w-8 h-8 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4l9 15H3l9-15z" />
-              </svg>
-              Codovate <span className="text-purple-500">Mentors</span>
-            </span>
+            <Logo variant="light" size="lg" />
           </Link>
           <h2 className="text-2xl font-bold text-gray-200">Mentor Portal</h2>
           <p className="text-sm text-gray-400 mt-2">Sign in to manage your sessions and guide students.</p>

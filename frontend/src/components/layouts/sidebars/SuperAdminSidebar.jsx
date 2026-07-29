@@ -118,10 +118,7 @@ const SidebarContent = ({ setMobileOpen }) => {
     <div className="flex flex-col h-full bg-[#030308] border-r border-white/5 relative overflow-hidden select-none">
       <div className="px-6 py-6 border-b border-white/5 relative z-10 shrink-0">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg shrink-0"
-            style={{ background: `linear-gradient(135deg, ${meta.color}, ${meta.color}CC)` }}>
-            <span className="text-white font-black text-xl">C</span>
-          </div>
+          <img src="/favicon.png?v=3" alt="Codovate Logo" className="w-10 h-10 object-contain shrink-0 drop-shadow-md" />
           <div className="min-w-0">
             <p className="text-white font-black text-lg tracking-tight leading-none">CODOVATE</p>
             <p className="text-[11px] font-bold uppercase tracking-widest mt-1 truncate" style={{ color: meta.color }}>

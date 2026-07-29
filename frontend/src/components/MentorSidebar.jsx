@@ -1,5 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
+import Logo from './common/Logo';
 import { useAuth } from '../context/AuthContext';
 import { 
   LayoutDashboard, 
@@ -26,9 +27,7 @@ const MentorSidebar = () => {
   return (
     <aside className="w-64 bg-[#0A0A1B] border-r border-white/10 h-screen sticky top-0 flex flex-col">
       <div className="p-6">
-        <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-emerald-400 tracking-tight">
-          Codovate <span className="text-white text-sm">Mentor</span>
-        </h2>
+        <Logo variant="light" size="md" />
       </div>
       
       <nav className="flex-1 px-4 space-y-2 mt-4">

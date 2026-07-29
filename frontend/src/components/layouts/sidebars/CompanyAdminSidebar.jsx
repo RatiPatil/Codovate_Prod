@@ -30,7 +30,7 @@ const CompanyAdminSidebar = ({ mobileOpen, setMobileOpen }) => {
       <aside className={`fixed md:relative top-0 right-0 h-screen w-64 bg-[#080812] border-l border-white/5 z-50 transition-transform duration-300 flex flex-col ${mobileOpen ? 'translate-x-0' : 'translate-x-full md:translate-x-0'}`}>
         
         <div className="h-20 flex items-center gap-3 px-6 border-b border-white/5 shrink-0">
-          <div className="w-10 h-10 rounded-xl bg-amber-500 flex items-center justify-center text-white font-black text-lg shadow-[0_0_20px_rgba(245,158,11,0.4)]">C</div>
+          <img src="/favicon.png?v=3" alt="Codovate Logo" className="w-10 h-10 object-contain shrink-0 drop-shadow-md" />
           <div>
             <span className="text-white font-black text-lg tracking-tight block leading-tight">CODOVATE</span>
             <span className="text-amber-500 text-[10px] font-bold uppercase tracking-widest">Company Admin</span>

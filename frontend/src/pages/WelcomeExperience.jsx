@@ -77,8 +77,8 @@ const WelcomeExperience = () => {
       <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-purple-500/20 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '1s' }} />
       
       <div ref={textRef} className="relative z-10 text-center px-4">
-        <div className="w-24 h-24 rounded-3xl bg-primary flex items-center justify-center text-white font-bold text-5xl shadow-[0_0_50px_rgba(32,21,255,0.6)] mx-auto mb-10 transform transition-transform hover:scale-110">
-          C
+        <div className="flex justify-center mb-10 transform transition-transform hover:scale-110">
+          <img src="/favicon.png?v=3" alt="Codovate Logo" className="w-24 h-24 object-contain shadow-[0_0_50px_rgba(32,21,255,0.6)] rounded-3xl" />
         </div>
         <h1 className="text-4xl md:text-6xl font-black text-white mb-6 tracking-tight">
           Welcome to <span className="text-gradient">Codovate</span> 🎉

@@ -13,7 +13,7 @@ const CompanyAdminLayout = ({ children }) => {
       <div className="flex-1 flex flex-col overflow-hidden relative z-10">
         <div className="md:hidden flex items-center justify-between px-4 py-3.5 bg-[#050510] border-b border-white/5">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-amber-500 flex items-center justify-center text-white font-black text-xs shadow-[0_0_15px_rgba(245,158,11,0.5)]">C</div>
+            <img src="/favicon.png?v=3" alt="Codovate Logo" className="w-8 h-8 object-contain shrink-0 drop-shadow-md" />
             <div>
               <span className="text-white font-black text-sm tracking-tight">CODOVATE</span>
               <span className="text-amber-500 text-[9px] font-bold uppercase ml-2">Company</span>

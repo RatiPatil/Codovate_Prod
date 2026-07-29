@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import Logo from '../components/common/Logo';
 import { gsap } from 'gsap';
 import api from '../api/axios';
 
@@ -57,8 +58,8 @@ const RecruiterLogin = () => {
 
         {/* Header */}
         <div className="text-center">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-amber-500/15 border border-amber-500/30 mb-5 shadow-[0_0_30px_rgba(245,158,11,0.3)]">
-            <span className="text-2xl">👔</span>
+          <div className="flex justify-center mb-5">
+            <Logo variant="light" size="xl" />
           </div>
           <h1 className="text-3xl font-black text-white tracking-tight">Recruiter Portal</h1>
           <p className="text-gray-500 text-xs">

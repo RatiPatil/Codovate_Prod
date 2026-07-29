@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Logo from '../components/common/Logo';
 import { gsap } from 'gsap';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
@@ -283,9 +284,9 @@ export default function Onboarding() {
                })}
              </div>
 
-             <div className="w-24 text-right">
-               <span className="text-gray-500 text-xs font-semibold tracking-widest uppercase">Codovate</span>
-             </div>
+              <div className="w-28 flex justify-end">
+                <Logo variant="light" size="sm" />
+              </div>
           </div>
         </div>
       )}

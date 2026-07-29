@@ -4,6 +4,7 @@ import { gsap } from 'gsap';
 import { useToast } from '../components/ui/ToastProvider';
 import { validateEmail } from '../utils/validators';
 import AuthInput from '../components/auth/AuthInput';
+import Logo from '../components/common/Logo';
 import { sendPasswordResetEmail, fetchSignInMethodsForEmail } from 'firebase/auth';
 import { auth } from '../lib/firebase';
 
@@ -85,8 +86,7 @@ const ForgotPassword = () => {
       <div ref={formRef} className="w-full max-w-md relative z-10">
         <div className="mb-8 text-center">
           <Link to="/" className="inline-flex items-center gap-2 mb-6">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white font-bold text-sm">C</div>
-            <span className="text-white font-bold text-lg">Codovate</span>
+            <Logo variant="light" size="lg" />
           </Link>
           <h2 className="text-3xl font-bold text-white mb-2">Reset Password</h2>
           <p className="text-gray-400 text-sm">Enter your email and we'll send you a reset link.</p>

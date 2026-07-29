@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import Logo from '../components/common/Logo';
 import { useAuth } from '../context/AuthContext';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -182,8 +183,7 @@ const Home = () => {
       
       {/* Absolute Logo (No Navbar) */}
       <Link to="/" className="absolute top-6 left-6 md:top-8 md:left-8 z-50 flex items-center gap-2 md:gap-3 cursor-pointer">
-        <div className="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-primary flex items-center justify-center text-white font-bold text-sm md:text-lg shadow-[0_0_20px_rgba(32,21,255,0.4)]">C</div>
-        <span className="text-white font-bold text-lg md:text-xl tracking-tight">Codovate</span>
+        <Logo variant="light" size="lg" />
       </Link>
 
       <div className="absolute top-7 right-6 md:top-10 md:right-8 z-50 flex items-center gap-4 md:gap-6">
