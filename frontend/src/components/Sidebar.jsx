@@ -17,7 +17,6 @@ import {
   LogOut,
   X,
 } from 'lucide-react';
-import Logo from './common/Logo';
 
 // Navigation items for student sidebar
 const NAV_ITEMS = [
@@ -105,22 +104,26 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
     <div className="flex flex-col h-full">
 
       {/* Logo */}
-      <div className="px-5 pt-6 pb-5 flex items-center justify-between shrink-0">
+      <div className="px-5 pt-6 pb-6 lg:pt-8 flex items-center justify-center relative shrink-0">
         <button
           onClick={() => navigate('/dashboard')}
-          className="flex items-center gap-3 focus:outline-none"
+          className="focus:outline-none transition-transform hover:scale-105 active:scale-95"
         >
-          {/* Official Codovate Logo */}
-          <Logo variant="light" size="md" />
+          {/* Official Codovate Icon Only */}
+          <img 
+            src="/favicon.png?v=3" 
+            alt="Codovate Icon" 
+            className="h-14 md:h-16 lg:h-20 object-contain drop-shadow-2xl" 
+          />
         </button>
 
         {/* Mobile close */}
         <button
           onClick={() => setMobileOpen && setMobileOpen(false)}
-          className="md:hidden text-white/30 hover:text-white transition-colors p-1 ml-2"
+          className="md:hidden absolute right-4 top-6 text-white/30 hover:text-white transition-colors p-1"
           aria-label="Close menu"
         >
-          <X size={17} />
+          <X size={22} />
         </button>
       </div>
 
