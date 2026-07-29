@@ -98,6 +98,9 @@ router.post("/", auth, async (req, res) => {
     const { awardPoints, updatePlacementScore } = require("../utils/scoring");
     await awardPoints(req.user.id, `apply_internship_${opportunity_id}`, 20, true);
     await updatePlacementScore(req.user.id);
+    
+    // Invalidate AI coach cache
+    await db.collection("aiCoachCache").doc(req.user.id).delete().catch(() => {});
 
     // Log platform event
     await db.collection('platform_events').add({

@@ -298,52 +298,142 @@ Their data this week:
 
 // ─────────────────────────────────────────────────────────────────
 // GET /api/ai/career-advisor
-// Provide structured career roadmap advice for the student
+// Provide comprehensive AI Career Coach Dashboard data
 // ─────────────────────────────────────────────────────────────────
 router.get("/career-advisor", auth, async (req, res) => {
   const uid = req.user.id;
   try {
-    const careerDoc = await db.collection("careerProfiles").doc(uid).get();
+    // 1. Check cache first (re-generate only if older than 24h OR forced by invalidation)
+    const cached = await db.collection("aiCoachCache").doc(uid).get();
+    if (cached.exists) {
+      const data = mapDoc(cached);
+      const ageMs = Date.now() - (data.updatedAt?.toMillis?.() || 0);
+      if (ageMs < 24 * 60 * 60 * 1000) return res.json(data);
+    }
+
+    // 2. Fetch full student context
+    const [userDoc, profileDoc, careerDoc, appsSnap, roadmapDoc, mentorsSnap] = await Promise.all([
+      db.collection("users").doc(uid).get(),
+      db.collection("profiles").doc(uid).get(),
+      db.collection("careerProfiles").doc(uid).get(),
+      db.collection("applications").where("user_id", "==", uid).get(), // Check 'user_id' vs 'student_id' depending on schema, usually 'user_id' in phase 3
+      db.collection("userRoadmaps").doc(uid).get(),
+      db.collection("mentorSessions").where("student_id", "==", uid).get(),
+    ]);
+
+    const u = userDoc.exists ? mapDoc(userDoc) : {};
+    const p = profileDoc.exists ? mapDoc(profileDoc) : {};
     const c = careerDoc.exists ? mapDoc(careerDoc) : {};
+    const roadmap = roadmapDoc.exists ? mapDoc(roadmapDoc) : null;
+    
+    // Process applications
+    let appsCount = 0;
+    let interviewsCount = 0;
+    let rejectedCount = 0;
+    let offersCount = 0;
+    appsSnap.forEach(doc => {
+      appsCount++;
+      const st = mapDoc(doc).status || '';
+      if (st.includes('Interview')) interviewsCount++;
+      if (st === 'Rejected') rejectedCount++;
+      if (st.includes('Offer') || st === 'Accepted') offersCount++;
+    });
 
-    const goal = c.career_goal || c.desired_roles?.[0] || "Software Engineer";
-    const currentSkills = c.skills || [];
-
+    const goal = p.careerGoal || p.desired_roles?.[0] || c.career_goal || "Software Engineer";
+    const currentSkills = p.skills || c.skills || [];
+    const resume = !!p.socialLinks?.resume || !!p.resume_url;
+    const profileCompletion = u.profileCompleted || p.profileCompletion || 0;
+    const activeStep = roadmap?.steps?.find(s => s.status === "in_progress" || s.status === "pending")?.title || "None";
+    const projectsCount = p.projects?.length || 0;
+    
+    // Fallback if no Gemini
     if (!genAI) {
-      return res.json({
-        readiness_statement: `You are ready for ${goal} Internships.`,
-        recommended_companies: ["TCS", "Infosys", "Accenture", "Capgemini"],
-        missing_skills: ["Docker", "AWS", "System Design"]
-      });
+      const fallback = {
+        score: 65,
+        score_breakdown: { skills: 10, resume: resume ? 15 : 0, projects: 10, applications: 20, learning: 10 },
+        insights: [
+          { type: 'improvement', text: `Your profile is ${profileCompletion}% complete. Add more details to improve matching.`, action: 'Edit Profile', link: '/profile' }
+        ],
+        recommended_skills: ["System Design", "AWS", "React"],
+        learning_plan: [{ title: "Complete your profile", description: "Add your resume and skills.", link: "/profile", type: "profile" }],
+        interview_prep: [{ title: "Mock Interview", description: "Practice your introduction.", link: "/mock-interviews", type: "practice" }]
+      };
+      return res.json(fallback);
     }
 
     const model = await getConfiguredModel();
     const prompt = `
-You are an expert technical career advisor. Look at this student's profile:
-Career Goal: ${goal}
-Current Skills: ${currentSkills.length > 0 ? currentSkills.join(", ") : "None"}
+You are an expert AI Career Coach for a student aiming to be a ${goal}.
+Analyze their real platform data and generate a personalized, actionable dashboard report.
 
-Generate structured career advice.
-Return ONLY valid JSON in exactly this shape:
+STUDENT DATA:
+- Career Goal: ${goal}
+- Current Skills: ${currentSkills.length > 0 ? currentSkills.join(", ") : "None"}
+- Profile Completion: ${profileCompletion}%
+- Resume Uploaded: ${resume ? 'Yes' : 'No'}
+- Projects Added: ${projectsCount}
+- Learning Status (Active Topic): ${activeStep}
+- Job Applications: ${appsCount} total, ${interviewsCount} interviews, ${offersCount} offers, ${rejectedCount} rejections.
+- Mentor Sessions: ${mentorsSnap.size}
+
+INSTRUCTIONS:
+1. Calculate a Career Readiness Score (0-100) logically based on the data.
+2. Provide a breakdown of the score (skills, resume, projects, applications, learning).
+3. Generate 3-4 personalized 'insights'. Be highly specific to their data (e.g. "You applied to 5 jobs but have 0 interviews..."). 
+   - 'type' must be one of: 'success', 'warning', 'improvement', 'info'.
+   - 'action' is a short button text.
+   - 'link' is a relative path (e.g., '/profile', '/opportunities', '/resume-builder', '/mock-interviews', '/roadmap').
+4. Recommend 3 critical skills they are missing for ${goal}.
+5. Create a Learning Plan (2-3 items) based on their data. 'type' can be 'course', 'project', 'practice'.
+6. Create Interview Prep tips (2 items) based on their application status. 'type' can be 'technical', 'behavioral', 'mock'.
+
+RETURN ONLY VALID JSON IN EXACTLY THIS FORMAT (No markdown blocks):
 {
-  "readiness_statement": "You are ready for Backend Developer Internships.",
-  "recommended_companies": ["TCS", "Infosys", "Accenture", "Capgemini"],
-  "missing_skills": ["Docker", "AWS"]
+  "score": 82,
+  "score_breakdown": {
+    "skills": 15,
+    "resume": 15,
+    "projects": 10,
+    "applications": 22,
+    "learning": 20
+  },
+  "insights": [
+    {
+      "type": "improvement",
+      "text": "Your profile matches 82% of Frontend Developer roles. Adding React.js could increase it.",
+      "action": "Add Skills",
+      "link": "/profile"
+    }
+  ],
+  "recommended_skills": ["Docker", "Kubernetes"],
+  "learning_plan": [
+    { "title": "Build a REST API", "description": "Add a project to showcase backend skills.", "link": "/projecthub", "type": "project" }
+  ],
+  "interview_prep": [
+    { "title": "System Design Practice", "description": "Review scalable architecture concepts.", "link": "/mock-interviews", "type": "technical" }
+  ]
 }
-Limit missing skills to the most critical 2-4 skills they don't have.
-Limit recommended companies to top 4 realistic choices in the tech industry for freshers/interns.
 `;
 
     const result = await model.generateContent(prompt);
     const parsed = parseJSON(result.response.text());
+    
+    // Add timestamp
+    parsed.updatedAt = FieldValue.serverTimestamp();
+
+    // Cache it
+    await db.collection("aiCoachCache").doc(uid).set(parsed);
 
     res.json(parsed);
   } catch (err) {
     console.error("Career advisor error:", err.message);
     res.status(500).json({ 
-      readiness_statement: "You are on track for your career goals.",
-      recommended_companies: ["Top Tech Companies"],
-      missing_skills: ["Keep practicing and building projects!"]
+      score: 50,
+      score_breakdown: { skills: 10, resume: 10, projects: 10, applications: 10, learning: 10 },
+      insights: [{ type: 'info', text: 'Error generating personalized insights. Please check back later.', action: 'Retry', link: '/career-coach' }],
+      recommended_skills: [],
+      learning_plan: [],
+      interview_prep: []
     });
   }
 });

@@ -523,7 +523,7 @@ const Dashboard = () => {
         </div>
 
         <button
-          onClick={() => navigate(aiAdvice?.linkUrl || '/career-coach')}
+          onClick={() => navigate('/career-coach')}
           className="shrink-0 px-5 py-2.5 rounded-xl text-white text-sm font-bold flex items-center gap-2 hover:opacity-90 active:scale-95 transition-all shadow-md"
           style={{ background: 'linear-gradient(135deg, #6c3aff, #3a9bff)' }}
         >
