@@ -5,11 +5,53 @@ import { useRole } from '../context/RoleContext';
 import { useSocket } from '../context/SocketContext';
 import api from '../api/axios';
 
-const navItems = [
-  { path: '/dashboard', label: 'Dashboard', icon: '⊞', reqPerm: 'dashboard:read' },
-  { path: '/profile', label: 'Profile', icon: '👤', reqPerm: 'students:read' },
-  { path: '/opportunities', label: 'Opportunities', icon: '🔍', reqPerm: 'jobs:read' },
-  { path: '/applications', label: 'Applications', icon: '📋', reqPerm: 'applications:read' },
+const navSections = [
+  {
+    title: 'Main',
+    items: [
+      { path: '/dashboard', label: 'Dashboard', icon: '⊞', reqPerm: 'dashboard:read' },
+      { path: '/profile', label: 'Profile', icon: '👤', reqPerm: 'students:read' },
+      { path: '/opportunities', label: 'Opportunities', icon: '🔍', reqPerm: 'jobs:read' },
+      { path: '/applications', label: 'Applications', icon: '📋', reqPerm: 'applications:read' },
+    ]
+  },
+  {
+    title: 'Career & Prep',
+    items: [
+      { path: '/roadmap', label: 'AI Roadmap', icon: '🗺️' },
+      { path: '/career-coach', label: 'Career Coach', icon: '🤖' },
+      { path: '/resume-builder', label: 'Resume Builder', icon: '📄' },
+      { path: '/mock-interview', label: 'Mock Interview', icon: '🎙️' },
+      { path: '/resume-review', label: 'Resume Review', icon: '📝' },
+    ]
+  },
+  {
+    title: 'Skills & Learning',
+    items: [
+      { path: '/learning', label: 'Learning Hub', icon: '📚' },
+      { path: '/skill-assessments', label: 'Skill Assessments', icon: '⚡' },
+      { path: '/coding-practice', label: 'Coding Practice', icon: '💻' },
+      { path: '/projecthub', label: 'Project Hub', icon: '📁' },
+    ]
+  },
+  {
+    title: 'Community & Mentors',
+    items: [
+      { path: '/mentors', label: 'Mentors', icon: '🎓' },
+      { path: '/community', label: 'Community', icon: '💬' },
+      { path: '/teams', label: 'Teams', icon: '👥' },
+      { path: '/events', label: 'Events', icon: '📅' },
+    ]
+  },
+  {
+    title: 'Progress & Activity',
+    items: [
+      { path: '/gamification', label: 'Rewards & Quests', icon: '🏆' },
+      { path: '/leaderboard', label: 'Leaderboard', icon: '📊' },
+      { path: '/calendar', label: 'Calendar', icon: '📆' },
+      { path: '/notifications', label: 'Notifications', icon: '🔔' },
+    ]
+  }
 ];
 
 const Sidebar = ({ mobileOpen, setMobileOpen }) => {
@@ -18,12 +60,6 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
   const navigate = useNavigate();
   const { isConnected, socket } = useSocket();
   const [unreadCount, setUnreadCount] = useState(0);
-
-  // Filter items based on user's permissions
-  const visibleNavItems = navItems.filter(item => {
-    if (!item.reqPerm) return true;
-    return hasPermission(item.reqPerm);
-  });
 
   useEffect(() => {
     fetchNotifications();
@@ -57,12 +93,17 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
     window.location.href = '/login';
   };
 
+  const isVisible = (item) => {
+    if (!item.reqPerm) return true;
+    return hasPermission(item.reqPerm);
+  };
+
   const Content = () => (
     <div className="flex flex-col h-full">
       {/* Logo */}
       <div className="px-6 py-5 border-b border-white/10 flex justify-between items-center">
         <div className="flex items-center gap-3">
-          <img src="/logo.png" alt="Codovate Logo" className="w-8 h-8 object-contain rounded-lg" />
+          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white font-bold text-sm">C</div>
           <span className="text-white font-bold text-lg">Codovate</span>
         </div>
       </div>
@@ -82,30 +123,40 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
         </div>
       </div>
 
-      {/* Nav Links */}
-      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto custom-scrollbar">
-        {visibleNavItems.map((item) => (
-          <NavLink
-            key={item.path}
-            to={item.path}
-            onClick={() => setMobileOpen && setMobileOpen(false)}
-            className={({ isActive }) =>
-              `flex items-center justify-between px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 ${
-                isActive
-                  ? 'bg-primary/90 text-white shadow-[0_4px_20px_rgba(32,21,255,0.4)] backdrop-blur-md'
-                  : 'text-gray-400 hover:text-white hover:bg-white/10 hover:translate-x-1'
-              }`
-            }
-          >
-            <div className="flex items-center gap-3">
-              <span>{item.icon}</span>
-              <span>{item.label}</span>
+      {/* Nav Links Grouped by Section */}
+      <nav className="flex-1 px-3 py-4 space-y-6 overflow-y-auto custom-scrollbar">
+        {navSections.map((section) => {
+          const visibleItems = section.items.filter(isVisible);
+          if (visibleItems.length === 0) return null;
+
+          return (
+            <div key={section.title} className="space-y-1">
+              <h4 className="px-4 text-[10px] font-bold tracking-wider text-gray-500 uppercase">{section.title}</h4>
+              {visibleItems.map((item) => (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  onClick={() => setMobileOpen && setMobileOpen(false)}
+                  className={({ isActive }) =>
+                    `flex items-center justify-between px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
+                      isActive
+                        ? 'bg-primary/90 text-white shadow-[0_4px_20px_rgba(32,21,255,0.4)] backdrop-blur-md'
+                        : 'text-gray-400 hover:text-white hover:bg-white/10 hover:translate-x-1'
+                    }`
+                  }
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-base">{item.icon}</span>
+                    <span>{item.label}</span>
+                  </div>
+                  {item.path === '/notifications' && unreadCount > 0 && (
+                    <span className="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse shrink-0"></span>
+                  )}
+                </NavLink>
+              ))}
             </div>
-            {item.path === '/notifications' && unreadCount > 0 && (
-              <span className="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse shrink-0"></span>
-            )}
-          </NavLink>
-        ))}
+          );
+        })}
       </nav>
 
       {/* Logout */}

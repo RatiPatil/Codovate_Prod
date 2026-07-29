@@ -11,7 +11,6 @@ import { SocketProvider } from './context/SocketContext';
 import { ToastProvider } from './components/ui/ToastProvider';
 import ProtectedRoute from './components/ProtectedRoute';
 import GlobalNotifications from './components/GlobalNotifications';
-import PageTitleManager from './components/common/PageTitleManager';
 import { Toaster } from 'react-hot-toast';
 
 // Direct Layout Imports
@@ -101,7 +100,6 @@ function App() {
     <GlobalErrorBoundary>
       <ToastProvider>
         <BrowserRouter>
-          <PageTitleManager />
           <AuthProvider>
             <SessionProvider>
               <OrganizationProvider>
@@ -164,6 +162,25 @@ function App() {
                       <Layout><Profile /></Layout>
                     </ProtectedRoute>
                   } />
+
+                  {/* Complete Student Modules */}
+                  <Route path="/roadmap" element={<ProtectedRoute><Layout><Roadmap /></Layout></ProtectedRoute>} />
+                  <Route path="/career-coach" element={<ProtectedRoute><Layout><CareerCoach /></Layout></ProtectedRoute>} />
+                  <Route path="/learning" element={<ProtectedRoute><Layout><LearningModule /></Layout></ProtectedRoute>} />
+                  <Route path="/resume-builder" element={<ProtectedRoute><Layout><ResumeBuilder /></Layout></ProtectedRoute>} />
+                  <Route path="/mock-interview" element={<ProtectedRoute><Layout><MockInterview /></Layout></ProtectedRoute>} />
+                  <Route path="/resume-review" element={<ProtectedRoute><Layout><ResumeReview /></Layout></ProtectedRoute>} />
+                  <Route path="/skill-assessments" element={<ProtectedRoute><Layout><SkillAssessments /></Layout></ProtectedRoute>} />
+                  <Route path="/coding-practice" element={<ProtectedRoute><Layout><CodingPractice /></Layout></ProtectedRoute>} />
+                  <Route path="/projecthub" element={<ProtectedRoute><Layout><ProjectHub /></Layout></ProtectedRoute>} />
+                  <Route path="/mentors" element={<ProtectedRoute><Layout><Mentors /></Layout></ProtectedRoute>} />
+                  <Route path="/community" element={<ProtectedRoute><Layout><Community /></Layout></ProtectedRoute>} />
+                  <Route path="/teams/*" element={<ProtectedRoute><Layout><TeamsLayout /></Layout></ProtectedRoute>} />
+                  <Route path="/events" element={<ProtectedRoute><Layout><Events /></Layout></ProtectedRoute>} />
+                  <Route path="/gamification" element={<ProtectedRoute><Layout><Gamification /></Layout></ProtectedRoute>} />
+                  <Route path="/leaderboard" element={<ProtectedRoute><Layout><Leaderboard /></Layout></ProtectedRoute>} />
+                  <Route path="/calendar" element={<ProtectedRoute><Layout><Calendar /></Layout></ProtectedRoute>} />
+                  <Route path="/notifications" element={<ProtectedRoute><Layout><Notifications /></Layout></ProtectedRoute>} />
                   
                   {/* Student Dedicated Routes */}
                   <Route path="/student/ai-dashboard" element={
