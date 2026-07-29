@@ -119,17 +119,22 @@ const ShellHeader = ({ onMobileMenuOpen }) => {
       <div className="relative" ref={dropRef}>
         <button
           onClick={() => setDropOpen(o => !o)}
-          className="flex items-center gap-2 pl-1 pr-2.5 py-1 rounded-xl hover:bg-gray-100 transition-colors"
+          className="flex items-center gap-3 pl-2 pr-3 py-1.5 rounded-xl hover:bg-gray-100 transition-colors"
         >
           <div
-            className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-[12px] text-white shrink-0"
+            className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-[13px] text-white shrink-0 shadow-sm"
             style={{ background: 'linear-gradient(135deg, #6c3aff 0%, #3a9bff 100%)' }}
           >
             {initials}
           </div>
-          <span className="text-sm font-semibold text-gray-700 hidden sm:inline max-w-[100px] truncate">
-            {user?.name || 'Student'}
-          </span>
+          <div className="hidden md:flex flex-col items-start mr-2 max-w-[200px]">
+            <span className="text-sm font-bold text-gray-900 leading-tight truncate w-full text-left">
+              {user?.name || 'Student'}
+            </span>
+            <span className="text-[11px] font-medium text-gray-500 leading-tight">
+              Student
+            </span>
+          </div>
           <ChevronDown
             size={14}
             strokeWidth={2}
@@ -150,22 +155,6 @@ const ShellHeader = ({ onMobileMenuOpen }) => {
               <User size={15} strokeWidth={1.8} />
               My Profile
             </button>
-            <button
-              onClick={() => { setDropOpen(false); navigate('/settings'); }}
-              className="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
-            >
-              <Settings size={15} strokeWidth={1.8} />
-              Settings
-            </button>
-            <div className="border-t border-gray-100 mt-1 pt-1">
-              <button
-                onClick={handleLogout}
-                className="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-red-500 hover:bg-red-50 transition-colors"
-              >
-                <LogOut size={15} strokeWidth={1.8} />
-                Logout
-              </button>
-            </div>
           </div>
         )}
       </div>

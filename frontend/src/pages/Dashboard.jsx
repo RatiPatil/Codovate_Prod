@@ -224,8 +224,7 @@ const Dashboard = () => {
       {/* ── PAGE TITLE + SEARCH ─────────────────────────────────── */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight">Dashboard</h1>
-          <p className="text-gray-500 text-sm mt-0.5">Welcome back, {studentName}! 👋</p>
+          <h1 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tight">Welcome back, {studentName}! 👋</h1>
         </div>
         <div className="relative w-full sm:w-auto">
           <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
