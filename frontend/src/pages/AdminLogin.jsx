@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import Logo from '../components/common/Logo';
 import { gsap } from 'gsap';
 import api from '../api/axios';
 
@@ -61,7 +62,9 @@ const AdminLogin = () => {
 
         {/* Header */}
         <div className="text-center">
-          <img src="/logo.png" alt="Codovate Logo" className="h-14 mx-auto object-contain mb-5" />
+          <div className="flex justify-center mb-6">
+            <Logo variant="dark" size="xl" />
+          </div>
           <h1 className="text-3xl font-black text-white tracking-tight">Admin Portal</h1>
           <p className="text-gray-500 text-xs font-bold uppercase tracking-[0.2em] mt-1">Restricted Access — Codovate HQ</p>
         </div>

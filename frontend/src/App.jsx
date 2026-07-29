@@ -1,5 +1,5 @@
 import { Suspense, lazy, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { RoleProvider } from './context/RoleContext';
 import { FeatureFlagProvider } from './context/FeatureFlagContext';
@@ -77,13 +77,36 @@ const Chat = lazy(() => import('./pages/Chat'));
 const ActivityFeed = lazy(() => import('./pages/ActivityFeed'));
 
 import GlobalErrorBoundary from './components/common/GlobalErrorBoundary';
+import Logo from './components/common/Logo';
 
 const GlobalLoader = () => (
   <div className="flex flex-col items-center justify-center h-screen bg-[#050510] gap-4">
-    <img src="/logo.png" alt="Codovate Logo" className="h-10 object-contain animate-pulse" />
+    <div className="animate-pulse">
+      <Logo variant="light" size="lg" />
+    </div>
     <div className="w-6 h-6 border-2 border-[#2015FF] border-t-transparent rounded-full animate-spin" />
   </div>
 );
+
+const DynamicTitle = () => {
+  const location = useLocation();
+  useEffect(() => {
+    const p = location.pathname;
+    if (p === '/dashboard') document.title = 'Codovate | Dashboard';
+    else if (p.startsWith('/opportunities')) document.title = 'Codovate | Opportunities';
+    else if (p === '/applications') document.title = 'Codovate | My Applications';
+    else if (p === '/profile') document.title = 'Codovate | Profile';
+    else if (p === '/learning') document.title = 'Codovate | Learning';
+    else if (p === '/resume-builder') document.title = 'Codovate | Resume Builder';
+    else if (p === '/career-coach') document.title = 'Codovate | AI Career Coach';
+    else if (p === '/login') document.title = 'Codovate | Login';
+    else if (p === '/signup') document.title = 'Codovate | Sign Up';
+    else if (p === '/admin-login') document.title = 'Codovate | Admin Login';
+    else if (p.startsWith('/admin')) document.title = 'Codovate | Admin Dashboard';
+    else document.title = 'Codovate | AI Powered Student Career Platform';
+  }, [location]);
+  return null;
+};
 
 function App() {
   useEffect(() => {
@@ -109,6 +132,7 @@ function App() {
                     <RoleProvider>
                       <FeatureFlagProvider>
                         <SocketProvider>
+                          <DynamicTitle />
                           <GlobalNotifications />
                           <Toaster position="top-right" toastOptions={{
                             style: {

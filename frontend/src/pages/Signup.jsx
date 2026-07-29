@@ -9,6 +9,7 @@ import { getFirebaseErrorMessage } from '../utils/firebaseErrors';
 import { signInWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
 import { auth } from '../lib/firebase';
 import AuthInput from '../components/auth/AuthInput';
+import Logo from '../components/common/Logo';
 import PasswordStrengthMeter from '../components/auth/PasswordStrengthMeter';
 import GoogleButton from '../components/auth/GoogleButton';
 import PhoneLoginModal from '../components/auth/PhoneLoginModal';
@@ -216,7 +217,7 @@ const Signup = () => {
 
         <div className="relative z-20">
           <Link to="/" className="inline-flex items-center gap-3">
-            <img src="/logo.png" alt="Codovate Logo" className="h-10 object-contain" />
+            <Logo variant="light" size="lg" />
           </Link>
         </div>
 
@@ -251,7 +252,7 @@ const Signup = () => {
         {/* Mobile Logo */}
         <div className="lg:hidden absolute top-8 left-6">
           <Link to="/" className="inline-flex items-center gap-2">
-            <img src="/logo.png" alt="Codovate Logo" className="h-8 object-contain" />
+            <Logo variant="light" size="md" />
           </Link>
         </div>
 
