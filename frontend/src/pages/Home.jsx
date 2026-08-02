@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import HomeNavbar from '../components/home/HomeNavbar';
 import HeroSection from '../components/home/HeroSection';
 import PublicStats from '../components/home/PublicStats';
 import PlatformFeatures from '../components/home/PlatformFeatures';
@@ -36,9 +35,6 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-white text-slate-900 selection:bg-blue-100 selection:text-blue-700 font-sans antialiased">
-      {/* Sticky Header Navbar */}
-      <HomeNavbar />
-
       {/* Main Content Sections */}
       <main>
         <HeroSection />

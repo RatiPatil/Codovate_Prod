@@ -11,32 +11,38 @@ import React from 'react';
  *   lg  — 96px  (Laptop: ~90–100px)
  *   xl  — 102px (Desktop: ~96–105px)
  *   xxl — 120px (Splash / Hero screens)
+ *   hero — ~180-230px (Centered Hero screen)
  *
- * responsive (boolean):
- *   Uses mobile(64px) -> tablet(80px) -> laptop(96px) -> desktop(102px)
+ * variant:
+ *   'dark'  (Default: White wordmark for dark backgrounds)
+ *   'light' (Dark navy wordmark for white/light backgrounds)
  */
 const SIZE_MAP = {
-  xs:  'h-9',          // 36px
-  sm:  'h-[64px]',     // 64px
-  md:  'h-[80px]',     // 80px
-  lg:  'h-[96px]',     // 96px
-  xl:  'h-[102px]',    // 102px
-  xxl: 'h-[120px]',    // 120px
+  xs:   'h-9',           // 36px
+  sm:   'h-[64px]',      // 64px
+  md:   'h-[80px]',      // 80px
+  lg:   'h-[96px]',      // 96px
+  xl:   'h-[102px]',     // 102px
+  xxl:  'h-[120px]',     // 120px
+  hero: 'h-[140px] sm:h-[180px] lg:h-[210px]', // Hero centered size (~180-230px width)
 };
 
 export const CodovateLogo = ({
   className = '',
   size = 'xl',
   responsive = false,
+  variant = 'dark',
   ...props
 }) => {
   const heightClass = responsive
     ? 'h-[64px] sm:h-[80px] lg:h-[96px] xl:h-[102px]'
     : (SIZE_MAP[size] || SIZE_MAP.xl);
 
+  const logoSrc = variant === 'light' ? '/logo-light.png' : '/logo.png';
+
   return (
     <img
-      src="/logo.png"
+      src={logoSrc}
       alt="Codovate"
       className={`${heightClass} w-auto object-contain shrink-0 select-none ${className}`}
       draggable={false}
