@@ -9,6 +9,7 @@ import {
   BookOpen,
   FileText,
   Bot,
+  Users,
   X,
 } from 'lucide-react';
 import Logo from './common/Logo';
@@ -18,6 +19,7 @@ const NAV_ITEMS = [
   { path: '/dashboard',     label: 'Dashboard',       Icon: Home          },
   { path: '/opportunities', label: 'Opportunities',   Icon: Briefcase     },
   { path: '/applications',  label: 'My Applications', Icon: ClipboardList },
+  { path: '/teams',         label: 'Teams',           Icon: Users         },
   { path: '/learning',      label: 'Learning',        Icon: BookOpen      },
   { path: '/resume-builder',label: 'Resume Builder',  Icon: FileText      },
   { path: '/career-coach',  label: 'AI Career Coach', Icon: Bot           },

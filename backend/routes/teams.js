@@ -235,6 +235,119 @@ router.delete("/:id/leave", auth, async (req, res) => {
   }
 });
 
+// ── Intelligent Student-to-Student Complementary Matching ───────────────
+router.get("/matches", auth, async (req, res) => {
+  try {
+    const uid = req.user.id;
+
+    // Fetch requesting user profile
+    const myProfileDoc = await db.collection("profiles").doc(uid).get();
+    const myP = myProfileDoc.exists ? mapDoc(myProfileDoc) : {};
+
+    const mySkills = (myP.skills || []).map(s => (typeof s === 'string' ? s : s.name || '').toLowerCase()).filter(Boolean);
+    const myRole = (myP.desiredRole || myP.careerGoal || '').toLowerCase();
+    const myCollege = (myP.education?.college || '').toLowerCase();
+    const myInterests = (myP.interests || []).map(i => i.toLowerCase());
+
+    // Fetch candidates
+    const studentsSnap = await db.collection("profiles").where("is_active", "==", true).limit(100).get();
+
+    // Fetch user connection statuses
+    const myConnsSnap = await db.collection("connections").where("user1", "==", uid).get();
+    const myConnsSnap2 = await db.collection("connections").where("user2", "==", uid).get();
+    const connectedPeerIds = new Set();
+    myConnsSnap.docs.forEach(d => connectedPeerIds.add(d.data().user2));
+    myConnsSnap2.docs.forEach(d => connectedPeerIds.add(d.data().user1));
+
+    const outgoingReqsSnap = await db.collection("connection_requests").where("from_user", "==", uid).where("status", "==", "pending").get();
+    const pendingToPeerIds = new Set(outgoingReqsSnap.docs.map(d => d.data().to_user));
+
+    const frontendSkills = ['react', 'vue', 'angular', 'html', 'css', 'tailwind', 'ui/ux', 'figma', 'design', 'frontend', 'next.js'];
+    const backendSkills = ['node.js', 'express', 'python', 'django', 'flask', 'java', 'spring', 'mongodb', 'postgresql', 'sql', 'backend', 'c++'];
+    const devopsSkills = ['docker', 'kubernetes', 'aws', 'devops', 'cicd', 'linux', 'cloud'];
+    const mlSkills = ['python', 'machine learning', 'pytorch', 'tensorflow', 'data science', 'ai'];
+
+    const matches = [];
+
+    studentsSnap.docs.forEach(doc => {
+      if (doc.id === uid) return; // Exclude self
+
+      const sp = mapDoc(doc);
+      const peerSkills = (sp.skills || []).map(s => (typeof s === 'string' ? s : s.name || '').toLowerCase()).filter(Boolean);
+      const peerRole = (sp.desiredRole || sp.careerGoal || '').toLowerCase();
+      const peerCollege = (sp.education?.college || '').toLowerCase();
+      const peerInterests = (sp.interests || []).map(i => i.toLowerCase());
+
+      let score = 50; // baseline
+      const reasons = [];
+
+      // 1. Complementary Skill Matching (35%)
+      const isMyFrontend = mySkills.some(s => frontendSkills.includes(s)) || myRole.includes('frontend') || myRole.includes('ui');
+      const isPeerBackend = peerSkills.some(s => backendSkills.includes(s)) || peerRole.includes('backend');
+      const isMyBackend = mySkills.some(s => backendSkills.includes(s)) || myRole.includes('backend');
+      const isPeerFrontend = peerSkills.some(s => frontendSkills.includes(s)) || peerRole.includes('frontend');
+
+      if ((isMyFrontend && isPeerBackend) || (isMyBackend && isPeerFrontend)) {
+        score += 30;
+        reasons.push(`✓ Complementary ${isMyFrontend ? 'Frontend' : 'Backend'} + ${isPeerBackend ? 'Backend' : 'Frontend'} skillsets`);
+      } else if (peerSkills.some(s => devopsSkills.includes(s) || mlSkills.includes(s))) {
+        score += 25;
+        reasons.push(`✓ Brings specialized skills (${sp.skills.slice(0, 2).join(', ')})`);
+      } else {
+        const overlap = peerSkills.filter(s => mySkills.includes(s));
+        if (overlap.length > 0) {
+          score += 15;
+          reasons.push(`✓ Shared proficiency in ${overlap.slice(0, 2).join(', ')}`);
+        }
+      }
+
+      // 2. Goal / Domain Similarity (20%)
+      const commonInterests = peerInterests.filter(i => myInterests.includes(i));
+      if (commonInterests.length > 0) {
+        score += 15;
+        reasons.push(`✓ Shared interest in ${commonInterests[0]}`);
+      } else if (peerRole && myRole && (peerRole.includes('developer') && myRole.includes('developer'))) {
+        score += 10;
+        reasons.push(`✓ Aligned engineering career goals`);
+      }
+
+      // 3. College Context (10%)
+      if (myCollege && peerCollege && myCollege === peerCollege) {
+        score += 10;
+        reasons.push(`✓ Same campus (${sp.education?.college})`);
+      }
+
+      // 4. Experience Level & Profile Completeness (15%)
+      if (sp.profileCompletion >= 70) score += 10;
+
+      const finalMatchPercentage = Math.min(98, Math.max(65, Math.round(score)));
+
+      let connectionStatus = 'none';
+      if (connectedPeerIds.has(doc.id)) connectionStatus = 'connected';
+      else if (pendingToPeerIds.has(doc.id)) connectionStatus = 'request_sent';
+
+      matches.push({
+        id: doc.id,
+        name: sp.personalInfo?.name || 'Student Candidate',
+        role: sp.desiredRole || (sp.skills?.length > 0 ? `${sp.skills[0]} Developer` : 'Software Developer'),
+        college: sp.education?.college || 'Engineering College',
+        location: sp.personalInfo?.location || sp.location || 'India',
+        skills: (sp.skills || []).slice(0, 4),
+        avatar: sp.personalInfo?.avatar || sp.profile_photo || null,
+        matchPercentage: finalMatchPercentage,
+        matchReasons: reasons.length > 0 ? reasons : ['✓ Complementary skill profile', '✓ Active project collaborator'],
+        connectionStatus
+      });
+    });
+
+    matches.sort((a, b) => b.matchPercentage - a.matchPercentage);
+    res.json(matches.slice(0, 12));
+  } catch (err) {
+    console.error("Get matches error:", err);
+    res.status(500).json({ message: "Failed to generate matches." });
+  }
+});
+
 // ── Discover teammates ────────────────────────────────────────────────────
 router.get("/discover", auth, async (req, res) => {
   try {

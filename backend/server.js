@@ -135,6 +135,9 @@ app.use("/api/admin/company/dashboard",      authenticate, requireRole(['company
 // ═══════════════════════════════════════════════════════════════
 app.use("/api/students",           authenticate, require("./routes/students"));
 app.use("/api/teams",              authenticate, require("./routes/teams"));
+app.use("/api/connections",        authenticate, require("./routes/connections"));
+app.use("/api/teams-chat",         authenticate, require("./routes/teamMessages"));
+app.use("/api/admin/chat-audit",   authenticate, require("./routes/adminChatAudit"));
 app.use("/api/workspace",          authenticate, require("./routes/teamWorkspace"));
 app.use("/api/opportunities",      authenticate, require("./routes/opportunities"));
 app.use("/api/applications",       authenticate, require("./routes/applications"));
