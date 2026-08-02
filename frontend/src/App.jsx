@@ -189,6 +189,11 @@ function App() {
                       <Layout><Profile /></Layout>
                     </ProtectedRoute>
                   } />
+                  <Route path="/settings" element={
+                    <ProtectedRoute>
+                      <Layout><Profile /></Layout>
+                    </ProtectedRoute>
+                  } />
 
                   {/* Complete Student Modules */}
                   <Route path="/roadmap" element={<ProtectedRoute><Layout><Roadmap /></Layout></ProtectedRoute>} />
