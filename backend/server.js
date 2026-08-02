@@ -65,6 +65,7 @@ const authLimiter = rateLimit({
 // ═══════════════════════════════════════════════════════════════
 app.use("/api/auth", authLimiter, require("./routes/auth"));
 app.use("/api/mentor-auth", require("./routes/mentorAuth"));
+app.use("/api/public", require("./routes/publicStats"));
 
 // ═══════════════════════════════════════════════════════════════
 //  ENTERPRISE IAM & RBAC MANAGEMENT
