@@ -10,6 +10,7 @@ import { SearchProvider } from './context/SearchContext';
 import { SocketProvider } from './context/SocketContext';
 import { ToastProvider } from './components/ui/ToastProvider';
 import ProtectedRoute from './components/ProtectedRoute';
+import PublicOnlyRoute from './components/PublicOnlyRoute';
 import GlobalNotifications from './components/GlobalNotifications';
 import { Toaster } from 'react-hot-toast';
 
@@ -142,12 +143,12 @@ function App() {
                           }} />
                           <Suspense fallback={<GlobalLoader />}>
                             <Routes>
-                  <Route path="/" element={<Home />} />
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/recruiter-login" element={<RecruiterLogin />} />
-                  <Route path="/admin-login" element={<AdminLogin />} />
-                  <Route path="/signup" element={<Signup />} />
-                  <Route path="/forgot-password" element={<ForgotPassword />} />
+                  <Route path="/" element={<PublicOnlyRoute><Home /></PublicOnlyRoute>} />
+                  <Route path="/login" element={<PublicOnlyRoute><Login /></PublicOnlyRoute>} />
+                  <Route path="/recruiter-login" element={<PublicOnlyRoute><RecruiterLogin /></PublicOnlyRoute>} />
+                  <Route path="/admin-login" element={<PublicOnlyRoute><AdminLogin /></PublicOnlyRoute>} />
+                  <Route path="/signup" element={<PublicOnlyRoute><Signup /></PublicOnlyRoute>} />
+                  <Route path="/forgot-password" element={<PublicOnlyRoute><ForgotPassword /></PublicOnlyRoute>} />
 
                   <Route path="/onboarding" element={
                     <ProtectedRoute requireOnboarding={false}>

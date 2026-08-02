@@ -2,6 +2,12 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useRole } from '../context/RoleContext';
 
+const GlobalLoader = () => (
+  <div className="flex flex-col items-center justify-center h-screen bg-[#050510] gap-4">
+    <div className="w-8 h-8 border-2 border-[#2015FF] border-t-transparent rounded-full animate-spin" />
+  </div>
+);
+
 const ProtectedRoute = ({ 
   children, 
   requireOnboarding = true,
@@ -13,11 +19,7 @@ const ProtectedRoute = ({
   const location = useLocation();
 
   if (authLoading || (token && roleLoading && !user?.role)) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-black">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
+    return <GlobalLoader />;
   }
 
   if (!token) {
@@ -27,7 +29,7 @@ const ProtectedRoute = ({
     return <Navigate to="/login" replace />;
   }
 
-  // Admin users (and new system roles) bypass onboarding
+  // Admin users (and non-student system roles) bypass student onboarding
   const isAdmin = user?.role && user.role !== 'student';
 
   if (requireOnboarding && onboardingCompleted === false && !isAdmin) {
@@ -35,20 +37,19 @@ const ProtectedRoute = ({
     return <Navigate to="/onboarding" replace />;
   }
 
+  // If user has already completed onboarding and tries to access /onboarding or /onboarding-success
+  if (!requireOnboarding && onboardingCompleted === true && (location.pathname === '/onboarding' || location.pathname === '/onboarding-success')) {
+    return <Navigate to={isAdmin ? "/admin" : "/dashboard"} replace />;
+  }
+
   // Check specific role requirement if passed to the route
   if (requiredRole && !hasRole(requiredRole)) {
-    // If they are not allowed, redirect to their default dashboard
     return <Navigate to={isAdmin ? "/admin" : "/dashboard"} replace />;
   }
 
   // Check specific permission requirement if passed to the route
   if (requiredPermission && !hasPermission(requiredPermission)) {
     return <Navigate to={isAdmin ? "/admin" : "/dashboard"} replace />;
-  }
-
-  // If they are on the onboarding page but already completed it, kick them to dashboard
-  if (!requireOnboarding && onboardingCompleted === true && (location.pathname === '/onboarding' || location.pathname === '/onboarding-success')) {
-    // return <Navigate to="/dashboard" replace />;
   }
 
   return children;

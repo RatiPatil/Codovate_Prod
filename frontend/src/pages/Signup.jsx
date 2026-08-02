@@ -152,7 +152,7 @@ const Signup = () => {
       const { token, user: userData } = res.data;
       login(token, userData, true);
       addToast({ type: 'success', title: 'Account Created!', message: 'Welcome to Codovate!' });
-      navigate('/onboarding');
+      navigate('/onboarding', { replace: true });
     } catch (err) {
       let msg = getFirebaseErrorMessage(err);
       if (err.isAxiosError && !err.response) {

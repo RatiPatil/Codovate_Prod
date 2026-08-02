@@ -87,20 +87,47 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(null);
   const [onboardingCompleted, setOnboardingCompleted] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [initialized, setInitialized] = useState(false);
 
   // ─── Initial load: restore session ─────────────────────
   useEffect(() => {
-    const { token: savedToken, user: savedUser } = getAuthData();
-    const savedOnboarding = localStorage.getItem('onboarding_completed') || sessionStorage.getItem('onboarding_completed');
+    let isMounted = true;
 
-    if (savedToken && savedUser) {
-      setToken(savedToken);
-      setUser(savedUser);
-      if (savedOnboarding !== null) {
-        setOnboardingCompleted(savedOnboarding === 'true');
+    const initAuth = async () => {
+      const { token: savedToken, user: savedUser } = getAuthData();
+      const savedOnboarding = localStorage.getItem('onboarding_completed') || sessionStorage.getItem('onboarding_completed');
+
+      if (savedToken && savedUser) {
+        if (isMounted) {
+          setToken(savedToken);
+          setUser(savedUser);
+        }
+
+        if (savedOnboarding !== null) {
+          if (isMounted) setOnboardingCompleted(savedOnboarding === 'true');
+        } else {
+          try {
+            const res = await api.get('/onboarding/status');
+            const completed = res.data.onboarding_completed === true || res.data.onboarding_completed === "true";
+            if (isMounted) {
+              setOnboardingCompleted(completed);
+              getStorage().setItem('onboarding_completed', String(completed));
+            }
+          } catch (e) {
+            if (isMounted) setOnboardingCompleted(savedUser.role !== 'student');
+          }
+        }
       }
-    }
-    setLoading(false);
+
+      if (isMounted) {
+        setLoading(false);
+        setInitialized(true);
+      }
+    };
+
+    initAuth();
+
+    return () => { isMounted = false; };
   }, []);
 
   // ─── Handle Google Redirect Result ─────────────────────
@@ -120,18 +147,6 @@ export const AuthProvider = ({ children }) => {
     };
     checkRedirect();
   }, []);
-
-  // ─── Verify onboarding from DB only if status is unknown ─
-  useEffect(() => {
-    if (!token || onboardingCompleted !== null) return;
-    api.get('/onboarding/status')
-      .then(res => {
-        const completed = res.data.onboarding_completed === true || res.data.onboarding_completed === "true";
-        setOnboardingCompleted(completed);
-        getStorage().setItem('onboarding_completed', String(completed));
-      })
-      .catch(() => setOnboardingCompleted(false));
-  }, [token, onboardingCompleted]);
 
   // ─── Login ─────────────────────────────────────────────
   const login = useCallback((newToken, newUser, rememberMe = true) => {
@@ -244,7 +259,7 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider value={{
-      user, token, login, loginWithGoogle, loginWithPhone, linkGoogleAccount, logout, loading,
+      user, token, login, loginWithGoogle, loginWithPhone, linkGoogleAccount, logout, loading, initialized,
       onboardingCompleted, completeOnboarding
     }}>
       {children}
