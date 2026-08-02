@@ -506,16 +506,16 @@ router.get("/workspace", auth, async (req, res) => {
     }
 
     // C. Internship Recommendation (from DB)
-    const oppsSnap = await db.collection("opportunities").where("status", "==", "Active").limit(1).get();
-    if (!oppsSnap.empty) {
-      const opp = mapDoc(oppsSnap.docs[0]);
+    const activeOppsSnap = await db.collection("opportunities").where("status", "==", "Active").limit(1).get();
+    if (!activeOppsSnap.empty) {
+      const opp = mapDoc(activeOppsSnap.docs[0]);
       recommendations.push({
-        id: oppsSnap.docs[0].id,
+        id: activeOppsSnap.docs[0].id,
         type: 'job',
         title: opp.title,
         company: opp.company,
         description: `This opportunity aligns with your goal to become a ${careerTarget}.`,
-        linkUrl: `/opportunities/${oppsSnap.docs[0].id}`,
+        linkUrl: `/opportunities/${activeOppsSnap.docs[0].id}`,
         tags: [opp.type || 'Internship', opp.location || 'Remote']
       });
     }
