@@ -1,5 +1,10 @@
+import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Briefcase, Users, BookOpen, FileText, ArrowRight } from 'lucide-react';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
 
 const cards = [
   {
@@ -49,8 +54,38 @@ const cards = [
 ];
 
 const PlatformFeatures = () => {
+  const sectionRef = useRef(null);
+  const gridRef = useRef(null);
+
+  useEffect(() => {
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) return;
+
+    const ctx = gsap.context(() => {
+      if (gridRef.current) {
+        gsap.fromTo(
+          gridRef.current.children,
+          { opacity: 0, y: 30 },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.7,
+            stagger: 0.1,
+            ease: 'power3.out',
+            scrollTrigger: {
+              trigger: sectionRef.current,
+              start: 'top 80%',
+            },
+          }
+        );
+      }
+    }, sectionRef);
+
+    return () => ctx.revert();
+  }, []);
+
   return (
-    <section className="py-20 md:py-28 bg-white">
+    <section ref={sectionRef} className="py-20 md:py-28 bg-white select-none">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Heading */}
@@ -67,11 +102,11 @@ const PlatformFeatures = () => {
         </div>
 
         {/* 4 Feature Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div ref={gridRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {cards.map((item) => (
             <div
               key={item.num}
-              className="group bg-white rounded-2xl p-7 border border-slate-200/80 shadow-xs hover:shadow-xl hover:border-blue-300/80 hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between relative overflow-hidden"
+              className="group bg-white rounded-2xl p-7 border border-slate-200/80 shadow-xs hover:shadow-xl hover:border-blue-300/80 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between relative overflow-hidden"
             >
               {/* Top Accent Line */}
               <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${item.color} opacity-0 group-hover:opacity-100 transition-opacity`} />
@@ -80,7 +115,7 @@ const PlatformFeatures = () => {
                 {/* Header Row: Num + Icon */}
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-black text-slate-300 tracking-widest">{item.num}</span>
-                  <div className={`w-12 h-12 rounded-xl ${item.iconBg} flex items-center justify-center group-hover:scale-110 transition-transform`}>
+                  <div className={`w-12 h-12 rounded-xl ${item.iconBg} flex items-center justify-center group-hover:scale-105 transition-transform`}>
                     <item.icon size={22} />
                   </div>
                 </div>

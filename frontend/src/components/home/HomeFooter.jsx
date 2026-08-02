@@ -1,16 +1,49 @@
+import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import Logo from '../common/Logo';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
 
 const HomeFooter = () => {
+  const footerRef = useRef(null);
+
+  useEffect(() => {
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) return;
+
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        footerRef.current.children,
+        { opacity: 0, y: 20 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.6,
+          stagger: 0.1,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: footerRef.current,
+            start: 'top 90%',
+          },
+        }
+      );
+    }, footerRef);
+
+    return () => ctx.revert();
+  }, []);
+
   return (
-    <footer className="bg-white border-t border-slate-200/80 pt-16 pb-12 text-slate-600">
+    <footer ref={footerRef} className="bg-white border-t border-slate-200/80 pt-16 pb-12 text-slate-600">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-10 pb-12 border-b border-slate-100">
           
           {/* Brand Info */}
           <div className="md:col-span-5 space-y-4">
             <Link to="/" className="inline-block">
-              <Logo size="md" />
+              {/* Uses light logo variant for 100% crisp visibility on white background */}
+              <Logo size="md" variant="light" />
             </Link>
             <p className="text-sm text-slate-600 max-w-sm leading-relaxed">
               Helping students learn, collaborate, build, and grow into real-world career opportunities.
@@ -70,7 +103,7 @@ const HomeFooter = () => {
 
         </div>
 
-        {/* Bottom Copyright */}
+        {/* Bottom Copyright Bar */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-medium text-slate-500">
           <p>© 2026 Codovate Technologies. All rights reserved.</p>
           <p>Designed & Built for Students</p>
