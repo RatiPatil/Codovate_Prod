@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Sparkles, CheckCircle2 } from 'lucide-react';
+import { ArrowRight, Sparkles, CheckCircle2, Code2, Cpu, Users, Layers, FileCheck, Rocket } from 'lucide-react';
 import Logo from '../common/Logo';
 import { gsap } from 'gsap';
 
@@ -11,13 +11,20 @@ const generateParticles = (count) => {
     size: Math.floor(Math.random() * 3) + 2, // 2px to 4px
     left: `${Math.floor(Math.random() * 90) + 5}%`,
     top: `${Math.floor(Math.random() * 80) + 10}%`,
-    color: i % 3 === 0 ? 'bg-blue-500/20' : i % 3 === 1 ? 'bg-indigo-500/20' : 'bg-purple-500/20',
-    duration: Math.random() * 4 + 6, // 6s to 10s
+    color: i % 3 === 0 ? 'bg-blue-500/25' : i % 3 === 1 ? 'bg-indigo-500/25' : 'bg-purple-500/25',
+    duration: Math.random() * 4 + 6,
     delay: Math.random() * 2,
-    yOffset: Math.random() * 20 - 10,
-    xOffset: Math.random() * 16 - 8,
   }));
 };
+
+const ambientNodes = [
+  { icon: Code2, label: 'Full-Stack Dev', pos: 'top-[18%] left-[6%]', color: 'text-blue-600 bg-blue-50 border-blue-200', floatDir: -14 },
+  { icon: Cpu, label: 'AI & ML', pos: 'top-[22%] right-[6%]', color: 'text-purple-600 bg-purple-50 border-purple-200', floatDir: 12 },
+  { icon: Users, label: 'Team Matching', pos: 'top-[48%] left-[4%]', color: 'text-indigo-600 bg-indigo-50 border-indigo-200', floatDir: -10 },
+  { icon: Rocket, label: 'Hackathons', pos: 'top-[52%] right-[4%]', color: 'text-pink-600 bg-pink-50 border-pink-200', floatDir: 15 },
+  { icon: FileCheck, label: 'ATS Resume', pos: 'bottom-[15%] left-[8%]', color: 'text-emerald-600 bg-emerald-50 border-emerald-200', floatDir: -12 },
+  { icon: Layers, label: 'Learning Tracks', pos: 'bottom-[15%] right-[8%]', color: 'text-violet-600 bg-violet-50 border-violet-200', floatDir: 10 },
+];
 
 const HeroSection = () => {
   const heroRef = useRef(null);
@@ -31,7 +38,10 @@ const HeroSection = () => {
   const glow1Ref = useRef(null);
   const glow2Ref = useRef(null);
   const glow3Ref = useRef(null);
+  const cursorSpotlightRef = useRef(null);
+  const gridLineRef = useRef(null);
   const particlesRef = useRef(null);
+  const nodesRef = useRef([]);
 
   const [particles, setParticles] = useState([]);
 
@@ -39,6 +49,21 @@ const HeroSection = () => {
     const isMobile = window.innerWidth < 768;
     setParticles(generateParticles(isMobile ? 6 : 14));
   }, []);
+
+  // Track mouse for ambient spotlight glow
+  const handleMouseMove = (e) => {
+    if (!heroRef.current || !cursorSpotlightRef.current) return;
+    const rect = heroRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left - 250;
+    const y = e.clientY - rect.top - 250;
+
+    gsap.to(cursorSpotlightRef.current, {
+      x,
+      y,
+      duration: 1.2,
+      ease: 'power2.out',
+    });
+  };
 
   useEffect(() => {
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -73,13 +98,23 @@ const HeroSection = () => {
 
         // Ambient background glow slow drift
         if (glow1Ref.current) {
-          gsap.to(glow1Ref.current, { x: 15, y: 15, duration: 10, repeat: -1, yoyo: true, ease: 'sine.inOut' });
+          gsap.to(glow1Ref.current, { x: 20, y: 20, duration: 9, repeat: -1, yoyo: true, ease: 'sine.inOut' });
         }
         if (glow2Ref.current) {
-          gsap.to(glow2Ref.current, { x: -15, y: 12, duration: 12, repeat: -1, yoyo: true, ease: 'sine.inOut' });
+          gsap.to(glow2Ref.current, { x: -20, y: 15, duration: 11, repeat: -1, yoyo: true, ease: 'sine.inOut' });
         }
         if (glow3Ref.current) {
-          gsap.to(glow3Ref.current, { x: 10, y: -10, duration: 11, repeat: -1, yoyo: true, ease: 'sine.inOut' });
+          gsap.to(glow3Ref.current, { x: 15, y: -15, duration: 10, repeat: -1, yoyo: true, ease: 'sine.inOut' });
+        }
+
+        // Grid light beam sweep
+        if (gridLineRef.current) {
+          gsap.to(gridLineRef.current, {
+            x: '100%',
+            duration: 8,
+            repeat: -1,
+            ease: 'sine.inOut',
+          });
         }
 
         // Particle organic floating drift
@@ -96,6 +131,23 @@ const HeroSection = () => {
             });
           });
         }
+
+        // Ambient Constellation Skill Nodes Float
+        nodesRef.current.forEach((node, idx) => {
+          if (!node) return;
+          gsap.fromTo(
+            node,
+            { opacity: 0, scale: 0.8 },
+            { opacity: 0.85, scale: 1, duration: 1, delay: 0.6 + idx * 0.15 }
+          );
+          gsap.to(node, {
+            y: ambientNodes[idx].floatDir,
+            duration: 4.5 + idx,
+            repeat: -1,
+            yoyo: true,
+            ease: 'sine.inOut',
+          });
+        });
       }
     }, heroRef);
 
@@ -103,8 +155,18 @@ const HeroSection = () => {
   }, [particles]);
 
   return (
-    <section ref={heroRef} className="relative pt-12 sm:pt-16 pb-20 md:pb-28 bg-white overflow-hidden select-none">
+    <section
+      ref={heroRef}
+      onMouseMove={handleMouseMove}
+      className="relative pt-12 sm:pt-16 pb-20 md:pb-28 bg-white overflow-hidden select-none"
+    >
       
+      {/* ─── Interactive Mouse Cursor Spotlight Glow ─── */}
+      <div
+        ref={cursorSpotlightRef}
+        className="absolute top-0 left-0 w-[500px] h-[500px] bg-gradient-to-tr from-blue-300/15 via-indigo-300/10 to-purple-300/15 blur-3xl rounded-full pointer-events-none -z-10"
+      />
+
       {/* ─── Ambient Subtle Radial Background Glows ─── */}
       <div
         ref={glow1Ref}
@@ -124,6 +186,12 @@ const HeroSection = () => {
         className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:24px_24px] opacity-40 pointer-events-none -z-10"
       />
 
+      {/* ─── Animated Grid Scanning Light Beam ─── */}
+      <div
+        ref={gridLineRef}
+        className="absolute top-0 bottom-0 left-0 w-48 bg-gradient-to-r from-transparent via-blue-400/10 to-transparent -skew-x-12 pointer-events-none -z-10"
+      />
+
       {/* ─── Minimal Particles Container ─── */}
       <div ref={particlesRef} className="absolute inset-0 pointer-events-none -z-5 overflow-hidden">
         {particles.map((p) => (
@@ -139,6 +207,20 @@ const HeroSection = () => {
           />
         ))}
       </div>
+
+      {/* ─── Floating Constellation Tech Skill Nodes ─── */}
+      {ambientNodes.map((node, i) => (
+        <div
+          key={i}
+          ref={(el) => (nodesRef.current[i] = el)}
+          className={`absolute ${node.pos} z-10 hidden lg:flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/80 backdrop-blur-md border border-slate-200/80 shadow-xs text-xs font-bold text-slate-800 transition-all hover:scale-105 pointer-events-none cursor-default`}
+        >
+          <div className={`w-5 h-5 rounded-full ${node.color} flex items-center justify-center`}>
+            <node.icon size={12} />
+          </div>
+          <span>{node.label}</span>
+        </div>
+      ))}
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-7 relative z-10">
         
