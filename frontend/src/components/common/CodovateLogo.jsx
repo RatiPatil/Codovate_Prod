@@ -36,7 +36,7 @@ export const CodovateLogo = ({
 
   return (
     <img
-      src="/favicon.png?v=3"
+      src="/logo.png"
       alt="Codovate"
       className={`${heightClass} w-auto object-contain shrink-0 select-none ${className}`}
       draggable={false}
