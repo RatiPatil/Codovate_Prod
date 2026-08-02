@@ -59,11 +59,22 @@ export function getFirebaseErrorMessage(error) {
     return error.response.data.message;
   }
 
+  // Check for timeout or network errors explicitly
+  if (code === 'ECONNABORTED' || error?.message?.includes('timeout')) {
+    return 'Server response timed out. The server may be starting up — please try again.';
+  }
+  if (code === 'ERR_NETWORK' || (error?.isAxiosError && !error?.response)) {
+    return 'Network error. Server is currently unreachable. Please try again later.';
+  }
+
   // Generic Firebase message (cleaned up)
   if (error?.message) {
-    // Don't expose raw Firebase messages — return generic
+    // Don't expose raw internal/Axios technical messages
     if (error.message.includes('Firebase') || error.message.includes('auth/')) {
       return 'Authentication failed. Please try again.';
+    }
+    if (error.message.includes('timeout') || error.message.includes('AxiosError')) {
+      return 'Server response timed out. Please try again.';
     }
     return error.message;
   }
