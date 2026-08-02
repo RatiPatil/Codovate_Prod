@@ -50,6 +50,39 @@ service cloud.firestore {
       allow write: if isAuthenticated();
     }
     
+    // Final Student Modules (Opportunities, Applications, Teams & Chat, Learning, Resumes)
+    match /opportunities/{oppId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    match /applications/{appId} {
+      allow read: if isAuthenticated() && (resource.data.user_id == request.auth.uid || resource.data.student_id == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated();
+      allow update, delete: if isAuthenticated() && (resource.data.user_id == request.auth.uid || isAdmin());
+    }
+
+    match /teams/{teamId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+
+      match /messages/{messageId} {
+        allow read: if isAuthenticated();
+        allow create: if isAuthenticated();
+        allow update, delete: if isAuthenticated() && (resource.data.senderId == request.auth.uid || resource.data.sender_id == request.auth.uid || isAdmin());
+      }
+    }
+
+    match /learningProgress/{progressId} {
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow write: if isAuthenticated() && (request.resource.data.userId == request.auth.uid || isAdmin());
+    }
+
+    match /resumes/{userId} {
+      allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      allow write: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+    }
+    
     // Legacy Students Collection
     match /students/{userId} {
       allow read: if isAuthenticated();

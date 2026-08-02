@@ -221,9 +221,14 @@ router.get("/activity", auth, async (req, res) => {
     const activities = [];
 
     // Applications
-    const appsSnap = await db.collection("applications").where("student_id", "==", uid).get();
-    appsSnap.docs.forEach(doc => {
-      const d = mapDoc(doc);
+    const [appsSnap1, appsSnap2] = await Promise.all([
+      db.collection("applications").where("user_id", "==", uid).get(),
+      db.collection("applications").where("student_id", "==", uid).get()
+    ]);
+    const appsMap = new Map();
+    appsSnap1.docs.forEach(d => appsMap.set(d.id, mapDoc(d)));
+    appsSnap2.docs.forEach(d => appsMap.set(d.id, mapDoc(d)));
+    appsMap.forEach(d => {
       const ts = d.applied_at?.toDate ? d.applied_at.toDate() : new Date(d.applied_at || 0);
       activities.push({ type: 'application', title: `Applied to ${d.title || 'an opportunity'}`, company: d.company, time: ts, icon: '📨' });
     });

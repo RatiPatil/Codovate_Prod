@@ -86,6 +86,7 @@ router.post("/", auth, async (req, res) => {
     const application = {
       id: newAppRef.id,
       user_id: req.user.id,
+      student_id: req.user.id,
       opportunity_id: opportunity_id,
       company_id: opp.company_id || '', // Link app to the company
       status: 'Applied',
