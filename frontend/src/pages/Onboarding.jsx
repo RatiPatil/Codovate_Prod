@@ -285,7 +285,7 @@ export default function Onboarding() {
              </div>
 
               <div className="w-28 flex justify-end">
-                <Logo variant="light" size="sm" />
+                <Logo size="xs" />
               </div>
           </div>
         </div>

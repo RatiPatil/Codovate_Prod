@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { gsap } from 'gsap';
 import confetti from 'canvas-confetti';
+import Logo from '../components/common/Logo';
 
 const WelcomeExperience = () => {
   const navigate = useNavigate();
@@ -78,7 +79,7 @@ const WelcomeExperience = () => {
       
       <div ref={textRef} className="relative z-10 text-center px-4">
         <div className="flex justify-center mb-10 transform transition-transform hover:scale-110">
-          <img src="/favicon.png?v=3" alt="Codovate" className="h-[140px] w-auto object-contain shadow-[0_0_70px_rgba(32,21,255,0.7)]" draggable={false} />
+          <Logo size="xxl" className="shadow-[0_0_70px_rgba(32,21,255,0.7)]" />
         </div>
         <h1 className="text-4xl md:text-6xl font-black text-white mb-6 tracking-tight">
           Welcome to <span className="text-gradient">Codovate</span> 🎉

@@ -58,8 +58,8 @@ const RecruiterLogin = () => {
 
         {/* Header */}
         <div className="text-center">
-          <div className="flex justify-center mb-5">
-            <Logo size="xl" className="drop-shadow-2xl" />
+          <div className="flex justify-center shrink-0 mb-5">
+            <Logo responsive className="drop-shadow-2xl" />
           </div>
           <h1 className="text-3xl font-black text-white tracking-tight">Recruiter Portal</h1>
           <p className="text-gray-500 text-xs">

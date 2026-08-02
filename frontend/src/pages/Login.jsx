@@ -160,7 +160,7 @@ const Login = () => {
     <div className="min-h-screen bg-black flex flex-col lg:flex-row overflow-x-hidden overflow-y-auto w-full">
       
       {/* Left Column: Branding (Hidden on mobile) */}
-      <div className="hidden lg:flex w-1/2 relative flex-col justify-between p-12 border-r border-white/5">
+      <div className="hidden lg:flex w-1/2 relative flex-col justify-between p-8 lg:p-10 border-r border-white/5">
         <div ref={bgRef} className="absolute inset-0 z-0 overflow-hidden">
           <div className="absolute inset-0 bg-black/40 z-10 backdrop-blur-[2px]" />
           <div className="absolute top-0 left-0 w-full h-full opacity-20"
@@ -175,8 +175,8 @@ const Login = () => {
         </div>
 
         <div className="relative z-20">
-          <Link to="/" className="inline-flex items-center gap-3">
-            <Logo size="xl" className="drop-shadow-2xl" />
+          <Link to="/" className="inline-flex items-center shrink-0">
+            <Logo responsive className="drop-shadow-xl" />
           </Link>
         </div>
 
@@ -209,9 +209,9 @@ const Login = () => {
       <div className="w-full lg:w-1/2 flex flex-col justify-center items-center p-6 sm:p-8 relative min-h-screen lg:min-h-0">
         
         {/* Mobile Logo */}
-        <div className="lg:hidden absolute top-8 left-6">
-          <Link to="/" className="inline-flex items-center gap-2">
-            <Logo size="lg" className="drop-shadow-xl" />
+        <div className="lg:hidden absolute top-6 left-6">
+          <Link to="/" className="inline-flex items-center shrink-0">
+            <Logo responsive className="drop-shadow-xl" />
           </Link>
         </div>
 

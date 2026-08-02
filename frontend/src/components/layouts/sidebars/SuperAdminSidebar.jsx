@@ -22,6 +22,7 @@ import {
   ChevronRight,
   UserSquare2
 } from 'lucide-react';
+import Logo from '../../common/Logo';
 
 const NAV_CONFIG = {
   super_admin: [
@@ -117,7 +118,7 @@ const SidebarContent = ({ setMobileOpen }) => {
   return (
     <div className="flex flex-col h-full bg-[#030308] border-r border-white/5 relative overflow-hidden select-none">
       <div className="px-6 py-8 border-b border-white/5 relative z-10 shrink-0 flex flex-col items-center">
-        <img src="/favicon.png?v=3" alt="Codovate" className="h-[100px] w-auto object-contain drop-shadow-[0_0_30px_rgba(32,21,255,0.4)]" draggable={false} />
+        <Logo responsive className="drop-shadow-[0_0_30px_rgba(32,21,255,0.4)]" />
       </div>
 
       <div className="px-6 py-5 border-b border-white/5 relative z-10 shrink-0">

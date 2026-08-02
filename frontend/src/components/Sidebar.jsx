@@ -17,6 +17,7 @@ import {
   LogOut,
   X,
 } from 'lucide-react';
+import Logo from './common/Logo';
 
 // Navigation items for student sidebar
 const NAV_ITEMS = [
@@ -109,12 +110,7 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
           onClick={() => navigate('/dashboard')}
           className="focus:outline-none transition-transform hover:scale-105 active:scale-95"
         >
-          <img
-            src="/favicon.png?v=3"
-            alt="Codovate"
-            className="h-[60px] sm:h-[72px] lg:h-[90px] xl:h-[100px] w-auto object-contain select-none drop-shadow-2xl"
-            draggable={false}
-          />
+          <Logo responsive className="drop-shadow-2xl" />
         </button>
 
         {/* Mobile close */}

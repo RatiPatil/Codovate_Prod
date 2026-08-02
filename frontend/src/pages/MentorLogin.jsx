@@ -51,8 +51,8 @@ const MentorLogin = () => {
 
       <div ref={formRef} className="w-full max-w-md relative z-10">
         <div className="text-center mb-8">
-          <Link to="/" className="inline-block mb-4 hover:scale-105 transition-transform">
-            <Logo size="xl" className="drop-shadow-2xl" />
+          <Link to="/" className="inline-block shrink-0 mb-4 hover:scale-105 transition-transform">
+            <Logo responsive className="drop-shadow-2xl" />
           </Link>
           <h2 className="text-2xl font-bold text-gray-200">Mentor Portal</h2>
           <p className="text-sm text-gray-400 mt-2">Sign in to manage your sessions and guide students.</p>
