@@ -59,7 +59,6 @@ const Gamification = lazy(() => import('./pages/Gamification'));
 const ResumeBuilder = lazy(() => import('./pages/ResumeBuilder'));
 const Notifications = lazy(() => import('./pages/Notifications'));
 const Roadmap = lazy(() => import('./pages/Roadmap'));
-const CareerCoach = lazy(() => import('./pages/CareerCoach'));
 const LearningHub = lazy(() => import('./pages/LearningHub'));
 const CourseDetailsPage = lazy(() => import('./pages/CourseDetailsPage'));
 const LearningModule = lazy(() => import('./pages/LearningModule'));
@@ -100,7 +99,6 @@ const DynamicTitle = () => {
     else if (p === '/profile') document.title = 'Codovate | Profile';
     else if (p === '/learning') document.title = 'Codovate | Learning';
     else if (p === '/resume-builder') document.title = 'Codovate | Resume Builder';
-    else if (p === '/career-coach') document.title = 'Codovate | AI Career Coach';
     else if (p === '/login') document.title = 'Codovate | Login';
     else if (p === '/signup') document.title = 'Codovate | Sign Up';
     else if (p === '/admin-login') document.title = 'Codovate | Admin Login';
@@ -197,7 +195,6 @@ function App() {
 
                   {/* Complete Student Modules */}
                   <Route path="/roadmap" element={<ProtectedRoute><Layout><Roadmap /></Layout></ProtectedRoute>} />
-                  <Route path="/career-coach" element={<ProtectedRoute><Layout><CareerCoach /></Layout></ProtectedRoute>} />
                   <Route path="/learning" element={<ProtectedRoute><Layout><LearningHub /></Layout></ProtectedRoute>} />
                   <Route path="/learning/course/:courseId" element={<ProtectedRoute><Layout><CourseDetailsPage /></Layout></ProtectedRoute>} />
                   <Route path="/learning/step/:stepId" element={<ProtectedRoute><Layout><LearningModule /></Layout></ProtectedRoute>} />

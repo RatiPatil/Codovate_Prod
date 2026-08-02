@@ -512,39 +512,6 @@ const Dashboard = () => {
 
       </div>
 
-      {/* ── ROW 4: AI CAREER COACH ──────────────────────────────── */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col sm:flex-row items-center gap-4">
-        {/* Robot Illustration */}
-        <div
-          className="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shrink-0"
-          style={{ background: 'linear-gradient(135deg, #6c3aff22, #3a9bff22)' }}
-        >
-          🤖
-        </div>
-
-        <div className="flex-1 min-w-0">
-          <h3 className="font-bold text-gray-900 text-base">AI Career Coach</h3>
-          {aiAdvice ? (
-            <p className="text-sm text-gray-500 mt-0.5 line-clamp-2">
-              {aiAdvice.description || aiAdvice.title || aiAdvice}
-            </p>
-          ) : (
-            <p className="text-sm text-gray-500 mt-0.5">
-              Get personalised career recommendations based on your profile and goals.
-            </p>
-          )}
-        </div>
-
-        <button
-          onClick={() => navigate('/career-coach')}
-          className="shrink-0 px-5 py-2.5 rounded-xl text-white text-sm font-bold flex items-center gap-2 hover:opacity-90 active:scale-95 transition-all shadow-md"
-          style={{ background: 'linear-gradient(135deg, #6c3aff, #3a9bff)' }}
-        >
-          <Sparkles size={15} />
-          Get AI Advice
-        </button>
-      </div>
-
     </div>
   );
 };

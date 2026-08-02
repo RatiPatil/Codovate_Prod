@@ -8,7 +8,6 @@ import {
   ClipboardList,
   BookOpen,
   FileText,
-  Bot,
   Users,
   X,
 } from 'lucide-react';
@@ -22,7 +21,6 @@ const NAV_ITEMS = [
   { path: '/teams',         label: 'Teams',           Icon: Users         },
   { path: '/learning',      label: 'Learning',        Icon: BookOpen      },
   { path: '/resume-builder',label: 'Resume Builder',  Icon: FileText      },
-  { path: '/career-coach',  label: 'AI Career Coach', Icon: Bot           },
 ];
 
 /* ── Circular progress ring matching reference screenshot ───── */

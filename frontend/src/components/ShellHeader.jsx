@@ -12,7 +12,6 @@ const PAGE_TITLES = {
   '/learning':      'Learning Hub',
   '/resume-builder':'Resume Builder',
   '/mock-interview':'Mock Interviews',
-  '/career-coach':  'AI Career Coach',
   '/profile':       'My Profile',
   '/settings':      'Settings',
   '/roadmap':       'AI Roadmap',

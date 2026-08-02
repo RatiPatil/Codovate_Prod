@@ -57,9 +57,6 @@ router.put("/profile", auth, async (req, res) => {
     });
 
     await db.collection("student_profiles").doc(req.user.id).set(updateData, { merge: true });
-    
-    // Invalidate AI coach cache
-    await db.collection("aiCoachCache").doc(req.user.id).delete().catch(() => {});
 
     res.json({ message: "Profile updated successfully." });
   } catch (err) {

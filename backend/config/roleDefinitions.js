@@ -271,12 +271,6 @@ ROLE_DEFINITIONS.company_admin = {
 // ─── Default Feature Flags ──────────────────────────────────
 const DEFAULT_FEATURE_FLAGS = [
   {
-    key: 'beta_ai_coach',
-    enabled: true,
-    description: 'AI Career Coach (Beta)',
-    allowedRoles: [],  // All roles
-  },
-  {
     key: 'beta_mock_interview',
     enabled: true,
     description: 'AI Mock Interview (Beta)',
