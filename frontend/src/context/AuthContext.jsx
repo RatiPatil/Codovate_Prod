@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { signInWithPopup, getRedirectResult, signInWithCustomToken, linkWithPopup } from 'firebase/auth';
+import { signInWithPopup, signInWithRedirect, getRedirectResult, signInWithCustomToken, linkWithPopup } from 'firebase/auth';
 import { auth, googleProvider } from '../lib/firebase';
 import api from '../api/axios';
 
@@ -148,7 +148,23 @@ export const AuthProvider = ({ children }) => {
   const loginWithGoogle = useCallback(async () => {
     try {
       const tFbStart = performance.now();
-      const result = await signInWithPopup(auth, googleProvider);
+      let result = null;
+      try {
+        result = await signInWithPopup(auth, googleProvider);
+      } catch (popupErr) {
+        console.warn("Popup error/COOP restriction, attempting redirect fallback:", popupErr);
+        if (
+          popupErr.code === 'auth/popup-blocked' ||
+          popupErr.code === 'auth/popup-closed-by-user' ||
+          popupErr.code === 'auth/cancelled-popup-request' ||
+          (popupErr.message && popupErr.message.includes('Cross-Origin-Opener-Policy'))
+        ) {
+          await signInWithRedirect(auth, googleProvider);
+          return null;
+        }
+        throw popupErr;
+      }
+
       const tFbEnd = performance.now();
 
       if (result) {
@@ -167,7 +183,6 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (err) {
       console.error("Google authentication error:", err);
-      // Ensure we clear the Firebase session if our backend rejects the login
       try { await auth.signOut(); } catch(e) {}
       throw err;
     }
