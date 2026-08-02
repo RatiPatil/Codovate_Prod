@@ -60,6 +60,8 @@ const ResumeBuilder = lazy(() => import('./pages/ResumeBuilder'));
 const Notifications = lazy(() => import('./pages/Notifications'));
 const Roadmap = lazy(() => import('./pages/Roadmap'));
 const CareerCoach = lazy(() => import('./pages/CareerCoach'));
+const LearningHub = lazy(() => import('./pages/LearningHub'));
+const CourseDetailsPage = lazy(() => import('./pages/CourseDetailsPage'));
 const LearningModule = lazy(() => import('./pages/LearningModule'));
 const ProjectHub = lazy(() => import('./pages/ProjectHub'));
 const AiDashboard = lazy(() => import('./pages/student/ai/AiDashboard'));
@@ -191,7 +193,9 @@ function App() {
                   {/* Complete Student Modules */}
                   <Route path="/roadmap" element={<ProtectedRoute><Layout><Roadmap /></Layout></ProtectedRoute>} />
                   <Route path="/career-coach" element={<ProtectedRoute><Layout><CareerCoach /></Layout></ProtectedRoute>} />
-                  <Route path="/learning" element={<ProtectedRoute><Layout><LearningModule /></Layout></ProtectedRoute>} />
+                  <Route path="/learning" element={<ProtectedRoute><Layout><LearningHub /></Layout></ProtectedRoute>} />
+                  <Route path="/learning/course/:courseId" element={<ProtectedRoute><Layout><CourseDetailsPage /></Layout></ProtectedRoute>} />
+                  <Route path="/learning/step/:stepId" element={<ProtectedRoute><Layout><LearningModule /></Layout></ProtectedRoute>} />
                   <Route path="/resume-builder" element={<ProtectedRoute><Layout><ResumeBuilder /></Layout></ProtectedRoute>} />
                   <Route path="/mock-interview" element={<ProtectedRoute><Layout><MockInterview /></Layout></ProtectedRoute>} />
                   <Route path="/resume-review" element={<ProtectedRoute><Layout><ResumeReview /></Layout></ProtectedRoute>} />

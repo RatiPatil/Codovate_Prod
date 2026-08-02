@@ -21,6 +21,21 @@ export const RoleProvider = ({ children }) => {
         return;
       }
 
+      // Fast-path: Standard student or system admin roles don't need blocking RBAC calls
+      if (user.role === 'student') {
+        setPermissions([]);
+        setIsWildcard(false);
+        setLoading(false);
+        return;
+      }
+
+      if (user.role === 'super_admin' || user.role === 'admin') {
+        setPermissions([]);
+        setIsWildcard(true);
+        setLoading(false);
+        return;
+      }
+
       try {
         setLoading(true);
         const response = await axios.get('/rbac/users/me/permissions');
@@ -36,7 +51,7 @@ export const RoleProvider = ({ children }) => {
     };
 
     fetchPermissions();
-  }, [token, user]);
+  }, [token, user?.role, user?.id]);
 
   /**
    * Check if user has ALL of the required permissions

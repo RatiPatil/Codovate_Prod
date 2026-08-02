@@ -99,29 +99,41 @@ const Login = () => {
     }
 
     setLoading(true);
+    const tClick = performance.now();
     try {
       const payload = {
         email: form.emailOrUsername.trim().toLowerCase(),
         password: form.password,
       };
-      // If input has no @, treat as username login
       if (!form.emailOrUsername.includes('@')) {
         payload.username = form.emailOrUsername.trim().toLowerCase();
         delete payload.email;
       }
 
+      const tApiStart = performance.now();
       const res = await api.post('/auth/login', payload);
-      const { token, user: userData } = res.data;
+      const tApiEnd = performance.now();
+
+      const { token, user: userData, redirect: backendRedirect } = res.data;
       login(token, userData, rememberMe);
+      const tContextEnd = performance.now();
+
       addToast({ type: 'success', title: 'Welcome back!', message: `Signed in as ${userData.name || userData.email}` });
       
-      // Route based on role
       const adminRoles = ['super_admin', 'admin', 'college_admin', 'company_admin', 'mentor'];
-      if (adminRoles.includes(userData.role)) {
-        navigate('/admin');
-      } else {
-        navigate('/dashboard');
-      }
+      const targetPath = backendRedirect || (adminRoles.includes(userData.role) ? '/admin' : '/dashboard');
+
+      navigate(targetPath, { replace: true });
+      const tNavEnd = performance.now();
+
+      console.log(
+        `%c⚡ CODOVATE LOGIN PERFORMANCE (Email) ⚡\n` +
+        `Backend Auth Session: ${(tApiEnd - tApiStart).toFixed(0)}ms\n` +
+        `State & Context Update: ${(tContextEnd - tApiEnd).toFixed(0)}ms\n` +
+        `Navigation & Redirect: ${(tNavEnd - tContextEnd).toFixed(0)}ms\n` +
+        `TOTAL LOGIN TIME: ${(tNavEnd - tClick).toFixed(0)}ms`,
+        'color: #22c55e; font-weight: bold; font-size: 13px;'
+      );
     } catch (err) {
       let msg = getFirebaseErrorMessage(err);
       if (err.isAxiosError && !err.response) {
@@ -140,9 +152,26 @@ const Login = () => {
   const handleGoogleLogin = async () => {
     setGoogleLoading(true);
     setErrors({});
+    const tClick = performance.now();
     try {
-      await loginWithGoogle();
+      const resData = await loginWithGoogle();
+      const tAuthEnd = performance.now();
+
       addToast({ type: 'success', title: 'Welcome!', message: 'Signed in with Google successfully.' });
+
+      const adminRoles = ['super_admin', 'admin', 'college_admin', 'company_admin', 'mentor'];
+      const targetPath = resData?.redirect || (adminRoles.includes(resData?.user?.role) ? '/admin' : '/dashboard');
+
+      navigate(targetPath, { replace: true });
+      const tNavEnd = performance.now();
+
+      console.log(
+        `%c⚡ CODOVATE LOGIN PERFORMANCE (Google) ⚡\n` +
+        `Firebase + Backend Auth: ${(tAuthEnd - tClick).toFixed(0)}ms\n` +
+        `Navigation & Redirect: ${(tNavEnd - tAuthEnd).toFixed(0)}ms\n` +
+        `TOTAL LOGIN TIME: ${(tNavEnd - tClick).toFixed(0)}ms`,
+        'color: #22c55e; font-weight: bold; font-size: 13px;'
+      );
     } catch (err) {
       const msg = getFirebaseErrorMessage(err);
       if (!msg.includes('cancelled')) {

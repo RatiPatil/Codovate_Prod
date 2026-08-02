@@ -124,7 +124,7 @@ const LearningModule = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white p-4 md:p-8 pt-24 pb-32 max-w-6xl mx-auto">
+    <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-6">
       
       {/* Back & Header */}
       <div className="mb-8 flex items-center gap-4">

@@ -32,8 +32,8 @@ router.post("/google", async (req, res) => {
     const { email, name, picture, uid } = decodedToken;
     
     const usersRef = db.collection('users');
-    const snapshot = await usersRef.where('email', '==', email.toLowerCase()).get();
-    
+    const snapshot = await usersRef.where('email', '==', email.toLowerCase()).limit(1).get();
+
     let user;
     if (snapshot.empty) {
       // Auto-Registration Flow for Google
@@ -89,8 +89,8 @@ router.post("/google", async (req, res) => {
       });
       
       await batch.commit();
-      // Set Firebase custom claims for Firestore rules
-      if (uid) setCustomClaims(uid, 'student');
+      // Set Firebase custom claims for Firestore rules (non-blocking)
+      if (uid) setCustomClaims(uid, 'student').catch(e => console.warn('Background claims failed:', e));
       console.log("✅ Auto-registered new user via Google:", email);
     } else {
       const userDoc = snapshot.docs[0];
@@ -141,19 +141,27 @@ router.post("/google", async (req, res) => {
       { expiresIn: "7d" }
     );
 
-    // Log login history
+    // Fire and forget background tasks (non-blocking)
     logLoginHistory({
       userId: user.id, email: user.email, provider: 'google',
       ipAddress: getClientIP(req), userAgent: req.headers['user-agent'],
       status: 'success',
-    });
+    }).catch(e => console.error('Log login history background error:', e));
 
-    // Set Firebase custom claims
-    if (uid) setCustomClaims(uid, user.role);
+    if (uid) setCustomClaims(uid, user.role).catch(e => console.warn('Set custom claims background error:', e));
+
+    const onboardingCompleted = user.onboardingCompleted ?? user.onboarding_completed ?? (user.role !== 'student');
 
     res.json({
       token,
-      user: { id: user.id, name: user.name, email: user.email, role: user.role, avatar: user.avatar },
+      user: { 
+        id: user.id, 
+        name: user.name, 
+        email: user.email, 
+        role: user.role, 
+        avatar: user.avatar || '',
+        onboardingCompleted
+      },
       redirect: ROLE_REDIRECTS[user.role] || '/dashboard',
     });
   } catch (err) {
@@ -335,16 +343,11 @@ router.post("/phone", async (req, res) => {
       { expiresIn: "7d" }
     );
 
-    // Log login history
-    logLoginHistory({
-      userId: user.id, phone: user.phone, provider: 'phone',
-      ipAddress: getClientIP(req), userAgent: req.headers['user-agent'],
-      status: 'success',
-    });
+    const onboardingCompleted = user.onboardingCompleted ?? user.onboarding_completed ?? (user.role !== 'student');
 
     res.json({
       token,
-      user: { id: user.id, name: user.name, phone: user.phone, email: user.email, role: user.role, avatar: user.avatar },
+      user: { id: user.id, name: user.name, phone: user.phone, email: user.email, role: user.role, avatar: user.avatar || '', onboardingCompleted },
       redirect: ROLE_REDIRECTS[user.role] || '/dashboard',
     });
   } catch (err) {
@@ -554,13 +557,13 @@ router.post("/login", async (req, res) => {
 
     // Determine if login is by email or username
     if (email && email.includes('@')) {
-      snapshot = await usersRef.where('email', '==', email.toLowerCase()).get();
+      snapshot = await usersRef.where('email', '==', email.toLowerCase()).limit(1).get();
     } else {
       const loginValue = (username || email || '').trim().toLowerCase();
-      snapshot = await usersRef.where('username', '==', loginValue).get();
+      snapshot = await usersRef.where('username', '==', loginValue).limit(1).get();
       // Fallback: if not found by username, try as email
       if (snapshot.empty) {
-        snapshot = await usersRef.where('email', '==', loginValue).get();
+        snapshot = await usersRef.where('email', '==', loginValue).limit(1).get();
       }
     }
     
@@ -575,21 +578,6 @@ router.post("/login", async (req, res) => {
 
     if (user.recordStatus !== 'ACTIVE')
       return res.status(403).json({ message: "Your account has been suspended. Please contact the administrator." });
-
-    // TEMPORARILY BYPASSED FOR PROD STABILIZATION
-    // if (!user.is_verified) {
-    //   try {
-    //     const fbUser = await getAuth().getUserByEmail(user.email);
-    //     if (fbUser.emailVerified) {
-    //       await usersRef.doc(user.id).update({ is_verified: true, updatedAt: new Date() });
-    //       user.is_verified = true;
-    //     } else {
-    //       return res.status(403).json({ message: "Please verify your email address before logging in. Check your inbox for the verification link." });
-    //     }
-    //   } catch (e) {
-    //     return res.status(403).json({ message: "Please verify your email address before logging in. Check your inbox for the verification link." });
-    //   }
-    // }
 
     // AUTH-002 FIX: Return provider-specific error message
     if (!user.password_hash) {
@@ -639,12 +627,14 @@ router.post("/login", async (req, res) => {
       { expiresIn: "7d" }
     );
 
-    // Log login history
+    // Fire and forget background login history log
     logLoginHistory({
       userId: user.id, email: user.email, provider: 'local',
       ipAddress: getClientIP(req), userAgent: req.headers['user-agent'],
       status: 'success',
-    });
+    }).catch(e => console.error('Log login history background error:', e));
+
+    const onboardingCompleted = user.onboardingCompleted ?? user.onboarding_completed ?? (user.role !== 'student');
 
     console.log(`✅ User logged in [${user.role}]:`, email);
     res.json({
@@ -654,6 +644,8 @@ router.post("/login", async (req, res) => {
         name: user.name, 
         email: user.email, 
         role: user.role,
+        avatar: user.avatar || '',
+        onboardingCompleted,
         college_id: user.college_id || null,
         company_id: user.company_id || null,
       },

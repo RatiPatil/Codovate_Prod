@@ -121,35 +121,49 @@ export const AuthProvider = ({ children }) => {
     checkRedirect();
   }, []);
 
-  // ─── Verify onboarding from DB when token is available ─
+  // ─── Verify onboarding from DB only if status is unknown ─
   useEffect(() => {
-    if (!token) return;
+    if (!token || onboardingCompleted !== null) return;
     api.get('/onboarding/status')
       .then(res => {
         const completed = res.data.onboarding_completed === true || res.data.onboarding_completed === "true";
         setOnboardingCompleted(completed);
-        getStorage().setItem('onboarding_completed', completed);
+        getStorage().setItem('onboarding_completed', String(completed));
       })
       .catch(() => setOnboardingCompleted(false));
-  }, [token]);
+  }, [token, onboardingCompleted]);
 
   // ─── Login ─────────────────────────────────────────────
   const login = useCallback((newToken, newUser, rememberMe = true) => {
     setAuthData(newToken, newUser, rememberMe);
     setToken(newToken);
     setUser(newUser);
-    setOnboardingCompleted(null); // Reset to trigger fresh check
+    const obCompleted = newUser?.onboardingCompleted ?? (newUser?.role !== 'student');
+    setOnboardingCompleted(obCompleted);
+    const storage = rememberMe ? localStorage : sessionStorage;
+    storage.setItem('onboarding_completed', String(obCompleted));
   }, []);
 
   // ─── Google Login ──────────────────────────────────────
   const loginWithGoogle = useCallback(async () => {
     try {
+      const tFbStart = performance.now();
       const result = await signInWithPopup(auth, googleProvider);
+      const tFbEnd = performance.now();
+
       if (result) {
         const idToken = await result.user.getIdToken();
+        const tBackendStart = performance.now();
         const res = await api.post('/auth/google', { idToken });
-        const { token: jwtToken, user: userData } = res.data;
+        const tBackendEnd = performance.now();
+
+        const { token: jwtToken, user: userData, redirect } = res.data;
         login(jwtToken, userData, true);
+
+        console.log(
+          `[AUTH TIMINGS] Firebase Popup: ${(tFbEnd - tFbStart).toFixed(0)}ms | Backend Google API: ${(tBackendEnd - tBackendStart).toFixed(0)}ms`
+        );
+        return { token: jwtToken, user: userData, redirect };
       }
     } catch (err) {
       console.error("Google authentication error:", err);
