@@ -258,6 +258,26 @@ router.post("/versions", auth, async (req, res) => {
   }
 });
 
+// ─── POST /api/resume/save ──────────────────────────────────────────────────
+router.post("/save", auth, async (req, res) => {
+  try {
+    const resumeData = req.body || {};
+    const resumeRef = db.collection("resumes").doc(req.user.id);
+    
+    await resumeRef.set({
+      uid: req.user.id,
+      ...resumeData,
+      updatedAt: new Date()
+    }, { merge: true });
+
+    if (typeof syncDashboard === 'function') syncDashboard(req.user.id);
+    res.json({ message: "Resume saved successfully." });
+  } catch (err) {
+    console.error("Resume save error:", err.message);
+    res.status(500).json({ message: "Save failed." });
+  }
+});
+
 // ─── GET /api/resume ───────────────────────────────────────────────────
 router.get("/", auth, async (req, res) => {
   try {
@@ -274,13 +294,20 @@ router.get("/versions", auth, async (req, res) => {
   try {
     const snapshot = await db.collection("resumeVersions")
       .where("uid", "==", req.user.id)
-      .orderBy("createdAt", "desc")
       .get();
       
     const versions = snapshot.docs.map(doc => {
       const data = mapDoc(doc);
-      return { id: doc.id, versionName: data.versionName, pdfUrl: data.pdfUrl, templateId: data.templateId, createdAt: data.createdAt?.toDate() };
+      return {
+        id: doc.id,
+        versionName: data.versionName || data.name || 'Saved Version',
+        pdfUrl: data.pdfUrl || null,
+        templateId: data.templateId || 'default',
+        createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : (data.createdAt || new Date())
+      };
     });
+
+    versions.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
     res.json(versions);
   } catch (err) {
     console.error("Load versions error:", err.message);
@@ -319,8 +346,9 @@ router.delete("/versions/:id", auth, async (req, res) => {
 // ─── GET /api/resume/reviews ────────────────────────────────────────────────
 router.get("/reviews", auth, async (req, res) => {
   try {
-    const snapshot = await db.collection("resumeReviews").where("uid", "==", req.user.id).orderBy("createdAt", "desc").get();
+    const snapshot = await db.collection("resumeReviews").where("uid", "==", req.user.id).get();
     const reviews = snapshot.docs.map(doc => ({ id: doc.id, ...mapDoc(doc) }));
+    reviews.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
     res.json(reviews);
   } catch (err) {
     console.error("Load reviews error:", err.message);

@@ -141,12 +141,11 @@ router.get("/:teamId/activity", auth, async (req, res) => {
 
     const snap = await db.collection("team_activities")
       .where("teamId", "==", teamId)
-      .orderBy("created_at", "desc")
-      .limit(20)
       .get();
 
     const activities = snap.docs.map(doc => ({ id: doc.id, ...mapDoc(doc) }));
-    res.json(activities);
+    activities.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+    res.json(activities.slice(0, 20));
   } catch (err) {
     console.error("Get team activity error:", err);
     res.status(500).json({ message: "Failed to load activity." });
