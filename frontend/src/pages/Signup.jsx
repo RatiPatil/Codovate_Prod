@@ -9,7 +9,7 @@ import { getFirebaseErrorMessage } from '../utils/firebaseErrors';
 import { signInWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
 import { auth } from '../lib/firebase';
 import AuthInput from '../components/auth/AuthInput';
-import Logo from '../components/common/Logo';
+import CodovateLogo from '../components/common/CodovateLogo';
 import PasswordStrengthMeter from '../components/auth/PasswordStrengthMeter';
 import GoogleButton from '../components/auth/GoogleButton';
 import PhoneLoginModal from '../components/auth/PhoneLoginModal';
