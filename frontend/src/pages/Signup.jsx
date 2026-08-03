@@ -13,6 +13,7 @@ import CodovateLogo from '../components/common/CodovateLogo';
 import PasswordStrengthMeter from '../components/auth/PasswordStrengthMeter';
 import GoogleButton from '../components/auth/GoogleButton';
 import PhoneLoginModal from '../components/auth/PhoneLoginModal';
+import { Phone } from 'lucide-react';
 
 const Signup = () => {
   const [form, setForm] = useState({ fullName: '', username: '', email: '', password: '', confirmPassword: '' });
