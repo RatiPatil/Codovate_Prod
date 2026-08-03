@@ -82,11 +82,11 @@ import GlobalErrorBoundary from './components/common/GlobalErrorBoundary';
 import Logo from './components/common/Logo';
 
 const GlobalLoader = () => (
-  <div className="flex flex-col items-center justify-center h-screen bg-[#050510] gap-4">
+  <div className="flex flex-col items-center justify-center h-screen bg-[#F8FAFC] gap-4">
     <div className="animate-pulse">
-      <Logo responsive className="drop-shadow-[0_0_40px_rgba(32,21,255,0.5)]" />
+      <Logo responsive variant="light" className="drop-shadow-sm" />
     </div>
-    <div className="w-6 h-6 border-2 border-[#2015FF] border-t-transparent rounded-full animate-spin" />
+    <div className="w-6 h-6 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
   </div>
 );
 
@@ -111,14 +111,9 @@ const DynamicTitle = () => {
 
 function App() {
   useEffect(() => {
-    const savedTheme = localStorage.getItem('theme') || 'dark';
-    if (savedTheme === 'light') {
-      document.documentElement.classList.remove('dark');
-      document.documentElement.classList.add('light');
-    } else {
-      document.documentElement.classList.remove('light');
-      document.documentElement.classList.add('dark');
-    }
+    document.documentElement.classList.remove('dark');
+    document.documentElement.classList.add('light');
+    localStorage.setItem('theme', 'light');
   }, []);
 
   return (

@@ -58,20 +58,20 @@ const KanbanBoard = ({ tasks, teamId, onTasksUpdate }) => {
   };
 
   return (
-    <div className="flex h-full w-full overflow-x-auto overflow-y-hidden space-x-6 pb-4 custom-scrollbar">
+    <div className="flex h-full w-full overflow-x-auto overflow-y-hidden space-x-6 pb-4 no-scrollbar">
       <DragDropContext onDragEnd={handleDragEnd}>
         {columns.map(column => (
-          <div key={column.id} className="flex-shrink-0 w-80 flex flex-col bg-[#0A0A10] border border-white/5 rounded-2xl p-4">
+          <div key={column.id} className="flex-shrink-0 w-80 flex flex-col bg-slate-100/70 border border-slate-200 rounded-2xl p-4">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-bold text-white flex items-center gap-2">
+              <h3 className="font-bold text-slate-900 flex items-center gap-2 text-sm">
                 {column.title}
-                <span className="text-xs bg-white/10 text-gray-400 px-2 py-0.5 rounded-full">
+                <span className="text-xs bg-white border border-slate-200 text-slate-600 px-2 py-0.5 rounded-full font-bold">
                   {getTasksByStatus(column.id).length}
                 </span>
               </h3>
               <button 
                 onClick={() => setAddingTaskTo(column.id)}
-                className="text-gray-400 hover:text-white p-1 hover:bg-white/10 rounded-lg transition-colors"
+                className="text-slate-500 hover:text-slate-900 p-1 hover:bg-white rounded-lg transition-colors"
               >
                 <Plus size={16} />
               </button>
@@ -82,8 +82,8 @@ const KanbanBoard = ({ tasks, teamId, onTasksUpdate }) => {
                 <div
                   {...provided.droppableProps}
                   ref={provided.innerRef}
-                  className={`flex-1 overflow-y-auto custom-scrollbar transition-colors ${
-                    snapshot.isDraggingOver ? 'bg-white/5 rounded-xl' : ''
+                  className={`flex-1 overflow-y-auto no-scrollbar transition-colors ${
+                    snapshot.isDraggingOver ? 'bg-indigo-50/50 rounded-xl' : ''
                   }`}
                 >
                   {addingTaskTo === column.id && (
@@ -95,7 +95,7 @@ const KanbanBoard = ({ tasks, teamId, onTasksUpdate }) => {
                         onChange={(e) => setNewTaskTitle(e.target.value)}
                         onBlur={() => setAddingTaskTo(null)}
                         placeholder="Task title..."
-                        className="w-full bg-[#12121A] border border-primary/50 rounded-xl px-3 py-2 text-white text-sm focus:outline-none"
+                        className="w-full bg-white border border-indigo-400 rounded-xl px-3 py-2 text-slate-900 text-sm focus:outline-none shadow-sm"
                       />
                     </form>
                   )}
@@ -107,33 +107,33 @@ const KanbanBoard = ({ tasks, teamId, onTasksUpdate }) => {
                           ref={provided.innerRef}
                           {...provided.draggableProps}
                           {...provided.dragHandleProps}
-                          className={`bg-[#12121A] border border-white/10 p-4 rounded-xl mb-3 shadow-lg group ${
-                            snapshot.isDragging ? 'rotate-2 scale-105 border-primary shadow-primary/20' : ''
+                          className={`bg-white border border-slate-200 p-4 rounded-xl mb-3 shadow-sm group ${
+                            snapshot.isDragging ? 'rotate-2 scale-105 border-indigo-500 shadow-md' : ''
                           } transition-transform`}
                         >
                           <div className="flex justify-between items-start mb-2">
                             <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
-                              task.priority === 'High' ? 'bg-red-500/10 text-red-400' :
-                              task.priority === 'Medium' ? 'bg-amber-500/10 text-amber-400' :
-                              'bg-green-500/10 text-green-400'
+                              task.priority === 'High' ? 'bg-red-50 text-red-600 border border-red-100' :
+                              task.priority === 'Medium' ? 'bg-amber-50 text-amber-600 border border-amber-100' :
+                              'bg-emerald-50 text-emerald-600 border border-emerald-100'
                             }`}>
                               {task.priority || 'Medium'}
                             </span>
-                            <button className="text-gray-500 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button className="text-slate-400 hover:text-slate-700 opacity-0 group-hover:opacity-100 transition-opacity">
                               <MoreHorizontal size={14} />
                             </button>
                           </div>
                           
-                          <p className="text-white text-sm font-medium mb-4">{task.title}</p>
+                          <p className="text-slate-900 text-sm font-semibold mb-4">{task.title}</p>
                           
-                          <div className="flex items-center justify-between text-gray-500">
+                          <div className="flex items-center justify-between text-slate-400">
                             {task.due_date ? (
-                              <div className="flex items-center gap-1 text-xs">
+                              <div className="flex items-center gap-1 text-xs text-slate-500">
                                 <Clock size={12} />
                                 <span>{new Date(task.due_date).toLocaleDateString()}</span>
                               </div>
                             ) : <div />}
-                            <div className="w-6 h-6 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center text-[10px] text-primary font-bold">
+                            <div className="w-6 h-6 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center text-[10px] text-indigo-600 font-bold">
                               {task.assignee ? task.assignee.charAt(0).toUpperCase() : '?'}
                             </div>
                           </div>

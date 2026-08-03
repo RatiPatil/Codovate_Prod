@@ -106,48 +106,48 @@ const Workspace = () => {
   const { team, stats, members } = data;
 
   return (
-    <div className="flex flex-col h-[calc(100vh-80px)] overflow-hidden">
+    <div className="flex flex-col h-[calc(100vh-80px)] overflow-hidden bg-[#F8FAFC]">
       {/* Header */}
-      <div className="bg-[#0A0A10] border-b border-white/5 p-6 shrink-0 z-10 shadow-xl">
-        <button onClick={() => navigate('/teams')} className="text-gray-400 hover:text-white flex items-center gap-2 text-sm font-bold mb-4 transition-colors">
+      <div className="bg-white border-b border-slate-200 p-6 shrink-0 z-10 shadow-sm">
+        <button onClick={() => navigate('/teams')} className="text-slate-600 hover:text-slate-900 flex items-center gap-2 text-sm font-bold mb-4 transition-colors">
           <ArrowLeft size={16} /> Back to Teams
         </button>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 bg-primary/20 rounded-2xl flex items-center justify-center border border-primary/30">
+            <div className="w-16 h-16 bg-indigo-50 rounded-2xl flex items-center justify-center border border-indigo-100 shadow-sm">
               {team?.logo ? (
                 <img src={team.logo} alt="Logo" className="w-full h-full object-cover rounded-2xl" />
               ) : (
-                <span className="text-3xl font-black text-primary">{team?.name?.charAt(0)}</span>
+                <span className="text-3xl font-black text-indigo-600">{team?.name?.charAt(0)}</span>
               )}
             </div>
             <div>
-              <h1 className="text-3xl font-black text-white">{team?.name}</h1>
-              <p className="text-gray-400 font-medium">{team?.project_title}</p>
+              <h1 className="text-2xl md:text-3xl font-black text-slate-900">{team?.name}</h1>
+              <p className="text-slate-500 font-medium text-sm">{team?.project_title}</p>
             </div>
           </div>
           
-          <div className="flex items-center gap-4 bg-white/5 px-6 py-3 rounded-2xl border border-white/10">
+          <div className="flex items-center gap-4 bg-slate-50 px-6 py-3 rounded-2xl border border-slate-200">
             <div>
-              <p className="text-[10px] uppercase font-bold tracking-widest text-gray-500 mb-1">Progress</p>
+              <p className="text-[10px] uppercase font-bold tracking-widest text-slate-400 mb-1">Progress</p>
               <div className="flex items-center gap-3">
-                <div className="w-32 h-2 bg-gray-800 rounded-full overflow-hidden">
+                <div className="w-32 h-2 bg-slate-200 rounded-full overflow-hidden">
                   <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${stats?.progress_percentage || 0}%` }} />
                 </div>
-                <span className="text-sm font-bold text-emerald-400">{stats?.progress_percentage || 0}%</span>
+                <span className="text-xs font-bold text-emerald-600">{stats?.progress_percentage || 0}%</span>
               </div>
             </div>
-            <div className="w-px h-8 bg-white/10 mx-2" />
+            <div className="w-px h-8 bg-slate-200 mx-2" />
             <div>
-              <p className="text-[10px] uppercase font-bold tracking-widest text-gray-500 mb-1">Members</p>
+              <p className="text-[10px] uppercase font-bold tracking-widest text-slate-400 mb-1">Members</p>
               <div className="flex -space-x-2">
                 {members.slice(0, 5).map((m, i) => (
-                  <div key={i} className="w-7 h-7 rounded-full bg-gray-800 border-2 border-[#0A0A10] flex items-center justify-center text-[10px] font-bold text-white" title={m.name}>
+                  <div key={i} className="w-7 h-7 rounded-full bg-slate-200 border-2 border-white flex items-center justify-center text-[10px] font-bold text-slate-700" title={m.name}>
                     {m.name?.charAt(0)}
                   </div>
                 ))}
                 {members.length > 5 && (
-                  <div className="w-7 h-7 rounded-full bg-primary/20 border-2 border-[#0A0A10] flex items-center justify-center text-[10px] font-bold text-primary">
+                  <div className="w-7 h-7 rounded-full bg-indigo-100 border-2 border-white flex items-center justify-center text-[10px] font-bold text-indigo-600">
                     +{members.length - 5}
                   </div>
                 )}
@@ -158,7 +158,7 @@ const Workspace = () => {
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-6 px-6 pt-4 bg-[#050508] border-b border-white/5 overflow-x-auto custom-scrollbar shrink-0">
+      <div className="flex items-center gap-6 px-6 pt-4 bg-white border-b border-slate-200 overflow-x-auto no-scrollbar shrink-0">
         {[
           { id: 'tasks', label: 'Task Board', icon: LayoutDashboard },
           { id: 'announcements', label: 'Announcements', icon: MessageSquare },
@@ -168,10 +168,10 @@ const Workspace = () => {
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`flex items-center gap-2 pb-3 px-2 border-b-2 font-bold transition-colors whitespace-nowrap ${
+            className={`flex items-center gap-2 pb-3 px-2 border-b-2 font-bold transition-colors whitespace-nowrap text-sm ${
               activeTab === tab.id 
-                ? 'border-primary text-primary' 
-                : 'border-transparent text-gray-500 hover:text-gray-300'
+                ? 'border-indigo-600 text-indigo-600' 
+                : 'border-transparent text-slate-500 hover:text-slate-900'
             }`}
           >
             <tab.icon size={16} />
@@ -181,7 +181,7 @@ const Workspace = () => {
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 overflow-hidden relative bg-[#030308]">
+      <div className="flex-1 overflow-hidden relative bg-[#F8FAFC]">
         
         {/* Kanban Board */}
         {activeTab === 'tasks' && (
@@ -196,19 +196,19 @@ const Workspace = () => {
 
         {/* Announcements */}
         {activeTab === 'announcements' && (
-          <div className="absolute inset-0 p-6 overflow-y-auto custom-scrollbar max-w-4xl mx-auto">
-            <div className="bg-[#0A0A10] border border-white/5 rounded-2xl p-6 mb-8 shadow-xl">
-              <h3 className="font-bold text-white mb-4">Post Announcement</h3>
+          <div className="absolute inset-0 p-6 overflow-y-auto no-scrollbar max-w-4xl mx-auto">
+            <div className="bg-white border border-slate-200 rounded-2xl p-6 mb-8 shadow-sm">
+              <h3 className="font-bold text-slate-900 mb-4">Post Announcement</h3>
               <form onSubmit={handlePostAnnouncement}>
                 <textarea
                   value={newAnnouncement}
                   onChange={(e) => setNewAnnouncement(e.target.value)}
                   placeholder="What's happening?"
-                  className="w-full bg-[#12121A] border border-white/10 rounded-xl p-4 text-white placeholder-gray-500 focus:outline-none focus:border-primary resize-none mb-4"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 resize-none mb-4"
                   rows={3}
                 />
                 <div className="flex justify-end">
-                  <button type="submit" disabled={!newAnnouncement.trim()} className="bg-primary hover:bg-primary/90 text-white font-bold py-2 px-6 rounded-xl transition-all disabled:opacity-50 shadow-lg shadow-primary/20">
+                  <button type="submit" disabled={!newAnnouncement.trim()} className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded-xl transition-all disabled:opacity-50 shadow-sm">
                     Post
                   </button>
                 </div>
@@ -217,22 +217,22 @@ const Workspace = () => {
 
             <div className="space-y-4">
               {data.announcements.length === 0 ? (
-                <p className="text-center text-gray-500 py-8 font-medium">No announcements yet.</p>
+                <p className="text-center text-slate-400 py-8 font-medium">No announcements yet.</p>
               ) : (
                 data.announcements.map(ann => (
-                  <div key={ann.id} className="bg-[#0A0A10] border border-white/5 rounded-2xl p-6">
+                  <div key={ann.id} className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
                     <div className="flex justify-between items-start mb-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold">
+                        <div className="w-10 h-10 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold border border-indigo-100">
                           {ann.author_name?.charAt(0)}
                         </div>
                         <div>
-                          <p className="font-bold text-white">{ann.author_name}</p>
-                          <p className="text-[10px] text-gray-500 uppercase tracking-widest">{new Date(ann.created_at).toLocaleString()}</p>
+                          <p className="font-bold text-slate-900">{ann.author_name}</p>
+                          <p className="text-[10px] text-slate-400 uppercase tracking-widest">{new Date(ann.created_at).toLocaleString()}</p>
                         </div>
                       </div>
                     </div>
-                    <p className="text-gray-300 whitespace-pre-wrap leading-relaxed">{ann.content}</p>
+                    <p className="text-slate-600 whitespace-pre-wrap leading-relaxed">{ann.content}</p>
                   </div>
                 ))
               )}
@@ -242,12 +242,12 @@ const Workspace = () => {
 
         {/* Shared Links/Files */}
         {activeTab === 'files' && (
-          <div className="absolute inset-0 p-6 overflow-y-auto custom-scrollbar max-w-5xl mx-auto">
+          <div className="absolute inset-0 p-6 overflow-y-auto no-scrollbar max-w-5xl mx-auto">
             <div className="flex justify-between items-center mb-8">
-              <h2 className="text-2xl font-black text-white">Project Resources</h2>
+              <h2 className="text-2xl font-black text-slate-900">Project Resources</h2>
               <button 
                 onClick={() => setShowFileModal(true)}
-                className="bg-purple-600 hover:bg-purple-500 text-white font-bold py-2 px-4 rounded-xl flex items-center gap-2 shadow-lg shadow-purple-600/20 transition-all"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-xl flex items-center gap-2 shadow-sm transition-all text-xs"
               >
                 <Plus size={16} /> Add Link
               </button>
@@ -255,7 +255,7 @@ const Workspace = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {data.files.length === 0 ? (
-                <div className="col-span-full py-12 text-center text-gray-500">
+                <div className="col-span-full py-12 text-center text-slate-400">
                   <LinkIcon size={32} className="mx-auto mb-4 opacity-50" />
                   <p>No resources shared yet. Add GitHub repos, Figma links, or Drive folders!</p>
                 </div>
@@ -266,14 +266,14 @@ const Workspace = () => {
                     href={file.url} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="bg-[#0A0A10] border border-white/5 hover:border-purple-500/50 rounded-2xl p-6 transition-all group hover:bg-[#12121A] flex flex-col h-full"
+                    className="bg-white border border-slate-200 hover:border-indigo-300 rounded-2xl p-6 transition-all group shadow-sm hover:shadow-md flex flex-col h-full"
                   >
-                    <div className="p-3 bg-white/5 rounded-xl text-gray-400 group-hover:text-purple-400 group-hover:bg-purple-500/10 transition-colors w-fit mb-4">
+                    <div className="p-3 bg-slate-50 rounded-xl text-slate-500 group-hover:text-indigo-600 group-hover:bg-indigo-50 transition-colors w-fit mb-4">
                       <LinkIcon size={24} />
                     </div>
-                    <h3 className="font-bold text-white mb-2 line-clamp-1">{file.title}</h3>
-                    <p className="text-xs text-gray-500 line-clamp-1 mb-4 flex-1">{file.url}</p>
-                    <div className="text-[10px] text-gray-600 font-bold uppercase tracking-widest mt-auto">
+                    <h3 className="font-bold text-slate-900 mb-2 line-clamp-1">{file.title}</h3>
+                    <p className="text-xs text-slate-500 line-clamp-1 mb-4 flex-1">{file.url}</p>
+                    <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-auto">
                       Added on {new Date(file.created_at).toLocaleDateString()}
                     </div>
                   </a>
@@ -283,35 +283,35 @@ const Workspace = () => {
 
             {/* Add File Modal */}
             {showFileModal && (
-              <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                <div className="bg-[#0f0f11] border border-white/10 rounded-3xl p-8 max-w-md w-full shadow-2xl">
-                  <h3 className="text-xl font-bold text-white mb-6">Add Resource Link</h3>
+              <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                <div className="bg-white border border-slate-200 rounded-3xl p-8 max-w-md w-full shadow-2xl">
+                  <h3 className="text-xl font-bold text-slate-900 mb-6">Add Resource Link</h3>
                   <form onSubmit={handleAddFile} className="space-y-4">
                     <div>
-                      <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Title</label>
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Title</label>
                       <input 
                         type="text" 
                         required
                         value={newFile.title}
                         onChange={e => setNewFile({ ...newFile, title: e.target.value })}
                         placeholder="e.g., Backend Repo"
-                        className="w-full bg-[#12121A] border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-purple-500"
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 focus:outline-none focus:border-indigo-500"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">URL</label>
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">URL</label>
                       <input 
                         type="url" 
                         required
                         value={newFile.url}
                         onChange={e => setNewFile({ ...newFile, url: e.target.value })}
                         placeholder="https://..."
-                        className="w-full bg-[#12121A] border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-purple-500"
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 focus:outline-none focus:border-indigo-500"
                       />
                     </div>
                     <div className="flex justify-end gap-3 mt-8">
-                      <button type="button" onClick={() => setShowFileModal(false)} className="px-5 py-2.5 bg-white/5 hover:bg-white/10 text-white rounded-xl font-bold">Cancel</button>
-                      <button type="submit" className="px-5 py-2.5 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-bold shadow-lg shadow-purple-600/20">Add Link</button>
+                      <button type="button" onClick={() => setShowFileModal(false)} className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-xs">Cancel</button>
+                      <button type="submit" className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-sm text-xs">Add Link</button>
                     </div>
                   </form>
                 </div>
@@ -322,8 +322,8 @@ const Workspace = () => {
 
         {/* Activity Timeline */}
         {activeTab === 'activity' && (
-          <div className="absolute inset-0 p-6 overflow-y-auto custom-scrollbar max-w-3xl mx-auto">
-            <h2 className="text-2xl font-black text-white mb-8">Activity Timeline</h2>
+          <div className="absolute inset-0 p-6 overflow-y-auto no-scrollbar max-w-3xl mx-auto">
+            <h2 className="text-2xl font-black text-slate-900 mb-8">Activity Timeline</h2>
             <ActivityTimeline activities={data.activity} />
           </div>
         )}

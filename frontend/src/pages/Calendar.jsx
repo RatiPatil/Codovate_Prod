@@ -60,31 +60,28 @@ const CalendarPage = () => {
 
   return (
     <div className="p-6 md:p-8 max-w-7xl mx-auto relative z-10 w-full h-full flex flex-col">
-      <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
+      <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl md:text-4xl font-bold text-white tracking-tight">
-            <span className="text-gradient">Deadline Calendar</span>
-          </h1>
-          <p className="text-gray-400 text-sm mt-2">Never miss an opportunity, hackathon, or mentor session.</p>
+          <h1 className="text-2xl md:text-3xl font-black text-slate-900">Schedule & Calendar</h1>
+          <p className="text-slate-500 text-sm">Keep track of your interviews, deadlines, and events.</p>
         </div>
-        
-        <div className="flex items-center gap-4 bg-white/5 border border-white/10 rounded-xl p-2 glass-panel">
-          <button onClick={prevMonth} className="p-2 hover:bg-white/10 rounded-lg text-white transition-colors">
+        <div className="flex items-center gap-4 bg-white border border-slate-200 rounded-xl px-4 py-2 shadow-sm">
+          <button onClick={prevMonth} className="p-1 hover:bg-slate-100 rounded-lg text-slate-600 transition-colors">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
           </button>
-          <span className="text-white font-bold min-w-[120px] text-center">
+          <span className="text-slate-900 font-bold min-w-[120px] text-center text-sm">
             {currentMonth.toLocaleString('default', { month: 'long', year: 'numeric' })}
           </span>
-          <button onClick={nextMonth} className="p-2 hover:bg-white/10 rounded-lg text-white transition-colors">
+          <button onClick={nextMonth} className="p-1 hover:bg-slate-100 rounded-lg text-slate-600 transition-colors">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
           </button>
         </div>
       </div>
 
-      <div className="glass-panel rounded-2xl overflow-hidden flex-1 flex flex-col bg-[#0f0f13]">
-        <div className="grid grid-cols-7 bg-white/5 border-b border-white/5">
+      <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden flex-1 flex flex-col shadow-sm">
+        <div className="grid grid-cols-7 bg-slate-50 border-b border-slate-200">
           {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-            <div key={day} className="py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-widest">
+            <div key={day} className="py-3 text-center text-xs font-bold text-slate-500 uppercase tracking-widest">
               {day}
             </div>
           ))}
@@ -92,7 +89,7 @@ const CalendarPage = () => {
         
         <div className="grid grid-cols-7 flex-1 auto-rows-fr">
           {blanks.map((_, i) => (
-            <div key={`blank-${i}`} className="border-b border-r border-white/5 bg-white/[0.02]" />
+            <div key={`blank-${i}`} className="border-b border-r border-slate-100 bg-slate-50/30" />
           ))}
           {days.map(day => {
             const dateStr = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day).toISOString().split('T')[0];
@@ -100,8 +97,8 @@ const CalendarPage = () => {
             const isToday = new Date().toISOString().split('T')[0] === dateStr;
 
             return (
-              <div key={day} className={`border-b border-r border-white/5 p-2 min-h-[120px] transition-colors hover:bg-white/[0.03] ${isToday ? 'bg-primary/5' : ''}`}>
-                <div className={`text-sm font-bold mb-2 flex items-center justify-center w-7 h-7 rounded-full ${isToday ? 'bg-primary text-white' : 'text-gray-400'}`}>
+              <div key={day} className={`border-b border-r border-slate-100 p-2 min-h-[120px] transition-colors hover:bg-slate-50/80 ${isToday ? 'bg-indigo-50/40' : ''}`}>
+                <div className={`text-sm font-bold mb-2 flex items-center justify-center w-7 h-7 rounded-full ${isToday ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-700'}`}>
                   {day}
                 </div>
                 <div className="flex flex-col gap-1.5 overflow-y-auto max-h-[100px] no-scrollbar">

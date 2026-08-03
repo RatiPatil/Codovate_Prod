@@ -65,12 +65,12 @@ const TeamDetailsModal = ({ team, onClose, onUpdate, currentUserRole }) => {
   const isMember = members.some(m => m.id === currentUser?.id);
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 p-4 lg:p-10 overflow-y-auto">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 lg:p-10 overflow-y-auto">
       <div className="absolute inset-0 min-h-[120%]" onClick={onClose} />
-      <div className="relative z-10 w-[95vw] md:w-full max-w-5xl bg-[#0f0f11] border border-white/10 rounded-2xl shadow-2xl my-10 overflow-hidden flex flex-col">
+      <div className="relative z-10 w-[95vw] md:w-full max-w-5xl bg-white border border-slate-200 rounded-2xl shadow-2xl my-10 overflow-hidden flex flex-col">
         {/* Cover Photo Area */}
-        <div className="h-32 md:h-48 bg-gradient-to-r from-primary/30 to-purple-600/30 relative">
-          <button onClick={onClose} className="absolute top-4 right-4 text-white/70 hover:text-white bg-black/30 hover:bg-black/50 p-2 rounded-full backdrop-blur-sm transition-all">
+        <div className="h-32 md:h-48 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 relative">
+          <button onClick={onClose} className="absolute top-4 right-4 text-slate-700 hover:text-slate-900 bg-white/80 hover:bg-white p-2 rounded-full backdrop-blur-sm transition-all shadow-sm">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
         </div>
@@ -79,17 +79,17 @@ const TeamDetailsModal = ({ team, onClose, onUpdate, currentUserRole }) => {
         <div className="px-6 md:px-10 pb-10">
           {/* Header Info */}
           <div className="flex flex-col md:flex-row md:items-end gap-6 -mt-16 mb-8 relative z-10">
-            <div className="w-32 h-32 rounded-2xl bg-[#1a1a1f] border-4 border-[#0f0f11] flex items-center justify-center overflow-hidden shrink-0 shadow-xl">
+            <div className="w-32 h-32 rounded-2xl bg-white border-4 border-white flex items-center justify-center overflow-hidden shrink-0 shadow-xl">
               {team.logo ? (
                 <img loading="lazy" decoding="async" src={team.logo} alt="Team Logo" className="w-full h-full object-cover" />
               ) : (
-                <span className="text-4xl font-bold text-gray-500">{team.name?.charAt(0).toUpperCase() || 'T'}</span>
+                <span className="text-4xl font-bold text-indigo-600">{team.name?.charAt(0).toUpperCase() || 'T'}</span>
               )}
             </div>
             
             <div className="flex-1">
               <div className="flex flex-wrap items-center gap-3 mb-2">
-                <h2 className="text-3xl font-bold text-white">{team.name}</h2>
+                <h2 className="text-3xl font-bold text-slate-900">{team.name}</h2>
                 <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider border ${
                   team.status === 'Recruiting' ? 'bg-green-500/10 text-green-500 border-green-500/20' :
                   team.status === 'Open' ? 'bg-blue-500/10 text-blue-500 border-blue-500/20' :

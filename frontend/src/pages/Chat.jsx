@@ -151,23 +151,23 @@ const Chat = () => {
   };
 
   return (
-    <div className="h-[calc(100vh-6rem)] max-h-[800px] flex bg-[#0a0a16] border border-white/10 rounded-2xl overflow-hidden shadow-2xl mx-auto w-full">
+    <div className="h-[calc(100vh-6rem)] max-h-[800px] flex bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm mx-auto w-full">
       {/* Left Pane - Chat List */}
-      <div className="w-1/3 border-r border-white/10 flex flex-col bg-[#050510]">
-        <div className="p-4 border-b border-white/10">
-          <h2 className="text-xl font-bold text-white">Messages</h2>
+      <div className="w-1/3 border-r border-slate-200 flex flex-col bg-white">
+        <div className="p-4 border-b border-slate-100">
+          <h2 className="text-xl font-bold text-slate-900">Messages</h2>
           <input 
             type="text" 
             placeholder="Search conversations..." 
-            className="w-full mt-4 bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
+            className="w-full mt-4 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
           />
         </div>
         
-        <div className="flex-1 overflow-y-auto custom-scrollbar p-2">
+        <div className="flex-1 overflow-y-auto no-scrollbar p-2">
           {loadingChats ? (
-            <div className="flex justify-center p-8"><Loader2 className="animate-spin text-blue-500" /></div>
+            <div className="flex justify-center p-8"><Loader2 className="animate-spin text-indigo-600" /></div>
           ) : chats.length === 0 ? (
-            <p className="text-center text-gray-500 mt-8 text-sm">No conversations yet.</p>
+            <p className="text-center text-slate-400 mt-8 text-sm">No conversations yet.</p>
           ) : (
             chats.map(chat => {
               const isDirect = chat.type === 'direct';
@@ -178,25 +178,25 @@ const Chat = () => {
                 <button
                   key={chat.id}
                   onClick={() => handleSelectChat(chat)}
-                  className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all text-left mb-1 ${activeChat?.id === chat.id ? 'bg-blue-600/20 border border-blue-500/30' : 'hover:bg-white/5 border border-transparent'}`}
+                  className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all text-left mb-1 ${activeChat?.id === chat.id ? 'bg-indigo-50 border border-indigo-200' : 'hover:bg-slate-50 border border-transparent'}`}
                 >
                   <div className="relative">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg ${isDirect ? 'bg-purple-500/20 text-purple-400' : 'bg-blue-500/20 text-blue-400'}`}>
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg ${isDirect ? 'bg-purple-100 text-purple-700' : 'bg-indigo-100 text-indigo-700'}`}>
                       {(isDirect ? chat.peer.avatar : chat.logo) ? (
                         <img src={isDirect ? chat.peer.avatar : chat.logo} className="w-full h-full rounded-full object-cover" alt="" />
                       ) : name?.charAt(0)}
                     </div>
-                    {isOnline && <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-[#050510] rounded-full" />}
+                    {isOnline && <div className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full" />}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-baseline">
-                      <h3 className="text-white font-bold text-sm truncate">{name}</h3>
-                      <span className="text-[10px] text-gray-500">
+                      <h3 className="text-slate-900 font-bold text-sm truncate">{name}</h3>
+                      <span className="text-[10px] text-slate-400">
                         {chat.last_activity ? new Date(chat.last_activity).toLocaleDateString() : ''}
                       </span>
                     </div>
-                    <p className="text-gray-400 text-xs truncate">
-                      {chat.type === 'team' && <span className="font-bold text-blue-400">Team • </span>}
+                    <p className="text-slate-500 text-xs truncate">
+                      {chat.type === 'team' && <span className="font-bold text-indigo-600">Team • </span>}
                       {chat.last_message || 'Start chatting...'}
                     </p>
                   </div>
@@ -208,34 +208,32 @@ const Chat = () => {
       </div>
 
       {/* Right Pane - Chat Window */}
-      <div className="flex-1 flex flex-col relative bg-[#0c0c1a]">
-        {/* Orbs */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/5 rounded-full blur-[100px] pointer-events-none" />
+      <div className="flex-1 flex flex-col relative bg-[#F8FAFC]">
 
         {activeChat ? (
           <>
-            <div className="p-4 border-b border-white/10 flex items-center justify-between bg-[#0a0a16] relative z-10">
+            <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-white relative z-10">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold">
+                <div className="w-10 h-10 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold">
                   {activeChat.type === 'direct' ? activeChat.peer.name?.charAt(0) : activeChat.name?.charAt(0)}
                 </div>
                 <div>
-                  <h2 className="text-white font-bold">{activeChat.type === 'direct' ? activeChat.peer.name : activeChat.name}</h2>
+                  <h2 className="text-slate-900 font-bold">{activeChat.type === 'direct' ? activeChat.peer.name : activeChat.name}</h2>
                   {activeChat.type === 'direct' && onlineUsers.includes(activeChat.peer.id) && (
-                    <p className="text-[10px] text-green-400 font-bold uppercase tracking-wider">Online</p>
+                    <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-wider">Online</p>
                   )}
                   {Object.keys(typingUsers).length > 0 && (
-                    <p className="text-[10px] text-blue-400 italic">typing...</p>
+                    <p className="text-[10px] text-indigo-600 italic">typing...</p>
                   )}
                 </div>
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar relative z-10">
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar relative z-10">
               {loadingMessages ? (
-                <div className="flex justify-center p-8"><Loader2 className="animate-spin text-blue-500" /></div>
+                <div className="flex justify-center p-8"><Loader2 className="animate-spin text-indigo-600" /></div>
               ) : messages.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full text-gray-500">
+                <div className="flex flex-col items-center justify-center h-full text-slate-400">
                   <p>No messages here yet.</p>
                   <p className="text-sm">Send a message to start the conversation!</p>
                 </div>
@@ -248,7 +246,7 @@ const Chat = () => {
                   return (
                     <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'} gap-2`}>
                       {!isMe && showAvatar ? (
-                        <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center text-xs font-bold text-white shrink-0 mt-auto">
+                        <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-700 shrink-0 mt-auto">
                           {msg.sender_name?.charAt(0)}
                         </div>
                       ) : (
@@ -257,24 +255,24 @@ const Chat = () => {
                       
                       <div className={`max-w-[70%] ${isMe ? 'items-end' : 'items-start'} flex flex-col`}>
                         {(!isMe && showAvatar && activeChat.type === 'team') && (
-                          <span className="text-[10px] text-gray-400 ml-1 mb-1">{msg.sender_name}</span>
+                          <span className="text-[10px] text-slate-400 ml-1 mb-1">{msg.sender_name}</span>
                         )}
-                        <div className={`px-4 py-2 rounded-2xl text-sm ${isMe ? 'bg-blue-600 text-white rounded-br-sm' : 'bg-white/10 text-gray-200 rounded-bl-sm border border-white/5'}`}>
+                        <div className={`px-4 py-2.5 rounded-2xl text-sm ${isMe ? 'bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white rounded-br-sm shadow-sm' : 'bg-white text-slate-900 rounded-bl-sm border border-slate-200 shadow-sm'}`}>
                           <p className="whitespace-pre-wrap break-words">{msg.text}</p>
                           {msg.attachments && msg.attachments.length > 0 && (
                             <div className="mt-2 grid gap-2">
                               {msg.attachments.map((url, i) => (
-                                <img key={i} src={url} alt="attachment" className="rounded-lg max-w-full h-auto max-h-48 object-cover border border-white/20" />
+                                <img key={i} src={url} alt="attachment" className="rounded-lg max-w-full h-auto max-h-48 object-cover border border-slate-200" />
                               ))}
                             </div>
                           )}
                         </div>
                         <div className="flex items-center gap-1 mt-1 px-1">
-                          <span className="text-[9px] text-gray-500">
+                          <span className="text-[9px] text-slate-400">
                             {new Date(msg.timestamp?.seconds ? msg.timestamp.seconds * 1000 : msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </span>
                           {isMe && (
-                            isRead ? <CheckCheck size={12} className="text-blue-400" /> : <Check size={12} className="text-gray-500" />
+                            isRead ? <CheckCheck size={12} className="text-indigo-600" /> : <Check size={12} className="text-slate-400" />
                           )}
                         </div>
                       </div>
@@ -285,12 +283,12 @@ const Chat = () => {
               <div ref={messagesEndRef} />
             </div>
 
-            <div className="p-4 bg-[#0a0a16] border-t border-white/10 relative z-10">
+            <div className="p-4 bg-white border-t border-slate-200 relative z-10">
               <form onSubmit={handleSend} className="flex items-center gap-2">
-                <button type="button" onClick={handleAttachment} className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-full transition-colors">
+                <button type="button" onClick={handleAttachment} className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition-colors">
                   <Paperclip size={20} />
                 </button>
-                <button type="button" onClick={handleAttachment} className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-full transition-colors">
+                <button type="button" onClick={handleAttachment} className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition-colors">
                   <ImageIcon size={20} />
                 </button>
                 <input
@@ -298,21 +296,21 @@ const Chat = () => {
                   value={inputText}
                   onChange={handleTyping}
                   placeholder="Type a message..."
-                  className="flex-1 bg-white/5 border border-white/10 rounded-full px-4 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
+                  className="flex-1 bg-slate-50 border border-slate-200 rounded-full px-4 py-2 text-slate-900 text-sm placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
                 />
-                <button type="submit" disabled={!inputText.trim()} className="p-2 bg-blue-600 text-white rounded-full hover:bg-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                  <Send size={18} />
+                <button type="submit" disabled={!inputText.trim()} className="p-2.5 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm">
+                  <Send size={16} />
                 </button>
               </form>
             </div>
           </>
         ) : (
-          <div className="flex-1 flex flex-col items-center justify-center text-gray-500 z-10 relative">
-            <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mb-4 shadow-xl">
-              <MessageSquare size={32} className="text-gray-600" />
+          <div className="flex-1 flex flex-col items-center justify-center text-slate-400 z-10 relative">
+            <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mb-4 border border-slate-200 shadow-sm">
+              <MessageSquare size={32} className="text-indigo-600" />
             </div>
-            <h3 className="text-xl font-bold text-white mb-2">Your Messages</h3>
-            <p className="text-sm text-center max-w-sm">
+            <h3 className="text-xl font-bold text-slate-900 mb-2">Your Messages</h3>
+            <p className="text-sm text-center max-w-sm text-slate-500">
               Select a conversation to start chatting with your peers, team members, or mentors.
             </p>
           </div>

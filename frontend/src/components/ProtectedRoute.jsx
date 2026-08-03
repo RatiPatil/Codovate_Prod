@@ -3,8 +3,8 @@ import { useAuth } from '../context/AuthContext';
 import { useRole } from '../context/RoleContext';
 
 const GlobalLoader = () => (
-  <div className="flex flex-col items-center justify-center h-screen bg-[#050510] gap-4">
-    <div className="w-8 h-8 border-2 border-[#2015FF] border-t-transparent rounded-full animate-spin" />
+  <div className="flex flex-col items-center justify-center h-screen bg-[#F8FAFC] gap-4">
+    <div className="w-8 h-8 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
   </div>
 );
 

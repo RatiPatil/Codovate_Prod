@@ -152,26 +152,26 @@ const CourseDetailsPage = () => {
     <div className="p-4 md:p-8 max-w-[1600px] mx-auto space-y-6 font-sans">
       
       {/* TOP NAV BAR */}
-      <div className="flex items-center justify-between border-b border-[#1E2548] pb-4">
+      <div className="flex items-center justify-between border-b border-slate-200 pb-4">
         <button
           onClick={() => navigate('/learning')}
-          className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#090D24] border border-[#1E2548] hover:border-indigo-500/50 text-gray-300 hover:text-white text-xs font-bold transition-all cursor-pointer"
+          className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 hover:border-indigo-300 text-slate-700 text-xs font-bold transition-all cursor-pointer shadow-sm"
         >
-          <ArrowLeft className="w-4 h-4 text-indigo-400" />
+          <ArrowLeft className="w-4 h-4 text-indigo-600" />
           <span>Back to Learning Hub</span>
         </button>
 
         <div className="flex items-center gap-4">
           <div className="hidden sm:flex flex-col items-end">
-            <span className="text-xs font-bold text-white">{course.title}</span>
-            <span className="text-[11px] text-gray-400 font-medium">Instructor: {course.instructor || 'Codovate Team'}</span>
+            <span className="text-xs font-bold text-slate-900">{course.title}</span>
+            <span className="text-[11px] text-slate-500 font-medium">Instructor: {course.instructor || 'Codovate Team'}</span>
           </div>
 
-          <div className="flex items-center gap-2 bg-[#090D24] border border-[#1E2548] px-3 py-1.5 rounded-xl">
-            <span className="text-xs font-bold text-indigo-400">{userProgress.progressPercentage || 0}%</span>
-            <div className="w-24 bg-[#141A3B] rounded-full h-2 overflow-hidden">
+          <div className="flex items-center gap-2 bg-white border border-slate-200 px-3 py-1.5 rounded-xl shadow-sm">
+            <span className="text-xs font-bold text-indigo-600">{userProgress.progressPercentage || 0}%</span>
+            <div className="w-24 bg-slate-100 rounded-full h-2 overflow-hidden">
               <div
-                className="bg-gradient-to-r from-indigo-500 to-purple-500 h-full rounded-full transition-all duration-500"
+                className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 h-full rounded-full transition-all duration-500"
                 style={{ width: `${userProgress.progressPercentage || 0}%` }}
               />
             </div>
@@ -186,25 +186,25 @@ const CourseDetailsPage = () => {
         <div className="flex-1 space-y-6 min-w-0">
           
           {/* LESSON HEADER */}
-          <div className="bg-[#0A0E28] border border-[#1B2248] rounded-2xl p-6 space-y-2">
-            <div className="flex items-center gap-2 text-xs font-bold text-indigo-400 uppercase tracking-wider">
+          <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-2 shadow-sm">
+            <div className="flex items-center gap-2 text-xs font-bold text-indigo-600 uppercase tracking-wider">
               <span>{activeLesson?.moduleTitle}</span>
               <span>•</span>
               <span className="capitalize">{activeLesson?.type || 'lesson'}</span>
             </div>
-            <h1 className="text-2xl font-extrabold text-white tracking-tight">
+            <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
               {activeLesson?.title}
             </h1>
           </div>
 
           {/* MEDIA / CONTENT AREA */}
-          <div className="bg-[#0A0E28] border border-[#1B2248] rounded-2xl p-6 min-h-[450px] space-y-6">
+          <div className="bg-white border border-slate-200 rounded-2xl p-6 min-h-[450px] space-y-6 shadow-sm">
             
             {/* VIDEO LESSON RENDERER */}
             {activeLesson?.type === 'video' && (
               <div className="space-y-6">
                 {activeLesson.videoUrl ? (
-                  <div className="aspect-video w-full rounded-2xl overflow-hidden bg-black border border-[#1E2548] shadow-2xl">
+                  <div className="aspect-video w-full rounded-2xl overflow-hidden bg-black border border-slate-200 shadow-xl">
                     <iframe
                       src={activeLesson.videoUrl}
                       title={activeLesson.title}
@@ -214,14 +214,14 @@ const CourseDetailsPage = () => {
                     />
                   </div>
                 ) : (
-                  <div className="aspect-video w-full rounded-2xl bg-indigo-950/20 border border-indigo-500/20 flex flex-col items-center justify-center text-center p-6 space-y-3">
-                    <PlayCircle className="w-16 h-16 text-indigo-400 animate-pulse" />
-                    <p className="text-gray-300 font-bold text-sm">Interactive Video Lecture</p>
+                  <div className="aspect-video w-full rounded-2xl bg-indigo-50/50 border border-indigo-100 flex flex-col items-center justify-center text-center p-6 space-y-3">
+                    <PlayCircle className="w-16 h-16 text-indigo-600 animate-pulse" />
+                    <p className="text-slate-800 font-bold text-sm">Interactive Video Lecture</p>
                   </div>
                 )}
 
                 {activeLesson.notes && (
-                  <div className="prose prose-invert prose-indigo max-w-none border-t border-white/5 pt-6 text-sm text-gray-300 leading-relaxed">
+                  <div className="prose max-w-none border-t border-slate-100 pt-6 text-sm text-slate-600 leading-relaxed">
                     <ReactMarkdown>{activeLesson.notes}</ReactMarkdown>
                   </div>
                 )}
@@ -230,7 +230,7 @@ const CourseDetailsPage = () => {
 
             {/* NOTES / ARTICLE LESSON RENDERER */}
             {activeLesson?.type === 'notes' && (
-              <div className="prose prose-invert prose-indigo max-w-none text-sm text-gray-300 leading-relaxed space-y-4">
+              <div className="prose max-w-none text-sm text-slate-600 leading-relaxed space-y-4">
                 <ReactMarkdown>{activeLesson.notes || "# Lesson Notes\n\nStudy the key principles and concepts for this topic carefully."}</ReactMarkdown>
               </div>
             )}
@@ -238,30 +238,30 @@ const CourseDetailsPage = () => {
             {/* QUIZ LESSON RENDERER */}
             {activeLesson?.type === 'quiz' && (
               <div className="space-y-6">
-                <div className="flex items-center gap-3 p-4 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-300 text-xs font-semibold">
+                <div className="flex items-center gap-3 p-4 rounded-xl bg-purple-50 border border-purple-100 text-purple-700 text-xs font-semibold">
                   <HelpCircle className="w-5 h-5 shrink-0" />
                   <span>Pass this quiz with 60% or higher to complete this module lesson.</span>
                 </div>
 
                 <form onSubmit={handleQuizSubmit} className="space-y-6">
                   {activeLesson.quiz?.questions?.map((q, qIdx) => (
-                    <div key={qIdx} className="p-5 rounded-2xl bg-[#090D24] border border-[#1E2548] space-y-3">
-                      <p className="font-bold text-white text-sm">
+                    <div key={qIdx} className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
+                      <p className="font-bold text-slate-900 text-sm">
                         Q{qIdx + 1}. {q.question}
                       </p>
                       <div className="space-y-2">
                         {q.options?.map((opt, oIdx) => (
                           <label key={oIdx} className={`flex items-center gap-3 p-3 rounded-xl border text-xs font-medium cursor-pointer transition-all ${
                             selectedQuizAnswers[qIdx] === oIdx
-                              ? 'bg-indigo-600/20 border-indigo-500 text-indigo-200'
-                              : 'bg-white/5 border-white/5 text-gray-300 hover:bg-white/10'
+                              ? 'bg-indigo-50 border-indigo-500 text-indigo-900 font-bold shadow-sm'
+                              : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-100'
                           }`}>
                             <input
                               type="radio"
                               name={`question_${qIdx}`}
                               checked={selectedQuizAnswers[qIdx] === oIdx}
                               onChange={() => setSelectedQuizAnswers(prev => ({ ...prev, [qIdx]: oIdx }))}
-                              className="w-4 h-4 text-indigo-600 border-gray-600 focus:ring-indigo-500"
+                              className="w-4 h-4 text-indigo-600 border-slate-300 focus:ring-indigo-500"
                             />
                             <span>{opt}</span>
                           </label>
@@ -272,7 +272,7 @@ const CourseDetailsPage = () => {
 
                   {quizScore !== null && (
                     <div className={`p-4 rounded-2xl border text-center font-bold text-sm ${
-                      quizScore >= 60 ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300' : 'bg-red-500/15 border-red-500/30 text-red-300'
+                      quizScore >= 60 ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-red-50 border-red-200 text-red-700'
                     }`}>
                       {quizScore >= 60 ? `🎉 Passed with ${quizScore}%!` : `Score: ${quizScore}%. Review materials and try again.`}
                     </div>
@@ -280,7 +280,7 @@ const CourseDetailsPage = () => {
 
                   <button
                     type="submit"
-                    className="w-full py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 font-bold text-white text-xs rounded-xl transition-all cursor-pointer shadow-lg shadow-indigo-500/20"
+                    className="w-full py-3 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:opacity-90 font-bold text-white text-xs rounded-xl transition-all cursor-pointer shadow-md"
                   >
                     Submit Quiz
                   </button>
@@ -291,11 +291,11 @@ const CourseDetailsPage = () => {
           </div>
 
           {/* ACTION CONTROLS ROW */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-[#0A0E28] border border-[#1B2248] rounded-2xl p-4">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
             <button
               disabled={currentLessonIndex === 0}
               onClick={() => setActiveLessonId(allLessons[currentLessonIndex - 1]?.id)}
-              className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-[#090D24] border border-[#1E2548] hover:border-indigo-500/50 disabled:opacity-40 rounded-xl text-xs font-bold text-gray-300 transition-all cursor-pointer"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 disabled:opacity-40 rounded-xl text-xs font-bold text-slate-700 transition-all cursor-pointer shadow-sm"
             >
               <ChevronLeft className="w-4 h-4" />
               <span>Previous Lesson</span>
@@ -304,10 +304,10 @@ const CourseDetailsPage = () => {
             <button
               onClick={handleMarkComplete}
               disabled={completing}
-              className={`w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl font-bold text-xs transition-all shadow-lg cursor-pointer ${
+              className={`w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl font-bold text-xs transition-all shadow-md cursor-pointer ${
                 isCurrentCompleted
-                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-500/30'
-                  : 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-500 hover:to-purple-500 shadow-indigo-500/20'
+                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100'
+                  : 'bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white hover:opacity-90'
               }`}
             >
               <CheckCircle2 className="w-4 h-4" />
@@ -317,7 +317,7 @@ const CourseDetailsPage = () => {
             <button
               disabled={currentLessonIndex >= allLessons.length - 1}
               onClick={() => setActiveLessonId(allLessons[currentLessonIndex + 1]?.id)}
-              className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-[#090D24] border border-[#1E2548] hover:border-indigo-500/50 disabled:opacity-40 rounded-xl text-xs font-bold text-gray-300 transition-all cursor-pointer"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 disabled:opacity-40 rounded-xl text-xs font-bold text-slate-700 transition-all cursor-pointer shadow-sm"
             >
               <span>Next Lesson</span>
               <ChevronRight className="w-4 h-4" />
@@ -328,15 +328,15 @@ const CourseDetailsPage = () => {
 
         {/* RIGHT SIDEBAR: MODULE & LESSON CURRICULUM OUTLINE */}
         <div className="w-full lg:w-96 shrink-0 space-y-4">
-          <div className="bg-[#0A0E28] border border-[#1B2248] rounded-2xl p-5 space-y-4 shadow-xl">
-            <h3 className="font-bold text-white text-sm tracking-tight border-b border-white/5 pb-3">
+          <div className="bg-white border border-slate-200 rounded-2xl p-5 space-y-4 shadow-sm">
+            <h3 className="font-bold text-slate-900 text-sm tracking-tight border-b border-slate-100 pb-3">
               Course Outline
             </h3>
 
-            <div className="space-y-4 max-h-[700px] overflow-y-auto custom-scrollbar pr-1">
+            <div className="space-y-4 max-h-[700px] overflow-y-auto no-scrollbar pr-1">
               {(course.modules || []).map((mod, mIdx) => (
                 <div key={mod.id || mIdx} className="space-y-2">
-                  <h4 className="text-xs font-extrabold text-indigo-300 tracking-wide uppercase">
+                  <h4 className="text-xs font-extrabold text-indigo-600 tracking-wide uppercase">
                     {mod.title}
                   </h4>
 
@@ -351,24 +351,24 @@ const CourseDetailsPage = () => {
                           onClick={() => setActiveLessonId(les.id)}
                           className={`flex items-center justify-between p-3 rounded-xl border text-xs font-semibold cursor-pointer transition-all ${
                             isActive
-                              ? 'bg-indigo-600/30 border-indigo-500 text-white shadow-md'
+                              ? 'bg-indigo-50 border-indigo-300 text-indigo-900 shadow-sm'
                               : isDone
-                              ? 'bg-emerald-500/10 border-emerald-500/20 text-gray-300 hover:bg-emerald-500/20'
-                              : 'bg-[#090D24] border-[#1E2548] text-gray-400 hover:bg-white/5 hover:text-white'
+                              ? 'bg-emerald-50/60 border-emerald-200 text-slate-700 hover:bg-emerald-100'
+                              : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
                           }`}
                         >
                           <div className="flex items-center gap-2.5 min-w-0">
                             {isDone ? (
-                              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                             ) : les.type === 'video' ? (
-                              <PlayCircle className="w-4 h-4 text-indigo-400 shrink-0" />
+                              <PlayCircle className="w-4 h-4 text-indigo-600 shrink-0" />
                             ) : (
-                              <FileText className="w-4 h-4 text-purple-400 shrink-0" />
+                              <FileText className="w-4 h-4 text-purple-600 shrink-0" />
                             )}
                             <span className="line-clamp-1">{les.title}</span>
                           </div>
 
-                          <span className="text-[10px] text-gray-500 font-mono shrink-0 ml-2">
+                          <span className="text-[10px] text-slate-400 font-mono shrink-0 ml-2">
                             {les.durationMinutes || 15}m
                           </span>
                         </div>
