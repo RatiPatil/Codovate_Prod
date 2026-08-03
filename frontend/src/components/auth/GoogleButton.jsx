@@ -7,26 +7,25 @@
  *  - disabled (bool)
  *  - label (string) — button text (default: "Continue with Google")
  */
-const GoogleButton = ({ onClick, loading = false, disabled = false, label = 'Continue with Google' }) => {
+const GoogleButton = ({ onClick, loading = false, disabled = false, label = 'Google' }) => {
   return (
     <button
       type="button"
       onClick={onClick}
       disabled={disabled || loading}
       className="
-        flex items-center justify-center gap-3 w-full py-3.5
-        bg-white hover:bg-gray-50 active:bg-gray-100
+        flex items-center justify-center gap-2.5 w-full py-3 px-4
+        bg-white hover:bg-slate-50 active:bg-slate-100
         rounded-xl transition-all duration-200
-        text-sm font-bold text-gray-800
-        shadow-lg shadow-black/10 hover:shadow-xl
+        text-sm font-semibold text-slate-700
+        shadow-sm hover:shadow border border-slate-200
         disabled:opacity-50 disabled:cursor-not-allowed
-        border border-gray-200
-        focus:outline-none focus:ring-2 focus:ring-primary/30
+        focus:outline-none focus:ring-4 focus:ring-indigo-500/10
       "
       aria-label={label}
     >
       {loading ? (
-        <div className="w-5 h-5 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
+        <div className="w-4 h-4 border-2 border-slate-300 border-t-indigo-600 rounded-full animate-spin" />
       ) : (
         <svg className="w-5 h-5" viewBox="0 0 48 48" aria-hidden="true">
           <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.73 17.74 9.5 24 9.5z"/>

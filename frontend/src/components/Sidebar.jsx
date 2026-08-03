@@ -139,7 +139,7 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
               onClick={() => setMobileOpen && setMobileOpen(false)}
               className={`flex items-center gap-3.5 px-4 py-2.5 rounded-xl font-medium text-[14px] transition-all duration-200 ${
                 active
-                  ? 'bg-gradient-to-r from-[#2563FF] via-[#5B21B6] to-[#8B00FF] text-white shadow-lg shadow-purple-900/40 font-semibold'
+                  ? 'bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-900/40 font-semibold'
                   : 'text-gray-300 hover:text-white hover:bg-white/[0.07]'
               }`}
             >

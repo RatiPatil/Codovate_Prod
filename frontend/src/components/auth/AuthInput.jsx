@@ -1,22 +1,7 @@
 import { useState } from 'react';
 
 /**
- * AuthInput — Reusable form input with validation, password toggle, and accessible labels.
- * 
- * Props:
- *  - id (string) — unique element ID
- *  - label (string) — field label
- *  - type (string) — 'text' | 'email' | 'password' | 'tel'
- *  - value (string)
- *  - onChange (fn)
- *  - onBlur (fn, optional)
- *  - placeholder (string, optional)
- *  - error (string|null) — validation error
- *  - success (bool) — shows green check
- *  - disabled (bool)
- *  - autoComplete (string, optional)
- *  - maxLength (number, optional)
- *  - children (ReactNode, optional) — rendered below input (e.g. strength meter)
+ * AuthInput — Reusable form input with validation, password toggle, icon prefixes, and accessible labels.
  */
 const AuthInput = ({
   id,
@@ -31,6 +16,7 @@ const AuthInput = ({
   disabled = false,
   autoComplete,
   maxLength,
+  icon: Icon,
   children,
 }) => {
   const [showPassword, setShowPassword] = useState(false);
@@ -39,14 +25,22 @@ const AuthInput = ({
 
   return (
     <div className="relative">
-      <label
-        htmlFor={id}
-        className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5"
-      >
-        {label}
-      </label>
+      {label && (
+        <label
+          htmlFor={id}
+          className="block text-xs font-semibold text-slate-700 mb-1.5"
+        >
+          {label}
+        </label>
+      )}
 
       <div className="relative">
+        {Icon && (
+          <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+            <Icon size={18} strokeWidth={1.8} />
+          </div>
+        )}
+
         <input
           id={id}
           name={id}
@@ -61,25 +55,28 @@ const AuthInput = ({
           aria-invalid={!!error}
           aria-describedby={error ? `${id}-error` : undefined}
           className={`
-            input-glass w-full py-3 px-4 pr-10 text-sm text-white transition-all duration-200
+            w-full py-3 px-4 text-sm bg-white border rounded-xl text-slate-900 placeholder-slate-400
+            transition-all duration-200 focus:outline-none
+            ${Icon ? 'pl-10' : 'pl-4'}
+            ${isPassword ? 'pr-10' : 'pr-4'}
             ${error
-              ? 'border-red-500/50 focus:border-red-500/70 focus:ring-red-500/20'
+              ? 'border-red-400 focus:border-red-500 focus:ring-4 focus:ring-red-500/10'
               : success
-                ? 'border-green-500/50 focus:border-green-500/70 focus:ring-green-500/20'
-                : 'focus:border-primary/50 focus:ring-2 focus:ring-primary/20'
+                ? 'border-emerald-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10'
+                : 'border-slate-200 hover:border-slate-300 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10'
             }
-            ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
+            ${disabled ? 'opacity-50 cursor-not-allowed bg-slate-50' : ''}
           `}
         />
 
         {/* Right icon area */}
-        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
+        <div className="absolute right-3.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
           {/* Password visibility toggle */}
           {isPassword && value && (
             <button
               type="button"
               onClick={() => setShowPassword(prev => !prev)}
-              className="text-gray-500 hover:text-gray-300 transition-colors p-0.5"
+              className="text-slate-400 hover:text-slate-600 transition-colors p-0.5"
               tabIndex={-1}
               aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
@@ -97,14 +94,14 @@ const AuthInput = ({
             </button>
           )}
 
-          {/* Validation status icon (non-password or after password toggle) */}
+          {/* Validation status icon */}
           {!isPassword && error && (
-            <svg className="w-4 h-4 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+            <svg className="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
             </svg>
           )}
           {!isPassword && success && !error && (
-            <svg className="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+            <svg className="w-4 h-4 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
             </svg>
           )}
@@ -113,15 +110,16 @@ const AuthInput = ({
 
       {/* Error message */}
       {error && (
-        <p id={`${id}-error`} className="mt-1.5 text-xs text-red-400 font-medium auth-fade-in" role="alert">
+        <p id={`${id}-error`} className="mt-1.5 text-xs text-red-500 font-medium auth-fade-in" role="alert">
           {error}
         </p>
       )}
 
-      {/* Children slot (e.g. password strength meter) */}
+      {/* Children slot */}
       {children}
     </div>
   );
 };
 
 export default AuthInput;
+

@@ -3,13 +3,14 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../components/ui/ToastProvider';
 import { gsap } from 'gsap';
-import { validateEmail } from '../utils/validators';
 import { getFirebaseErrorMessage } from '../utils/firebaseErrors';
 import AuthInput from '../components/auth/AuthInput';
 import GoogleButton from '../components/auth/GoogleButton';
 import PhoneLoginModal from '../components/auth/PhoneLoginModal';
-import Logo from '../components/common/Logo';
+import CodovateLogo from '../components/common/CodovateLogo';
+import LoginWorkspaceVisual from '../components/auth/LoginWorkspaceVisual';
 import api from '../api/axios';
+import { Briefcase, Users, BookOpen, User, Lock, Phone, Shield } from 'lucide-react';
 
 const Login = () => {
   const [form, setForm] = useState({ emailOrUsername: '', password: '' });
@@ -18,20 +19,18 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [isPhoneModalOpen, setIsPhoneModalOpen] = useState(false);
-  const [rememberMe, setRememberMe] = useState(true);
   const [formShake, setFormShake] = useState(false);
 
   const { login, loginWithGoogle, user } = useAuth();
   const { addToast } = useToast();
   const navigate = useNavigate();
 
+  const logoRef = useRef(null);
   const formRef = useRef(null);
-  const bgRef = useRef(null);
   const infoRef = useRef(null);
-  const headingRef = useRef(null);
 
   useEffect(() => {
-    document.title = 'Codovate | Login';
+    document.title = 'Sign In | Codovate';
   }, []);
 
   // Auto-redirect if already authenticated
@@ -46,14 +45,39 @@ const Login = () => {
     }
   }, [user, navigate]);
 
-  // GSAP entrance animations
+  // GSAP entrance animations matching specification
   useEffect(() => {
-    let ctx = gsap.context(() => {
-      const tl = gsap.timeline();
-      if (bgRef.current) tl.fromTo(bgRef.current, { opacity: 0, scale: 1.1 }, { opacity: 1, scale: 1, duration: 1.2, ease: 'power2.out' });
-      if (infoRef.current) tl.fromTo(infoRef.current.children, { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, stagger: 0.15, ease: 'power3.out' }, '-=0.8');
-      if (headingRef.current) tl.fromTo(headingRef.current, { y: -20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, ease: 'power3.out' }, '-=0.8');
-      if (formRef.current) tl.fromTo(formRef.current, { x: 30, opacity: 0 }, { x: 0, opacity: 1, duration: 0.8, ease: 'power3.out' }, '-=0.6');
+    const ctx = gsap.context(() => {
+      const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+
+      // One-time premium logo reveal
+      if (logoRef.current) {
+        tl.fromTo(
+          logoRef.current,
+          { opacity: 0, scale: 0.95, y: 10 },
+          { opacity: 1, scale: 1, y: 0, duration: 0.8 }
+        );
+      }
+
+      // Staggered info content
+      if (infoRef.current) {
+        tl.fromTo(
+          infoRef.current.children,
+          { y: 20, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.6, stagger: 0.1 },
+          '-=0.5'
+        );
+      }
+
+      // Card slide in
+      if (formRef.current) {
+        tl.fromTo(
+          formRef.current,
+          { y: 20, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.7 },
+          '-=0.6'
+        );
+      }
     });
 
     return () => ctx.revert();
@@ -63,7 +87,7 @@ const Login = () => {
   const validate = useCallback(() => {
     const newErrors = {};
     if (!form.emailOrUsername.trim()) {
-      newErrors.emailOrUsername = 'Email or username is required.';
+      newErrors.emailOrUsername = 'Email or phone number is required.';
     }
     if (!form.password) {
       newErrors.password = 'Password is required.';
@@ -78,11 +102,11 @@ const Login = () => {
   }, [form, touched, validate]);
 
   const handleBlur = (field) => {
-    setTouched(prev => ({ ...prev, [field]: true }));
+    setTouched((prev) => ({ ...prev, [field]: true }));
   };
 
   const handleChange = (field, value) => {
-    setForm(prev => ({ ...prev, [field]: value }));
+    setForm((prev) => ({ ...prev, [field]: value }));
   };
 
   // ─── Email/Password Login ──────────────────────────────
@@ -115,24 +139,29 @@ const Login = () => {
       const tApiEnd = performance.now();
 
       const { token, user: userData, redirect: backendRedirect } = res.data;
-      login(token, userData, rememberMe);
+      login(token, userData, true);
       const tContextEnd = performance.now();
 
-      addToast({ type: 'success', title: 'Welcome back!', message: `Signed in as ${userData.name || userData.email}` });
-      
+      addToast({
+        type: 'success',
+        title: 'Welcome back!',
+        message: `Signed in as ${userData.name || userData.email}`,
+      });
+
       const adminRoles = ['super_admin', 'admin', 'college_admin', 'company_admin', 'mentor'];
-      const targetPath = backendRedirect || (adminRoles.includes(userData.role) ? '/admin' : '/dashboard');
+      const targetPath =
+        backendRedirect || (adminRoles.includes(userData.role) ? '/admin' : '/dashboard');
 
       navigate(targetPath, { replace: true });
       const tNavEnd = performance.now();
 
       console.log(
         `%c⚡ CODOVATE LOGIN PERFORMANCE (Email) ⚡\n` +
-        `Backend Auth Session: ${(tApiEnd - tApiStart).toFixed(0)}ms\n` +
-        `State & Context Update: ${(tContextEnd - tApiEnd).toFixed(0)}ms\n` +
-        `Navigation & Redirect: ${(tNavEnd - tContextEnd).toFixed(0)}ms\n` +
-        `TOTAL LOGIN TIME: ${(tNavEnd - tClick).toFixed(0)}ms`,
-        'color: #22c55e; font-weight: bold; font-size: 13px;'
+          `Backend Auth Session: ${(tApiEnd - tApiStart).toFixed(0)}ms\n` +
+          `State & Context Update: ${(tContextEnd - tApiEnd).toFixed(0)}ms\n` +
+          `Navigation & Redirect: ${(tNavEnd - tContextEnd).toFixed(0)}ms\n` +
+          `TOTAL LOGIN TIME: ${(tNavEnd - tClick).toFixed(0)}ms`,
+        'color: #2563eb; font-weight: bold; font-size: 13px;'
       );
     } catch (err) {
       let msg = getFirebaseErrorMessage(err);
@@ -157,20 +186,26 @@ const Login = () => {
       const resData = await loginWithGoogle();
       const tAuthEnd = performance.now();
 
-      addToast({ type: 'success', title: 'Welcome!', message: 'Signed in with Google successfully.' });
+      addToast({
+        type: 'success',
+        title: 'Welcome!',
+        message: 'Signed in with Google successfully.',
+      });
 
       const adminRoles = ['super_admin', 'admin', 'college_admin', 'company_admin', 'mentor'];
-      const targetPath = resData?.redirect || (adminRoles.includes(resData?.user?.role) ? '/admin' : '/dashboard');
+      const targetPath =
+        resData?.redirect ||
+        (adminRoles.includes(resData?.user?.role) ? '/admin' : '/dashboard');
 
       navigate(targetPath, { replace: true });
       const tNavEnd = performance.now();
 
       console.log(
         `%c⚡ CODOVATE LOGIN PERFORMANCE (Google) ⚡\n` +
-        `Firebase + Backend Auth: ${(tAuthEnd - tClick).toFixed(0)}ms\n` +
-        `Navigation & Redirect: ${(tNavEnd - tAuthEnd).toFixed(0)}ms\n` +
-        `TOTAL LOGIN TIME: ${(tNavEnd - tClick).toFixed(0)}ms`,
-        'color: #22c55e; font-weight: bold; font-size: 13px;'
+          `Firebase + Backend Auth: ${(tAuthEnd - tClick).toFixed(0)}ms\n` +
+          `Navigation & Redirect: ${(tNavEnd - tAuthEnd).toFixed(0)}ms\n` +
+          `TOTAL LOGIN TIME: ${(tNavEnd - tClick).toFixed(0)}ms`,
+        'color: #2563eb; font-weight: bold; font-size: 13px;'
       );
     } catch (err) {
       const msg = getFirebaseErrorMessage(err);
@@ -186,173 +221,283 @@ const Login = () => {
   const isFormValid = form.emailOrUsername.trim() && form.password;
 
   return (
-    <div className="min-h-screen bg-black flex flex-col lg:flex-row overflow-x-hidden overflow-y-auto w-full">
+    <div className="min-h-screen bg-[#FAFAFC] flex flex-col lg:flex-row font-sans overflow-x-hidden relative text-slate-900">
       
-      {/* Left Column: Branding (Hidden on mobile) */}
-      <div className="hidden lg:flex w-1/2 relative flex-col justify-between p-8 lg:p-10 border-r border-white/5">
-        <div ref={bgRef} className="absolute inset-0 z-0 overflow-hidden">
-          <div className="absolute inset-0 bg-black/40 z-10 backdrop-blur-[2px]" />
-          <div className="absolute top-0 left-0 w-full h-full opacity-20"
-            style={{
-              backgroundImage: 'url("https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=2070&auto=format&fit=crop")',
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-            }}
-          />
-          <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-black to-transparent z-10" />
-          <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-primary/20 rounded-full blur-[120px] z-0" />
-        </div>
+      {/* Background Decorative Ambient Dots & Radial Blurs */}
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-100/40 rounded-full blur-[140px] pointer-events-none z-0" />
+      <div className="absolute bottom-0 left-0 w-[450px] h-[450px] bg-purple-100/40 rounded-full blur-[140px] pointer-events-none z-0" />
 
-        <div className="relative z-20">
-          <Link to="/" className="inline-flex items-center shrink-0">
-            <Logo responsive className="drop-shadow-xl" />
+      {/* Grid Pattern Background Overlay */}
+      <div
+        className="absolute inset-0 pointer-events-none opacity-[0.035] z-0"
+        style={{
+          backgroundImage: `radial-gradient(#0F172A 1px, transparent 1px)`,
+          backgroundSize: '24px 24px',
+        }}
+      />
+
+      {/* ── LEFT SIDE (45% Split Screen on Desktop) ────────────────────── */}
+      <div className="hidden lg:flex w-full lg:w-[45%] flex-col justify-between p-10 lg:p-14 relative z-10 select-none">
+        
+        {/* Top: Official Codovate Logo (Light Variant) */}
+        <div ref={logoRef} className="pt-2">
+          <Link to="/" className="inline-block focus:outline-none">
+            <CodovateLogo variant="light" size="xl" className="drop-shadow-sm" />
           </Link>
         </div>
 
-        <div ref={infoRef} className="relative z-20 max-w-lg mb-12">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 mb-6 backdrop-blur-md">
-            <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-            <span className="text-gray-300 text-xs font-semibold tracking-wide uppercase">Student Growth OS</span>
+        {/* Welcome Content */}
+        <div ref={infoRef} className="max-w-md my-auto py-6">
+          
+          {/* Small Pill */}
+          <div className="inline-flex items-center px-3.5 py-1.5 rounded-full bg-purple-100/70 border border-purple-200/60 mb-6 backdrop-blur-sm">
+            <span className="text-xs font-bold text-indigo-700 tracking-wide">
+              Welcome Back!
+            </span>
           </div>
-          <h1 className="text-5xl font-bold text-white leading-[1.1] mb-6">
-            Accelerate your <br/>
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-[#a78bfa]">career growth</span>
+
+          {/* Title */}
+          <h1 className="text-4xl lg:text-5xl font-extrabold text-slate-900 leading-[1.15] mb-4 tracking-tight">
+            Sign in to <br />
+            your{' '}
+            <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
+              Codovate
+            </span>
           </h1>
-          <p className="text-gray-400 text-lg leading-relaxed mb-8">
-            Join thousands of students discovering elite hackathons, exclusive internships, and personalized mentorship — all in one unified ecosystem.
+
+          {/* Supporting Copy */}
+          <p className="text-slate-500 text-sm lg:text-base leading-relaxed mb-8 font-normal">
+            Access your opportunities, connect with teams, continue learning, and build your future.
           </p>
-          <div className="flex items-center gap-4">
-            <div className="flex -space-x-3">
-              {[1,2,3,4].map(i => (
-                <div key={i} className="w-10 h-10 rounded-full border-2 border-black bg-gray-800 flex items-center justify-center overflow-hidden">
-                  <img loading="lazy" decoding="async" src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${i+10}`} alt="student" className="w-full h-full object-cover" />
-                </div>
-              ))}
+
+          {/* Feature Benefits List */}
+          <div className="space-y-4">
+            
+            {/* Benefit 1 */}
+            <div className="flex items-start gap-3.5 group">
+              <div className="w-10 h-10 rounded-xl bg-purple-100/80 text-purple-600 flex items-center justify-center shrink-0 transition-transform group-hover:scale-105">
+                <Briefcase size={18} strokeWidth={2} />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-slate-800 leading-tight">
+                  Discover Opportunities
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Find internships, jobs & more
+                </p>
+              </div>
             </div>
-            <p className="text-gray-400 text-sm font-medium">Over 10,000+ students joined</p>
+
+            {/* Benefit 2 */}
+            <div className="flex items-start gap-3.5 group">
+              <div className="w-10 h-10 rounded-xl bg-emerald-100/80 text-emerald-600 flex items-center justify-center shrink-0 transition-transform group-hover:scale-105">
+                <Users size={18} strokeWidth={2} />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-slate-800 leading-tight">
+                  Collaborate in Teams
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Connect, build & grow together
+                </p>
+              </div>
+            </div>
+
+            {/* Benefit 3 */}
+            <div className="flex items-start gap-3.5 group">
+              <div className="w-10 h-10 rounded-xl bg-blue-100/80 text-blue-600 flex items-center justify-center shrink-0 transition-transform group-hover:scale-105">
+                <BookOpen size={18} strokeWidth={2} />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-slate-800 leading-tight">
+                  Learn & Upskill
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Track progress and achieve goals
+                </p>
+              </div>
+            </div>
+
           </div>
         </div>
+
+        {/* Bottom Workspace Illustration Visual */}
+        <div className="mt-auto pt-4">
+          <LoginWorkspaceVisual className="w-full" />
+        </div>
+
       </div>
 
-      {/* Right Column: Login Form */}
-      <div className="w-full lg:w-1/2 flex flex-col justify-center items-center p-6 sm:p-8 relative min-h-screen lg:min-h-0">
+      {/* ── RIGHT SIDE (55% Split Screen / Form Card) ────────────────────── */}
+      <div className="w-full lg:w-[55%] flex flex-col justify-center items-center p-6 sm:p-10 lg:p-14 relative z-10 min-h-screen lg:min-h-0">
         
-        {/* Mobile Logo */}
-        <div className="lg:hidden absolute top-6 left-6">
-          <Link to="/" className="inline-flex items-center shrink-0">
-            <Logo responsive className="drop-shadow-xl" />
+        {/* Mobile Header Logo */}
+        <div className="lg:hidden w-full max-w-md mb-6 flex justify-start">
+          <Link to="/">
+            <CodovateLogo variant="light" size="lg" />
           </Link>
         </div>
 
-        <div ref={formRef} className="w-full max-w-md mt-16 lg:mt-0">
-          <div ref={headingRef} className="mb-8 text-center lg:text-left">
-            <h2 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 mb-3 drop-shadow-md">Welcome back</h2>
-            <p className="text-gray-400 text-base font-medium tracking-wide">Sign in to your account to continue</p>
-          </div>
+        {/* Right Premium Login Card */}
+        <div
+          ref={formRef}
+          className={`w-full max-w-lg bg-white border border-slate-200/90 rounded-3xl p-8 sm:p-10 shadow-xl shadow-slate-200/50 relative overflow-hidden transition-all duration-300 ${
+            formShake ? 'auth-shake' : ''
+          }`}
+        >
+          {/* Card Title */}
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mb-2">
+            Sign in
+          </h2>
 
-          <div className={`glass-panel p-6 sm:p-8 rounded-2xl relative overflow-hidden ${formShake ? 'auth-shake' : ''}`}>
-            <div className="absolute top-[-50px] right-[-50px] w-32 h-32 bg-primary/20 blur-[50px] rounded-full pointer-events-none" />
+          {/* Subtitle / Signup Link */}
+          <p className="text-slate-500 text-sm font-medium mb-8">
+            Don't have an account?{' '}
+            <Link
+              to="/signup"
+              className="text-indigo-600 hover:text-indigo-700 font-bold transition-colors"
+            >
+              Sign up
+            </Link>
+          </p>
+
+          {/* Global Form Error */}
+          {errors.form && (
+            <div
+              className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm flex items-center gap-3 font-medium auth-fade-in"
+              role="alert"
+            >
+              <span className="text-base">⚠️</span> {errors.form}
+            </div>
+          )}
+
+          {/* Login Form */}
+          <form onSubmit={handleLogin} className="space-y-5" noValidate>
             
-            {/* Global form error */}
-            {errors.form && (
-              <div className="mb-5 p-3.5 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm flex items-center gap-3 font-semibold auth-fade-in" role="alert">
-                <span>⚠️</span> {errors.form}
-              </div>
-            )}
+            {/* Email or Phone field */}
+            <AuthInput
+              id="login-email"
+              label="Email or Phone Number"
+              type="text"
+              value={form.emailOrUsername}
+              onChange={(e) => handleChange('emailOrUsername', e.target.value)}
+              onBlur={() => handleBlur('emailOrUsername')}
+              placeholder="Enter your email or phone number"
+              error={touched.emailOrUsername ? errors.emailOrUsername : null}
+              success={touched.emailOrUsername && !errors.emailOrUsername && !!form.emailOrUsername}
+              autoComplete="username"
+              disabled={loading}
+              icon={User}
+            />
 
-            <form onSubmit={handleLogin} className="space-y-4 relative z-10" noValidate>
-              <AuthInput
-                id="login-email"
-                label="Email or Username"
-                type="text"
-                value={form.emailOrUsername}
-                onChange={e => handleChange('emailOrUsername', e.target.value)}
-                onBlur={() => handleBlur('emailOrUsername')}
-                placeholder="hello@example.com or john_doe"
-                error={touched.emailOrUsername ? errors.emailOrUsername : null}
-                success={touched.emailOrUsername && !errors.emailOrUsername && !!form.emailOrUsername}
-                autoComplete="username"
-                disabled={loading}
-              />
-
+            {/* Password field */}
+            <div>
               <AuthInput
                 id="login-password"
                 label="Password"
                 type="password"
                 value={form.password}
-                onChange={e => handleChange('password', e.target.value)}
+                onChange={(e) => handleChange('password', e.target.value)}
                 onBlur={() => handleBlur('password')}
-                placeholder="••••••••"
+                placeholder="Enter your password"
                 error={touched.password ? errors.password : null}
                 autoComplete="current-password"
                 disabled={loading}
+                icon={Lock}
               />
 
-              {/* Remember Me + Forgot Password row */}
-              <div className="flex items-center justify-between pt-1">
-                <label className="flex items-center gap-2 cursor-pointer group">
-                  <input
-                    type="checkbox"
-                    checked={rememberMe}
-                    onChange={e => setRememberMe(e.target.checked)}
-                    className="w-4 h-4 rounded border-white/20 bg-white/5 text-primary focus:ring-primary/30 focus:ring-offset-0 cursor-pointer"
-                  />
-                  <span className="text-xs text-gray-400 group-hover:text-gray-300 transition-colors font-medium">Remember me</span>
-                </label>
-                <Link to="/forgot-password" className="text-xs text-primary hover:text-primary-light font-bold transition-colors">
+              {/* Forgot Password link right-aligned */}
+              <div className="flex justify-end mt-2">
+                <Link
+                  to="/forgot-password"
+                  className="text-xs font-semibold text-indigo-600 hover:text-indigo-700 transition-colors"
+                >
                   Forgot password?
                 </Link>
               </div>
+            </div>
 
-              <button
-                type="submit"
-                disabled={loading || !isFormValid}
-                className="btn-primary w-full py-3.5 disabled:opacity-50 mt-3 text-sm font-bold tracking-wide shadow-lg shadow-primary/20 disabled:cursor-not-allowed"
-              >
-                {loading ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Signing in...
+            {/* Primary Sign-In Button */}
+            <button
+              type="submit"
+              disabled={loading || !isFormValid}
+              className="
+                w-full py-3.5 px-6 mt-2 rounded-xl
+                bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600
+                hover:from-blue-700 hover:to-purple-700
+                text-white font-semibold text-sm sm:text-base tracking-wide
+                shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40
+                hover:-translate-y-0.5 active:translate-y-0
+                disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none
+                transition-all duration-200 flex items-center justify-center gap-2 group
+              "
+            >
+              {loading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                  Signing in...
+                </span>
+              ) : (
+                <>
+                  <span>Sign in</span>
+                  <span className="transition-transform duration-200 group-hover:translate-x-1">
+                    →
                   </span>
-                ) : 'Sign In'}
-              </button>
-            </form>
+                </>
+              )}
+            </button>
 
-            <div className="flex items-center gap-3 my-6 relative z-10">
-              <div className="flex-1 h-px bg-white/10" />
-              <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">Or continue with</span>
-              <div className="flex-1 h-px bg-white/10" />
-            </div>
+          </form>
 
-            <div className="relative z-10 flex flex-col gap-3">
-              <GoogleButton
-                onClick={handleGoogleLogin}
-                loading={googleLoading}
-                disabled={loading}
-                label="Sign in with Google"
-              />
-              <button
-                type="button"
-                onClick={() => setIsPhoneModalOpen(true)}
-                disabled={loading}
-                className="w-full flex items-center justify-center gap-3 bg-white/5 hover:bg-white/10 border border-white/10 text-white py-3 rounded-xl font-bold transition-all disabled:opacity-50"
-              >
-                <svg className="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                </svg>
-                Continue with Phone
-              </button>
-            </div>
+          {/* Social Auth Divider */}
+          <div className="relative flex items-center justify-center my-6">
+            <div className="w-full border-t border-slate-200" />
+            <span className="absolute bg-white px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+              or continue with
+            </span>
           </div>
 
-          <p className="text-center text-gray-500 text-sm mt-8">
-            Don't have an account?{' '}
-            <Link to="/signup" className="text-white hover:text-primary font-bold transition-colors">Create one</Link>
-          </p>
+          {/* Functional Social Auth Buttons Grid */}
+          <div className="grid grid-cols-2 gap-3">
+            <GoogleButton
+              onClick={handleGoogleLogin}
+              loading={googleLoading}
+              disabled={loading}
+              label="Google"
+            />
+            <button
+              type="button"
+              onClick={() => setIsPhoneModalOpen(true)}
+              disabled={loading}
+              className="
+                flex items-center justify-center gap-2 py-3 px-4
+                bg-white hover:bg-slate-50 active:bg-slate-100
+                border border-slate-200 rounded-xl font-semibold text-sm text-slate-700
+                shadow-sm hover:shadow transition-all duration-200
+                disabled:opacity-50 disabled:cursor-not-allowed
+                focus:outline-none focus:ring-4 focus:ring-indigo-500/10
+              "
+            >
+              <Phone size={17} className="text-slate-600" />
+              <span>Phone</span>
+            </button>
+          </div>
+
+          {/* Security Message */}
+          <div className="mt-8 pt-6 border-t border-slate-100 flex items-center justify-center gap-2 text-xs text-slate-400 font-medium text-center">
+            <Shield size={16} className="text-indigo-500 shrink-0" />
+            <span>Your data is secure with us. We never share your information.</span>
+          </div>
+
         </div>
+
       </div>
-      
-      <PhoneLoginModal isOpen={isPhoneModalOpen} onClose={() => setIsPhoneModalOpen(false)} />
+
+      <PhoneLoginModal
+        isOpen={isPhoneModalOpen}
+        onClose={() => setIsPhoneModalOpen(false)}
+      />
+
     </div>
   );
 };

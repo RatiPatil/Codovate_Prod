@@ -8,26 +8,34 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: '#2015ff',
-        'primary-dark': '#1a10d4',
-        'primary-light': '#4035ff',
+        primary: '#2563EB',
+        'primary-dark': '#1D4ED8',
+        'primary-light': '#3B82F6',
+        'brand-indigo': '#4F46E5',
+        'brand-purple': '#7C3AED',
+        'accent-purple': '#9333EA',
+        'brand-slate': '#0F172A',
+        'brand-muted': '#475569',
+        'brand-border': '#E2E8F0',
+        'soft-purple': '#F5F3FF',
         // Sidebar shell design tokens
         sidebar: '#0b0a1e',
         'sidebar-hover': 'rgba(255,255,255,0.07)',
         'sidebar-border': 'rgba(255,255,255,0.07)',
-        'shell-bg': '#f0f2ff',
+        'shell-bg': '#f8fafc',
         'shell-header': '#ffffff',
       },
       backgroundImage: {
         'sidebar-gradient': 'linear-gradient(180deg, #0b0a1e 0%, #110e2e 100%)',
-        'nav-active': 'linear-gradient(135deg, #6c3aff 0%, #3a9bff 100%)',
-        'upgrade-card': 'linear-gradient(135deg, #6c3aff 0%, #3a9bff 100%)',
-        'brand-gradient': 'linear-gradient(135deg, #7c3aed 0%, #2015ff 50%, #0ea5e9 100%)',
+        'nav-active': 'linear-gradient(90deg, #2563EB 0%, #4F46E5 50%, #7C3AED 100%)',
+        'upgrade-card': 'linear-gradient(135deg, #2563EB 0%, #4F46E5 50%, #7C3AED 100%)',
+        'brand-gradient': 'linear-gradient(90deg, #2563EB 0%, #4F46E5 50%, #7C3AED 100%)',
       },
       boxShadow: {
-        'nav-active': '0 4px 24px rgba(108, 58, 255, 0.4)',
+        'nav-active': '0 4px 20px rgba(37, 99, 235, 0.35)',
         'sidebar': '4px 0 32px rgba(0,0,0,0.4)',
         'header': '0 1px 0 rgba(0,0,0,0.06)',
+        'card': '0 4px 20px -2px rgba(15, 23, 42, 0.05)',
       },
       keyframes: {
         slideUp: {

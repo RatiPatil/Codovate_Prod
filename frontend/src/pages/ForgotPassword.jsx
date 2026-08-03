@@ -4,9 +4,10 @@ import { gsap } from 'gsap';
 import { useToast } from '../components/ui/ToastProvider';
 import { validateEmail } from '../utils/validators';
 import AuthInput from '../components/auth/AuthInput';
-import Logo from '../components/common/Logo';
+import CodovateLogo from '../components/common/CodovateLogo';
 import { sendPasswordResetEmail, fetchSignInMethodsForEmail } from 'firebase/auth';
 import { auth } from '../lib/firebase';
+import { Mail, CheckCircle } from 'lucide-react';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
@@ -18,10 +19,14 @@ const ForgotPassword = () => {
   const { addToast } = useToast();
 
   useEffect(() => {
+    document.title = 'Forgot Password | Codovate';
+  }, []);
+
+  useEffect(() => {
     let ctx = gsap.context(() => {
       gsap.fromTo(formRef.current,
-        { y: 30, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.8, ease: 'power3.out' }
+        { y: 20, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.7, ease: 'power3.out' }
       );
     });
     return () => ctx.revert();
@@ -80,36 +85,38 @@ const ForgotPassword = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center p-6 relative overflow-hidden">
-      <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-primary/20 blur-[120px] pointer-events-none" />
-      
+    <div className="min-h-screen bg-[#FAFAFC] flex items-center justify-center p-6 relative overflow-hidden font-sans text-slate-900">
+      {/* Background Decorative Ambient Radial Blurs */}
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-100/40 rounded-full blur-[140px] pointer-events-none z-0" />
+      <div className="absolute bottom-0 left-0 w-[450px] h-[450px] bg-purple-100/40 rounded-full blur-[140px] pointer-events-none z-0" />
+
       <div ref={formRef} className="w-full max-w-md relative z-10">
-        <div className="mb-8 text-center">
-          <Link to="/" className="inline-flex items-center shrink-0 mb-6">
-            <Logo responsive className="drop-shadow-2xl" />
+        <div className="mb-6 text-center">
+          <Link to="/" className="inline-block focus:outline-none mb-6">
+            <CodovateLogo variant="light" size="xl" className="drop-shadow-sm" />
           </Link>
-          <h2 className="text-3xl font-bold text-white mb-2">Reset Password</h2>
-          <p className="text-gray-400 text-sm">Enter your email and we'll send you a reset link.</p>
+          <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">Reset password</h2>
+          <p className="text-slate-500 text-sm font-medium">Enter your email and we'll send you a reset link.</p>
         </div>
 
-        <div className="glass-panel p-8 rounded-2xl relative">
+        <div className="bg-white border border-slate-200/90 rounded-3xl p-8 sm:p-10 shadow-xl shadow-slate-200/50 relative">
           {error && (
-            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm font-semibold auth-fade-in" role="alert">
-              ⚠️ {error}
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm font-medium flex items-center gap-3 auth-fade-in" role="alert">
+              <span>⚠️</span> {error}
             </div>
           )}
 
           {success ? (
-            <div className="text-center auth-fade-in">
-              <div className="w-16 h-16 bg-green-500/20 text-green-400 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
-                ✓
+            <div className="text-center auth-fade-in py-2">
+              <div className="w-14 h-14 bg-emerald-50 border border-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <CheckCircle size={28} />
               </div>
-              <h3 className="text-white font-bold text-lg mb-2">Check your email</h3>
-              <p className="text-gray-400 text-sm mb-6">
-                Password reset link has been sent to your email. Please check your inbox (and spam folder).
+              <h3 className="text-slate-900 font-extrabold text-lg mb-2">Check your email</h3>
+              <p className="text-slate-500 text-sm mb-6 leading-relaxed">
+                Password reset link has been sent to <strong>{email}</strong>. Please check your inbox and spam folder.
               </p>
-              <Link to="/login" className="btn-primary w-full py-4 block text-center text-sm font-bold">
-                Return to Login
+              <Link to="/login" className="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white font-semibold text-sm shadow-md block text-center">
+                Return to Sign In
               </Link>
             </div>
           ) : (
@@ -121,21 +128,31 @@ const ForgotPassword = () => {
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 onBlur={() => setTouched(true)}
-                placeholder="you@example.com"
+                placeholder="name@example.com"
                 error={emailError}
                 success={touched && !emailError && !!email}
                 autoComplete="email"
                 disabled={loading}
+                icon={Mail}
               />
 
               <button
                 type="submit"
                 disabled={loading || (touched && !!emailError)}
-                className="btn-primary w-full py-4 mt-2 text-sm font-bold tracking-wide shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="
+                  w-full py-3.5 px-6 mt-2 rounded-xl
+                  bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600
+                  hover:from-blue-700 hover:to-purple-700
+                  text-white font-semibold text-sm sm:text-base tracking-wide
+                  shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40
+                  hover:-translate-y-0.5 active:translate-y-0
+                  disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none
+                  transition-all duration-200 flex items-center justify-center gap-2
+                "
               >
                 {loading ? (
                   <span className="flex items-center justify-center gap-2">
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
                     Sending...
                   </span>
                 ) : 'Send Reset Link'}
@@ -144,9 +161,9 @@ const ForgotPassword = () => {
           )}
         </div>
 
-        <p className="text-center text-gray-500 text-sm mt-8">
+        <p className="text-center text-slate-500 text-sm mt-8">
           Remember your password?{' '}
-          <Link to="/login" className="text-white hover:text-primary font-bold transition-colors">Sign in</Link>
+          <Link to="/login" className="text-indigo-600 hover:text-indigo-700 font-bold transition-colors">Sign in</Link>
         </p>
       </div>
     </div>
@@ -154,3 +171,4 @@ const ForgotPassword = () => {
 };
 
 export default ForgotPassword;
+
