@@ -228,34 +228,51 @@ router.post("/external", auth, async (req, res) => {
 // Get my applications
 router.get("/my", auth, async (req, res) => {
   try {
-    const appsSnapshot = await db.collection("applications").where("user_id", "==", req.user.id).get();
-    
+    const [userAppsSnap, studentAppsSnap] = await Promise.all([
+      db.collection("applications").where("user_id", "==", req.user.id).get(),
+      db.collection("applications").where("student_id", "==", req.user.id).get()
+    ]);
+
+    const appsMap = new Map();
+    userAppsSnap.docs.forEach(doc => appsMap.set(doc.id, { id: doc.id, ...mapDoc(doc) }));
+    studentAppsSnap.docs.forEach(doc => appsMap.set(doc.id, { id: doc.id, ...mapDoc(doc) }));
+
     let applications = [];
-    for (const doc of appsSnapshot.docs) {
-      const app = mapDoc(doc);
-      app.id = doc.id;
-      
-      const oppDoc = await db.collection("opportunities").doc(app.opportunity_id).get();
-      if (oppDoc.exists) {
-        const o = mapDoc(oppDoc);
-        applications.push({
-          ...app,
-          title: o.title,
-          type: o.type,
-          company: o.company,
-          deadline: o.deadline,
-          mode: o.mode,
-          location: o.location
-        });
-      } else {
-        applications.push(app);
+    for (const app of appsMap.values()) {
+      if (app.opportunity_id) {
+        const oppDoc = await db.collection("opportunities").doc(app.opportunity_id).get();
+        if (oppDoc.exists) {
+          const o = mapDoc(oppDoc);
+          applications.push({
+            ...app,
+            company: app.company_name || app.company || o.company || 'Tech Company',
+            title: app.opportunity_title || app.role || app.internship_title || o.title || 'Position',
+            type: app.type || o.type || 'Job',
+            deadline: app.deadline || o.deadline,
+            mode: app.mode || o.mode,
+            location: app.location || o.location,
+            logo: app.logo || o.logo || ''
+          });
+          continue;
+        }
       }
+      applications.push({
+        ...app,
+        company: app.company_name || app.company || 'Tech Company',
+        title: app.opportunity_title || app.role || app.internship_title || 'Position',
+        type: app.type || 'Job'
+      });
     }
     
     applications.sort((a, b) => {
-      const timeA = a.applied_at?.toMillis ? a.applied_at.toMillis() : new Date(a.applied_at).getTime();
-      const timeB = b.applied_at?.toMillis ? b.applied_at.toMillis() : new Date(b.applied_at).getTime();
-      return timeB - timeA;
+      const getTime = (val) => {
+        if (!val) return 0;
+        if (typeof val === 'object' && val.toMillis) return val.toMillis();
+        if (typeof val === 'object' && val.seconds) return val.seconds * 1000;
+        const parsed = new Date(val).getTime();
+        return isNaN(parsed) ? 0 : parsed;
+      };
+      return getTime(b.applied_at || b.createdAt) - getTime(a.applied_at || a.createdAt);
     });
 
     res.json(applications);

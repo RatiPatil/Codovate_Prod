@@ -101,7 +101,7 @@ const SkelCard = () => (
 
 /* ─── Donut Chart ──────────────────────────────────────────────── */
 const DonutChart = ({ data, total }) => {
-  const DONUT_COLORS = { Applied: '#22c55e', 'Under Review': '#fb923c', Interview: '#3b82f6', Offer: '#a855f7', Rejected: '#ef4444' };
+  const DONUT_COLORS = { Applied: '#22c55e', 'Under Review': '#fb923c', Shortlisted: '#3b82f6', Interview: '#6366f1', Offer: '#a855f7', Rejected: '#ef4444' };
   const r = 52, cx = 64, cy = 64;
   const circ = 2 * Math.PI * r;
   let offset = 0;
@@ -326,11 +326,12 @@ const Applications = () => {
 
   /* ── Overview counts ──────────────────────────────────────── */
   const overview = useMemo(() => {
-    const counts = { Applied: 0, 'Under Review': 0, Interview: 0, Offer: 0, Rejected: 0 };
+    const counts = { Applied: 0, 'Under Review': 0, Shortlisted: 0, Interview: 0, Offer: 0, Rejected: 0 };
     apps.forEach(a => {
       const s = a.status || '';
       if (s === 'Applied')                                    counts['Applied']++;
-      else if (s === 'Under Review' || s === 'Shortlisted')   counts['Under Review']++;
+      else if (s === 'Under Review')                          counts['Under Review']++;
+      else if (s === 'Shortlisted' || s === 'Shortlist')      counts['Shortlisted']++;
       else if (s.includes('Interview') || s === 'Online Assessment') counts['Interview']++;
       else if (s === 'Offer' || s === 'Accepted')             counts['Offer']++;
       else if (s === 'Rejected')                              counts['Rejected']++;
