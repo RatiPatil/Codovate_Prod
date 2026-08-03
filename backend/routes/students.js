@@ -349,7 +349,7 @@ router.get("/workspace", auth, async (req, res) => {
       db.collection("team_members").where("user_id", "==", uid).count().get(),
       db.collection("mentorSessions").where("student_id", "==", uid).count().get(),
       getCommunityUpdates(uid),
-      db.collection("opportunities").where("status", "==", "Active").limit(20).get()
+      db.collection("opportunities").get()
     ]);
 
     // Deduplicate user applications across user_id & student_id compatibility fields
@@ -399,7 +399,7 @@ router.get("/workspace", auth, async (req, res) => {
     // Relevant opportunity recommendation scoring based on profile skills & career goal
     const userSkills = (p.skills || []).map(s => String(s).toLowerCase());
     const careerGoal = String(p.careerGoal || p.desired_roles?.[0] || '').toLowerCase();
-    const rawOpps = oppsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const rawOpps = oppsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })).filter(o => o.is_active !== false && o.status !== 'Inactive');
 
     const scoredOpps = rawOpps.map(opp => {
       let score = 0;

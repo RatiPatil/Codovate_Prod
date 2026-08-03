@@ -61,23 +61,23 @@ router.post("/", auth, async (req, res) => {
       return res.status(404).json({ message: "Opportunity not found." });
       
     const opp = mapDoc(oppDoc);
-    if (!opp.is_active)
+    if (opp.is_active === false || opp.status === 'Inactive')
       return res.status(400).json({ message: "Opportunity is closed." });
 
     // Check deadline
     if (opp.deadline && new Date(opp.deadline) < new Date())
       return res.status(400).json({ message: "Application deadline has passed." });
 
-    // Check if already applied
-    const existingApps = await db.collection("applications")
-      .where("user_id", "==", req.user.id)
-      .where("opportunity_id", "==", opportunity_id)
-      .get();
+    // Check if already applied (check both user_id and student_id compatibility fields)
+    const [userAppsSnap, studentAppsSnap] = await Promise.all([
+      db.collection("applications").where("user_id", "==", req.user.id).where("opportunity_id", "==", opportunity_id).get(),
+      db.collection("applications").where("student_id", "==", req.user.id).where("opportunity_id", "==", opportunity_id).get()
+    ]);
       
-    if (!existingApps.empty)
+    if (!userAppsSnap.empty || !studentAppsSnap.empty)
       return res.status(409).json({ message: "You already applied to this opportunity." });
 
-    // Get student details (Not explicitly needed for the app object anymore, but keeping for checks if needed)
+    // Get student details
     const studentDoc = await db.collection("profiles").doc(req.user.id).get();
     const student = studentDoc.exists ? mapDoc(studentDoc) : {};
 
@@ -88,7 +88,10 @@ router.post("/", auth, async (req, res) => {
       user_id: req.user.id,
       student_id: req.user.id,
       opportunity_id: opportunity_id,
-      company_id: opp.company_id || '', // Link app to the company
+      company_id: opp.company_id || '',
+      company_name: opp.company || 'Tech Company',
+      opportunity_title: opp.title || 'Position',
+      role: opp.title || 'Position',
       status: 'Applied',
       applied_at: new Date()
     };

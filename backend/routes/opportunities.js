@@ -10,12 +10,6 @@ router.get("/", auth, async (req, res) => {
   try {
     const { type, search } = req.query;
     
-    let opportunitiesRef = db.collection("opportunities").where("is_active", "==", true);
-    
-    if (type && type !== "All") {
-      opportunitiesRef = opportunitiesRef.where("type", "==", type);
-    }
-    
     // Fetch student full context for heuristic matching
     const profileDoc = await db.collection("profiles").doc(req.user.id).get();
     const profileData = profileDoc.exists ? mapDoc(profileDoc) : {};
@@ -27,12 +21,20 @@ router.get("/", auth, async (req, res) => {
     const hasProjects = !projectsSnapshot.empty;
     const codingDoc = await db.collection("codingStats").doc(req.user.id).get();
     const hasGoodCodingScore = codingDoc.exists && (mapDoc(codingDoc).total_score > 200);
-    // Note: Firestore doesn't support ILIKE or text search natively.
-    // For MVP, we will fetch all matching the above and filter by search in memory.
-    const snapshot = await opportunitiesRef.get();
+
+    const snapshot = await db.collection("opportunities").get();
+    let docs = snapshot.docs.filter(d => {
+      const data = d.data();
+      const isActive = data.is_active !== false && data.status !== 'Inactive';
+      if (!isActive) return false;
+      if (type && type !== 'All') {
+        return (data.type || '').toLowerCase().includes(type.toLowerCase());
+      }
+      return true;
+    });
     
     let opportunities = [];
-    for (const doc of snapshot.docs) {
+    for (const doc of docs) {
       const opp = mapDoc(doc);
       opp.id = doc.id;
       

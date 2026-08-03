@@ -471,12 +471,13 @@ const Opportunities = () => {
 
     // Search
     if (search) {
-      const q = search.toLowerCase();
+      const q = search.trim().toLowerCase();
       list = list.filter(o =>
         o.title?.toLowerCase().includes(q) ||
         o.company?.toLowerCase().includes(q) ||
         o.location?.toLowerCase().includes(q) ||
-        (o.required_skills || []).some(s => s.toLowerCase().includes(q))
+        o.type?.toLowerCase().includes(q) ||
+        (o.required_skills || o.skills || []).some(s => String(s).toLowerCase().includes(q))
       );
     }
 
@@ -485,6 +486,15 @@ const Opportunities = () => {
       list = list.filter(o => filters.types.some(t =>
         (o.type || '').toLowerCase().includes(t.toLowerCase())
       ));
+    }
+
+    // Experience level filter
+    if (filters.experience.length > 0) {
+      list = list.filter(o => {
+        const expStr = String(o.experience_level || o.experience || o.eligibility || '').toLowerCase();
+        if (!expStr) return true;
+        return filters.experience.some(e => expStr.includes(e.toLowerCase()));
+      });
     }
 
     // Location filter
