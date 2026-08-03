@@ -8,6 +8,7 @@ const {
   mapDoc: mapDoc,
   mapDocs: mapDocs
 } = require('../utils/firestoreMapper');
+const { calculateMatchScore } = require("../services/matchingService");
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
@@ -224,50 +225,57 @@ Return ONLY a JSON array of objects with the exact structure:
 
 // POST: Send connection request
 router.post('/connect', auth, async (req, res) => {
-  const { receiver_id } = req.body;
-  if (!receiver_id) return res.status(400).json({ message: 'receiver_id is required' });
-  if (receiver_id === req.user.id) return res.status(400).json({ message: 'Cannot connect with yourself' });
+  const { receiver_id, targetUserId } = req.body;
+  const targetId = receiver_id || targetUserId;
+
+  if (!targetId) return res.status(400).json({ message: 'Target user ID is required' });
+  if (targetId === req.user.id) return res.status(400).json({ message: 'Cannot connect with yourself' });
 
   try {
-    // Check if connection already exists
-    const existingSender = await db.collection('student_connections')
-      .where('sender_id', '==', req.user.id)
-      .where('receiver_id', '==', receiver_id)
+    const uid = req.user.id;
+
+    // Check existing connections
+    const connCheck = await db.collection("connections")
+      .where("user1", "in", [uid, targetId])
       .get();
-    
-    const existingReceiver = await db.collection('student_connections')
-      .where('sender_id', '==', receiver_id)
-      .where('receiver_id', '==', req.user.id)
-      .get();
-      
-    if (!existingSender.empty || !existingReceiver.empty) {
-      // If there's an existing one, check status
-      const existing = !existingSender.empty ? existingSender.docs[0] : existingReceiver.docs[0];
-      if (mapDoc(existing).status === 'pending') {
-        return res.status(400).json({ message: 'Connection request already pending.' });
-      }
-      if (mapDoc(existing).status === 'accepted') {
-        return res.status(400).json({ message: 'Already connected.' });
-      }
-      // If 'rejected' or 'expired', we can create a new one, so we just delete the old one
-      await db.collection('student_connections').doc(existing.id).delete();
+
+    const existingConn = connCheck.docs.find(d => {
+      const data = d.data();
+      return (data.user1 === uid && data.user2 === targetId) || (data.user1 === targetId && data.user2 === uid);
+    });
+
+    if (existingConn && existingConn.data().status === 'connected') {
+      return res.status(400).json({ message: 'Already connected.' });
     }
 
-    const connRef = db.collection('student_connections').doc();
-    const newConn = {
-      id: connRef.id,
-      sender_id: req.user.id,
-      receiver_id,
+    // Check pending request in connection_requests
+    const pendingSnap = await db.collection("connection_requests")
+      .where("from_user", "==", uid)
+      .where("to_user", "==", targetId)
+      .where("status", "==", "pending")
+      .get();
+
+    if (!pendingSnap.empty) {
+      return res.status(400).json({ message: 'Connection request already pending.' });
+    }
+
+    const reqRef = db.collection('connection_requests').doc();
+    const newReq = {
+      id: reqRef.id,
+      from_user: uid,
+      sender_id: uid,
+      to_user: targetId,
+      receiver_id: targetId,
       status: 'pending',
       created_at: new Date()
     };
 
-    await connRef.set(newConn);
+    await reqRef.set(newReq);
 
     const notifRef = db.collection('notifications').doc();
     const notifData = {
       id: notifRef.id,
-      user_id: receiver_id,
+      user_id: targetId,
       title: 'New Connection Request',
       message: 'Someone wants to connect with you!',
       type: 'connection_request',
@@ -277,15 +285,14 @@ router.post('/connect', auth, async (req, res) => {
     await notifRef.set(notifData);
 
     if (req.io) {
-      req.io.to(`user_${receiver_id}`).emit('new_notification', notifData);
-      // Emit the raw connection request for real-time UI updates
-      req.io.to(`user_${receiver_id}`).emit('connection_request', {
-        ...newConn,
+      req.io.to(`user_${targetId}`).emit('new_notification', notifData);
+      req.io.to(`user_${targetId}`).emit('connection_request', {
+        ...newReq,
         sender_name: req.user.name || 'A student'
       });
     }
 
-    res.status(201).json(newConn);
+    res.status(201).json(newReq);
   } catch (err) {
     console.error("Connect error:", err);
     res.status(500).json({ message: "Server error" });
@@ -298,49 +305,66 @@ router.put('/connect/:id', auth, async (req, res) => {
   if (!['accept', 'reject'].includes(action)) return res.status(400).json({ message: 'Invalid action' });
 
   try {
-    const docRef = db.collection('student_connections').doc(req.params.id);
-    const doc = await docRef.get();
-    if (!doc.exists) return res.status(404).json({ message: 'Connection not found' });
+    let docRef = db.collection('connection_requests').doc(req.params.id);
+    let doc = await docRef.get();
+    
+    // Fallback check in student_connections
+    if (!doc.exists) {
+      docRef = db.collection('student_connections').doc(req.params.id);
+      doc = await docRef.get();
+    }
+
+    if (!doc.exists) return res.status(404).json({ message: 'Connection request not found' });
     
     const data = mapDoc(doc);
-    if (data.receiver_id !== req.user.id) return res.status(403).json({ message: 'Unauthorized' });
+    const toUser = data.to_user || data.receiver_id;
+    const fromUser = data.from_user || data.sender_id;
+
+    if (toUser !== req.user.id) return res.status(403).json({ message: 'Unauthorized' });
 
     if (action === 'reject') {
       await docRef.update({ status: 'rejected' });
       if (req.io) {
-        // Emit to the other user so their UI updates if they are online
-        const otherId = data.sender_id === req.user.id ? data.receiver_id : data.sender_id;
-        req.io.to(`user_${otherId}`).emit('connection_rejected', { id: doc.id });
+        req.io.to(`user_${fromUser}`).emit('connection_rejected', { id: doc.id });
       }
       return res.json({ message: 'Request rejected' });
     }
 
-    // Accept: No expiry
+    // Accept: Update request status
     const now = new Date();
-    
     await docRef.update({
       status: 'accepted',
       accepted_at: now
     });
 
+    // Create single canonical connection document in connections collection
+    const connRef = db.collection("connections").doc();
+    await connRef.set({
+      id: connRef.id,
+      user1: fromUser,
+      user2: toUser,
+      status: "connected",
+      created_at: now
+    });
+
     const notifRef = db.collection('notifications').doc();
     const notifData = {
       id: notifRef.id,
-      user_id: data.sender_id,
+      user_id: fromUser,
       title: 'Connection Accepted',
-      message: 'Your connection request was accepted. You can now chat unlimitedly!',
+      message: 'Your connection request was accepted. You can now chat!',
       type: 'connection_accepted',
       is_read: false,
-      created_at: new Date()
+      created_at: now
     };
     await notifRef.set(notifData);
 
     if (req.io) {
-      req.io.to(`user_${data.sender_id}`).emit('new_notification', notifData);
-      req.io.to(`user_${data.sender_id}`).emit('connection_accepted', { id: doc.id });
+      req.io.to(`user_${fromUser}`).emit('new_notification', notifData);
+      req.io.to(`user_${fromUser}`).emit('connection_accepted', { id: doc.id });
     }
 
-    res.json({ message: 'Request accepted. Chat is now active.' });
+    res.json({ message: 'Request accepted. Connection is now active.' });
   } catch (err) {
     console.error("Accept connect error:", err);
     res.status(500).json({ message: "Server error" });
@@ -350,60 +374,123 @@ router.put('/connect/:id', auth, async (req, res) => {
 // GET: My connections (Pending & Accepted)
 router.get('/connections', auth, async (req, res) => {
   try {
-    await checkExpiredChats(); // Sweep expired ones
+    const uid = req.user.id;
 
-    const sent = await db.collection('student_connections').where('sender_id', '==', req.user.id).get();
-    const received = await db.collection('student_connections').where('receiver_id', '==', req.user.id).get();
-    
-    let connections = [];
-    
-    const extract = async (docs) => {
-      for (const doc of docs) {
-        const d = mapDoc(doc);
-        if (d.status === 'rejected' || d.status === 'expired') continue; // Don't show
-        
-        const otherId = d.sender_id === req.user.id ? d.receiver_id : d.sender_id;
-        const otherDoc = await db.collection('students').doc(otherId).get();
-        const rawOtherData = otherDoc.exists ? mapDoc(otherDoc) : { name: 'Unknown' };
-        const pd = rawOtherData.profile_data || {};
-        const otherData = { ...rawOtherData, ...pd };
-        
-        connections.push({
-          ...d,
-          id: doc.id,
-          other_user: {
-            id: otherId,
-            name: otherData.name || otherData.full_name || 'Unknown',
-            college: otherData.college,
-            skills: otherData.skills || [],
-            career_goal: otherData.career_goal,
-            desired_roles: otherData.desired_roles || [],
-            year: otherData.year,
-            degree: otherData.degree,
-            branch: otherData.branch,
-            district: otherData.district,
-            state: otherData.state,
-            achievements: otherData.achievements || [],
-            seeking: otherData.seeking || [],
-            passionate_about: otherData.passionate_about || [],
-            experience_level: otherData.experience_level,
-            github_url: otherData.github_url,
-            linkedin_url: otherData.linkedin_url,
-            portfolio_url: otherData.portfolio_url,
-            resume_url: otherData.resume_url,
-            activity_score: otherData.activity_score || 0,
-            points: otherData.points || 0,
-            badges: otherData.badges || [],
-            profile_completion: otherData.profile_completion || 0
-          }
-        });
-      }
-    };
+    const [connSnap1, connSnap2, pendingIncoming, pendingOutgoing, legacySent, legacyReceived] = await Promise.all([
+      db.collection("connections").where("user1", "==", uid).where("status", "==", "connected").get(),
+      db.collection("connections").where("user2", "==", uid).where("status", "==", "connected").get(),
+      db.collection("connection_requests").where("to_user", "==", uid).where("status", "==", "pending").get(),
+      db.collection("connection_requests").where("from_user", "==", uid).where("status", "==", "pending").get(),
+      db.collection("student_connections").where("sender_id", "==", uid).get(),
+      db.collection("student_connections").where("receiver_id", "==", uid).get()
+    ]);
 
-    await extract(sent.docs);
-    await extract(received.docs);
+    const resultList = [];
 
-    res.json(connections);
+    // Process established connections
+    const connectedPeerIds = new Set();
+    connSnap1.docs.forEach(d => connectedPeerIds.add(d.data().user2));
+    connSnap2.docs.forEach(d => connectedPeerIds.add(d.data().user1));
+
+    for (const peerId of connectedPeerIds) {
+      if (!peerId) continue;
+      const profileDoc = await db.collection("profiles").doc(peerId).get();
+      const p = profileDoc.exists ? mapDoc(profileDoc) : {};
+      const personalInfo = p.personalInfo || {};
+      const education = p.education || {};
+
+      resultList.push({
+        id: `conn_${peerId}`,
+        sender_id: uid,
+        receiver_id: peerId,
+        status: 'accepted',
+        other_user: {
+          id: peerId,
+          name: personalInfo.name || p.name || 'Student',
+          college: education.college || p.college || null,
+          skills: p.skills || [],
+          career_goal: p.careerGoal || p.career_goal || null,
+          profile_photo: personalInfo.avatar || p.profile_photo || null
+        }
+      });
+    }
+
+    // Process incoming pending requests
+    for (const doc of pendingIncoming.docs) {
+      const r = mapDoc(doc);
+      const fromDoc = await db.collection("profiles").doc(r.from_user).get();
+      const p = fromDoc.exists ? mapDoc(fromDoc) : {};
+      const personalInfo = p.personalInfo || {};
+      const education = p.education || {};
+
+      resultList.push({
+        id: doc.id,
+        sender_id: r.from_user,
+        receiver_id: uid,
+        status: 'pending',
+        other_user: {
+          id: r.from_user,
+          name: personalInfo.name || p.name || 'Student',
+          college: education.college || p.college || null,
+          skills: p.skills || [],
+          career_goal: p.careerGoal || p.career_goal || null,
+          profile_photo: personalInfo.avatar || p.profile_photo || null
+        }
+      });
+    }
+
+    // Process outgoing pending requests
+    for (const doc of pendingOutgoing.docs) {
+      const r = mapDoc(doc);
+      const toDoc = await db.collection("profiles").doc(r.to_user).get();
+      const p = toDoc.exists ? mapDoc(toDoc) : {};
+      const personalInfo = p.personalInfo || {};
+      const education = p.education || {};
+
+      resultList.push({
+        id: doc.id,
+        sender_id: uid,
+        receiver_id: r.to_user,
+        status: 'pending',
+        other_user: {
+          id: r.to_user,
+          name: personalInfo.name || p.name || 'Student',
+          college: education.college || p.college || null,
+          skills: p.skills || [],
+          career_goal: p.careerGoal || p.career_goal || null,
+          profile_photo: personalInfo.avatar || p.profile_photo || null
+        }
+      });
+    }
+
+    // Process legacy student_connections for backward compatibility
+    const legacyDocs = [...legacySent.docs, ...legacyReceived.docs];
+    for (const doc of legacyDocs) {
+      const d = mapDoc(doc);
+      if (d.status === 'rejected') continue;
+      const otherId = d.sender_id === uid ? d.receiver_id : d.sender_id;
+      if (connectedPeerIds.has(otherId)) continue; // Already mapped
+
+      const otherDoc = await db.collection('profiles').doc(otherId).get();
+      const p = otherDoc.exists ? mapDoc(otherDoc) : {};
+      const personalInfo = p.personalInfo || {};
+      const education = p.education || {};
+
+      resultList.push({
+        ...d,
+        id: doc.id,
+        other_user: {
+          id: otherId,
+          name: personalInfo.name || p.name || 'Student',
+          college: education.college || p.college || null,
+          skills: p.skills || [],
+          career_goal: p.careerGoal || p.career_goal || null,
+          profile_photo: personalInfo.avatar || p.profile_photo || null
+        }
+      });
+    }
+
+    res.json(resultList);
   } catch (err) {
     console.error("Get connections error:", err);
     res.status(500).json({ message: "Server error" });

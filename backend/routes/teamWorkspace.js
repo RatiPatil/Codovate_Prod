@@ -35,10 +35,13 @@ const logActivity = async (teamId, userId, action, details) => {
     const userDoc = await db.collection("profiles").doc(userId).get();
     const userName = userDoc.exists ? (mapDoc(userDoc).personalInfo?.name || "A member") : "A member";
     
-    await db.collection("team_activity").add({
+    await db.collection("team_activities").add({
       team_id: teamId,
+      teamId: teamId,
       user_id: userId,
+      userId,
       user_name: userName,
+      userName,
       action,
       details,
       created_at: new Date()
@@ -244,14 +247,25 @@ router.post("/:teamId/announcements", auth, verifyTeamMember, async (req, res) =
 
 router.get("/:teamId/activity", auth, verifyTeamMember, async (req, res) => {
   try {
-    const snapshot = await db.collection("team_activity")
+    let snapshot = await db.collection("team_activities")
       .where("team_id", "==", req.params.teamId)
-      .orderBy("created_at", "desc")
-      .limit(50)
       .get();
+
+    if (snapshot.empty) {
+      snapshot = await db.collection("team_activities")
+        .where("teamId", "==", req.params.teamId)
+        .get();
+    }
+    
+    if (snapshot.empty) {
+      snapshot = await db.collection("team_activity")
+        .where("team_id", "==", req.params.teamId)
+        .get();
+    }
       
     const activities = snapshot.docs.map(doc => ({ id: doc.id, ...mapDoc(doc) }));
-    res.json(activities);
+    activities.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+    res.json(activities.slice(0, 50));
   } catch (err) {
     console.error("Get activity error:", err);
     res.status(500).json({ message: "Failed to fetch activity timeline." });
