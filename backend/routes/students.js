@@ -343,42 +343,83 @@ router.get("/workspace", auth, async (req, res) => {
     const p = profileDoc.exists ? mapDoc(profileDoc) : {};
 
     // 1. Fetch Real Data Counts and Updates using aggregate queries for performance
-    const [userAppsSnap, teamsSnap, bookingsSnap, communityUpdates, oppsSnap] = await Promise.all([
+    const [userAppsSnap, studentAppsSnap, teamsSnap, bookingsSnap, communityUpdates, oppsSnap] = await Promise.all([
       db.collection("applications").where("user_id", "==", uid).get(),
+      db.collection("applications").where("student_id", "==", uid).get(),
       db.collection("team_members").where("user_id", "==", uid).count().get(),
       db.collection("mentorSessions").where("student_id", "==", uid).count().get(),
       getCommunityUpdates(uid),
-      db.collection("opportunities").where("status", "==", "Active").limit(6).get()
+      db.collection("opportunities").where("status", "==", "Active").limit(20).get()
     ]);
 
-    const userApps = userAppsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    // Deduplicate user applications across user_id & student_id compatibility fields
+    const appsMap = new Map();
+    userAppsSnap.docs.forEach(doc => appsMap.set(doc.id, { id: doc.id, ...doc.data() }));
+    studentAppsSnap.docs.forEach(doc => appsMap.set(doc.id, { id: doc.id, ...doc.data() }));
+    const userApps = Array.from(appsMap.values());
+
+    const sevenDaysAgo = Date.now() - 7 * 86400000;
+    const getTime = (val) => {
+      if (!val) return 0;
+      if (typeof val === 'object' && val.toMillis) return val.toMillis();
+      if (typeof val === 'object' && val.seconds) return val.seconds * 1000;
+      const parsed = new Date(val).getTime();
+      return isNaN(parsed) ? 0 : parsed;
+    };
+
+    const isInterview = (s = '') => ['interview', 'interview scheduled', 'interview_scheduled'].includes(String(s).toLowerCase());
+    const isShortlisted = (s = '') => ['shortlisted', 'under review', 'under_review', 'shortlist'].includes(String(s).toLowerCase());
+    const isOffer = (s = '') => ['offer', 'offered', 'accepted'].includes(String(s).toLowerCase());
+
     const appsCount = userApps.length;
-    const interviewsCount = userApps.filter(a => ['Interview', 'Interview Scheduled'].includes(a.status)).length;
-    const shortlistedCount = userApps.filter(a => ['Shortlisted', 'Under Review'].includes(a.status)).length;
-    const offersCount = userApps.filter(a => ['Offer', 'Offered', 'Accepted'].includes(a.status)).length;
+    const interviewsCount = userApps.filter(a => isInterview(a.status)).length;
+    const shortlistedCount = userApps.filter(a => isShortlisted(a.status)).length;
+    const offersCount = userApps.filter(a => isOffer(a.status)).length;
+
+    const applications_this_week = userApps.filter(a => getTime(a.applied_at || a.createdAt) >= sevenDaysAgo).length;
+    const interviews_this_week = userApps.filter(a => isInterview(a.status) && getTime(a.updated_at || a.applied_at || a.createdAt) >= sevenDaysAgo).length;
+    const shortlisted_this_week = userApps.filter(a => isShortlisted(a.status) && getTime(a.updated_at || a.applied_at || a.createdAt) >= sevenDaysAgo).length;
+    const offers_this_week = userApps.filter(a => isOffer(a.status) && getTime(a.updated_at || a.applied_at || a.createdAt) >= sevenDaysAgo).length;
 
     const stats = {
       applications: appsCount,
       interviews: interviewsCount,
       shortlisted: shortlistedCount,
-      offers: offersCount
+      offers: offersCount,
+      applications_this_week,
+      interviews_this_week,
+      shortlisted_this_week,
+      offers_this_week,
     };
 
     // Sort apps to get latest application for tracker timeline
-    userApps.sort((a, b) => {
-      const timeA = a.applied_at?.toMillis ? a.applied_at.toMillis() : new Date(a.applied_at || 0).getTime();
-      const timeB = b.applied_at?.toMillis ? b.applied_at.toMillis() : new Date(b.applied_at || 0).getTime();
-      return timeB - timeA;
-    });
+    userApps.sort((a, b) => getTime(b.applied_at || b.createdAt) - getTime(a.applied_at || a.createdAt));
     const latestApp = userApps[0] || null;
 
-    const recommendedOpps = oppsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    // Relevant opportunity recommendation scoring based on profile skills & career goal
+    const userSkills = (p.skills || []).map(s => String(s).toLowerCase());
+    const careerGoal = String(p.careerGoal || p.desired_roles?.[0] || '').toLowerCase();
+    const rawOpps = oppsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+    const scoredOpps = rawOpps.map(opp => {
+      let score = 0;
+      const title = String(opp.title || '').toLowerCase();
+      const reqSkills = (opp.required_skills || opp.skills || []).map(s => String(s).toLowerCase());
+      if (careerGoal && title.includes(careerGoal)) score += 5;
+      reqSkills.forEach(s => {
+        if (userSkills.includes(s)) score += 3;
+      });
+      return { opp, score };
+    });
+
+    scoredOpps.sort((a, b) => b.score - a.score);
+    const recommendedOpps = scoredOpps.map(o => o.opp).slice(0, 6);
 
     const teamsCount = teamsSnap.data().count;
     const mentorsCount = bookingsSnap.data().count;
 
     // Calculate real points based on stats
-    const profilePoints = (u.profileCompleted || p.profileCompletion || 0) * 10;
+    const profilePoints = (u.profileCompleted || p.profileCompletion || p.profile_completion || 0) * 10;
     const appPoints = appsCount * 50;
     const teamPoints = teamsCount * 100;
     const totalPoints = profilePoints + appPoints + teamPoints;
@@ -703,6 +744,7 @@ router.get("/workspace", auth, async (req, res) => {
       },
       stats,
       latestApp,
+      applications: userApps,
       recommendedOpps,
       mission,
       recommendations,

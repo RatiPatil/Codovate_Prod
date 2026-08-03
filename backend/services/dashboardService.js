@@ -37,34 +37,40 @@ async function syncDashboard(uid) {
     if (resume.atsScore > 0) completion += 20;
     if (portfolio.public) completion += 20;
 
+    // Query real active opportunity and real mentor
+    const [oppSnap, mentorSnap] = await Promise.all([
+      db.collection("opportunities").where("status", "==", "Active").limit(1).get(),
+      db.collection("mentors").limit(1).get()
+    ]);
+
+    const realOppDoc = !oppSnap.empty ? mapDoc(oppSnap.docs[0]) : null;
+    const realMentorDoc = !mentorSnap.empty ? mapDoc(mentorSnap.docs[0]) : null;
+
     // Build the lightweight document
     const dashboardData = {
       uid,
       hero: {
         headline: profile.headline || resume.targetRole || "Welcome to your Codovate Dashboard!",
-        greeting: `Hello, ${profile.personalInfo?.name || "Student"}`
+        greeting: `Hello, ${profile.personalInfo?.name || profile.name || "Student"}`
       },
-      todayTasks: [
-        { id: "1", title: "Complete Daily Coding Challenge", completed: false },
-        { id: "2", title: "Review Mock Interview Feedback", completed: false }
-      ],
+      todayTasks: [],
       roadmapProgress: roadmapSnapshot.exists ? (mapDoc(roadmapSnapshot).progress || 0) : 0,
-      profileCompletion: completion,
+      profileCompletion: profile.profile_completion || profile.profileCompletion || completion,
       resumeScore: resume.atsScore || 0,
       portfolioViews: portfolio.views || 0,
-      recommendedOpportunity: {
-        id: "mock-opp-1",
-        title: "Software Engineering Intern",
-        company: "Tech Corp",
-        matchScore: 85
-      },
-      recommendedMentor: {
-        id: "mock-mentor-1",
-        name: "Jane Doe",
-        expertise: "Frontend Developer"
-      },
+      recommendedOpportunity: realOppDoc ? {
+        id: realOppDoc.id,
+        title: realOppDoc.title,
+        company: realOppDoc.company || 'Tech Company',
+        matchScore: 90
+      } : null,
+      recommendedMentor: realMentorDoc ? {
+        id: realMentorDoc.id,
+        name: realMentorDoc.name || 'Mentor',
+        expertise: realMentorDoc.expertise?.[0] || 'Tech Expert'
+      } : null,
       recentActivity: mapDocs(activitySnapshot),
-      notifications: [], // Could be fetched if needed, or left for realtime feeds
+      notifications: [],
       lastSynced: new Date()
     };
 
