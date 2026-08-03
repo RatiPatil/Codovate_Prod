@@ -54,9 +54,14 @@ router.get("/:teamId", auth, async (req, res) => {
 router.post("/:teamId", auth, async (req, res) => {
   const { teamId } = req.params;
   const { message, fileUrl, fileName } = req.body;
+  const trimmedMessage = message ? message.trim() : '';
 
-  if (!message && !fileUrl) {
-    return res.status(400).json({ message: "Message or attachment is required." });
+  if (!trimmedMessage && !fileUrl) {
+    return res.status(400).json({ message: "Message text or attachment is required." });
+  }
+
+  if (trimmedMessage.length > 2000) {
+    return res.status(400).json({ message: "Message exceeds maximum length of 2000 characters." });
   }
 
   try {

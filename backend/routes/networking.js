@@ -16,14 +16,18 @@ async function checkExpiredChats(connectionId = null) {
   return; // Disabled expiration to make chat unlimited
 }
 
-// GET: Discover students (porting from teams/discover but tailored)
+// GET: Discover students (queries canonical profiles collection)
 router.get('/discover', auth, async (req, res) => {
   try {
     const { skill, domain, experience, college, year, branch, desired_role, availability, location, interests, cursor, limit } = req.query;
     
-    // Fetch existing connections to exclude them
-    const sent = await db.collection('student_connections').where('sender_id', '==', req.user.id).get();
-    const received = await db.collection('student_connections').where('receiver_id', '==', req.user.id).get();
+    // Fetch existing connections & requests to exclude them
+    const [sent, received, sentReqs, receivedReqs] = await Promise.all([
+      db.collection('student_connections').where('sender_id', '==', req.user.id).get(),
+      db.collection('student_connections').where('receiver_id', '==', req.user.id).get(),
+      db.collection('connection_requests').where('from_user', '==', req.user.id).get(),
+      db.collection('connection_requests').where('to_user', '==', req.user.id).get()
+    ]);
     
     const excludedUserIds = new Set();
     sent.forEach(doc => {
@@ -34,99 +38,106 @@ router.get('/discover', auth, async (req, res) => {
       const d = mapDoc(doc);
       if (d.status !== 'rejected') excludedUserIds.add(d.sender_id);
     });
+    sentReqs.forEach(doc => {
+      const d = mapDoc(doc);
+      if (d.status === 'pending') excludedUserIds.add(d.to_user);
+    });
+    receivedReqs.forEach(doc => {
+      const d = mapDoc(doc);
+      if (d.status === 'pending') excludedUserIds.add(d.from_user);
+    });
 
-    // Exclude blocked users (if array exists on user doc)
-    const currentUserDoc = await db.collection('students').doc(req.user.id).get();
+    // Exclude blocked users
+    const currentUserDoc = await db.collection('profiles').doc(req.user.id).get();
     if (currentUserDoc.exists) {
       const data = mapDoc(currentUserDoc);
       const blocked = data.blocked_users || [];
       blocked.forEach(id => excludedUserIds.add(id));
     }
 
-    let usersRef = db.collection('students').orderBy('__name__');
-    
-    if (cursor) {
-      const cursorDoc = await db.collection('students').doc(cursor).get();
-      if (cursorDoc.exists) {
-        usersRef = usersRef.startAfter(cursorDoc);
-      }
+    // Fetch candidate profiles from profiles collection
+    let profilesSnap = await db.collection('profiles').get();
+    let candidateDocs = profilesSnap.docs;
+
+    // Fallback: If profiles collection is empty, check legacy students collection
+    if (candidateDocs.length === 0) {
+      const studentsSnap = await db.collection('students').get();
+      candidateDocs = studentsSnap.docs;
     }
 
-    // Determine batch size: if filtering, fetch more to ensure we find matches
-    const hasFilters = skill || domain || experience || college || year || branch || desired_role || availability || location || interests;
-    const fetchLimit = hasFilters ? 200 : (parseInt(limit) || 20);
-    
-    usersRef = usersRef.limit(fetchLimit);
-    const snapshot = await usersRef.get();
     let students = [];
     
-    snapshot.forEach(doc => {
-      // Don't discover self
+    candidateDocs.forEach(doc => {
+      // 1. Exclude self
       if (doc.id === req.user.id) return;
       
-      // Exclude already connected, pending, or blocked users
+      // 2. Exclude already connected, pending, or blocked users
       if (excludedUserIds.has(doc.id)) return;
       
       const rawData = mapDoc(doc);
-      const pd = rawData.profile_data || {};
-      const data = { ...rawData, ...pd }; // Merge profile_data into top level
+      const personalInfo = rawData.personalInfo || {};
+      const education = rawData.education || {};
+      const socialLinks = rawData.socialLinks || {};
+
+      const name = personalInfo.name || rawData.name || rawData.full_name || 'Codovate Student';
+      const userCollege = education.college || rawData.college || '';
+      const userBranch = education.branch || rawData.branch || '';
+      const userYear = education.year || rawData.year || '';
+      const userDegree = education.degree || rawData.degree || '';
+      
+      // Extract skill names cleanly
+      const rawSkills = rawData.skills || [];
+      const skillNames = rawSkills.map(s => typeof s === 'string' ? s : (s.name || s.title || ''));
+      
+      const careerGoal = rawData.careerGoal || rawData.career_goal || '';
+      const experienceLevel = rawData.experienceLevel || rawData.experience_level || '';
+      const bio = rawData.bio || '';
+      const profilePhoto = personalInfo.avatar || rawData.profile_photo || rawData.profileImage || null;
 
       let match = true;
       
-      if (skill && !(data.skills || []).some(s => s.toLowerCase().includes(skill.toLowerCase()))) match = false;
-      if (domain && data.career_goal !== domain) match = false;
-      if (experience && data.experience_level !== experience) match = false;
-      if (college && (!data.college || !data.college.toLowerCase().includes(college.toLowerCase()))) match = false;
-      if (year && data.year !== year) match = false;
-      if (branch && (!data.branch || !data.branch.toLowerCase().includes(branch.toLowerCase()))) match = false;
+      if (skill && !skillNames.some(s => s.toLowerCase().includes(skill.toLowerCase().trim()))) match = false;
+      if (domain && !careerGoal.toLowerCase().includes(domain.toLowerCase().trim())) match = false;
+      if (experience && experienceLevel.toLowerCase() !== experience.toLowerCase().trim()) match = false;
+      if (college && !userCollege.toLowerCase().includes(college.toLowerCase().trim())) match = false;
+      if (year && userYear.toString() !== year.toString().trim()) match = false;
+      if (branch && !userBranch.toLowerCase().includes(branch.toLowerCase().trim())) match = false;
       if (desired_role) {
-        const roles = data.desired_roles || (data.career_goal ? [data.career_goal] : []);
-        if (!roles.some(r => r.toLowerCase().includes(desired_role.toLowerCase()))) match = false;
+        const roles = rawData.desired_roles || [careerGoal];
+        if (!roles.some(r => r.toLowerCase().includes(desired_role.toLowerCase().trim()))) match = false;
       }
-      if (availability && data.availability !== availability) match = false;
       if (location) {
-        const userLoc = `${data.district || ''} ${data.state || ''}`.toLowerCase();
-        if (!userLoc.includes(location.toLowerCase())) match = false;
-      }
-      if (interests) {
-        const userInterests = [...(data.passionate_about || []), ...(data.seeking || [])];
-        if (!userInterests.some(i => i.toLowerCase().includes(interests.toLowerCase()))) match = false;
+        const userLoc = `${personalInfo.location || ''} ${rawData.district || ''} ${rawData.state || ''}`.toLowerCase();
+        if (!userLoc.includes(location.toLowerCase().trim())) match = false;
       }
       
       if (match) {
         students.push({
           id: doc.id,
-          name: data.name || data.full_name || 'Unknown',
-          college: data.college,
-          skills: data.skills || [],
-          career_goal: data.career_goal,
-          bio: data.bio,
-          desired_roles: data.desired_roles || [],
-          year: data.year,
-          degree: data.degree,
-          branch: data.branch,
-          district: data.district,
-          state: data.state,
-          achievements: data.achievements || [],
-          seeking: data.seeking || [],
-          passionate_about: data.passionate_about || [],
-          experience_level: data.experience_level,
-          github_url: data.github_url,
-          linkedin_url: data.linkedin_url,
-          portfolio_url: data.portfolio_url,
-          resume_url: data.resume_url,
-          activity_score: data.activity_score || 0,
-          points: data.points || 0,
-          badges: data.badges || [],
-          profile_completion: data.profile_completion || 0
+          name,
+          college: userCollege,
+          branch: userBranch,
+          year: userYear,
+          degree: userDegree,
+          skills: skillNames,
+          career_goal: careerGoal,
+          bio,
+          profile_photo: profilePhoto,
+          desired_roles: rawData.desired_roles || [careerGoal],
+          experience_level: experienceLevel,
+          github_url: socialLinks.github || rawData.github_url || null,
+          linkedin_url: socialLinks.linkedin || rawData.linkedin_url || null,
+          portfolio_url: socialLinks.portfolio || rawData.portfolio_url || null,
+          resume_url: socialLinks.resume || rawData.resume_url || null,
+          profile_completion: rawData.profileCompletion || rawData.profile_completion || 0
         });
       }
     });
 
-    const nextCursor = snapshot.docs.length > 0 ? snapshot.docs[snapshot.docs.length - 1].id : null;
-    const hasMore = snapshot.docs.length === fetchLimit;
+    // Sort candidates by profile completeness
+    students.sort((a, b) => b.profile_completion - a.profile_completion);
 
-    res.json({ data: students, nextCursor, hasMore });
+    res.json({ data: students.slice(0, parseInt(limit) || 50), nextCursor: null, hasMore: false });
   } catch (err) {
     console.error("Discover error:", err);
     res.status(500).json({ message: "Server error" });

@@ -111,17 +111,20 @@ router.post("/", auth, async (req, res) => {
       created_at: new Date()
     };
     
-    await newTeamRef.set(team);
-
-    // Add creator as member
     const newMemberRef = db.collection("team_members").doc();
-    await newMemberRef.set({
+    const memberData = {
       id: newMemberRef.id,
       team_id: team.id,
       user_id: req.user.id,
       role: 'leader',
       joined_at: new Date()
-    });
+    };
+
+    // Atomic batch write ensuring team and owner membership are written together
+    const batch = db.batch();
+    batch.set(newTeamRef, team);
+    batch.set(newMemberRef, memberData);
+    await batch.commit();
 
     res.json(team);
   } catch (err) {
