@@ -548,4 +548,96 @@ router.get("/:id/recommendations", auth, async (req, res) => {
   }
 });
 
+// ── Team Invitations Endpoints ──────────────────────────────────────────
+// GET my pending team invites
+router.get("/invites/my", auth, async (req, res) => {
+  try {
+    const snapshot = await db.collection("team_invites")
+      .where("to_user", "==", req.user.id)
+      .where("status", "==", "pending")
+      .get();
+      
+    const invites = await Promise.all(snapshot.docs.map(async doc => {
+      const d = mapDoc(doc);
+      const teamDoc = await db.collection("teams").doc(d.team_id).get();
+      const teamData = teamDoc.exists ? mapDoc(teamDoc) : { name: "Team" };
+      const senderDoc = await db.collection("profiles").doc(d.from_user).get();
+      const senderData = senderDoc.exists ? mapDoc(senderDoc) : {};
+
+      return {
+        id: doc.id,
+        ...d,
+        team_name: teamData.name,
+        team_project: teamData.project_title || teamData.description,
+        sender_name: senderData.personalInfo?.name || "Team Leader",
+        sender_avatar: senderData.personalInfo?.avatar || null
+      };
+    }));
+
+    res.json(invites);
+  } catch (err) {
+    console.error("Get invites error:", err.message);
+    res.status(500).json({ message: "Server error fetching invitations." });
+  }
+});
+
+// POST accept invite
+router.post("/invites/:id/accept", auth, async (req, res) => {
+  try {
+    const inviteRef = db.collection("team_invites").doc(req.params.id);
+    const inviteDoc = await inviteRef.get();
+
+    if (!inviteDoc.exists) return res.status(404).json({ message: "Invitation not found." });
+    const invite = mapDoc(inviteDoc);
+    if (invite.to_user !== req.user.id) return res.status(403).json({ message: "Unauthorized." });
+
+    // Check team capacity
+    const teamDoc = await db.collection("teams").doc(invite.team_id).get();
+    if (!teamDoc.exists) return res.status(404).json({ message: "Team no longer exists." });
+    const team = mapDoc(teamDoc);
+
+    const membersSnap = await db.collection("team_members").where("team_id", "==", invite.team_id).get();
+    if (membersSnap.size >= (team.capacity || 5)) {
+      return res.status(400).json({ message: "Team has reached maximum member capacity." });
+    }
+
+    // Check existing membership
+    const existingMember = membersSnap.docs.find(d => d.data().user_id === req.user.id);
+    if (!existingMember) {
+      const newMemberRef = db.collection("team_members").doc();
+      await newMemberRef.set({
+        id: newMemberRef.id,
+        team_id: invite.team_id,
+        user_id: req.user.id,
+        role: "member",
+        joined_at: new Date()
+      });
+    }
+
+    await inviteRef.update({ status: "accepted", accepted_at: new Date() });
+    res.json({ message: "Invitation accepted! Welcome to the team." });
+  } catch (err) {
+    console.error("Accept invite error:", err.message);
+    res.status(500).json({ message: "Server error accepting invitation." });
+  }
+});
+
+// POST reject invite
+router.post("/invites/:id/reject", auth, async (req, res) => {
+  try {
+    const inviteRef = db.collection("team_invites").doc(req.params.id);
+    const inviteDoc = await inviteRef.get();
+
+    if (!inviteDoc.exists) return res.status(404).json({ message: "Invitation not found." });
+    const invite = mapDoc(inviteDoc);
+    if (invite.to_user !== req.user.id) return res.status(403).json({ message: "Unauthorized." });
+
+    await inviteRef.update({ status: "rejected", rejected_at: new Date() });
+    res.json({ message: "Invitation declined." });
+  } catch (err) {
+    console.error("Reject invite error:", err.message);
+    res.status(500).json({ message: "Server error declining invitation." });
+  }
+});
+
 module.exports = router;

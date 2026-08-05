@@ -46,6 +46,7 @@ const TeamsLayout = () => {
   const [matches, setMatches] = useState([]);
   const [myTeams, setMyTeams] = useState([]);
   const [exploreTeams, setExploreTeams] = useState([]);
+  const [teamInvites, setTeamInvites] = useState([]);
   const [connectionsData, setConnectionsData] = useState({ connections: [], incomingRequests: [], outgoingRequests: [] });
   const [selectedTeam, setSelectedTeam] = useState(null);
   const [chatMessages, setChatMessages] = useState([]);
@@ -109,23 +110,25 @@ const TeamsLayout = () => {
 
   const messagesEndRef = useRef(null);
 
-  // ── 1. Fetch Top Matches, My Teams, Connections, and Explore Teams ──────────
+  // ── 1. Fetch Top Matches, My Teams, Connections, Invites, and Explore Teams ─────
   const fetchDashboardData = async () => {
     try {
       setLoadingMatches(true);
       setLoadingTeams(true);
 
-      const [resMatches, resMyTeams, resExplore, resConn] = await Promise.all([
+      const [resMatches, resMyTeams, resExplore, resConn, resInvites] = await Promise.all([
         api.get('/teams/matches').catch(() => ({ data: [] })),
         api.get('/teams/my').catch(() => ({ data: [] })),
         api.get('/teams/all').catch(() => ({ data: [] })),
-        api.get('/connections/my').catch(() => ({ data: { connections: [], incomingRequests: [], outgoingRequests: [] } }))
+        api.get('/connections/my').catch(() => ({ data: { connections: [], incomingRequests: [], outgoingRequests: [] } })),
+        api.get('/teams/invites/my').catch(() => ({ data: [] }))
       ]);
 
       setMatches(resMatches.data || []);
       setMyTeams(resMyTeams.data || []);
       setExploreTeams(resExplore.data || []);
       setConnectionsData(resConn.data || { connections: [], incomingRequests: [], outgoingRequests: [] });
+      setTeamInvites(resInvites.data || []);
 
       // Auto-select first team if available
       if (resMyTeams.data && resMyTeams.data.length > 0 && !selectedTeam) {
@@ -244,6 +247,27 @@ const TeamsLayout = () => {
     }
   };
 
+  // ── Team Invite Handlers ───────────────────────────────────────────────────
+  const handleAcceptTeamInvite = async (inviteId) => {
+    try {
+      await api.post(`/teams/invites/${inviteId}/accept`);
+      showAlert('Accepted invitation! Welcome to the team.');
+      fetchDashboardData();
+    } catch (err) {
+      showAlert(err.response?.data?.message || 'Failed to accept invitation.');
+    }
+  };
+
+  const handleRejectTeamInvite = async (inviteId) => {
+    try {
+      await api.post(`/teams/invites/${inviteId}/reject`);
+      showAlert('Declined invitation.');
+      fetchDashboardData();
+    } catch (err) {
+      showAlert('Failed to decline invitation.');
+    }
+  };
+
   // ── 4. Send Message Action ─────────────────────────────────────────────────
   const handleSendMessage = async (e) => {
     e.preventDefault();
@@ -358,7 +382,7 @@ const TeamsLayout = () => {
     if (!selectedTeam?.id) return;
     const newStatus = task.status === 'Done' ? 'To Do' : 'Done';
     try {
-      const res = await api.put(`/workspace/${selectedTeam.id}/tasks/${task.id}`, { status: newStatus });
+      await api.put(`/workspace/${selectedTeam.id}/tasks/${task.id}`, { status: newStatus });
       setTeamTasks(prev => prev.map(t => t.id === task.id ? { ...t, status: newStatus } : t));
     } catch (err) {
       showAlert('Failed to update task status.');
@@ -406,7 +430,10 @@ const TeamsLayout = () => {
     return team.name?.toLowerCase().includes(q) || team.project_title?.toLowerCase().includes(q) || team.description?.toLowerCase().includes(q);
   });
 
-  const categories = ['All', 'Web Dev', 'AI/ML', 'Mobile App', 'Design', 'DevOps'];
+  const getCategoryCountText = (catName) => {
+    const count = exploreTeams.filter(t => t.category === catName).length;
+    return `${count} ${count === 1 ? 'team' : 'teams'}`;
+  };
 
   return (
     <div className="min-h-screen bg-[#FAFBFF] text-[#0F172A] p-4 md:p-8 max-w-[1700px] mx-auto space-y-6 font-sans">
@@ -592,7 +619,7 @@ const TeamsLayout = () => {
             <div className="flex items-center gap-6 border-b border-[#E2E8F0] pb-3">
               {[
                 { id: 'my_teams', label: 'My Teams', count: filteredMyTeams.length },
-                { id: 'invites', label: 'Team Invites', count: 0 },
+                { id: 'invites', label: 'Team Invites', count: teamInvites.length },
                 { id: 'connections', label: 'Connections', count: connectionsData.connections.length }
               ].map(tab => (
                 <button
@@ -631,47 +658,65 @@ const TeamsLayout = () => {
                     </button>
                   </div>
                 ) : (
-                  filteredMyTeams.map(team => (
-                    <div
-                      key={team.id}
-                      onClick={() => setSelectedTeam(team)}
-                      className={`flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border transition-all cursor-pointer gap-4 ${
-                        selectedTeam?.id === team.id
-                          ? 'bg-[#F3E8FF]/30 border-[#7C3AED] shadow-sm'
-                          : 'bg-white border-[#E2E8F0] hover:border-[#CBD5E1]'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3.5">
-                        <div className="w-12 h-12 rounded-xl bg-[#F3E8FF] text-[#7C3AED] border border-[#E9D5FF] flex items-center justify-center font-bold text-lg shrink-0">
-                          {team.name.charAt(0)}
+                  filteredMyTeams.map(team => {
+                    const memberCount = team.member_count || 1;
+                    return (
+                      <div
+                        key={team.id}
+                        onClick={() => setSelectedTeam(team)}
+                        className={`flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border transition-all cursor-pointer gap-4 ${
+                          selectedTeam?.id === team.id
+                            ? 'bg-[#F3E8FF]/30 border-[#7C3AED] shadow-sm'
+                            : 'bg-white border-[#E2E8F0] hover:border-[#CBD5E1]'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3.5">
+                          <div className="w-12 h-12 rounded-xl bg-[#F3E8FF] text-[#7C3AED] border border-[#E9D5FF] flex items-center justify-center font-bold text-lg shrink-0">
+                            {team.name.charAt(0)}
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <h4 className="text-sm font-bold text-[#0F172A]">{team.name}</h4>
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#DCFCE7] text-[#16A34A] border border-[#BBF7D0]">
+                                {team.status || 'Active'}
+                              </span>
+                            </div>
+                            <p className="text-xs text-[#64748B] mt-0.5">{team.project_title || team.description || 'Project collaboration'}</p>
+                          </div>
                         </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <h4 className="text-sm font-bold text-[#0F172A]">{team.name}</h4>
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#DCFCE7] text-[#16A34A] border border-[#BBF7D0]">
-                              {team.status || 'Active'}
+
+                        <div className="flex items-center gap-6 shrink-0 justify-between sm:justify-end">
+                          <div className="flex items-center -space-x-2">
+                            {team.members && team.members.length > 0 ? (
+                              team.members.slice(0, 3).map((m, idx) => (
+                                <div key={m.id || idx} className="w-7 h-7 rounded-full bg-[#7C3AED] text-white text-[10px] font-bold border-2 border-white flex items-center justify-center overflow-hidden">
+                                  {m.avatar ? <img src={m.avatar} alt={m.name} className="w-full h-full object-cover" /> : (m.name?.charAt(0) || 'M')}
+                                </div>
+                              ))
+                            ) : (
+                              <div className="w-7 h-7 rounded-full bg-[#2563EB] text-white text-[10px] font-bold border-2 border-white flex items-center justify-center">
+                                {team.name.charAt(0)}
+                              </div>
+                            )}
+                            <span className="text-[11px] font-bold text-[#64748B] pl-3">
+                              {memberCount} {memberCount === 1 ? 'Member' : 'Members'}
                             </span>
                           </div>
-                          <p className="text-xs text-[#64748B] mt-0.5">{team.project_title || team.description || 'Project collaboration'}</p>
+
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedTeam(team);
+                            }}
+                            className="p-1 text-[#94A3B8] hover:text-[#7C3AED] transition-colors"
+                            title="Select Team Workspace"
+                          >
+                            <ChevronRight className="w-5 h-5" />
+                          </button>
                         </div>
                       </div>
-
-                      <div className="flex items-center gap-6 shrink-0 justify-between sm:justify-end">
-                        <div className="flex items-center -space-x-2">
-                          {[1, 2, 3].map(i => (
-                            <div key={i} className="w-7 h-7 rounded-full bg-[#2563EB] text-white text-[10px] font-bold border-2 border-white flex items-center justify-center">
-                              M
-                            </div>
-                          ))}
-                          <span className="text-[11px] font-bold text-[#64748B] pl-3">
-                            {team.member_count || 1} Members
-                          </span>
-                        </div>
-
-                        <ChevronRight className="w-4 h-4 text-[#94A3B8]" />
-                      </div>
-                    </div>
-                  ))
+                    );
+                  })
                 )}
               </div>
             )}
@@ -679,9 +724,40 @@ const TeamsLayout = () => {
             {/* TAB CONTENT 2: TEAM INVITES */}
             {activeTab === 'invites' && (
               <div className="space-y-3">
-                <div className="p-8 text-center bg-[#FAFBFF] border border-dashed border-[#CBD5E1] rounded-xl text-xs text-[#64748B]">
-                  No pending team invites right now.
-                </div>
+                {teamInvites.length === 0 ? (
+                  <div className="p-8 text-center bg-[#FAFBFF] border border-dashed border-[#CBD5E1] rounded-xl text-xs text-[#64748B]">
+                    No pending team invites right now.
+                  </div>
+                ) : (
+                  teamInvites.map(invite => (
+                    <div key={invite.id} className="flex items-center justify-between p-4 bg-white border border-[#E2E8F0] rounded-xl">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-[#F3E8FF] text-[#7C3AED] font-bold flex items-center justify-center text-sm">
+                          {invite.team_name?.charAt(0) || 'T'}
+                        </div>
+                        <div>
+                          <p className="text-xs font-bold text-[#0F172A]">{invite.team_name}</p>
+                          <p className="text-[11px] text-[#64748B]">Invited by {invite.sender_name} • {invite.team_project}</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleRejectTeamInvite(invite.id)}
+                          className="px-3 py-1.5 border border-[#E2E8F0] hover:bg-[#F8FAFC] text-[#64748B] rounded-lg text-xs font-bold transition-all cursor-pointer"
+                        >
+                          Decline
+                        </button>
+                        <button
+                          onClick={() => handleAcceptTeamInvite(invite.id)}
+                          className="px-3 py-1.5 bg-[#7C3AED] text-white hover:bg-[#6D28D9] rounded-lg text-xs font-bold transition-all cursor-pointer shadow-sm"
+                        >
+                          Accept
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             )}
 
@@ -755,11 +831,11 @@ const TeamsLayout = () => {
 
               <div className="grid grid-cols-3 sm:grid-cols-5 gap-3 pt-2">
                 {[
-                  { name: 'Web Dev', count: `${exploreTeams.filter(t => t.category === 'Web Dev').length || 24} teams`, icon: Globe },
-                  { name: 'AI/ML', count: `${exploreTeams.filter(t => t.category === 'AI/ML').length || 18} teams`, icon: Sparkles },
-                  { name: 'Mobile App', count: `${exploreTeams.filter(t => t.category === 'Mobile App').length || 15} teams`, icon: FileText },
-                  { name: 'Design', count: `${exploreTeams.filter(t => t.category === 'Design').length || 12} teams`, icon: Folder },
-                  { name: 'DevOps', count: `${exploreTeams.filter(t => t.category === 'DevOps').length || 8} teams`, icon: CheckSquare }
+                  { name: 'Web Dev', count: getCategoryCountText('Web Dev'), icon: Globe },
+                  { name: 'AI/ML', count: getCategoryCountText('AI/ML'), icon: Sparkles },
+                  { name: 'Mobile App', count: getCategoryCountText('Mobile App'), icon: FileText },
+                  { name: 'Design', count: getCategoryCountText('Design'), icon: Folder },
+                  { name: 'DevOps', count: getCategoryCountText('DevOps'), icon: CheckSquare }
                 ].map(cat => {
                   const CatIcon = cat.icon;
                   const isSelected = selectedCategory === cat.name;
@@ -826,7 +902,7 @@ const TeamsLayout = () => {
                     {selectedTeam?.name || 'Select a Team'}
                   </h3>
                   <p className="text-[11px] text-[#64748B] flex items-center gap-1">
-                    <span>{selectedTeam?.member_count || 1} members</span>
+                    <span>{(selectedTeam?.member_count || 1)} {(selectedTeam?.member_count || 1) === 1 ? 'member' : 'members'}</span>
                     <span>•</span>
                     <span className="text-[#16A34A] font-bold">Active</span>
                   </p>
@@ -1078,7 +1154,7 @@ const TeamsLayout = () => {
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-[#64748B]">Capacity</span>
-                        <span className="font-bold text-[#0F172A]">{selectedTeam.member_count || 1} / {selectedTeam.capacity || 5} Members</span>
+                        <span className="font-bold text-[#0F172A]">{(selectedTeam.member_count || 1)} / {(selectedTeam.capacity || 5)} Members</span>
                       </div>
                       {selectedTeam.join_code && (
                         <div className="flex items-center justify-between bg-[#F8FAFC] border border-[#E2E8F0] p-2.5 rounded-xl">
