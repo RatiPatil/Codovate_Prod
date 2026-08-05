@@ -3,7 +3,22 @@ import { signInWithPopup, signInWithRedirect, getRedirectResult, signInWithCusto
 import { auth, googleProvider } from '../lib/firebase';
 import api from '../api/axios';
 
-const AuthContext = createContext();
+const defaultAuthContext = {
+  user: null,
+  token: null,
+  loading: true,
+  initialized: false,
+  onboardingCompleted: null,
+  completeOnboarding: () => {},
+  updateUser: () => {},
+  login: () => {},
+  logout: () => {},
+  loginWithGoogle: () => {},
+  loginWithPhone: () => {},
+  linkGoogleAccount: () => {}
+};
+
+const AuthContext = createContext(defaultAuthContext);
 
 // ─── Storage helpers for Remember Me ────────────────────
 function getStorage() {
@@ -273,4 +288,4 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => useContext(AuthContext) || defaultAuthContext;

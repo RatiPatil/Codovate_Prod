@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { gsap } from 'gsap';
 import confetti from 'canvas-confetti';
 
@@ -101,7 +102,7 @@ export const Step10AIGeneration = ({ onComplete }) => {
 
 // Screen 11: Success Screen
 export const Step11Success = ({ data, onFinish }) => {
-  const navigate = require('react-router-dom').useNavigate();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const ctx = gsap.context(() => {
