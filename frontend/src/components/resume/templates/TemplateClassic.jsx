@@ -112,13 +112,13 @@ const TemplateClassic = ({ data }) => {
         <Section title="Skills">
           <div className="space-y-0.5">
             {skills.technical?.length > 0 && (
-              <p className="text-[9.5px] text-gray-700"><strong className="text-gray-900">Technical:</strong> {skills.technical.join(' • ')}</p>
+              <p className="text-[9.5px] text-gray-700"><strong className="text-gray-900">Technical:</strong> {skills.technical.map(s => typeof s === 'object' ? (s.name || s.title || '') : String(s)).filter(Boolean).join(' • ')}</p>
             )}
             {skills.soft?.length > 0 && (
-              <p className="text-[9.5px] text-gray-700"><strong className="text-gray-900">Soft Skills:</strong> {skills.soft.join(' • ')}</p>
+              <p className="text-[9.5px] text-gray-700"><strong className="text-gray-900">Soft Skills:</strong> {skills.soft.map(s => typeof s === 'object' ? (s.name || s.title || '') : String(s)).filter(Boolean).join(' • ')}</p>
             )}
             {skills.languages?.length > 0 && (
-              <p className="text-[9.5px] text-gray-700"><strong className="text-gray-900">Languages:</strong> {skills.languages.join(' • ')}</p>
+              <p className="text-[9.5px] text-gray-700"><strong className="text-gray-900">Languages:</strong> {skills.languages.map(s => typeof s === 'object' ? (s.name || s.title || '') : String(s)).filter(Boolean).join(' • ')}</p>
             )}
           </div>
         </Section>

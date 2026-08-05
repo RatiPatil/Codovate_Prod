@@ -64,7 +64,10 @@ const TemplateModern = ({ data }) => {
                 <div>
                   <p className="font-bold text-white mb-1">Technical</p>
                   <div className="flex flex-wrap gap-1">
-                    {skills.technical.map(s => <span key={s} className="bg-blue-900/50 text-blue-100 px-1.5 py-0.5 rounded">{s}</span>)}
+                    {skills.technical.map((s, idx) => {
+                      const str = typeof s === 'object' ? (s.name || s.title || '') : String(s || '');
+                      return <span key={idx} className="bg-blue-900/50 text-blue-100 px-1.5 py-0.5 rounded">{str}</span>;
+                    })}
                   </div>
                 </div>
               )}
@@ -72,7 +75,10 @@ const TemplateModern = ({ data }) => {
                 <div>
                   <p className="font-bold text-white mb-1">Soft Skills</p>
                   <div className="flex flex-wrap gap-1">
-                    {skills.soft.map(s => <span key={s} className="bg-gray-800 text-gray-300 px-1.5 py-0.5 rounded">{s}</span>)}
+                    {skills.soft.map((s, idx) => {
+                      const str = typeof s === 'object' ? (s.name || s.title || '') : String(s || '');
+                      return <span key={idx} className="bg-gray-800 text-gray-300 px-1.5 py-0.5 rounded">{str}</span>;
+                    })}
                   </div>
                 </div>
               )}

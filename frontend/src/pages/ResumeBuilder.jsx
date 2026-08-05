@@ -130,14 +130,17 @@ const RemoveBtn = ({ onClick }) => (
   </button>
 );
 
-const SkillTag = ({ label, onRemove }) => (
-  <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#F3E8FF] border border-[#E9D5FF] rounded-lg text-[#7C3AED] text-xs font-bold">
-    {label}
-    {onRemove && (
-      <button onClick={onRemove} type="button" className="text-[#7C3AED]/60 hover:text-red-500 transition-colors text-sm leading-none ml-0.5">×</button>
-    )}
-  </span>
-);
+const SkillTag = ({ label, onRemove }) => {
+  const text = typeof label === 'object' ? (label.name || label.skillName || label.title || String(label)) : String(label || '');
+  return (
+    <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#F3E8FF] border border-[#E9D5FF] rounded-lg text-[#7C3AED] text-xs font-bold">
+      {text}
+      {onRemove && (
+        <button onClick={onRemove} type="button" className="text-[#7C3AED]/60 hover:text-red-500 transition-colors text-sm leading-none ml-0.5">×</button>
+      )}
+    </span>
+  );
+};
 
 const Card = ({ children, className = '' }) => (
   <div className={`bg-white border border-[#E2E8F0] rounded-2xl p-6 shadow-[0_2px_12px_rgba(15,23,42,0.04)] space-y-4 ${className}`}>
@@ -635,9 +638,14 @@ const ResumeBuilder = () => {
           linkedin: p.linkedin_url || nextData.personalInfo.linkedin || '',
           portfolio: p.portfolio_url || nextData.personalInfo.portfolio || '',
         };
+        const sanitizeSkillItem = s => typeof s === 'object' ? (s.name || s.skillName || s.title || '') : String(s || '');
+        const profileSkills = (p.skills || []).map(sanitizeSkillItem).filter(Boolean);
+        const existingTech = (nextData.skills?.technical || []).map(sanitizeSkillItem).filter(Boolean);
+
         nextData.skills = {
-          ...nextData.skills,
-          technical: p.skills?.length > 0 ? p.skills : (nextData.skills?.technical || []),
+          technical: profileSkills.length > 0 ? profileSkills : existingTech,
+          soft: (nextData.skills?.soft || []).map(sanitizeSkillItem).filter(Boolean),
+          languages: (nextData.skills?.languages || []).map(sanitizeSkillItem).filter(Boolean),
         };
         if (p.college && (!nextData.education || !nextData.education[0]?.institution)) {
           nextData.education = [{ ...emptyEducation(), institution: p.college, field: p.branch || '', endYear: p.year || '' }];

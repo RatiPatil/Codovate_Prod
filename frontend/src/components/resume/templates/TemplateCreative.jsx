@@ -134,7 +134,10 @@ const TemplateCreative = ({ data }) => {
                   <div>
                     <p className="text-[8px] uppercase tracking-widest font-black text-gray-400 mb-1.5">Technical</p>
                     <div className="flex flex-wrap gap-1.5">
-                      {skills.technical.map(s => <span key={s} className="bg-[#8B5CF6]/10 text-[#8B5CF6] px-2 py-0.5 rounded-full font-bold text-[8px]">{s}</span>)}
+                      {skills.technical.map((s, idx) => {
+                        const str = typeof s === 'object' ? (s.name || s.title || '') : String(s || '');
+                        return <span key={idx} className="bg-[#8B5CF6]/10 text-[#8B5CF6] px-2 py-0.5 rounded-full font-bold text-[8px]">{str}</span>;
+                      })}
                     </div>
                   </div>
                 )}
@@ -142,7 +145,10 @@ const TemplateCreative = ({ data }) => {
                   <div>
                     <p className="text-[8px] uppercase tracking-widest font-black text-gray-400 mb-1.5">Soft Skills</p>
                     <div className="flex flex-wrap gap-1.5">
-                      {skills.soft.map(s => <span key={s} className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-bold text-[8px]">{s}</span>)}
+                      {skills.soft.map((s, idx) => {
+                        const str = typeof s === 'object' ? (s.name || s.title || '') : String(s || '');
+                        return <span key={idx} className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-bold text-[8px]">{str}</span>;
+                      })}
                     </div>
                   </div>
                 )}
@@ -150,7 +156,10 @@ const TemplateCreative = ({ data }) => {
                   <div>
                     <p className="text-[8px] uppercase tracking-widest font-black text-gray-400 mb-1.5">Languages</p>
                     <div className="flex flex-wrap gap-1.5">
-                      {skills.languages.map(s => <span key={s} className="text-gray-600 text-[8.5px]">{s}</span>)}
+                      {skills.languages.map((s, idx) => {
+                        const str = typeof s === 'object' ? (s.name || s.title || '') : String(s || '');
+                        return <span key={idx} className="text-gray-600 text-[8.5px]">{str}</span>;
+                      })}
                     </div>
                   </div>
                 )}

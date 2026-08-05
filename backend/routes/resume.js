@@ -75,8 +75,8 @@ router.post("/generate", auth, async (req, res) => {
     let enhancedProjects = projects || [];
 
     if (model) {
-      // ── Use Gemini AI ──────────────────────────────────────────────────────
-      const prompt = `
+      try {
+        const prompt = `
 You are an expert ATS-optimized resume writer. Given the following information about a job seeker, generate a JSON response with:
 
 1. "summary": A 3-4 sentence professional summary (no fluff, action-oriented, ATS-friendly)
@@ -99,86 +99,85 @@ Achievements: ${achievements || ''}
 Respond with ONLY valid JSON, no markdown, no explanation.
 `;
 
-      const result = await model.generateContent(prompt);
-      const text = result.response.text().trim();
-      // Strip markdown code fences if present
-      const jsonStr = text.replace(/^```json?\s*/i, '').replace(/```\s*$/i, '').trim();
-      const aiResponse = JSON.parse(jsonStr);
+        const result = await model.generateContent(prompt);
+        const text = result.response.text().trim();
+        const jsonStr = text.replace(/^```json?\s*/i, '').replace(/```\s*$/i, '').trim();
+        const aiResponse = JSON.parse(jsonStr);
 
-      professionalSummary = aiResponse.summary || generateFallbackSummary({ ...personalInfo, skills, experience, education });
-      enhancedExperience = aiResponse.enhancedExperience || experience;
-      enhancedProjects = aiResponse.enhancedProjects || projects;
+        professionalSummary = aiResponse.summary || generateFallbackSummary({ ...personalInfo, skills, experience, education });
+        enhancedExperience = aiResponse.enhancedExperience || experience;
+        enhancedProjects = aiResponse.enhancedProjects || projects;
 
-      return res.json({
-        summary: professionalSummary,
-        enhancedExperience,
-        enhancedProjects,
-        suggestedSkills: aiResponse.suggestedSkills || [],
-        atsScore: aiResponse.atsScore || 75,
-        atsTips: aiResponse.atsTips || [],
-        powered_by: "gemini-1.5-flash"
-      });
-
-    } else {
-      // ── Fallback Template-based Generation ────────────────────────────────
-      professionalSummary = generateFallbackSummary({
-        name: personalInfo?.name,
-        role: targetRole,
-        skills,
-        experience,
-        education
-      });
-
-      // Enhance experience bullets
-      const enhancedExp = (experience || []).map(exp => ({
-        ...exp,
-        bullets: exp.description
-          ? enhanceBulletFallback(exp.description).split('\n').filter(l => l.trim())
-          : exp.bullets || []
-      }));
-
-      // Enhance project bullets
-      const enhancedProj = (projects || []).map(proj => ({
-        ...proj,
-        bullets: proj.description
-          ? enhanceBulletFallback(proj.description).split('\n').filter(l => l.trim())
-          : proj.bullets || []
-      }));
-
-      // Suggest skills based on target role
-      const roleSuggestions = {
-        'frontend': ['TypeScript', 'Next.js', 'Webpack', 'Jest', 'Figma'],
-        'backend': ['Docker', 'Redis', 'PostgreSQL', 'AWS', 'Microservices'],
-        'fullstack': ['GraphQL', 'Docker', 'TypeScript', 'PostgreSQL', 'AWS'],
-        'ml': ['TensorFlow', 'PyTorch', 'Scikit-learn', 'Pandas', 'NumPy'],
-        'default': ['Git', 'Agile', 'REST APIs', 'Problem Solving', 'Team Collaboration']
-      };
-      const roleKey = Object.keys(roleSuggestions).find(k =>
-        (targetRole || '').toLowerCase().includes(k)
-      ) || 'default';
-
-      const existingSkills = (skills || []).map(s => s.toLowerCase());
-      const suggestedSkills = roleSuggestions[roleKey].filter(s =>
-        !existingSkills.includes(s.toLowerCase())
-      );
-
-      return res.json({
-        summary: professionalSummary,
-        enhancedExperience: enhancedExp,
-        enhancedProjects: enhancedProj,
-        suggestedSkills,
-        atsScore: Math.min(95, 50 + (skills?.length || 0) * 3 + (experience?.length || 0) * 10 + (certifications?.length || 0) * 5),
-        atsTips: [
-          "Use numbers/metrics in your experience bullets (e.g., 'improved performance by 40%')",
-          "Match keywords from the job description in your skills section",
-          `Add ${suggestedSkills[0] || 'more relevant skills'} to improve ATS matching`
-        ],
-        powered_by: "template"
-      });
+        return res.json({
+          summary: professionalSummary,
+          enhancedExperience,
+          enhancedProjects,
+          suggestedSkills: aiResponse.suggestedSkills || [],
+          atsScore: aiResponse.atsScore || 75,
+          atsTips: aiResponse.atsTips || [],
+          powered_by: "gemini-1.5-flash"
+        });
+      } catch (geminiErr) {
+        console.warn("⚠️ Gemini AI generation error, using smart template fallback:", geminiErr.message);
+      }
     }
+
+    // ── Fallback Template-based Generation ────────────────────────────────
+    professionalSummary = generateFallbackSummary({
+      name: personalInfo?.name,
+      role: targetRole,
+      skills: (Array.isArray(skills) ? skills : []).map(s => typeof s === 'object' ? (s.name || s.skillName || s.title || '') : String(s)).filter(Boolean),
+      experience,
+      education
+    });
+
+    const enhancedExp = (experience || []).map(exp => ({
+      ...exp,
+      bullets: exp.description
+        ? enhanceBulletFallback(exp.description).split('\n').filter(l => l.trim())
+        : exp.bullets || []
+    }));
+
+    const enhancedProj = (projects || []).map(proj => ({
+      ...proj,
+      bullets: proj.description
+        ? enhanceBulletFallback(proj.description).split('\n').filter(l => l.trim())
+        : proj.bullets || []
+    }));
+
+    const roleSuggestions = {
+      'frontend': ['TypeScript', 'Next.js', 'Webpack', 'Jest', 'Figma'],
+      'backend': ['Docker', 'Redis', 'PostgreSQL', 'AWS', 'Microservices'],
+      'fullstack': ['GraphQL', 'Docker', 'TypeScript', 'PostgreSQL', 'AWS'],
+      'ml': ['TensorFlow', 'PyTorch', 'Scikit-learn', 'Pandas', 'NumPy'],
+      'default': ['Git', 'Agile', 'REST APIs', 'Problem Solving', 'Team Collaboration']
+    };
+    const roleKey = Object.keys(roleSuggestions).find(k =>
+      (targetRole || '').toLowerCase().includes(k)
+    ) || 'default';
+
+    const cleanSkillList = (Array.isArray(skills) ? skills : []).map(s => typeof s === 'object' ? (s.name || s.skillName || s.title || '') : String(s)).filter(Boolean);
+    const existingSkills = cleanSkillList.map(s => s.toLowerCase());
+    const suggestedSkills = roleSuggestions[roleKey].filter(s =>
+      !existingSkills.includes(s.toLowerCase())
+    );
+
+    return res.json({
+      summary: professionalSummary,
+      enhancedExperience: enhancedExp,
+      enhancedProjects: enhancedProj,
+      suggestedSkills,
+      atsScore: Math.min(95, 50 + (cleanSkillList.length) * 3 + (experience?.length || 0) * 10 + (certifications?.length || 0) * 5),
+      atsTips: [
+        "Use numbers/metrics in your experience bullets (e.g., 'improved performance by 40%')",
+        "Match keywords from the job description in your skills section",
+        `Add ${suggestedSkills[0] || 'more relevant skills'} to improve ATS matching`
+      ],
+      powered_by: "template"
+    });
   } catch (err) {
     console.error("AI Resume error:", err.message);
-    res.status(500).json({ message: "AI generation failed: " + err.message });
+    res.status(500).json({ message: "Resume generation failed: " + err.message });
   }
 });
 
