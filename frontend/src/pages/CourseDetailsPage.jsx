@@ -101,7 +101,7 @@ const CourseDetailsPage = () => {
       }
     } catch (err) {
       console.error('[CourseDetails] Complete lesson error:', err);
-    } fontFinally: {
+    } finally {
       setCompleting(false);
     }
   };
