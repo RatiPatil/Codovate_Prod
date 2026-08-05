@@ -436,10 +436,10 @@ const TeamsLayout = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAFBFF] text-[#0F172A] p-4 md:p-8 max-w-[1700px] mx-auto space-y-6 font-sans">
+    <div className="h-full min-h-0 xl:h-[calc(100vh-4.5rem)] flex flex-col bg-[#FAFBFF] text-[#0F172A] p-4 md:p-6 max-w-[1700px] mx-auto space-y-4 font-sans overflow-hidden">
       
       {/* ── BREADCRUMB & PAGE HEADER ────────────────────────────────────────── */}
-      <div className="space-y-4">
+      <div className="shrink-0 space-y-3">
         <div className="text-xs text-[#64748B] font-medium flex items-center gap-1.5">
           <span className="hover:text-[#0F172A] cursor-pointer transition-colors" onClick={() => navigate('/dashboard')}>Home</span>
           <span>&gt;</span>
@@ -494,10 +494,10 @@ const TeamsLayout = () => {
       </div>
 
       {/* ── MAIN TWO-COLUMN WORKSPACE GRID ──────────────────────────────────── */}
-      <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-stretch flex-1 min-h-0 overflow-hidden">
 
         {/* LEFT COLUMN: MATCHES, MY TEAMS, DISCOVERY (~70%) */}
-        <div className="xl:col-span-8 space-y-8">
+        <div className="xl:col-span-8 h-full min-h-0 overflow-y-auto pr-2 space-y-6 scrollbar-thin">
           
           {/* SECTION 1 — TOP MATCHES FOR YOU */}
           <div className="bg-white border border-[#E2E8F0] rounded-2xl p-6 shadow-[0_2px_12px_rgba(15,23,42,0.04)] space-y-4">
@@ -886,13 +886,13 @@ const TeamsLayout = () => {
         </div>
 
         {/* RIGHT COLUMN: WORKSPACE & REAL-TIME TEAM CHAT (~30%) */}
-        <div className="xl:col-span-4 space-y-6 sticky top-24">
+        <div className="xl:col-span-4 h-full min-h-0 flex flex-col space-y-4 overflow-hidden">
           
           {/* CHAT / WORKSPACE CONTAINER */}
-          <div className="bg-white border border-[#E2E8F0] rounded-2xl p-5 shadow-[0_2px_12px_rgba(15,23,42,0.04)] space-y-4">
+          <div className="bg-white border border-[#E2E8F0] rounded-2xl p-4 md:p-5 shadow-[0_2px_12px_rgba(15,23,42,0.04)] flex-1 min-h-0 flex flex-col overflow-hidden">
             
-            {/* Header */}
-            <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-3">
+            {/* Header (Fixed) */}
+            <div className="shrink-0 flex items-center justify-between border-b border-[#E2E8F0] pb-3 mb-3">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-[#F3E8FF] text-[#7C3AED] border border-[#E9D5FF] font-extrabold flex items-center justify-center text-base">
                   {selectedTeam?.name?.charAt(0) || 'T'}
@@ -931,8 +931,8 @@ const TeamsLayout = () => {
               </div>
             </div>
 
-            {/* Right Panel Tabs */}
-            <div className="flex items-center gap-4 text-xs font-bold border-b border-[#E2E8F0] pb-2">
+            {/* Right Panel Tabs (Fixed) */}
+            <div className="shrink-0 flex items-center gap-4 text-xs font-bold border-b border-[#E2E8F0] pb-2 mb-3">
               {['chat', 'files', 'tasks', 'about'].map(t => (
                 <button
                   key={t}
@@ -948,8 +948,9 @@ const TeamsLayout = () => {
 
             {/* RIGHT TAB CONTENT 1: CHAT */}
             {rightTab === 'chat' && (
-              <div className="space-y-4">
-                <div className="h-[340px] overflow-y-auto space-y-3 pr-1 scrollbar-hide">
+              <div className="flex-1 min-h-0 flex flex-col justify-between">
+                {/* Messages Container (Only this scrolls!) */}
+                <div className="flex-1 min-h-0 overflow-y-auto space-y-3 pr-2 scrollbar-thin">
                   {!selectedTeam ? (
                     <div className="h-full flex items-center justify-center text-xs text-[#94A3B8]">
                       Select or create a team to start chatting.
@@ -997,8 +998,8 @@ const TeamsLayout = () => {
                   <div ref={messagesEndRef} />
                 </div>
 
-                {/* Chat Input */}
-                <form onSubmit={handleSendMessage} className="flex items-center gap-2 pt-2 border-t border-[#E2E8F0]">
+                {/* Chat Input Composer (Fixed at bottom) */}
+                <form onSubmit={handleSendMessage} className="shrink-0 flex items-center gap-2 pt-3 mt-2 border-t border-[#E2E8F0]">
                   <input
                     type="text"
                     disabled={!selectedTeam}
@@ -1029,8 +1030,8 @@ const TeamsLayout = () => {
 
             {/* RIGHT TAB CONTENT 2: FILES */}
             {rightTab === 'files' && (
-              <div className="h-[390px] flex flex-col justify-between space-y-3">
-                <div className="flex items-center justify-between pb-2 border-b border-[#E2E8F0]">
+              <div className="flex-1 min-h-0 flex flex-col justify-between">
+                <div className="shrink-0 flex items-center justify-between pb-2 border-b border-[#E2E8F0]">
                   <span className="text-xs font-bold text-[#0F172A]">Shared Resources ({teamFiles.length})</span>
                   <button
                     onClick={() => setShowAddFileModal(true)}
@@ -1041,7 +1042,7 @@ const TeamsLayout = () => {
                   </button>
                 </div>
 
-                <div className="flex-1 overflow-y-auto space-y-2 pr-1">
+                <div className="flex-1 min-h-0 overflow-y-auto space-y-2 pr-1 pt-2 scrollbar-thin">
                   {loadingFiles ? (
                     <p className="text-xs text-[#64748B] text-center py-8">Loading team files...</p>
                   ) : teamFiles.length === 0 ? (
@@ -1078,8 +1079,8 @@ const TeamsLayout = () => {
 
             {/* RIGHT TAB CONTENT 3: TASKS */}
             {rightTab === 'tasks' && (
-              <div className="h-[390px] flex flex-col justify-between space-y-3">
-                <div className="flex items-center justify-between pb-2 border-b border-[#E2E8F0]">
+              <div className="flex-1 min-h-0 flex flex-col justify-between">
+                <div className="shrink-0 flex items-center justify-between pb-2 border-b border-[#E2E8F0]">
                   <span className="text-xs font-bold text-[#0F172A]">Team Tasks ({teamTasks.length})</span>
                   <button
                     onClick={() => setShowAddTaskModal(true)}
@@ -1090,7 +1091,7 @@ const TeamsLayout = () => {
                   </button>
                 </div>
 
-                <div className="flex-1 overflow-y-auto space-y-2 pr-1">
+                <div className="flex-1 min-h-0 overflow-y-auto space-y-2 pr-1 pt-2 scrollbar-thin">
                   {loadingTasks ? (
                     <p className="text-xs text-[#64748B] text-center py-8">Loading tasks...</p>
                   ) : teamTasks.length === 0 ? (
@@ -1132,7 +1133,7 @@ const TeamsLayout = () => {
 
             {/* RIGHT TAB CONTENT 4: ABOUT */}
             {rightTab === 'about' && (
-              <div className="h-[390px] overflow-y-auto space-y-4 text-xs pr-1">
+              <div className="flex-1 min-h-0 overflow-y-auto space-y-4 text-xs pr-1 scrollbar-thin">
                 {!selectedTeam ? (
                   <p className="text-xs text-[#64748B] text-center py-8">Select a team to view information.</p>
                 ) : (
@@ -1192,8 +1193,8 @@ const TeamsLayout = () => {
 
           </div>
 
-          {/* TEAM ACTIVITY FEED */}
-          <div className="bg-white border border-[#E2E8F0] rounded-2xl p-5 shadow-[0_2px_12px_rgba(15,23,42,0.04)] space-y-3">
+          {/* TEAM ACTIVITY FEED (Fixed at bottom of right column) */}
+          <div className="shrink-0 bg-white border border-[#E2E8F0] rounded-2xl p-4 shadow-[0_2px_12px_rgba(15,23,42,0.04)] space-y-3">
             <div className="flex items-center justify-between">
               <h4 className="text-xs font-extrabold text-[#0F172A]">Team Activity</h4>
               <button
