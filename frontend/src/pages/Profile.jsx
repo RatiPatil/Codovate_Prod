@@ -3,6 +3,7 @@ import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import MilestoneModal from '../components/MilestoneModal';
 import ImageCropperModal from '../components/profile/ImageCropperModal';
+import EditProfileModal from '../components/profile/EditProfileModal';
 import { uploadProfilePhoto, uploadResume } from '../utils/storageUtils';
 import SkeletonLoader from '../components/common/SkeletonLoader';
 import confetti from 'canvas-confetti';
@@ -22,7 +23,7 @@ import {
 } from '../components/profile/ProfileTabsContent';
 
 const Profile = () => {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   
   // State from previous implementation
   const [profileData, setProfileData] = useState(null);
@@ -131,6 +132,14 @@ const Profile = () => {
         ...form, skills, desired_roles: desiredRoles, achievements, seeking, passionate_about: passionateAbout, projects, certificates
       };
       await api.put('/students/profile', payload);
+      if (updateUser) {
+        updateUser({
+          name: form.name,
+          phone: form.phone,
+          photoURL: form.avatar_url,
+          avatar_url: form.avatar_url
+        });
+      }
       showToast('Profile updated successfully! ✅', 'success');
       setEditingSection(null);
       fetchProfile();
@@ -154,14 +163,17 @@ const Profile = () => {
   const handleCropComplete = async (croppedBlob) => {
     try {
       showToast('Uploading profile photo...', 'success');
-      const url = await uploadProfilePhoto(croppedBlob, user.uid || user.id);
+      const url = await uploadProfilePhoto(croppedBlob, user?.uid || user?.id);
       setForm(prev => ({ ...prev, avatar_url: url }));
       await api.put('/students/profile', { avatar_url: url });
+      if (updateUser) {
+        updateUser({ photoURL: url, avatar_url: url });
+      }
       showToast('Profile photo updated! ✅', 'success');
       fetchProfile();
     } catch (err) {
-      console.error(err);
-      showToast('Failed to upload photo.', 'error');
+      console.error("Avatar upload error:", err);
+      showToast(err.message || 'Failed to upload photo.', 'error');
     }
   };
 
@@ -174,7 +186,7 @@ const Profile = () => {
   };
 
   const handleShareProfile = () => {
-    navigator.clipboard.writeText(window.location.origin + '/public/' + user.uid);
+    navigator.clipboard.writeText(window.location.origin + '/public/' + (user?.uid || user?.id));
     showToast('Public profile link copied to clipboard!', 'success');
   };
   
@@ -190,6 +202,16 @@ const Profile = () => {
     <div className="w-full max-w-7xl mx-auto py-8 px-4 sm:px-6 bg-[#f8fafc] min-h-screen font-sans text-gray-900">
       
       {/* Toast & Modals */}
+      <EditProfileModal 
+        isOpen={editingSection === 'personal'} 
+        onClose={() => setEditingSection(null)} 
+        form={form} 
+        setForm={setForm} 
+        desiredRoles={desiredRoles} 
+        setDesiredRoles={setDesiredRoles} 
+        onSave={() => handleSaveSection('personal')} 
+        saving={saving} 
+      />
       <ImageCropperModal isOpen={showCropper} onClose={() => setShowCropper(false)} imageSrc={imageToCrop} onCropComplete={handleCropComplete} />
       <MilestoneModal isOpen={showMilestone} onClose={() => setShowMilestone(false)} title="100% Profile Complete" description="You've unlocked the ultimate builder status." />
       {toast.msg && (

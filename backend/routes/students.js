@@ -92,22 +92,34 @@ router.get("/profile", auth, async (req, res) => {
     res.json({
       id: uid,
       email: u.email,
-      phone: u.phone,
+      phone: p.personalInfo?.phone || u.phone || p.phone || '',
       role: u.role || 'student',
       created_at: u.createdAt,
       claimed: u.claimed,
       providers: u.providers,
-      name: p.personalInfo?.name || u.name,
-      college: p.education?.college || null,
-      branch: p.education?.branch || null,
-      year: p.education?.year || null,
+      name: p.personalInfo?.name || u.name || '',
+      college: p.education?.college || p.college || null,
+      branch: p.education?.branch || p.branch || null,
+      year: p.education?.year || p.year || null,
       bio: p.bio || null,
-      resume_url: p.socialLinks?.resume || null,
-      github_url: p.socialLinks?.github || null,
-      linkedin_url: p.socialLinks?.linkedin || null,
-      avatar_url: p.profileImage || null,
+      city: p.personalInfo?.city || p.city || null,
+      state: p.personalInfo?.state || p.state || null,
+      country: p.personalInfo?.country || p.country || null,
+      resume_url: p.socialLinks?.resume || p.resume_url || null,
+      github_url: p.socialLinks?.github || p.github_url || null,
+      linkedin_url: p.socialLinks?.linkedin || p.linkedin_url || null,
+      portfolio_url: p.socialLinks?.portfolio || p.portfolio_url || null,
+      avatar_url: p.profileImage || u.photoURL || u.avatar_url || p.avatar_url || null,
       skills: p.skills || [],
-      desired_roles: p.careerGoal ? [p.careerGoal] : [],
+      desired_roles: p.careerGoal ? [p.careerGoal] : (p.desired_roles || []),
+      achievements: p.achievements || [],
+      seeking: p.seeking || [],
+      passionate_about: p.passionate_about || [],
+      projects: p.projects || [],
+      certificates: p.certificates || [],
+      open_to_work: p.open_to_work ?? true,
+      available_for_internship: p.available_for_internship ?? true,
+      full_time: p.full_time ?? true,
       profile_completion: u.profileCompleted || p.profileCompletion || 0,
     });
   } catch (err) {
@@ -117,35 +129,52 @@ router.get("/profile", auth, async (req, res) => {
 });
 
 router.put("/profile", auth, async (req, res) => {
-  const { name, college, branch, year, bio, resume_url, github_url, linkedin_url, avatar_url, skills, desired_roles, achievements, seeking, passionate_about, projects, certificates } = req.body;
+  const { 
+    name, college, branch, year, bio, city, state, country, phone,
+    resume_url, github_url, linkedin_url, portfolio_url, avatar_url,
+    skills, desired_roles, achievements, seeking, passionate_about, projects, certificates,
+    open_to_work, available_for_internship, full_time
+  } = req.body;
 
   try {
     const uid = req.user.id;
     const profileRef = db.collection("profiles").doc(uid);
     const profileDoc = await profileRef.get();
-    
     const currentProfile = profileDoc.exists ? mapDoc(profileDoc) : {};
-    
+
+    const userRef = db.collection("users").doc(uid);
+    const userDoc = await userRef.get();
+    const currentUser = userDoc.exists ? mapDoc(userDoc) : {};
+
     // Group fields for Phase 3 Profile Schema
     const profileUpdates = {
       personalInfo: {
         ...(currentProfile.personalInfo || {}),
-        name: name !== undefined ? name.trim().toUpperCase() : currentProfile.personalInfo?.name,
+        name: name !== undefined ? name.trim().toUpperCase() : (currentProfile.personalInfo?.name || currentUser.name),
+        phone: phone !== undefined ? phone.trim() : (currentProfile.personalInfo?.phone || currentUser.phone),
+        city: city !== undefined ? city.trim() : (currentProfile.personalInfo?.city || currentProfile.city),
+        state: state !== undefined ? state.trim() : (currentProfile.personalInfo?.state || currentProfile.state),
+        country: country !== undefined ? country.trim() : (currentProfile.personalInfo?.country || currentProfile.country),
       },
       education: {
         ...(currentProfile.education || {}),
-        college: college !== undefined ? college : currentProfile.education?.college,
-        branch: branch !== undefined ? branch : currentProfile.education?.branch,
-        year: year !== undefined ? year : currentProfile.education?.year,
+        college: college !== undefined ? college : (currentProfile.education?.college || currentProfile.college),
+        branch: branch !== undefined ? branch : (currentProfile.education?.branch || currentProfile.branch),
+        year: year !== undefined ? year : (currentProfile.education?.year || currentProfile.year),
       },
       socialLinks: {
         ...(currentProfile.socialLinks || {}),
-        resume: resume_url !== undefined ? resume_url : currentProfile.socialLinks?.resume,
-        github: github_url !== undefined ? github_url : currentProfile.socialLinks?.github,
-        linkedin: linkedin_url !== undefined ? linkedin_url : currentProfile.socialLinks?.linkedin,
+        resume: resume_url !== undefined ? resume_url : (currentProfile.socialLinks?.resume || currentProfile.resume_url),
+        github: github_url !== undefined ? github_url : (currentProfile.socialLinks?.github || currentProfile.github_url),
+        linkedin: linkedin_url !== undefined ? linkedin_url : (currentProfile.socialLinks?.linkedin || currentProfile.linkedin_url),
+        portfolio: portfolio_url !== undefined ? portfolio_url : (currentProfile.socialLinks?.portfolio || currentProfile.portfolio_url),
       },
       bio: bio !== undefined ? bio : currentProfile.bio,
-      profileImage: avatar_url !== undefined ? avatar_url : currentProfile.profileImage,
+      city: city !== undefined ? city.trim() : currentProfile.city,
+      state: state !== undefined ? state.trim() : currentProfile.state,
+      country: country !== undefined ? country.trim() : currentProfile.country,
+      phone: phone !== undefined ? phone.trim() : currentProfile.phone,
+      profileImage: avatar_url !== undefined ? avatar_url : (currentProfile.profileImage || currentUser.photoURL),
       skills: skills !== undefined ? skills : currentProfile.skills,
       projects: projects !== undefined ? projects : currentProfile.projects,
       certificates: certificates !== undefined ? certificates : currentProfile.certificates,
@@ -153,6 +182,9 @@ router.put("/profile", auth, async (req, res) => {
       seeking: seeking !== undefined ? seeking : currentProfile.seeking,
       passionate_about: passionate_about !== undefined ? passionate_about : currentProfile.passionate_about,
       careerGoal: desired_roles && desired_roles.length > 0 ? desired_roles[0] : currentProfile.careerGoal,
+      open_to_work: open_to_work !== undefined ? open_to_work : (currentProfile.open_to_work ?? true),
+      available_for_internship: available_for_internship !== undefined ? available_for_internship : (currentProfile.available_for_internship ?? true),
+      full_time: full_time !== undefined ? full_time : (currentProfile.full_time ?? true),
       updatedAt: new Date()
     };
     
@@ -178,6 +210,8 @@ router.put("/profile", auth, async (req, res) => {
     if (profileUpdates.bio) completedFields++;
     if (profileUpdates.socialLinks?.resume) completedFields++;
     if (profileUpdates.socialLinks?.github || profileUpdates.socialLinks?.linkedin) completedFields++;
+    if (profileUpdates.personalInfo?.phone || profileUpdates.phone) completedFields++;
+    if (profileUpdates.personalInfo?.city || profileUpdates.city) completedFields++;
     
     const profile_completion = Math.round((completedFields / totalFields) * 100);
     profileUpdates.profileCompletion = profile_completion;
@@ -185,29 +219,43 @@ router.put("/profile", auth, async (req, res) => {
     const batch = db.batch();
     batch.set(profileRef, profileUpdates, { merge: true });
     
-    const userUpdates = { profileCompleted: profile_completion };
-    if (name !== undefined && name.trim().toUpperCase() !== currentProfile.personalInfo?.name) {
+    const userUpdates = { 
+      profileCompleted: profile_completion,
+      updatedAt: new Date()
+    };
+    if (name !== undefined) {
       userUpdates.name = name.trim().toUpperCase();
     }
-    batch.update(db.collection("users").doc(uid), userUpdates);
+    if (phone !== undefined) {
+      userUpdates.phone = phone.trim();
+    }
+    if (avatar_url !== undefined) {
+      userUpdates.photoURL = avatar_url;
+      userUpdates.avatar_url = avatar_url;
+    }
+    batch.set(userRef, userUpdates, { merge: true });
     
     await batch.commit();
 
     // Scoring Engine Integration
     if (profile_completion === 100) {
-      await awardPoints(uid, 'profile_complete', 100);
+      await awardPoints(uid, 'profile_complete', 100).catch(() => {});
     }
     if (profileUpdates.socialLinks?.resume && !currentProfile.socialLinks?.resume) {
-      await awardPoints(uid, 'resume_upload', 50);
+      await awardPoints(uid, 'resume_upload', 50).catch(() => {});
     }
     
-    // Update Placement Score
-    await updatePlacementScore(uid);
+    await updatePlacementScore(uid).catch(() => {});
 
     // Emit event
     eventBus.emit("PROFILE_UPDATED", { uid, profileData: profileUpdates });
 
-    res.json({ message: "Profile updated successfully." });
+    res.json({ 
+      message: "Profile updated successfully.", 
+      profile_completion,
+      avatar_url: profileUpdates.profileImage,
+      name: userUpdates.name || currentUser.name
+    });
   } catch (err) {
     console.error("Update profile error:", err.message);
     res.status(500).json({ message: "Server error." });

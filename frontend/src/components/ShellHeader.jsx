@@ -121,10 +121,14 @@ const ShellHeader = ({ onMobileMenuOpen }) => {
           className="flex items-center gap-3 pl-2 pr-3 py-1.5 rounded-xl hover:bg-gray-100 transition-colors"
         >
           <div
-            className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-[13px] text-white shrink-0 shadow-sm"
+            className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-[13px] text-white shrink-0 shadow-sm overflow-hidden bg-gray-100"
             style={{ background: 'linear-gradient(135deg, #6c3aff 0%, #3a9bff 100%)' }}
           >
-            {initials}
+            {(user?.photoURL || user?.avatar_url) ? (
+              <img src={user.photoURL || user.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+            ) : (
+              initials
+            )}
           </div>
           <div className="hidden md:flex flex-col items-start mr-2 max-w-[200px]">
             <span className="text-sm font-bold text-gray-900 leading-tight truncate w-full text-left">

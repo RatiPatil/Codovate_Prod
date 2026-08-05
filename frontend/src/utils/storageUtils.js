@@ -46,8 +46,9 @@ export const uploadFileToStorage = async (file, path, onProgress = null) => {
  * Convenience method for profile photos
  */
 export const uploadProfilePhoto = async (file, userId, onProgress) => {
-  const extension = file.name.split('.').pop() || 'jpg';
-  const path = `profiles/${userId}/photo_${Date.now()}.${extension}`;
+  const fileName = file?.name || 'photo.jpg';
+  const extension = fileName.includes('.') ? fileName.split('.').pop() : 'jpg';
+  const path = `profiles/${userId}/avatar_${Date.now()}.${extension}`;
   return uploadFileToStorage(file, path, onProgress);
 };
 
@@ -55,7 +56,8 @@ export const uploadProfilePhoto = async (file, userId, onProgress) => {
  * Convenience method for resumes
  */
 export const uploadResume = async (file, userId, onProgress) => {
-  const extension = file.name.split('.').pop() || 'pdf';
+  const fileName = file?.name || 'resume.pdf';
+  const extension = fileName.includes('.') ? fileName.split('.').pop() : 'pdf';
   const path = `resumes/${userId}/resume_${Date.now()}.${extension}`;
   return uploadFileToStorage(file, path, onProgress);
 };

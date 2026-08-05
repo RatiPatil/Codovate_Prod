@@ -251,16 +251,22 @@ export const AuthProvider = ({ children }) => {
     setOnboardingCompleted(null);
   }, []);
 
-  // ─── Complete Onboarding ───────────────────────────────
-  const completeOnboarding = useCallback(() => {
-    setOnboardingCompleted(true);
-    getStorage().setItem('onboarding_completed', 'true');
+  // ─── Update User Profile State ──────────────────────────
+  const updateUser = useCallback((updatedFields) => {
+    setUser(prev => {
+      if (!prev) return prev;
+      const nextUser = { ...prev, ...updatedFields };
+      const isRemember = localStorage.getItem('rememberMe') === 'true';
+      const storage = isRemember ? localStorage : sessionStorage;
+      storage.setItem('user', JSON.stringify(nextUser));
+      return nextUser;
+    });
   }, []);
 
   return (
     <AuthContext.Provider value={{
       user, token, login, loginWithGoogle, loginWithPhone, linkGoogleAccount, logout, loading, initialized,
-      onboardingCompleted, completeOnboarding
+      onboardingCompleted, completeOnboarding, updateUser
     }}>
       {children}
     </AuthContext.Provider>

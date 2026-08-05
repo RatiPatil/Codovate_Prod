@@ -53,12 +53,20 @@ const ProfileHeader = ({ form, desiredRoles, completionPct, onAvatarSelected, se
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-gray-500 font-medium mb-6">
-          <div className="flex items-center gap-2 justify-center md:justify-start">
-            <MapPin size={16} className="text-gray-400" />
+          <div 
+            className="flex items-center gap-2 justify-center md:justify-start cursor-pointer group/item hover:text-indigo-600 transition-colors" 
+            onClick={() => setEditingSection('personal')}
+            title="Click to edit location"
+          >
+            <MapPin size={16} className="text-gray-400 group-hover/item:text-indigo-600 transition-colors" />
             <span>{[form.city, form.state, form.country].filter(Boolean).join(', ') || 'Add Location'}</span>
           </div>
-          <div className="flex items-center gap-2 justify-center md:justify-start">
-            <Phone size={16} className="text-gray-400" />
+          <div 
+            className="flex items-center gap-2 justify-center md:justify-start cursor-pointer group/item hover:text-indigo-600 transition-colors" 
+            onClick={() => setEditingSection('personal')}
+            title="Click to edit phone"
+          >
+            <Phone size={16} className="text-gray-400 group-hover/item:text-indigo-600 transition-colors" />
             <span>{form.phone || 'Add Phone'}</span>
           </div>
           <div className="flex items-center gap-2 justify-center md:justify-start">
@@ -67,9 +75,15 @@ const ProfileHeader = ({ form, desiredRoles, completionPct, onAvatarSelected, se
           </div>
           <div className="flex items-center gap-2 justify-center md:justify-start">
             <Globe size={16} className="text-gray-400" />
-            <a href={form.linkedin_url || '#'} target="_blank" rel="noreferrer" className="hover:text-indigo-600 transition-colors line-clamp-1">
-              {form.linkedin_url ? form.linkedin_url.replace(/(^\w+:|^)\/\//, '') : 'Add LinkedIn'}
-            </a>
+            {form.linkedin_url ? (
+              <a href={form.linkedin_url.startsWith('http') ? form.linkedin_url : `https://${form.linkedin_url}`} target="_blank" rel="noreferrer" className="hover:text-indigo-600 transition-colors line-clamp-1">
+                {form.linkedin_url.replace(/(^\w+:|^)\/\//, '')}
+              </a>
+            ) : (
+              <button onClick={() => setEditingSection('personal')} className="hover:text-indigo-600 transition-colors">
+                Add LinkedIn
+              </button>
+            )}
           </div>
         </div>
 
