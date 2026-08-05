@@ -195,7 +195,7 @@ const LearningHub = () => {
 
   // Dynamic Category Counts calculated from real catalog
   const categoriesList = useMemo(() => {
-    const getCount = (catName) => allCatalogCourses.filter(c => c.category === catName).length;
+    const getCount = (catName) => allCatalogCourses.filter(c => c.category?.toLowerCase() === catName.toLowerCase()).length;
     return [
       { name: "Web Development", icon: Globe, color: "bg-[#EFF6FF] text-[#2563EB]", count: getCount("Web Development") },
       { name: "Programming", icon: Code, color: "bg-[#F3E8FF] text-[#7C3AED]", count: getCount("Programming") },
@@ -216,6 +216,7 @@ const LearningHub = () => {
       const mins = (c.durationMinutes || 300) % 60;
       return {
         id: c.id,
+        courseId: c.id,
         title: c.title,
         rating: c.rating || 4.8,
         durationStr: `${hrs}h ${mins}m`,
@@ -233,6 +234,12 @@ const LearningHub = () => {
     if (el) {
       el.scrollIntoView({ behavior: 'smooth' });
     }
+  };
+
+  const handleCategoryClick = (catName) => {
+    const newCat = selectedCategory === catName ? 'All' : catName;
+    setSelectedCategory(newCat);
+    handleScrollToCatalog();
   };
 
   if (loading) {
@@ -317,6 +324,7 @@ const LearningHub = () => {
                     onClick={() => {
                       setSelectedCategory(cat);
                       setFilterDropdownOpen(false);
+                      handleScrollToCatalog();
                     }}
                     className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold transition-colors flex items-center justify-between cursor-pointer ${
                       selectedCategory === cat ? 'bg-[#F3E8FF] text-[#7C3AED] font-bold' : 'text-[#334155] hover:bg-[#F8FAFC]'
@@ -524,7 +532,7 @@ const LearningHub = () => {
                 return (
                   <div
                     key={cat.name}
-                    onClick={() => setSelectedCategory(isSelected ? 'All' : cat.name)}
+                    onClick={() => handleCategoryClick(cat.name)}
                     className={`bg-white border rounded-2xl p-4 shadow-[0_2px_12px_rgba(15,23,42,0.04)] hover:shadow-md transition-all flex flex-col items-center text-center cursor-pointer group ${
                       isSelected ? 'border-[#7C3AED] ring-2 ring-[#7C3AED]/20 bg-[#F3E8FF]/20' : 'border-[#E2E8F0] hover:border-[#7C3AED]/40'
                     }`}
@@ -698,14 +706,21 @@ const LearningHub = () => {
 
             <div className="space-y-3">
               {recommendedList.slice(0, 4).map((rec) => {
+                const courseId = rec.id || rec.courseId;
                 const durStr = rec.durationStr || `${Math.floor((rec.durationMinutes || 300) / 60)}h ${(rec.durationMinutes || 300) % 60}m`;
 
+                const isCourseEnrolled = hubData.continueLearning?.some(item => item.courseId === courseId);
+                const courseProgress = hubData.continueLearning?.find(item => item.courseId === courseId);
+                const isCourseCompleted = courseProgress?.status === 'COMPLETED';
+
+                const buttonLabel = isCourseCompleted ? 'Completed ✓' : isCourseEnrolled ? 'Resume' : 'Start';
+
                 return (
-                  <div key={rec.id} className="flex items-center justify-between gap-3 pb-3 border-b border-[#F1F5F9] last:border-b-0 last:pb-0">
+                  <div key={courseId} className="flex items-center justify-between gap-3 pb-3 border-b border-[#F1F5F9] last:border-b-0 last:pb-0">
                     <div className="flex items-center gap-3 min-w-0">
                       <TechIconGraphic type={rec.techIcon || 'js'} />
                       <div className="min-w-0">
-                        <h4 className="text-xs font-bold text-[#0F172A] hover:text-[#2563EB] cursor-pointer truncate" onClick={() => navigate(`/learning/course/${rec.id}`)}>
+                        <h4 className="text-xs font-bold text-[#0F172A] hover:text-[#2563EB] cursor-pointer truncate" onClick={() => navigate(`/learning/course/${courseId}`)}>
                           {rec.title}
                         </h4>
                         <p className="text-[11px] text-[#64748B] mt-0.5 font-medium">
@@ -715,10 +730,16 @@ const LearningHub = () => {
                     </div>
 
                     <button
-                      onClick={() => navigate(`/learning/course/${rec.id}`)}
-                      className="px-3 py-1.5 bg-[#F1F5F9] hover:bg-gradient-to-r hover:from-[#2563EB] hover:to-[#9333EA] hover:text-white text-[#334155] font-bold text-xs rounded-xl transition-all shrink-0 cursor-pointer"
+                      onClick={() => navigate(`/learning/course/${courseId}`)}
+                      className={`px-3 py-1.5 text-xs font-bold rounded-xl transition-all shrink-0 cursor-pointer ${
+                        isCourseCompleted
+                          ? 'bg-[#DCFCE7] text-[#16A34A] border border-[#BBF7D0]'
+                          : isCourseEnrolled
+                          ? 'bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE]'
+                          : 'bg-[#F1F5F9] hover:bg-gradient-to-r hover:from-[#2563EB] hover:to-[#9333EA] hover:text-white text-[#334155]'
+                      }`}
                     >
-                      Start
+                      {buttonLabel}
                     </button>
                   </div>
                 );
