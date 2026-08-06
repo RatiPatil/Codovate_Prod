@@ -266,6 +266,12 @@ export const AuthProvider = ({ children }) => {
     setOnboardingCompleted(null);
   }, []);
 
+  // ─── Complete Onboarding ───────────────────────────────
+  const completeOnboarding = useCallback(() => {
+    setOnboardingCompleted(true);
+    getStorage().setItem('onboarding_completed', 'true');
+  }, []);
+
   // ─── Update User Profile State ──────────────────────────
   const updateUser = useCallback((updatedFields) => {
     setUser(prev => {
