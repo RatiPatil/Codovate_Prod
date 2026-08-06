@@ -339,12 +339,22 @@ const SEED_COURSES = [
   }
 ];
 
+let courseCatalogCache = null;
+let courseCacheTimestamp = 0;
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
 // Helper: Ensure seed courses exist in Firestore
 async function getOrSeedCourses() {
+  if (courseCatalogCache && (Date.now() - courseCacheTimestamp < CACHE_TTL_MS)) {
+    return courseCatalogCache;
+  }
+
   const coursesRef = db.collection("courses");
   const snap = await coursesRef.get();
   if (!snap.empty) {
-    return mapDocs(snap);
+    courseCatalogCache = mapDocs(snap);
+    courseCacheTimestamp = Date.now();
+    return courseCatalogCache;
   }
   
   // Seed initial courses if database is empty
@@ -354,6 +364,8 @@ async function getOrSeedCourses() {
     batch.set(docRef, { ...c, createdAt: new Date(), updatedAt: new Date() });
   });
   await batch.commit().catch(e => console.error("Course seeding failed:", e.message));
+  courseCatalogCache = SEED_COURSES;
+  courseCacheTimestamp = Date.now();
   return SEED_COURSES;
 }
 

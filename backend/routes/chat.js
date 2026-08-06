@@ -32,16 +32,21 @@ router.get('/list', auth, async (req, res) => {
       fetchUserIds.add(mapDoc(doc).sender_id);
     });
 
-    // Fetch user details for direct chats
+    // Fetch user details for direct chats in parallel
     const usersData = {};
-    for (const uid of fetchUserIds) {
-      const uDoc = await db.collection('students').doc(uid).get();
-      if (uDoc.exists) {
-        usersData[uid] = mapDoc(uDoc);
-        const authDoc = await db.collection('users').doc(uid).get();
-        if(authDoc.exists) usersData[uid].name = mapDoc(authDoc).name;
+    const userFetchPromises = Array.from(fetchUserIds).map(async (uid) => {
+      const [uDoc, authDoc] = await Promise.all([
+        db.collection('students').doc(uid).get(),
+        db.collection('users').doc(uid).get()
+      ]);
+      if (uDoc.exists || authDoc.exists) {
+        usersData[uid] = {
+          ...(uDoc.exists ? mapDoc(uDoc) : {}),
+          name: authDoc.exists ? mapDoc(authDoc).name : (uDoc.exists ? mapDoc(uDoc).full_name : 'User')
+        };
       }
-    }
+    });
+    await Promise.all(userFetchPromises);
 
     sent.forEach(doc => {
       const peerId = mapDoc(doc).receiver_id;
@@ -77,23 +82,27 @@ router.get('/list', auth, async (req, res) => {
       }
     });
 
-    // 2. Get Team Chats
+    // 2. Get Team Chats in parallel
     const myTeamsSnap = await db.collection('team_members').where('user_id', '==', userId).get();
-    for (const doc of myTeamsSnap.docs) {
+    const teamFetchPromises = myTeamsSnap.docs.map(async (doc) => {
       const teamId = mapDoc(doc).team_id;
       const teamDoc = await db.collection('teams').doc(teamId).get();
       if (teamDoc.exists) {
         const tData = mapDoc(teamDoc);
-        chats.push({
+        return {
           id: `team_${teamId}`,
           type: 'team',
           team_id: teamId,
           name: tData.name,
           logo: tData.logo || null,
           last_activity: tData.last_activity || tData.created_at
-        });
+        };
       }
-    }
+      return null;
+    });
+
+    const teamChats = (await Promise.all(teamFetchPromises)).filter(Boolean);
+    chats.push(...teamChats);
 
     // Sort by most recent activity
     chats.sort((a, b) => {
@@ -109,7 +118,7 @@ router.get('/list', auth, async (req, res) => {
   }
 });
 
-// GET: Messages for a specific chat
+// GET: Messages for a specific chat (bounded to 50 latest)
 router.get('/:chatId/messages', auth, async (req, res) => {
   try {
     const { chatId } = req.params;
@@ -139,16 +148,15 @@ router.get('/:chatId/messages', auth, async (req, res) => {
       return res.status(400).json({ message: "Invalid chat ID format" });
     }
 
-    const messagesSnap = await messagesRef.orderBy('timestamp', 'asc').get();
+    const messagesSnap = await messagesRef.orderBy('timestamp', 'desc').limit(50).get();
     const messages = [];
     messagesSnap.forEach(doc => messages.push({ id: doc.id, ...mapDoc(doc) }));
+    messages.reverse(); // Return in chronological order
 
-    // Mark as read for current user
+    // Mark as read in parallel
     const unread = messagesSnap.docs.filter(d => !mapDoc(d).read_by?.includes(req.user.id));
-    for (const doc of unread) {
-      await doc.ref.update({
-        read_by: FieldValue.arrayUnion(req.user.id)
-      });
+    if (unread.length > 0) {
+      await Promise.all(unread.map(doc => doc.ref.update({ read_by: FieldValue.arrayUnion(req.user.id) })));
     }
 
     res.json(messages);

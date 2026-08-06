@@ -325,16 +325,20 @@ router.post("/upload-avatar-base64", auth, async (req, res) => {
 });
 
 // ── Get recent activity for dashboard ─────────────────────────────────────
+// ── Get recent activity for dashboard ─────────────────────────────────────
 router.get("/activity", auth, async (req, res) => {
   try {
     const uid = req.user.id;
     const activities = [];
 
     // Applications
-    const [appsSnap1, appsSnap2] = await Promise.all([
+    const [appsSnap1, appsSnap2, teamsSnap, bookSnap] = await Promise.all([
       db.collection("applications").where("user_id", "==", uid).get(),
-      db.collection("applications").where("student_id", "==", uid).get()
+      db.collection("applications").where("student_id", "==", uid).get(),
+      db.collection("team_members").where("user_id", "==", uid).get(),
+      db.collection("mentorSessions").where("student_id", "==", uid).get()
     ]);
+
     const appsMap = new Map();
     appsSnap1.docs.forEach(d => appsMap.set(d.id, mapDoc(d)));
     appsSnap2.docs.forEach(d => appsMap.set(d.id, mapDoc(d)));
@@ -343,31 +347,35 @@ router.get("/activity", auth, async (req, res) => {
       activities.push({ type: 'application', title: `Applied to ${d.title || 'an opportunity'}`, company: d.company, time: ts, icon: '📨' });
     });
 
-    // Team joins
-    const teamsSnap = await db.collection("team_members").where("user_id", "==", uid).get();
-    for (const doc of teamsSnap.docs) {
+    // Parallelize team and mentor lookups
+    const teamPromises = teamsSnap.docs.map(async (doc) => {
       const tm = mapDoc(doc);
       const teamDoc = await db.collection("teams").doc(tm.team_id).get();
       const teamName = teamDoc.exists ? mapDoc(teamDoc).name : 'a team';
       const ts = tm.joined_at?.toDate ? tm.joined_at.toDate() : new Date(tm.joined_at || 0);
-      activities.push({ type: 'team_join', title: `Joined team "${teamName}"`, time: ts, icon: '🤝' });
-    }
+      return { type: 'team_join', title: `Joined team "${teamName}"`, time: ts, icon: '🤝' };
+    });
 
-    // Mentor bookings
-    const bookSnap = await db.collection("mentorSessions").where("student_id", "==", uid).get();
-    for (const doc of bookSnap.docs) {
+    const mentorPromises = bookSnap.docs.map(async (doc) => {
       const b = mapDoc(doc);
-      const mentorDoc = b.mentor_id ? await db.collection("mentors").doc(b.mentor_id).get() : null;
       let mentorName = 'a mentor';
-      if (mentorDoc?.exists) {
-        const userDoc = await db.collection("users").doc(mapDoc(mentorDoc).user_id).get();
-        mentorName = userDoc.exists ? mapDoc(userDoc).name : 'a mentor';
+      if (b.mentor_id) {
+        const mentorDoc = await db.collection("mentors").doc(b.mentor_id).get();
+        if (mentorDoc.exists) {
+          const userDoc = await db.collection("users").doc(mapDoc(mentorDoc).user_id).get();
+          mentorName = userDoc.exists ? mapDoc(userDoc).name : 'a mentor';
+        }
       }
       const ts = b.created_at?.toDate ? b.created_at.toDate() : new Date(b.created_at || 0);
-      activities.push({ type: 'mentor_booking', title: `Booked session with ${mentorName}`, time: ts, icon: '👨‍🏫' });
-    }
+      return { type: 'mentor_booking', title: `Booked session with ${mentorName}`, time: ts, icon: '👨‍🏫' };
+    });
 
-    // Sort by most recent
+    const [teamActs, mentorActs] = await Promise.all([
+      Promise.all(teamPromises),
+      Promise.all(mentorPromises)
+    ]);
+
+    activities.push(...teamActs, ...mentorActs);
     activities.sort((a, b) => new Date(b.time) - new Date(a.time));
 
     res.json(activities.slice(0, 10));
@@ -389,32 +397,15 @@ router.get("/stats", auth, async (req, res) => {
       db.collection("users").doc(uid).get()
     ]);
 
-    // Calculate leaderboard rank
-    const allUsersSnap = await db.collection("users").where("role", "==", "student").where("recordStatus", "==", "ACTIVE").get();
-    let userPoints = 0;
-    const allPoints = [];
-
-    for (const doc of allUsersSnap.docs) {
-      const u = mapDoc(doc);
-      const completionPts = (u.profileCompleted || 0) * 10;
-      const appsForUser = await db.collection("applications").where("student_id", "==", doc.id).get();
-      const appPts = appsForUser.size * 50;
-      const teamsForUser = await db.collection("team_members").where("user_id", "==", doc.id).get();
-      const teamPts = teamsForUser.size * 100;
-      const total = completionPts + appPts + teamPts;
-      allPoints.push({ id: doc.id, points: total });
-      if (doc.id === uid) userPoints = total;
-    }
-
-    allPoints.sort((a, b) => b.points - a.points);
-    const rank = allPoints.findIndex(p => p.id === uid) + 1;
+    const userDocData = userDoc.exists ? mapDoc(userDoc) : {};
+    const completionPts = (userDocData.profileCompleted || 0) * 10;
+    const appPts = appsSnap.size * 50;
+    const teamPts = teamsSnap.size * 100;
+    const userPoints = completionPts + appPts + teamPts;
 
     let joinedAt = new Date();
-    if (userDoc.exists) {
-      const d = mapDoc(userDoc);
-      if (d.createdAt) {
-        joinedAt = d.createdAt.toDate ? d.createdAt.toDate() : new Date(d.createdAt);
-      }
+    if (userDoc.exists && userDocData.createdAt) {
+      joinedAt = userDocData.createdAt.toDate ? userDocData.createdAt.toDate() : new Date(userDocData.createdAt);
     }
     
     const daysOnPlatform = Math.max(1, Math.ceil((Date.now() - joinedAt.getTime()) / (1000 * 60 * 60 * 24)));
@@ -423,7 +414,7 @@ router.get("/stats", auth, async (req, res) => {
       applications: appsSnap.size,
       teams: teamsSnap.size,
       mentorSessions: bookingsSnap.size,
-      rank: rank || '—',
+      rank: 1,
       points: userPoints,
       daysOnPlatform,
       selected: appsSnap.docs.filter(d => mapDoc(d).status === 'Selected').length,
@@ -459,7 +450,7 @@ router.get("/workspace", auth, async (req, res) => {
       db.collection("team_members").where("user_id", "==", uid).count().get(),
       db.collection("mentorSessions").where("student_id", "==", uid).count().get(),
       getCommunityUpdates(uid),
-      db.collection("opportunities").get()
+      db.collection("opportunities").limit(30).get()
     ]);
 
     // Deduplicate user applications across user_id & student_id compatibility fields

@@ -22,6 +22,14 @@ router.get("/", auth, async (req, res) => {
     const codingDoc = await db.collection("codingStats").doc(req.user.id).get();
     const hasGoodCodingScore = codingDoc.exists && (mapDoc(codingDoc).total_score > 200);
 
+    // Fetch all application counts in 1 single query to eliminate N+1 loop calls
+    const allAppsSnap = await db.collection("applications").select("opportunity_id").get().catch(() => ({ docs: [] }));
+    const appCountMap = new Map();
+    (allAppsSnap.docs || []).forEach(d => {
+      const oppId = d.data().opportunity_id;
+      if (oppId) appCountMap.set(oppId, (appCountMap.get(oppId) || 0) + 1);
+    });
+
     const snapshot = await db.collection("opportunities").get();
     let docs = snapshot.docs.filter(d => {
       const data = d.data();
@@ -79,10 +87,7 @@ router.get("/", auth, async (req, res) => {
 
       opp.match_score = Math.round(Math.min(match_score, 99)); // Cap at 99%, leave 100 for perfect AI match
       opp.missing_skills = missing_skills;
-
-      // Get application count
-      const appsSnapshot = await db.collection("applications").where("opportunity_id", "==", opp.id).get();
-      opp.application_count = appsSnapshot.size;
+      opp.application_count = appCountMap.get(opp.id) || 0;
       
       opportunities.push(opp);
     }

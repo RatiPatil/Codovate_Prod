@@ -117,21 +117,18 @@ const Dashboard = () => {
   const [savedJobs,    setSavedJobs]    = useState(new Set());
   const [search,       setSearch]       = useState('');
 
-  /* ── Data fetch (parallel) ──────────────────────────────────── */
+  /* ── Data fetch (single aggregated endpoint) ────────────────── */
   const fetchAll = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const [wsRes, oppsRes] = await Promise.all([
-        api.get('/students/workspace').catch(() => ({ data: null })),
-        api.get('/opportunities').catch(() => ({ data: [] })),
-      ]);
-      if (wsRes.data) setWorkspace(wsRes.data);
-      else setError('Could not load workspace data.');
-
-      const raw = oppsRes.data;
-      const arr = Array.isArray(raw) ? raw : (raw?.opportunities || wsRes.data?.recommendedOpps || []);
-      setOpportunities(arr);
+      const wsRes = await api.get('/students/workspace').catch(() => ({ data: null }));
+      if (wsRes.data) {
+        setWorkspace(wsRes.data);
+        setOpportunities(wsRes.data.recommendedOpps || []);
+      } else {
+        setError('Could not load workspace data.');
+      }
     } catch {
       setError('Connection failed. Please retry.');
     } finally {

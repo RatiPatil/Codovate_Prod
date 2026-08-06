@@ -237,13 +237,13 @@ router.get("/my", auth, async (req, res) => {
     userAppsSnap.docs.forEach(doc => appsMap.set(doc.id, { id: doc.id, ...mapDoc(doc) }));
     studentAppsSnap.docs.forEach(doc => appsMap.set(doc.id, { id: doc.id, ...mapDoc(doc) }));
 
-    let applications = [];
-    for (const app of appsMap.values()) {
+    const appsList = Array.from(appsMap.values());
+    const applications = await Promise.all(appsList.map(async (app) => {
       if (app.opportunity_id) {
         const oppDoc = await db.collection("opportunities").doc(app.opportunity_id).get();
         if (oppDoc.exists) {
           const o = mapDoc(oppDoc);
-          applications.push({
+          return {
             ...app,
             company: app.company_name || app.company || o.company || 'Tech Company',
             title: app.opportunity_title || app.role || app.internship_title || o.title || 'Position',
@@ -252,17 +252,16 @@ router.get("/my", auth, async (req, res) => {
             mode: app.mode || o.mode,
             location: app.location || o.location,
             logo: app.logo || o.logo || ''
-          });
-          continue;
+          };
         }
       }
-      applications.push({
+      return {
         ...app,
         company: app.company_name || app.company || 'Tech Company',
         title: app.opportunity_title || app.role || app.internship_title || 'Position',
         type: app.type || 'Job'
-      });
-    }
+      };
+    }));
     
     applications.sort((a, b) => {
       const getTime = (val) => {
