@@ -29,15 +29,17 @@ const getCroppedImg = async (imageSrc, pixelCrop) => {
     pixelCrop.height
   );
 
+  const dataUrl = canvas.toDataURL('image/jpeg', 0.88);
   return new Promise((resolve, reject) => {
     canvas.toBlob((blob) => {
       if (!blob) {
-        console.error('Canvas is empty');
+        reject(new Error('Canvas is empty'));
         return;
       }
       blob.name = 'cropped.jpeg';
+      blob.dataUrl = dataUrl;
       resolve(blob);
-    }, 'image/jpeg');
+    }, 'image/jpeg', 0.88);
   });
 };
 

@@ -262,6 +262,68 @@ router.put("/profile", auth, async (req, res) => {
   }
 });
 
+// ─── Upload Avatar (Base64 Fallback Endpoint - Bypass CORS) ─────────────
+router.post("/upload-avatar-base64", auth, async (req, res) => {
+  try {
+    const { imageBase64 } = req.body;
+    const uid = req.user.id;
+
+    if (!imageBase64) {
+      return res.status(400).json({ message: "No image data provided." });
+    }
+
+    const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, '');
+    const buffer = Buffer.from(base64Data, 'base64');
+    let downloadUrl = null;
+
+    // Try Firebase Admin Storage bucket if configured
+    try {
+      if (admin.storage) {
+        const bucket = admin.storage().bucket();
+        const filename = `profiles/${uid}/avatar_${Date.now()}.jpg`;
+        const file = bucket.file(filename);
+
+        await file.save(buffer, {
+          metadata: { contentType: 'image/jpeg' },
+          public: true
+        });
+
+        const [signedUrl] = await file.getSignedUrl({
+          action: 'read',
+          expires: '03-01-2500'
+        }).catch(() => []);
+
+        downloadUrl = signedUrl || `https://storage.googleapis.com/${bucket.name}/${filename}`;
+      }
+    } catch (storageErr) {
+      console.warn("⚠️ Firebase Admin Storage upload skipped/failed:", storageErr.message);
+    }
+
+    // If bucket is not accessible, store optimized base64 Data URL directly in Firestore
+    if (!downloadUrl) {
+      downloadUrl = imageBase64.startsWith('data:') ? imageBase64 : `data:image/jpeg;base64,${base64Data}`;
+    }
+
+    const profileRef = db.collection("profiles").doc(uid);
+    const userRef = db.collection("users").doc(uid);
+    const batch = db.batch();
+    batch.set(profileRef, { profileImage: downloadUrl, updatedAt: new Date() }, { merge: true });
+    batch.set(userRef, { photoURL: downloadUrl, avatar_url: downloadUrl, updatedAt: new Date() }, { merge: true });
+    await batch.commit();
+
+    // Emit event
+    eventBus.emit("PROFILE_UPDATED", { uid, profileData: { profileImage: downloadUrl } });
+
+    res.json({
+      avatar_url: downloadUrl,
+      message: "Avatar uploaded successfully."
+    });
+  } catch (err) {
+    console.error("Upload avatar base64 error:", err.message);
+    res.status(500).json({ message: "Failed to upload avatar: " + err.message });
+  }
+});
+
 // ── Get recent activity for dashboard ─────────────────────────────────────
 router.get("/activity", auth, async (req, res) => {
   try {
