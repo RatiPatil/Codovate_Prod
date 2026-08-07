@@ -7,12 +7,8 @@ const GlobalLoader = () => (
   </div>
 );
 
-/**
- * PublicOnlyRoute — Restricts access to public-only pages (Home, Login, Signup) for logged-in users.
- * Redirects logged-in students to /dashboard (or /onboarding if incomplete).
- */
 const PublicOnlyRoute = ({ children }) => {
-  const { user, token, loading: authLoading, onboardingCompleted } = useAuth();
+  const { user, token, loading: authLoading } = useAuth();
 
   if (authLoading) {
     return <GlobalLoader />;
@@ -20,9 +16,6 @@ const PublicOnlyRoute = ({ children }) => {
 
   if (token) {
     const isAdmin = user?.role && user.role !== 'student';
-    if (onboardingCompleted === false && !isAdmin) {
-      return <Navigate to="/onboarding" replace />;
-    }
     return <Navigate to={isAdmin ? "/admin" : "/dashboard"} replace />;
   }
 

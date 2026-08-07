@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { signInWithPopup, signInWithRedirect, getRedirectResult, signInWithCustomToken, linkWithPopup } from 'firebase/auth';
+import { signInWithPopup, signInWithRedirect, getRedirectResult, linkWithPopup } from 'firebase/auth';
 import { auth, googleProvider } from '../lib/firebase';
 import api from '../api/axios';
 
@@ -8,25 +8,16 @@ const defaultAuthContext = {
   token: null,
   loading: true,
   initialized: false,
-  onboardingCompleted: null,
-  completeOnboarding: () => {},
   updateUser: () => {},
   login: () => {},
   logout: () => {},
   loginWithGoogle: () => {},
-  loginWithPhone: () => {},
   linkGoogleAccount: () => {}
 };
 
 const AuthContext = createContext(defaultAuthContext);
 
-// ─── Storage helpers for Remember Me ────────────────────
-function getStorage() {
-  // If rememberMe was set, use localStorage (persistent); otherwise sessionStorage
-  return localStorage.getItem('rememberMe') === 'true' ? localStorage : sessionStorage;
-}
-
-function setAuthData(token, user, rememberMe) {
+function setAuthData(token, user, rememberMe = true) {
   const storage = rememberMe ? localStorage : sessionStorage;
   storage.setItem('token', token);
   storage.setItem('user', JSON.stringify(user));
@@ -34,18 +25,15 @@ function setAuthData(token, user, rememberMe) {
     localStorage.setItem('rememberMe', 'true');
   } else {
     localStorage.removeItem('rememberMe');
-    // Also clear from localStorage if switching
     localStorage.removeItem('token');
     localStorage.removeItem('user');
   }
 }
 
-// ─── JWT Expiry Validation ────────────────────────────────
 function isTokenValid(token) {
   if (!token) return false;
   try {
     const payload = JSON.parse(atob(token.split('.')[1]));
-    // Check if exp exists and is in the future (giving 5 min buffer)
     if (payload.exp && payload.exp * 1000 < Date.now() + 5 * 60 * 1000) {
       return false;
     }
@@ -56,7 +44,6 @@ function isTokenValid(token) {
 }
 
 function getAuthData() {
-  // Check localStorage first (rememberMe), then sessionStorage
   const lsToken = localStorage.getItem('token');
   const lsUser = localStorage.getItem('user');
   
@@ -64,7 +51,6 @@ function getAuthData() {
     if (isTokenValid(lsToken)) {
       return { token: lsToken, user: JSON.parse(lsUser) };
     } else {
-      // Clear expired local session
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       localStorage.removeItem('rememberMe');
@@ -78,7 +64,6 @@ function getAuthData() {
     if (isTokenValid(ssToken)) {
       return { token: ssToken, user: JSON.parse(ssUser) };
     } else {
-      // Clear expired session storage
       sessionStorage.removeItem('token');
       sessionStorage.removeItem('user');
     }
@@ -100,38 +85,19 @@ function clearAuthData() {
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
-  const [onboardingCompleted, setOnboardingCompleted] = useState(null);
   const [loading, setLoading] = useState(true);
   const [initialized, setInitialized] = useState(false);
 
-  // ─── Initial load: restore session ─────────────────────
+  // Initial load: restore session
   useEffect(() => {
     let isMounted = true;
 
     const initAuth = async () => {
       const { token: savedToken, user: savedUser } = getAuthData();
-      const savedOnboarding = localStorage.getItem('onboarding_completed') || sessionStorage.getItem('onboarding_completed');
 
-      if (savedToken && savedUser) {
-        if (isMounted) {
-          setToken(savedToken);
-          setUser(savedUser);
-        }
-
-        if (savedOnboarding !== null) {
-          if (isMounted) setOnboardingCompleted(savedOnboarding === 'true');
-        } else {
-          try {
-            const res = await api.get('/onboarding/status');
-            const completed = res.data.onboarding_completed === true || res.data.onboarding_completed === "true";
-            if (isMounted) {
-              setOnboardingCompleted(completed);
-              getStorage().setItem('onboarding_completed', String(completed));
-            }
-          } catch (e) {
-            if (isMounted) setOnboardingCompleted(savedUser.role !== 'student');
-          }
-        }
+      if (savedToken && savedUser && isMounted) {
+        setToken(savedToken);
+        setUser(savedUser);
       }
 
       if (isMounted) {
@@ -145,7 +111,7 @@ export const AuthProvider = ({ children }) => {
     return () => { isMounted = false; };
   }, []);
 
-  // ─── Handle Google Redirect Result ─────────────────────
+  // Handle Google Redirect Result
   useEffect(() => {
     const checkRedirect = async () => {
       try {
@@ -154,7 +120,7 @@ export const AuthProvider = ({ children }) => {
           const idToken = await result.user.getIdToken();
           const res = await api.post('/auth/google', { idToken });
           const { token: jwtToken, user: userData } = res.data;
-          login(jwtToken, userData, true); // Redirect → default to rememberMe
+          login(jwtToken, userData, true);
         }
       } catch (err) {
         console.warn("Firebase Redirect Auth Error:", err);
@@ -163,26 +129,21 @@ export const AuthProvider = ({ children }) => {
     checkRedirect();
   }, []);
 
-  // ─── Login ─────────────────────────────────────────────
+  // Login
   const login = useCallback((newToken, newUser, rememberMe = true) => {
     setAuthData(newToken, newUser, rememberMe);
     setToken(newToken);
     setUser(newUser);
-    const obCompleted = newUser?.onboardingCompleted ?? (newUser?.role !== 'student');
-    setOnboardingCompleted(obCompleted);
-    const storage = rememberMe ? localStorage : sessionStorage;
-    storage.setItem('onboarding_completed', String(obCompleted));
   }, []);
 
-  // ─── Google Login ──────────────────────────────────────
+  // Google Login
   const loginWithGoogle = useCallback(async () => {
     try {
-      const tFbStart = performance.now();
       let result = null;
       try {
         result = await signInWithPopup(auth, googleProvider);
       } catch (popupErr) {
-        console.warn("Popup error/COOP restriction, attempting redirect fallback:", popupErr);
+        console.warn("Popup error, attempting redirect fallback:", popupErr);
         if (
           popupErr.code === 'auth/popup-blocked' ||
           popupErr.code === 'auth/popup-closed-by-user' ||
@@ -195,21 +156,14 @@ export const AuthProvider = ({ children }) => {
         throw popupErr;
       }
 
-      const tFbEnd = performance.now();
-
       if (result) {
         const idToken = await result.user.getIdToken();
-        const tBackendStart = performance.now();
         const res = await api.post('/auth/google', { idToken });
-        const tBackendEnd = performance.now();
 
-        const { token: jwtToken, user: userData, redirect } = res.data;
+        const { token: jwtToken, user: userData } = res.data;
         login(jwtToken, userData, true);
 
-        console.log(
-          `[AUTH TIMINGS] Firebase Popup: ${(tFbEnd - tFbStart).toFixed(0)}ms | Backend Google API: ${(tBackendEnd - tBackendStart).toFixed(0)}ms`
-        );
-        return { token: jwtToken, user: userData, redirect };
+        return { token: jwtToken, user: userData };
       }
     } catch (err) {
       console.error("Google authentication error:", err);
@@ -218,26 +172,7 @@ export const AuthProvider = ({ children }) => {
     }
   }, [login]);
 
-  // ─── Phone Login (preserved for backward compatibility) ─
-  const loginWithPhone = useCallback(async (idToken) => {
-    try {
-      const res = await api.post('/auth/phone', { idToken });
-
-      if (res.data.action === "MERGED") {
-        await auth.signOut();
-        await signInWithCustomToken(auth, res.data.customToken);
-      }
-
-      const { token: jwtToken, user: userData } = res.data;
-      login(jwtToken, userData, true);
-    } catch (err) {
-      console.error("Phone authentication error:", err);
-      try { await auth.signOut(); } catch(e) {}
-      throw err;
-    }
-  }, [login]);
-
-  // ─── Link Google Account ───────────────────────────────
+  // Link Google Account
   const linkGoogleAccount = useCallback(async () => {
     try {
       if (!auth.currentUser) throw new Error("No active Firebase session.");
@@ -257,22 +192,15 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  // ─── Logout ────────────────────────────────────────────
+  // Logout
   const logout = useCallback(async () => {
     try { await auth.signOut(); } catch (e) {}
     clearAuthData();
     setToken(null);
     setUser(null);
-    setOnboardingCompleted(null);
   }, []);
 
-  // ─── Complete Onboarding ───────────────────────────────
-  const completeOnboarding = useCallback(() => {
-    setOnboardingCompleted(true);
-    getStorage().setItem('onboarding_completed', 'true');
-  }, []);
-
-  // ─── Update User Profile State ──────────────────────────
+  // Update User Profile State
   const updateUser = useCallback((updatedFields) => {
     setUser(prev => {
       if (!prev) return prev;
@@ -286,8 +214,7 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider value={{
-      user, token, login, loginWithGoogle, loginWithPhone, linkGoogleAccount, logout, loading, initialized,
-      onboardingCompleted, completeOnboarding, updateUser
+      user, token, login, loginWithGoogle, linkGoogleAccount, logout, loading, initialized, updateUser
     }}>
       {children}
     </AuthContext.Provider>

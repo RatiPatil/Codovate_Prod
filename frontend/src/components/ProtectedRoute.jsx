@@ -10,11 +10,10 @@ const GlobalLoader = () => (
 
 const ProtectedRoute = ({ 
   children, 
-  requireOnboarding = true,
   requiredRole = null,
   requiredPermission = null
 }) => {
-  const { user, token, loading: authLoading, onboardingCompleted } = useAuth();
+  const { user, token, loading: authLoading } = useAuth();
   const { hasRole, hasPermission, loading: roleLoading } = useRole();
   const location = useLocation();
 
@@ -29,25 +28,12 @@ const ProtectedRoute = ({
     return <Navigate to="/login" replace />;
   }
 
-  // Admin users (and non-student system roles) bypass student onboarding
   const isAdmin = user?.role && user.role !== 'student';
 
-  if (requireOnboarding && onboardingCompleted === false && !isAdmin) {
-    if (location.pathname === '/onboarding') return children;
-    return <Navigate to="/onboarding" replace />;
-  }
-
-  // If user has already completed onboarding and tries to access /onboarding or /onboarding-success
-  if (!requireOnboarding && onboardingCompleted === true && (location.pathname === '/onboarding' || location.pathname === '/onboarding-success')) {
-    return <Navigate to={isAdmin ? "/admin" : "/dashboard"} replace />;
-  }
-
-  // Check specific role requirement if passed to the route
   if (requiredRole && !hasRole(requiredRole)) {
     return <Navigate to={isAdmin ? "/admin" : "/dashboard"} replace />;
   }
 
-  // Check specific permission requirement if passed to the route
   if (requiredPermission && !hasPermission(requiredPermission)) {
     return <Navigate to={isAdmin ? "/admin" : "/dashboard"} replace />;
   }

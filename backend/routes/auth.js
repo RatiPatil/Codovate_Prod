@@ -30,105 +30,41 @@ router.post("/google", async (req, res) => {
   try {
     const decodedToken = await getAuth().verifyIdToken(idToken);
     const { email, name, picture, uid } = decodedToken;
-    
     const usersRef = db.collection('users');
-    const snapshot = await usersRef.where('email', '==', email.toLowerCase()).limit(1).get();
-
+    let userDoc = await usersRef.doc(uid).get();
     let user;
-    if (snapshot.empty) {
-      // Auto-Registration Flow for Google
-      const newUserRef = usersRef.doc();
+
+    if (!userDoc.exists) {
+      // Create minimal canonical user document users/{uid}
       user = {
-        id: newUserRef.id,
-        name: (name || 'Google User').trim().toUpperCase(),
+        id: uid,
+        authUid: uid,
+        name: name || 'Google User',
         email: email.toLowerCase(),
         avatar: picture || '',
         role: "student",
         recordStatus: 'ACTIVE',
-        is_verified: false,
-        authUid: uid,
         providers: ['google'],
-        claimed: true,
-        onboardingCompleted: false,
         createdAt: new Date(),
         updatedAt: new Date(),
         lastLogin: new Date()
       };
-      
-      const batch = db.batch();
-      batch.set(newUserRef, user);
-      
-      const profileData = {
-        personalInfo: {
-          name: (name || 'Google User').trim().toUpperCase(),
-          email: email.toLowerCase(),
-          phone: null
-        },
-        education: { college: null, degree: null, branch: null, year: null },
-        socialLinks: { github: null, linkedin: null, portfolio: null, resume: null },
-        careerGoal: null,
-        experienceLevel: null,
-        profileImage: picture || '',
-        headline: null,
-        bio: null,
-        profileCompletion: 0,
-        visibility: 'public',
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
-      
-      batch.set(db.collection('profiles').doc(newUserRef.id), profileData);
-      
-      batch.set(db.collection('activityLogs').doc(), {
-        actor_id: newUserRef.id,
-        event_type: 'user_signup',
-        entity_type: 'user',
-        entity_id: newUserRef.id,
-        metadata: { provider: 'google', email },
-        created_at: new Date()
-      });
-      
-      await batch.commit();
-      // Set Firebase custom claims for Firestore rules (non-blocking)
+
+      await usersRef.doc(uid).set(user);
       if (uid) setCustomClaims(uid, 'student').catch(e => console.warn('Background claims failed:', e));
-      console.log("✅ Auto-registered new user via Google:", email);
+      console.log("✅ Created minimal canonical user doc users/" + uid + " via Google:", email);
     } else {
-      const userDoc = snapshot.docs[0];
-      user = mapDoc(userDoc);
+      user = { id: userDoc.id, ...userDoc.data() };
       
-      if (user.recordStatus !== 'ACTIVE') return res.status(403).json({ message: "Your account has been suspended. Please contact the administrator." });
-      
-      // AUTH-006: Prevent Identity Orphaning
-      if (user.authUid && user.authUid !== uid) {
-        return res.status(409).json({ message: "An account with this email already exists via another method. Please login with your original method." });
+      if (user.recordStatus && user.recordStatus !== 'ACTIVE') {
+        return res.status(403).json({ message: "Your account has been suspended. Please contact administrator." });
       }
 
-      // Update authUid (if it was missing), providers, claimed, and last_login_at
-      const providers = user.providers || [];
-      if (!providers.includes('google')) providers.push('google');
-
-      const batch = db.batch();
-      batch.update(userDoc.ref, { 
-        authUid: uid,
-        providers: providers,
-        claimed: true,
+      await usersRef.doc(uid).update({
         lastLogin: new Date(),
         updatedAt: new Date()
       });
-
-      // Log event
-      batch.set(db.collection('activityLogs').doc(), {
-        actor_id: userDoc.id,
-        event_type: 'user_login',
-        entity_type: 'user',
-        entity_id: userDoc.id,
-        metadata: { provider: 'google', email },
-        created_at: new Date()
-      });
-
-      // Fire and forget batch commit to speed up login
-      batch.commit().catch(e => console.error('Background batch commit failed:', e));
-      console.log("✅ User logged in via Google and linked:", email);
+      console.log("✅ User logged in via Google:", email);
     }
 
     const tokenPayload = { id: user.id, role: user.role, name: user.name, email: user.email };

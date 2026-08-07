@@ -23,8 +23,6 @@ const Login = lazy(() => import('./pages/Login'));
 const MentorLogin = lazy(() => import('./pages/MentorLogin'));
 const Signup = lazy(() => import('./pages/Signup'));
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
-const Onboarding = lazy(() => import('./pages/Onboarding'));
-const OnboardingSuccess = lazy(() => import('./pages/OnboardingSuccess'));
 const WelcomeExperience = lazy(() => import('./pages/WelcomeExperience'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Opportunities = lazy(() => import('./pages/Opportunities'));
@@ -144,18 +142,6 @@ function App() {
                   <Route path="/admin-login" element={<PublicOnlyRoute><AdminLogin /></PublicOnlyRoute>} />
                   <Route path="/signup" element={<PublicOnlyRoute><Signup /></PublicOnlyRoute>} />
                   <Route path="/forgot-password" element={<PublicOnlyRoute><ForgotPassword /></PublicOnlyRoute>} />
-
-                  <Route path="/onboarding" element={
-                    <ProtectedRoute requireOnboarding={false}>
-                      <Onboarding />
-                    </ProtectedRoute>
-                  } />
-
-                  <Route path="/onboarding-success" element={
-                    <ProtectedRoute requireOnboarding={false}>
-                      <OnboardingSuccess />
-                    </ProtectedRoute>
-                  } />
 
                   <Route path="/welcome" element={
                     <ProtectedRoute requireOnboarding={false}>
