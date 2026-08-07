@@ -1,6 +1,7 @@
 const admin = require('firebase-admin');
 const { getFirestore, FieldValue } = require('firebase-admin/firestore');
 const { getAuth } = require('firebase-admin/auth');
+const { getStorage } = require('firebase-admin/storage');
 require('dotenv').config();
 const fs = require('fs');
 
@@ -35,19 +36,20 @@ if (fs.existsSync('/etc/secrets/serviceAccountKey.json')) {
 }
 
 let db;
+let storage;
 if (serviceAccount) {
+  const bucketName = process.env.FIREBASE_STORAGE_BUCKET || 'codovate-784ab.firebasestorage.app';
   admin.initializeApp({
     credential: admin.credential ? admin.credential.cert(serviceAccount) : require('firebase-admin/app').cert(serviceAccount),
+    storageBucket: bucketName
   });
-  console.log("✅ Firebase Admin initialized successfully.");
+  console.log("✅ Firebase Admin initialized successfully with storageBucket:", bucketName);
   db = getFirestore();
+  storage = getStorage();
   // Force REST API instead of gRPC to fix Render timeout/retry issues
   db.settings({ preferRest: true });
 } else {
   console.warn("⚠️ Firebase Admin could not be fully initialized due to missing credentials. Using MOCK Firestore.");
-  // Initialize with a dummy or let it fail depending on environment
-  
-  // Mock Firestore to prevent crashes
   const mockCollection = () => ({
     doc: () => ({
       get: async () => ({ exists: true, data: () => ({}) }),
@@ -70,4 +72,4 @@ if (serviceAccount) {
   };
 }
 
-module.exports = { admin, db, FieldValue, getAuth };
+module.exports = { admin, db, storage, getStorage, FieldValue, getAuth };

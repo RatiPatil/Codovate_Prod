@@ -56,9 +56,45 @@ export const uploadFileToStorage = async (file, path, onProgress = null) => {
 };
 
 /**
- * Convenience method for profile photos with automatic server-side CORS fallback
+ * Uploads a file directly to Cloudinary using unsigned upload preset
+ */
+export const uploadToCloudinary = async (file) => {
+  const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || "f6fnf7ah";
+  const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || "chattingapp";
+
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("upload_preset", uploadPreset);
+
+  const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+    method: "POST",
+    body: formData
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error?.message || "Cloudinary upload failed");
+  }
+
+  const data = await response.json();
+  return data.secure_url;
+};
+
+/**
+ * Convenience method for profile photos with Cloudinary unsigned upload and fallback
  */
 export const uploadProfilePhoto = async (file, userId, onProgress) => {
+  // Tier 1: Cloudinary Direct Unsigned Upload (Instant & 100% CORS-free)
+  try {
+    const cloudinaryUrl = await uploadToCloudinary(file);
+    if (cloudinaryUrl) {
+      return cloudinaryUrl;
+    }
+  } catch (cloudinaryErr) {
+    console.warn("⚠️ Cloudinary upload failed, falling back to Firebase Storage:", cloudinaryErr.message);
+  }
+
+  // Tier 2: Firebase Storage Direct
   try {
     const fileName = file?.name || 'photo.jpg';
     const extension = fileName.includes('.') ? fileName.split('.').pop() : 'jpg';
