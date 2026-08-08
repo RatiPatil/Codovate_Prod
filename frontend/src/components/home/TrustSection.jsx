@@ -84,32 +84,32 @@ const TrustSection = () => {
   }, []);
 
   return (
-    <section ref={sectionRef} className="py-14 sm:py-16 md:py-20 relative z-10">
+    <section ref={sectionRef} className="py-8 sm:py-10 md:py-12 relative z-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
           {/* Left Column */}
-          <div className="trust-left-content lg:col-span-6 space-y-6">
+          <div className="trust-left-content lg:col-span-6 space-y-5">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-purple-50 dark:bg-purple-950/60 border border-purple-200/70 dark:border-purple-800 text-purple-700 dark:text-purple-300 text-xs font-semibold">
               <Award className="w-3.5 h-3.5" />
               <span>Career Preparedness</span>
             </div>
 
-            <h2 className="text-3xl sm:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-tight">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-tight">
               Built for Ambitious Learners.{' '}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400">
                 Engineered for Outcomes.
               </span>
             </h2>
 
-            <p className="text-slate-600 dark:text-slate-300 text-base leading-relaxed">
+            <p className="text-slate-600 dark:text-slate-300 text-sm sm:text-base leading-relaxed">
               Codovate bridges the gap between university theory and high-growth industry careers. Students build real products, prove their skills, and prepare for modern software roles.
             </p>
 
-            <div className="space-y-3.5 pt-1">
+            <div className="space-y-3 pt-1">
               {highlights.map((h, index) => (
-                <div key={index} className="flex items-start gap-3.5 group">
-                  <div className="w-6 h-6 rounded-full bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0 mt-0.5 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
-                    <CheckCircle className="w-4 h-4" />
+                <div key={index} className="flex items-start gap-3 group">
+                  <div className="w-5.5 h-5.5 rounded-full bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0 mt-0.5 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                    <CheckCircle className="w-3.5 h-3.5" />
                   </div>
                   <div>
                     <h4 className="text-sm font-bold text-slate-900 dark:text-white">{h.title}</h4>
@@ -121,7 +121,7 @@ const TrustSection = () => {
           </div>
 
           {/* Right Column: Platform Pillars */}
-          <div className="lg:col-span-6 space-y-3.5">
+          <div className="lg:col-span-6 space-y-3">
             <div className="flex justify-between items-center px-1">
               <span className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
                 Core Career Pillars
@@ -131,17 +131,17 @@ const TrustSection = () => {
               </Link>
             </div>
 
-            <div className="space-y-3.5">
+            <div className="space-y-3">
               {pillarCards.map((card, i) => {
                 const IconComp = card.icon;
                 return (
                   <div
                     key={i}
-                    className="trust-pillar-card p-5 rounded-2xl bg-white/90 dark:bg-[#111522]/90 backdrop-blur-md border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md transition-all duration-300 flex items-center justify-between gap-4"
+                    className="trust-pillar-card p-4.5 rounded-2xl bg-white/90 dark:bg-[#111522]/90 backdrop-blur-md border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md transition-all duration-300 flex items-center justify-between gap-4"
                   >
-                    <div className="flex items-center gap-4">
-                      <div className="w-11 h-11 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0">
-                        <IconComp className="w-5.5 h-5.5" />
+                    <div className="flex items-center gap-3.5">
+                      <div className="w-10 h-10 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0">
+                        <IconComp className="w-5 h-5" />
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
@@ -151,7 +151,7 @@ const TrustSection = () => {
                           </span>
                         </div>
                         <p className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 mt-0.5">{card.subtitle}</p>
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-normal">{card.desc}</p>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-normal">{card.desc}</p>
                       </div>
                     </div>
                   </div>

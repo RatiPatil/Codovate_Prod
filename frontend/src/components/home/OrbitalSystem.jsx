@@ -7,8 +7,6 @@ import {
   FolderGit2,
   FileText,
   Video,
-  Award,
-  Users,
   GraduationCap,
   Monitor,
 } from 'lucide-react';
@@ -19,12 +17,12 @@ const OrbitalSystem = () => {
   const nodes = [
     { id: 'code', label: 'Code Engine', icon: Code2, pos: 'top-[12%] left-[8%] md:left-[12%]' },
     { id: 'ai', label: 'AI Roadmap', icon: Bot, pos: 'top-[8%] right-[10%] md:right-[15%]' },
-    { id: 'projects', label: 'Projects Hub', icon: FolderGit2, pos: 'top-[42%] left-[3%] md:left-[6%]' },
-    { id: 'learning', label: 'Smart Modules', icon: BookOpen, pos: 'top-[45%] right-[4%] md:right-[8%]' },
-    { id: 'resume', label: 'ATS Resume', icon: FileText, pos: 'top-[75%] left-[10%] md:left-[14%]' },
-    { id: 'interview', label: 'Mock AI Interview', icon: Video, pos: 'top-[78%] right-[11%] md:right-[16%]' },
-    { id: 'cap', label: 'Placement Prep', icon: GraduationCap, pos: 'top-[60%] right-[18%]' },
-    { id: 'monitor', label: 'IDE Sandbox', icon: Monitor, pos: 'top-[65%] left-[16%]' },
+    { id: 'projects', label: 'Projects Hub', icon: FolderGit2, pos: 'top-[38%] left-[3%] md:left-[6%]' },
+    { id: 'learning', label: 'Smart Modules', icon: BookOpen, pos: 'top-[40%] right-[4%] md:right-[8%]' },
+    { id: 'resume', label: 'ATS Resume', icon: FileText, pos: 'top-[68%] left-[10%] md:left-[14%]' },
+    { id: 'interview', label: 'Mock AI Interview', icon: Video, pos: 'top-[70%] right-[11%] md:right-[16%]' },
+    { id: 'cap', label: 'Placement Prep', icon: GraduationCap, pos: 'top-[54%] right-[18%]' },
+    { id: 'monitor', label: 'IDE Sandbox', icon: Monitor, pos: 'top-[58%] left-[16%]' },
   ];
 
   useEffect(() => {
@@ -64,13 +62,13 @@ const OrbitalSystem = () => {
   return (
     <div
       ref={containerRef}
-      className="absolute inset-0 pointer-events-none z-10 overflow-hidden"
+      className="absolute inset-x-0 top-0 h-[850px] pointer-events-none z-10 overflow-hidden"
       aria-hidden="true"
     >
-      {/* Curved SVG Orbital Paths */}
+      {/* Curved SVG Orbital Paths (Hero Only) */}
       <svg
-        className="absolute top-0 left-1/2 -translate-x-1/2 w-[1400px] h-[2000px] opacity-60 dark:opacity-40"
-        viewBox="0 0 1400 2000"
+        className="absolute top-0 left-1/2 -translate-x-1/2 w-[1400px] h-[850px] opacity-60 dark:opacity-40"
+        viewBox="0 0 1400 850"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
       >
@@ -87,6 +85,7 @@ const OrbitalSystem = () => {
           </linearGradient>
         </defs>
 
+        {/* Primary Orbital Ellipse (Hero) */}
         <ellipse
           className="orbital-ring-1"
           cx="700"
@@ -98,6 +97,7 @@ const OrbitalSystem = () => {
           strokeDasharray="8 6"
         />
 
+        {/* Secondary Inner Orbital Ring */}
         <ellipse
           className="orbital-ring-2"
           cx="700"
@@ -108,16 +108,9 @@ const OrbitalSystem = () => {
           strokeWidth="1.2"
           strokeDasharray="6 4"
         />
-
-        <path
-          d="M 120,420 C 120,800 1280,750 1280,1200 C 1280,1650 120,1600 700,1950"
-          stroke="url(#orbitGradient1)"
-          strokeWidth="1.5"
-          strokeDasharray="5 5"
-        />
       </svg>
 
-      {/* Floating Icon Node Cards matching reference image styling */}
+      {/* Floating Icon Node Cards */}
       {nodes.map((node) => {
         const IconComponent = node.icon;
         return (
