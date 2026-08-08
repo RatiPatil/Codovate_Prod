@@ -133,12 +133,12 @@ const HeroSectionV2 = () => {
       ref={heroRef}
       className="relative pt-24 pb-8 md:pt-32 md:pb-12 flex flex-col justify-between items-center z-10 overflow-hidden"
     >
-      {/* Concentrated Purple Glow */}
+      {/* Concentrated Purple Glow matching dark reference atmosphere */}
       <div
-        className="absolute top-[48%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[720px] h-[380px] rounded-full blur-[110px] pointer-events-none opacity-90 dark:opacity-60 z-0"
+        className="absolute top-[48%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[760px] h-[400px] rounded-full blur-[110px] pointer-events-none opacity-90 dark:opacity-75 z-0"
         style={{
           background:
-            'radial-gradient(circle, rgba(147, 51, 234, 0.28) 0%, rgba(124, 58, 237, 0.18) 45%, rgba(99, 102, 241, 0.08) 70%, rgba(255, 255, 255, 0) 85%)',
+            'radial-gradient(circle, rgba(147, 51, 234, 0.35) 0%, rgba(124, 58, 237, 0.22) 45%, rgba(99, 102, 241, 0.09) 70%, rgba(255, 255, 255, 0) 85%)',
         }}
       />
 
@@ -147,7 +147,7 @@ const HeroSectionV2 = () => {
         {particles.map((p, i) => (
           <div
             key={i}
-            className={`hero-sparkle-dot absolute rounded-full bg-white dark:bg-purple-300 shadow-[0_0_10px_rgba(255,255,255,0.9)] opacity-70 ${p.size}`}
+            className={`hero-sparkle-dot absolute rounded-full bg-white dark:bg-purple-200 shadow-[0_0_10px_rgba(255,255,255,0.9)] opacity-70 ${p.size}`}
             style={{ top: p.top, left: p.left }}
           />
         ))}
@@ -161,9 +161,9 @@ const HeroSectionV2 = () => {
         {/* Badge */}
         <div
           ref={badgeRef}
-          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-100/90 dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700 shadow-xs backdrop-blur-md"
+          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-100/90 dark:bg-[#151926]/90 border border-slate-200/80 dark:border-slate-700/80 shadow-xs backdrop-blur-md"
         >
-          <span className="text-xs font-medium text-slate-700 dark:text-slate-200 tracking-wide">
+          <span className="text-xs font-medium text-slate-700 dark:text-slate-300 tracking-wide">
             India's #1 Student Career Ecosystem
           </span>
         </div>
@@ -178,7 +178,7 @@ const HeroSectionV2 = () => {
           </h1>
           <h1
             ref={title2Ref}
-            className="text-4xl sm:text-6xl lg:text-7xl font-serif font-normal text-slate-900 dark:text-slate-100 tracking-tight leading-[1.1]"
+            className="text-4xl sm:text-6xl lg:text-7xl font-serif font-normal text-slate-900 dark:text-white tracking-tight leading-[1.1]"
           >
             with Codovate ONE
           </h1>
@@ -187,7 +187,7 @@ const HeroSectionV2 = () => {
         {/* Description */}
         <p
           ref={descRef}
-          className="max-w-2xl text-base sm:text-lg text-slate-600 dark:text-slate-300 font-normal leading-relaxed text-balance"
+          className="max-w-2xl text-base sm:text-lg text-slate-600 dark:text-slate-400 font-normal leading-relaxed text-balance"
         >
           Codovate ONE gives you a fully integrated path to placements – DSA, development, projects, contests, core CS subjects and interview prep in one system.
         </p>
@@ -196,7 +196,7 @@ const HeroSectionV2 = () => {
         <div ref={ctaRef} className="flex flex-wrap items-center justify-center gap-4 pt-1 relative z-20">
           <a
             href="#resources"
-            className="inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl text-sm font-bold text-slate-800 dark:text-slate-200 bg-slate-200/70 dark:bg-slate-800/70 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-300/50 dark:border-slate-700 shadow-xs transition-all duration-200 hover:-translate-y-0.5"
+            className="inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl text-sm font-bold text-slate-800 dark:text-white bg-slate-200/70 dark:bg-[#1E2330] hover:bg-slate-200 dark:hover:bg-[#252B3B] border border-slate-300/50 dark:border-slate-700/80 shadow-xs transition-all duration-200 hover:-translate-y-0.5"
           >
             <span>Free Resources</span>
           </a>

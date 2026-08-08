@@ -9,6 +9,8 @@ import {
   Video,
   Award,
   Users,
+  GraduationCap,
+  Monitor,
 } from 'lucide-react';
 
 const OrbitalSystem = () => {
@@ -21,8 +23,8 @@ const OrbitalSystem = () => {
     { id: 'learning', label: 'Smart Modules', icon: BookOpen, pos: 'top-[45%] right-[4%] md:right-[8%]' },
     { id: 'resume', label: 'ATS Resume', icon: FileText, pos: 'top-[75%] left-[10%] md:left-[14%]' },
     { id: 'interview', label: 'Mock AI Interview', icon: Video, pos: 'top-[78%] right-[11%] md:right-[16%]' },
-    { id: 'certificate', label: 'Certificates', icon: Award, pos: 'top-[92%] left-[25%]' },
-    { id: 'community', label: 'Peer Network', icon: Users, pos: 'top-[90%] right-[25%]' },
+    { id: 'cap', label: 'Placement Prep', icon: GraduationCap, pos: 'top-[60%] right-[18%]' },
+    { id: 'monitor', label: 'IDE Sandbox', icon: Monitor, pos: 'top-[65%] left-[16%]' },
   ];
 
   useEffect(() => {
@@ -74,7 +76,7 @@ const OrbitalSystem = () => {
       >
         <defs>
           <linearGradient id="orbitGradient1" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#C084FC" stopOpacity="0.3" />
+            <stop offset="0%" stopColor="#C084FC" stopOpacity="0.35" />
             <stop offset="50%" stopColor="#818CF8" stopOpacity="0.45" />
             <stop offset="100%" stopColor="#6366F1" stopOpacity="0.2" />
           </linearGradient>
@@ -115,15 +117,15 @@ const OrbitalSystem = () => {
         />
       </svg>
 
-      {/* Floating Icon Node Cards */}
+      {/* Floating Icon Node Cards matching reference image styling */}
       {nodes.map((node) => {
         const IconComponent = node.icon;
         return (
           <div
             key={node.id}
-            className={`orbital-node absolute hidden sm:flex items-center gap-2.5 px-3.5 py-2 rounded-2xl bg-white/90 dark:bg-[#111522]/90 backdrop-blur-md border border-purple-100/80 dark:border-slate-800 shadow-[0_8px_24px_rgba(99,102,241,0.12)] hover:border-indigo-300 dark:hover:border-indigo-600 transition-colors pointer-events-auto cursor-default ${node.pos}`}
+            className={`orbital-node absolute hidden sm:flex items-center gap-2.5 px-3.5 py-2 rounded-2xl bg-white/90 dark:bg-[#151926]/90 backdrop-blur-md border border-purple-100/80 dark:border-slate-800 shadow-[0_8px_24px_rgba(99,102,241,0.12)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.5)] hover:border-indigo-300 dark:hover:border-indigo-600 transition-colors pointer-events-auto cursor-default ${node.pos}`}
           >
-            <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950/60 dark:to-purple-950/60 flex items-center justify-center text-indigo-600 dark:text-indigo-400 border border-indigo-100/60 dark:border-indigo-900/40 shadow-xs">
+            <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950/80 dark:to-purple-950/80 flex items-center justify-center text-indigo-600 dark:text-indigo-400 border border-indigo-100/60 dark:border-indigo-900/50 shadow-xs">
               <IconComponent className="w-4 h-4" />
             </div>
             <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 tracking-tight">
