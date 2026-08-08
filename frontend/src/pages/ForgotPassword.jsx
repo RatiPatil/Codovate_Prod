@@ -9,7 +9,7 @@ import AuthBrandPanel from '../components/auth/AuthBrandPanel';
 import Logo from '../components/common/Logo';
 import { sendPasswordResetEmail, fetchSignInMethodsForEmail } from 'firebase/auth';
 import { auth } from '../lib/firebase';
-import { Mail, CheckCircle2, ArrowLeft, KeyRound, ShieldCheck } from 'lucide-react';
+import { Mail, CheckCircle2, ArrowLeft } from 'lucide-react';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
@@ -29,8 +29,8 @@ const ForgotPassword = () => {
       if (cardRef.current) {
         gsap.fromTo(
           cardRef.current,
-          { y: 20, opacity: 0, scale: 0.98 },
-          { y: 0, opacity: 1, scale: 1, duration: 0.7, ease: 'power3.out' }
+          { y: 15, opacity: 0, scale: 0.99 },
+          { y: 0, opacity: 1, scale: 1, duration: 0.5, ease: 'power3.out' }
         );
       }
     });
@@ -54,13 +54,7 @@ const ForgotPassword = () => {
       const methods = await fetchSignInMethodsForEmail(auth, normalizedEmail);
 
       if (methods.includes('google.com')) {
-        setError('This account uses Google Sign-In. Please continue with Google Login.');
-        setLoading(false);
-        return;
-      }
-
-      if (methods.includes('phone')) {
-        setError('This account uses Phone Authentication. Please login using your mobile number.');
+        setError('This account uses Google Sign-In. Please sign in with Google.');
         setLoading(false);
         return;
       }
@@ -75,19 +69,18 @@ const ForgotPassword = () => {
       addToast({
         type: 'success',
         title: 'Email Sent',
-        message: 'Password reset link has been sent to your email.',
+        message: 'Password reset link sent to your email.',
       });
     } catch (err) {
       console.error(err);
-      let msg = 'Something went wrong. Please check your connection and try again.';
+      let msg = 'Something went wrong. Please try again.';
       if (err.code === 'auth/user-not-found') msg = 'No account found with this email address.';
       else if (err.code === 'auth/invalid-email') msg = 'Please enter a valid email address.';
-      else if (err.code === 'auth/network-request-failed') msg = 'Network error. Please check your internet connection.';
+      else if (err.code === 'auth/network-request-failed') msg = 'Network error. Please check your connection.';
       else if (err.code === 'auth/too-many-requests') msg = 'Too many requests. Please try again later.';
-      else if (err.code === 'auth/operation-not-allowed') msg = 'Password reset is disabled. Please contact support.';
 
       setError(msg);
-      addToast({ type: 'error', title: 'Reset Link Failed', message: msg });
+      addToast({ type: 'error', title: 'Reset Failed', message: msg });
     } finally {
       setLoading(false);
     }
@@ -95,96 +88,70 @@ const ForgotPassword = () => {
 
   const brandPanel = (
     <AuthBrandPanel
-      badge="Password Recovery"
-      title="Securely Reset Your Codovate Password."
-      subtitle="We will send a secure time-sensitive reset link directly to your registered email address."
-      benefits={[
-        {
-          icon: KeyRound,
-          title: 'Encrypted & Secure',
-          desc: '100% encrypted Firebase password reset token',
-        },
-        {
-          icon: Mail,
-          title: 'Instant Delivery',
-          desc: 'Reset instructions arrive directly in your inbox',
-        },
-        {
-          icon: ShieldCheck,
-          title: 'Account Protection',
-          desc: 'Keep your projects, roadmaps, and profile safe',
-        },
-      ]}
+      title="Reset password"
+      subtitle="Enter your email to receive a reset link."
     />
   );
 
   return (
     <AuthLayout brandPanel={brandPanel}>
       {/* Mobile Top Logo */}
-      <div className="lg:hidden w-full max-w-md mb-6 flex justify-start">
+      <div className="lg:hidden w-full max-w-sm mb-4 flex justify-start">
         <Link to="/">
           <Logo size="xs" responsive />
         </Link>
       </div>
 
-      {/* Main Auth Surface Card */}
+      {/* Main Lightweight Auth Surface Card */}
       <div
         ref={cardRef}
-        className="w-full max-w-md bg-white/95 dark:bg-[#111522]/95 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-7 sm:p-9 shadow-xl dark:shadow-[0_20px_60px_rgba(0,0,0,0.5)] backdrop-blur-xl space-y-6 relative overflow-hidden transition-colors"
+        className="w-full max-w-sm bg-white dark:bg-[#111522] border border-slate-200/80 dark:border-slate-800 rounded-2xl p-6 sm:p-8 shadow-sm dark:shadow-[0_10px_30px_rgba(0,0,0,0.4)] backdrop-blur-md space-y-5 transition-colors"
       >
-        {/* Card Header Icon & Copy */}
-        <div className="space-y-3">
-          <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
-            <KeyRound className="w-6 h-6" />
-          </div>
-
-          <div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-              Reset Your Password
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-              Enter your registered email address and we'll send you a secure password reset link.
-            </p>
-          </div>
+        {/* Card Header */}
+        <div className="space-y-1">
+          <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+            Reset password
+          </h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400 font-normal">
+            Enter your email to receive a reset link.
+          </p>
         </div>
 
         {/* Global Error Alert */}
         {error && (
           <div
-            className="p-3.5 rounded-2xl bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-xs font-semibold flex items-center gap-2.5 animate-fadeIn"
+            className="p-3 rounded-xl bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-xs font-medium flex items-center gap-2 animate-fadeIn"
             role="alert"
           >
-            <span className="text-base shrink-0">⚠️</span>
+            <span className="text-sm shrink-0">⚠️</span>
             <span>{error}</span>
           </div>
         )}
 
-        {/* Success Card State */}
+        {/* Success State */}
         {success ? (
-          <div className="space-y-5 text-center py-2 animate-fadeIn">
-            <div className="w-14 h-14 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400 rounded-2xl flex items-center justify-center mx-auto shadow-xs">
-              <CheckCircle2 className="w-7 h-7" />
+          <div className="space-y-4 py-1 animate-fadeIn">
+            <div className="flex items-center gap-2.5 text-emerald-600 dark:text-emerald-400">
+              <CheckCircle2 className="w-5 h-5 shrink-0" />
+              <h3 className="font-bold text-sm text-slate-900 dark:text-white">Email sent</h3>
             </div>
 
-            <div className="space-y-1">
-              <h3 className="text-slate-900 dark:text-white font-extrabold text-lg">Check Your Inbox</h3>
-              <p className="text-slate-500 dark:text-slate-400 text-xs leading-relaxed">
-                We've sent a password reset link to <strong className="text-slate-800 dark:text-slate-200">{email}</strong>. Please check your inbox and spam folder.
-              </p>
-            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+              Check your inbox for the password reset link sent to <strong className="text-slate-700 dark:text-slate-300">{email}</strong>.
+            </p>
 
             <Link
               to="/login"
-              className="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white font-bold text-xs sm:text-sm shadow-md block text-center hover:opacity-95 transition-opacity"
+              className="w-full py-3 px-5 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white font-bold text-xs sm:text-sm shadow-sm block text-center hover:opacity-95 transition-opacity"
             >
-              Return to Sign In
+              Back to Sign In
             </Link>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+          <form onSubmit={handleSubmit} className="space-y-3.5" noValidate>
             <AuthInput
               id="forgot-email"
-              label="Email Address"
+              label="Email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -201,19 +168,19 @@ const ForgotPassword = () => {
               type="submit"
               disabled={loading || (touched && !!emailError)}
               className="
-                w-full py-3.5 px-6 rounded-xl
+                w-full py-3 px-5 rounded-xl
                 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600
                 hover:opacity-95 text-white text-xs sm:text-sm font-bold
-                shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/35
+                shadow-sm hover:shadow-md
                 hover:-translate-y-0.5 active:translate-y-0
                 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none
-                transition-all duration-200 flex items-center justify-center gap-2 mt-2
+                transition-all duration-200 flex items-center justify-center gap-2 mt-1
               "
             >
               {loading ? (
                 <span className="flex items-center gap-2">
-                  <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-                  <span>Sending Reset Link...</span>
+                  <div className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                  <span>Sending...</span>
                 </span>
               ) : (
                 <span>Send Reset Link</span>
@@ -223,10 +190,10 @@ const ForgotPassword = () => {
         )}
 
         {/* Card Footer Link */}
-        <div className="pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-center">
+        <div className="pt-2 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-center">
           <Link
             to="/login"
-            className="inline-flex items-center gap-2 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline transition-colors"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>Back to Sign In</span>
