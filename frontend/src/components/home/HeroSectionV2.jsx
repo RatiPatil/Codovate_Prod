@@ -21,24 +21,24 @@ const HeroSectionV2 = () => {
   const proofRef = useRef(null);
   const particlesRef = useRef(null);
 
-  // Generate 20 sparkling particle coordinates around the purple glow center
+  // Generate 16 sparkling particle coordinates inside the purple glow center
   const particles = [
-    { top: '35%', left: '48%', size: 'w-1 h-1', delay: '0s', duration: '3.2s' },
-    { top: '42%', left: '42%', size: 'w-1.5 h-1.5', delay: '0.4s', duration: '4.1s' },
-    { top: '50%', left: '55%', size: 'w-1 h-1', delay: '0.8s', duration: '3.5s' },
-    { top: '58%', left: '45%', size: 'w-1.5 h-1.5', delay: '1.2s', duration: '4.5s' },
-    { top: '38%', left: '58%', size: 'w-1 h-1', delay: '1.6s', duration: '3.8s' },
-    { top: '46%', left: '38%', size: 'w-2 h-2', delay: '0.2s', duration: '4.2s' },
-    { top: '54%', left: '62%', size: 'w-1 h-1', delay: '0.9s', duration: '3.6s' },
-    { top: '62%', left: '50%', size: 'w-1.5 h-1.5', delay: '1.4s', duration: '4.0s' },
-    { top: '40%', left: '52%', size: 'w-1 h-1', delay: '0.5s', duration: '3.9s' },
-    { top: '48%', left: '47%', size: 'w-1.5 h-1.5', delay: '1.1s', duration: '4.4s' },
-    { top: '56%', left: '54%', size: 'w-1 h-1', delay: '0.7s', duration: '3.3s' },
-    { top: '64%', left: '44%', size: 'w-1.5 h-1.5', delay: '1.5s', duration: '4.6s' },
-    { top: '36%', left: '40%', size: 'w-1 h-1', delay: '1.0s', duration: '3.7s' },
-    { top: '44%', left: '60%', size: 'w-1.5 h-1.5', delay: '0.3s', duration: '4.3s' },
-    { top: '52%', left: '36%', size: 'w-1 h-1', delay: '1.3s', duration: '3.4s' },
-    { top: '60%', left: '58%', size: 'w-2 h-2', delay: '0.6s', duration: '4.1s' },
+    { top: '35%', left: '48%', size: 'w-1 h-1' },
+    { top: '42%', left: '42%', size: 'w-1.5 h-1.5' },
+    { top: '50%', left: '55%', size: 'w-1 h-1' },
+    { top: '58%', left: '45%', size: 'w-1.5 h-1.5' },
+    { top: '38%', left: '58%', size: 'w-1 h-1' },
+    { top: '46%', left: '38%', size: 'w-2 h-2' },
+    { top: '54%', left: '62%', size: 'w-1 h-1' },
+    { top: '62%', left: '50%', size: 'w-1.5 h-1.5' },
+    { top: '40%', left: '52%', size: 'w-1 h-1' },
+    { top: '48%', left: '47%', size: 'w-1.5 h-1.5' },
+    { top: '56%', left: '54%', size: 'w-1 h-1' },
+    { top: '64%', left: '44%', size: 'w-1.5 h-1.5' },
+    { top: '36%', left: '40%', size: 'w-1 h-1' },
+    { top: '44%', left: '60%', size: 'w-1.5 h-1.5' },
+    { top: '52%', left: '36%', size: 'w-1 h-1' },
+    { top: '60%', left: '58%', size: 'w-2 h-2' },
   ];
 
   useEffect(() => {
@@ -166,62 +166,58 @@ const HeroSectionV2 = () => {
         ref={textContentRef}
         className="w-full max-w-4xl mx-auto px-4 text-center space-y-6 flex flex-col items-center relative z-10"
       >
-        {/* Small Rounded Badge */}
+        {/* Small Rounded Badge matching reference */}
         <div
           ref={badgeRef}
-          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-50/90 border border-indigo-200/80 shadow-xs backdrop-blur-md"
+          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-100/90 border border-slate-200/80 shadow-xs backdrop-blur-md"
         >
-          <Sparkles className="w-3.5 h-3.5 text-indigo-600 animate-spin" style={{ animationDuration: '6s' }} />
-          <span className="text-xs font-bold text-indigo-700 tracking-wide uppercase">
-            India's Student Career Ecosystem
+          <span className="text-xs font-medium text-slate-700 tracking-wide">
+            India's #1 Student Career Ecosystem
           </span>
         </div>
 
-        {/* Large Headline */}
+        {/* Headline matching reference: Sans Line 1 + Serif Line 2 */}
         <div className="space-y-1">
           <h1
             ref={title1Ref}
             className="text-4xl sm:text-6xl lg:text-7xl font-extrabold text-slate-900 tracking-tight leading-[1.1]"
           >
-            Learn. Build. Compete.
+            Get Your First Job
           </h1>
           <h1
             ref={title2Ref}
-            className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.1] text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600"
+            className="text-4xl sm:text-6xl lg:text-7xl font-serif font-normal text-slate-900 tracking-tight leading-[1.1]"
           >
-            Get Hired with Codovate.
+            with Codovate ONE
           </h1>
         </div>
 
-        {/* Narrow Supporting Description */}
+        {/* Narrow Supporting Description matching reference */}
         <p
           ref={descRef}
           className="max-w-2xl text-base sm:text-lg text-slate-600 font-normal leading-relaxed text-balance"
         >
-          Codovate brings learning, projects, coding practice, career guidance, and opportunities together in one platform to help students turn skills into real careers.
+          Codovate ONE gives you a fully integrated path to placements – DSA, development, projects, contests, core CS subjects and interview prep in one system.
         </p>
 
-        {/* Primary & Secondary CTAs */}
+        {/* Primary & Secondary CTAs matching reference */}
         <div ref={ctaRef} className="flex flex-wrap items-center justify-center gap-4 pt-2 relative z-20">
-          <Link
-            to="/signup"
-            className="group relative inline-flex items-center gap-2.5 px-7 py-3.5 rounded-full text-sm font-bold text-white bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 bg-[length:200%_auto] hover:bg-[position:right_center] transition-all duration-300 shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:-translate-y-0.5 active:translate-y-0"
-          >
-            <Sparkles className="w-4 h-4 text-amber-300" />
-            <span>Get Started Free</span>
-            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-          </Link>
-
           <a
             href="#resources"
-            className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full text-sm font-semibold text-slate-700 bg-white/80 hover:bg-white border border-slate-200/90 shadow-xs transition-all duration-300 hover:shadow-md hover:border-slate-300 hover:-translate-y-0.5 active:translate-y-0"
+            className="inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl text-sm font-bold text-slate-800 bg-slate-200/70 hover:bg-slate-200 border border-slate-300/50 shadow-xs transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0"
           >
-            <Play className="w-4 h-4 text-indigo-600 fill-indigo-600/20" />
-            <span>Explore Resources</span>
+            <span>Free Resources</span>
           </a>
+
+          <Link
+            to="/signup"
+            className="group relative inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl text-sm font-bold text-white bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:opacity-95 transition-all duration-200 shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:-translate-y-0.5 active:translate-y-0"
+          >
+            <span>Codovate ONE</span>
+          </Link>
         </div>
 
-        {/* Trust Statements (Honest non-numerical claims) */}
+        {/* Trust Statements */}
         <div
           ref={proofRef}
           className="pt-3 flex flex-wrap items-center justify-center gap-6 text-xs text-slate-500 font-semibold"
