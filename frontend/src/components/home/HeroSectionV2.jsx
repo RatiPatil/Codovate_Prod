@@ -19,6 +19,27 @@ const HeroSectionV2 = () => {
   const descRef = useRef(null);
   const ctaRef = useRef(null);
   const proofRef = useRef(null);
+  const particlesRef = useRef(null);
+
+  // Generate 20 sparkling particle coordinates around the purple glow center
+  const particles = [
+    { top: '35%', left: '48%', size: 'w-1 h-1', delay: '0s', duration: '3.2s' },
+    { top: '42%', left: '42%', size: 'w-1.5 h-1.5', delay: '0.4s', duration: '4.1s' },
+    { top: '50%', left: '55%', size: 'w-1 h-1', delay: '0.8s', duration: '3.5s' },
+    { top: '58%', left: '45%', size: 'w-1.5 h-1.5', delay: '1.2s', duration: '4.5s' },
+    { top: '38%', left: '58%', size: 'w-1 h-1', delay: '1.6s', duration: '3.8s' },
+    { top: '46%', left: '38%', size: 'w-2 h-2', delay: '0.2s', duration: '4.2s' },
+    { top: '54%', left: '62%', size: 'w-1 h-1', delay: '0.9s', duration: '3.6s' },
+    { top: '62%', left: '50%', size: 'w-1.5 h-1.5', delay: '1.4s', duration: '4.0s' },
+    { top: '40%', left: '52%', size: 'w-1 h-1', delay: '0.5s', duration: '3.9s' },
+    { top: '48%', left: '47%', size: 'w-1.5 h-1.5', delay: '1.1s', duration: '4.4s' },
+    { top: '56%', left: '54%', size: 'w-1 h-1', delay: '0.7s', duration: '3.3s' },
+    { top: '64%', left: '44%', size: 'w-1.5 h-1.5', delay: '1.5s', duration: '4.6s' },
+    { top: '36%', left: '40%', size: 'w-1 h-1', delay: '1.0s', duration: '3.7s' },
+    { top: '44%', left: '60%', size: 'w-1.5 h-1.5', delay: '0.3s', duration: '4.3s' },
+    { top: '52%', left: '36%', size: 'w-1 h-1', delay: '1.3s', duration: '3.4s' },
+    { top: '60%', left: '58%', size: 'w-2 h-2', delay: '0.6s', duration: '4.1s' },
+  ];
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -67,7 +88,22 @@ const HeroSectionV2 = () => {
           '-=0.5'
         );
 
-      // 2. Scroll-linked Parallax & Scale Connection
+      // 2. Continuous Particle Drifting
+      gsap.utils.toArray('.hero-sparkle-dot').forEach((dot, i) => {
+        gsap.to(dot, {
+          y: '-=25',
+          x: i % 2 === 0 ? '+=12' : '-=12',
+          opacity: i % 3 === 0 ? 0.9 : 0.4,
+          scale: i % 2 === 0 ? 1.4 : 0.8,
+          duration: 3 + (i % 3),
+          repeat: -1,
+          yoyo: true,
+          ease: 'sine.inOut',
+          delay: i * 0.15,
+        });
+      });
+
+      // 3. Scroll-linked Parallax & Scale Connection
       gsap.to(textContentRef.current, {
         y: '-12%',
         opacity: 0.88,
@@ -103,12 +139,32 @@ const HeroSectionV2 = () => {
   return (
     <section
       ref={heroRef}
-      className="relative min-h-[90vh] lg:min-h-screen pt-28 pb-16 md:pt-36 md:pb-24 flex flex-col justify-between items-center z-10"
+      className="relative min-h-[90vh] lg:min-h-screen pt-28 pb-16 md:pt-36 md:pb-24 flex flex-col justify-between items-center z-10 overflow-hidden"
     >
+      {/* 🔮 CONCENTRATED PURPLE ATMOSPHERIC GLOW (Positioned directly behind CTA buttons) */}
+      <div
+        className="absolute top-[48%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[720px] h-[380px] rounded-full blur-[110px] pointer-events-none opacity-90 z-0"
+        style={{
+          background:
+            'radial-gradient(circle, rgba(147, 51, 234, 0.28) 0%, rgba(124, 58, 237, 0.18) 45%, rgba(99, 102, 241, 0.08) 70%, rgba(255, 255, 255, 0) 85%)',
+        }}
+      />
+
+      {/* ✨ SMALL SPARKLING FLOATING PARTICLES INSIDE PURPLE GLOW ZONE */}
+      <div ref={particlesRef} className="absolute inset-0 pointer-events-none z-0">
+        {particles.map((p, i) => (
+          <div
+            key={i}
+            className={`hero-sparkle-dot absolute rounded-full bg-white shadow-[0_0_10px_rgba(255,255,255,0.9)] opacity-70 ${p.size}`}
+            style={{ top: p.top, left: p.left }}
+          />
+        ))}
+      </div>
+
       {/* Hero Header Content */}
       <div
         ref={textContentRef}
-        className="w-full max-w-4xl mx-auto px-4 text-center space-y-6 flex flex-col items-center"
+        className="w-full max-w-4xl mx-auto px-4 text-center space-y-6 flex flex-col items-center relative z-10"
       >
         {/* Small Rounded Badge */}
         <div
@@ -146,7 +202,7 @@ const HeroSectionV2 = () => {
         </p>
 
         {/* Primary & Secondary CTAs */}
-        <div ref={ctaRef} className="flex flex-wrap items-center justify-center gap-4 pt-2">
+        <div ref={ctaRef} className="flex flex-wrap items-center justify-center gap-4 pt-2 relative z-20">
           <Link
             to="/signup"
             className="group relative inline-flex items-center gap-2.5 px-7 py-3.5 rounded-full text-sm font-bold text-white bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 bg-[length:200%_auto] hover:bg-[position:right_center] transition-all duration-300 shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:-translate-y-0.5 active:translate-y-0"
