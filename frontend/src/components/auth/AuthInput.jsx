@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 /**
- * AuthInput — Reusable form input with validation, password toggle, icon prefixes, and dark mode support.
+ * AuthInput — Clean, modern form input with 48px height, password visibility toggle, icon prefixes, and theme support.
  */
 const AuthInput = ({
   id,
@@ -24,7 +24,7 @@ const AuthInput = ({
   const inputType = isPassword && showPassword ? 'text' : type;
 
   return (
-    <div className="relative space-y-1.5">
+    <div className="relative space-y-1.5 w-full">
       {label && (
         <label
           htmlFor={id}
@@ -55,7 +55,7 @@ const AuthInput = ({
           aria-invalid={!!error}
           aria-describedby={error ? `${id}-error` : undefined}
           className={`
-            w-full py-3 px-4 text-xs sm:text-sm bg-white dark:bg-[#151926] border rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500
+            w-full h-12 py-3 px-4 text-xs sm:text-sm bg-white dark:bg-[#151926] border rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500
             transition-all duration-200 focus:outline-none
             ${Icon ? 'pl-10' : 'pl-4'}
             ${isPassword ? 'pr-10' : 'pr-4'}
@@ -63,7 +63,7 @@ const AuthInput = ({
               ? 'border-red-400 dark:border-red-500/80 focus:border-red-500 focus:ring-4 focus:ring-red-500/10'
               : success
                 ? 'border-emerald-400 dark:border-emerald-500/80 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10'
-                : 'border-slate-200/80 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 focus:border-indigo-600 dark:focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/10'
+                : 'border-slate-200/80 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 focus:border-[#4F46E5] dark:focus:border-[#6D5DFB] focus:ring-4 focus:ring-indigo-500/10'
             }
             ${disabled ? 'opacity-50 cursor-not-allowed bg-slate-50 dark:bg-slate-900' : ''}
           `}
@@ -108,7 +108,7 @@ const AuthInput = ({
         </div>
       </div>
 
-      {/* Error message */}
+      {/* Inline Validation Error Message */}
       {error && (
         <p id={`${id}-error`} className="text-xs text-red-500 font-medium animate-fadeIn" role="alert">
           {error}

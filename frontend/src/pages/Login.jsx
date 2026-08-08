@@ -40,14 +40,14 @@ const Login = () => {
     }
   }, [user, navigate]);
 
-  // Entrance animation for Auth Card
+  // Entrance animation for Auth Card & Form elements
   useEffect(() => {
     const ctx = gsap.context(() => {
       if (cardRef.current) {
         gsap.fromTo(
           cardRef.current,
-          { y: 15, opacity: 0, scale: 0.99 },
-          { y: 0, opacity: 1, scale: 1, duration: 0.5, ease: 'power3.out' }
+          { y: 18, opacity: 0, scale: 0.98 },
+          { y: 0, opacity: 1, scale: 1, duration: 0.6, ease: 'power3.out' }
         );
       }
     });
@@ -82,8 +82,12 @@ const Login = () => {
   // ─── Email/Password Handler ──────────────────────────────
   const handleEmailLogin = async (e) => {
     e.preventDefault();
-    if (!email || !password) {
-      setErrors({ form: 'Please fill in all fields.' });
+    const newErrors = {};
+    if (!email) newErrors.email = 'Email address is required.';
+    if (!password) newErrors.password = 'Password is required.';
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       return;
     }
 
@@ -110,32 +114,38 @@ const Login = () => {
 
   const brandPanel = (
     <AuthBrandPanel
-      title="Welcome back"
-      subtitle="Sign in to continue."
+      title="Build. Learn. Grow."
+      subtitle="Your journey to skills, projects, and opportunities starts here."
     />
   );
 
   return (
     <AuthLayout brandPanel={brandPanel}>
-      {/* Mobile Top Logo */}
-      <div className="lg:hidden w-full max-w-sm mb-4 flex justify-start">
-        <Link to="/">
+      {/* Mobile Top Logo & Headline */}
+      <div className="lg:hidden w-full max-w-[400px] mb-5 space-y-2 text-center flex flex-col items-center">
+        <Link to="/" className="inline-block focus:outline-none mb-1">
           <Logo size="xs" responsive />
         </Link>
+        <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+          Build. Learn. Grow.
+        </h1>
+        <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+          Your journey to skills, projects, and opportunities starts here.
+        </p>
       </div>
 
-      {/* Main Lightweight Auth Surface Card */}
+      {/* Main Compact Auth Surface Card */}
       <div
         ref={cardRef}
-        className="w-full max-w-sm bg-white dark:bg-[#111522] border border-slate-200/80 dark:border-slate-800 rounded-2xl p-6 sm:p-8 shadow-sm dark:shadow-[0_10px_30px_rgba(0,0,0,0.4)] backdrop-blur-md space-y-5 transition-colors"
+        className="w-full max-w-[400px] bg-white dark:bg-[#111522] border border-slate-200/80 dark:border-slate-800/90 rounded-2xl p-6 sm:p-8 shadow-xl shadow-slate-200/40 dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-xl space-y-5 transition-colors"
       >
         {/* Card Header */}
         <div className="space-y-1">
           <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
             Welcome back
           </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 font-normal">
-            Sign in to continue.
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-normal">
+            Sign in to continue your Codovate journey.
           </p>
         </div>
 
@@ -160,7 +170,7 @@ const Login = () => {
         {/* Divider */}
         <div className="relative flex items-center justify-center my-3">
           <div className="w-full border-t border-slate-200/80 dark:border-slate-800" />
-          <span className="absolute bg-white dark:bg-[#111522] px-3 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+          <span className="absolute bg-white dark:bg-[#111522] px-3 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
             OR
           </span>
         </div>
@@ -173,8 +183,9 @@ const Login = () => {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="name@example.com"
+            placeholder="Enter your email"
             autoComplete="email"
+            error={errors.email}
             disabled={emailLoading || googleLoading}
             icon={Mail}
           />
@@ -185,15 +196,16 @@ const Login = () => {
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="••••••••"
+            placeholder="Enter your password"
             autoComplete="current-password"
+            error={errors.password}
             disabled={emailLoading || googleLoading}
             icon={Lock}
           >
             <div className="flex justify-end pt-1">
               <Link
                 to="/forgot-password"
-                className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline transition-colors"
+                className="text-xs font-semibold text-[#4F46E5] dark:text-[#6D5DFB] hover:underline transition-colors"
               >
                 Forgot password?
               </Link>
@@ -204,10 +216,10 @@ const Login = () => {
             type="submit"
             disabled={emailLoading || googleLoading}
             className="
-              w-full py-3 px-5 rounded-xl
-              bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600
+              w-full h-12 py-3 px-5 rounded-xl
+              bg-gradient-to-r from-[#4F46E5] via-[#6D5DFB] to-[#7C3AED]
               hover:opacity-95 text-white text-xs sm:text-sm font-bold
-              shadow-sm hover:shadow-md
+              shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/35
               hover:-translate-y-0.5 active:translate-y-0
               disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none
               transition-all duration-200 flex items-center justify-center gap-2 mt-1
@@ -215,8 +227,8 @@ const Login = () => {
           >
             {emailLoading ? (
               <span className="flex items-center gap-2">
-                <div className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-                <span>Signing you in...</span>
+                <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                <span>Signing in...</span>
               </span>
             ) : (
               <span>Sign In</span>
@@ -225,13 +237,13 @@ const Login = () => {
         </form>
 
         {/* Card Footer Link */}
-        <div className="pt-2 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-center gap-1 text-xs text-slate-500 dark:text-slate-400">
+        <div className="pt-2 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
           <span>Don't have an account?</span>
           <Link
             to="/signup"
-            className="font-bold text-indigo-600 dark:text-indigo-400 hover:underline transition-colors ml-1"
+            className="font-bold text-[#4F46E5] dark:text-[#6D5DFB] hover:underline transition-colors"
           >
-            Sign up
+            Create account
           </Link>
         </div>
       </div>

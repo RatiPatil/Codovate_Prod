@@ -29,8 +29,8 @@ const ForgotPassword = () => {
       if (cardRef.current) {
         gsap.fromTo(
           cardRef.current,
-          { y: 15, opacity: 0, scale: 0.99 },
-          { y: 0, opacity: 1, scale: 1, duration: 0.5, ease: 'power3.out' }
+          { y: 18, opacity: 0, scale: 0.98 },
+          { y: 0, opacity: 1, scale: 1, duration: 0.6, ease: 'power3.out' }
         );
       }
     });
@@ -68,7 +68,7 @@ const ForgotPassword = () => {
       setSuccess(true);
       addToast({
         type: 'success',
-        title: 'Email Sent',
+        title: 'Reset Link Sent',
         message: 'Password reset link sent to your email.',
       });
     } catch (err) {
@@ -88,32 +88,38 @@ const ForgotPassword = () => {
 
   const brandPanel = (
     <AuthBrandPanel
-      title="Reset password"
-      subtitle="Enter your email to receive a reset link."
+      title="Build. Learn. Grow."
+      subtitle="Your journey to skills, projects, and opportunities starts here."
     />
   );
 
   return (
     <AuthLayout brandPanel={brandPanel}>
-      {/* Mobile Top Logo */}
-      <div className="lg:hidden w-full max-w-sm mb-4 flex justify-start">
-        <Link to="/">
+      {/* Mobile Top Logo & Headline */}
+      <div className="lg:hidden w-full max-w-[400px] mb-5 space-y-2 text-center flex flex-col items-center">
+        <Link to="/" className="inline-block focus:outline-none mb-1">
           <Logo size="xs" responsive />
         </Link>
+        <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+          Build. Learn. Grow.
+        </h1>
+        <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+          Your journey to skills, projects, and opportunities starts here.
+        </p>
       </div>
 
-      {/* Main Lightweight Auth Surface Card */}
+      {/* Main Compact Auth Surface Card */}
       <div
         ref={cardRef}
-        className="w-full max-w-sm bg-white dark:bg-[#111522] border border-slate-200/80 dark:border-slate-800 rounded-2xl p-6 sm:p-8 shadow-sm dark:shadow-[0_10px_30px_rgba(0,0,0,0.4)] backdrop-blur-md space-y-5 transition-colors"
+        className="w-full max-w-[400px] bg-white dark:bg-[#111522] border border-slate-200/80 dark:border-slate-800/90 rounded-2xl p-6 sm:p-8 shadow-xl shadow-slate-200/40 dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-xl space-y-5 transition-colors"
       >
         {/* Card Header */}
         <div className="space-y-1">
           <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-            Reset password
+            Reset your password
           </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 font-normal">
-            Enter your email to receive a reset link.
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-normal">
+            Enter your email and we'll send you a reset link.
           </p>
         </div>
 
@@ -133,16 +139,16 @@ const ForgotPassword = () => {
           <div className="space-y-4 py-1 animate-fadeIn">
             <div className="flex items-center gap-2.5 text-emerald-600 dark:text-emerald-400">
               <CheckCircle2 className="w-5 h-5 shrink-0" />
-              <h3 className="font-bold text-sm text-slate-900 dark:text-white">Email sent</h3>
+              <h3 className="font-bold text-sm text-slate-900 dark:text-white">Reset link sent</h3>
             </div>
 
             <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-              Check your inbox for the password reset link sent to <strong className="text-slate-700 dark:text-slate-300">{email}</strong>.
+              Check your email for instructions to reset your password for <strong className="text-slate-700 dark:text-slate-300">{email}</strong>.
             </p>
 
             <Link
               to="/login"
-              className="w-full py-3 px-5 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white font-bold text-xs sm:text-sm shadow-sm block text-center hover:opacity-95 transition-opacity"
+              className="w-full h-12 py-3 px-5 rounded-xl bg-gradient-to-r from-[#4F46E5] via-[#6D5DFB] to-[#7C3AED] hover:opacity-95 text-white font-bold text-xs sm:text-sm shadow-lg shadow-indigo-500/25 flex items-center justify-center transition-all"
             >
               Back to Sign In
             </Link>
@@ -156,7 +162,7 @@ const ForgotPassword = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               onBlur={() => setTouched(true)}
-              placeholder="name@example.com"
+              placeholder="Enter your email"
               error={emailError}
               success={touched && !emailError && !!email}
               autoComplete="email"
@@ -168,10 +174,10 @@ const ForgotPassword = () => {
               type="submit"
               disabled={loading || (touched && !!emailError)}
               className="
-                w-full py-3 px-5 rounded-xl
-                bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600
+                w-full h-12 py-3 px-5 rounded-xl
+                bg-gradient-to-r from-[#4F46E5] via-[#6D5DFB] to-[#7C3AED]
                 hover:opacity-95 text-white text-xs sm:text-sm font-bold
-                shadow-sm hover:shadow-md
+                shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/35
                 hover:-translate-y-0.5 active:translate-y-0
                 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none
                 transition-all duration-200 flex items-center justify-center gap-2 mt-1
@@ -179,7 +185,7 @@ const ForgotPassword = () => {
             >
               {loading ? (
                 <span className="flex items-center gap-2">
-                  <div className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                  <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
                   <span>Sending...</span>
                 </span>
               ) : (
@@ -193,7 +199,7 @@ const ForgotPassword = () => {
         <div className="pt-2 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-center">
           <Link
             to="/login"
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-[#4F46E5] dark:text-[#6D5DFB] hover:underline transition-colors"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>Back to Sign In</span>

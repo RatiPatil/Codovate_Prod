@@ -1,7 +1,7 @@
 import React from 'react';
 
 /**
- * GoogleButton — Reusable Google Sign-In button with official branding & dark mode support.
+ * GoogleButton — Standard 48px height Google Sign-In button with official icon.
  */
 const GoogleButton = ({ onClick, loading = false, disabled = false, label = 'Continue with Google' }) => {
   return (
@@ -10,7 +10,7 @@ const GoogleButton = ({ onClick, loading = false, disabled = false, label = 'Con
       onClick={onClick}
       disabled={disabled || loading}
       className="
-        flex items-center justify-center gap-3 w-full py-3 px-4
+        flex items-center justify-center gap-3 w-full h-12 py-3 px-4
         bg-white hover:bg-slate-50 dark:bg-[#151926] dark:hover:bg-[#1E2436]
         rounded-xl transition-all duration-200
         text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200

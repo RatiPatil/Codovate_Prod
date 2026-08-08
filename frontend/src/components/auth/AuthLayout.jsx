@@ -14,10 +14,9 @@ const AuthLayout = ({ children, brandPanel }) => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#FCFDFF] dark:bg-[#080A12] text-slate-900 dark:text-slate-100 flex flex-col lg:flex-row font-sans overflow-x-hidden relative transition-colors duration-300">
-      {/* Background Subtle Ambient Radial Purple/Blue Glows (Accent only) */}
-      <div className="absolute top-0 right-0 w-[420px] h-[420px] bg-purple-500/8 dark:bg-purple-600/12 rounded-full blur-[130px] pointer-events-none z-0" />
-      <div className="absolute bottom-0 left-0 w-[380px] h-[380px] bg-blue-500/8 dark:bg-indigo-600/12 rounded-full blur-[130px] pointer-events-none z-0" />
+    <div className="min-h-screen bg-[#FCFDFF] dark:bg-[#080A12] text-slate-900 dark:text-slate-100 flex items-center justify-center p-4 sm:p-6 lg:p-8 font-sans relative overflow-x-hidden transition-colors duration-300">
+      {/* Subtle Central Radial Purple Glow (Accent only, behind authentication content) */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] sm:w-[700px] h-[400px] sm:h-[500px] bg-gradient-to-r from-indigo-500/10 via-purple-500/12 to-indigo-600/10 dark:from-indigo-600/15 dark:via-purple-600/18 dark:to-indigo-500/15 rounded-full blur-[140px] pointer-events-none z-0" />
 
       {/* Grid Pattern Background Overlay */}
       <div
@@ -28,14 +27,17 @@ const AuthLayout = ({ children, brandPanel }) => {
         }}
       />
 
-      {/* LEFT SIDE: Brand Panel with Logo & Coding Visual (Desktop ~40%) */}
-      <div className="hidden lg:flex w-full lg:w-[40%] flex-col justify-between p-8 lg:p-10 relative z-10 select-none border-r border-slate-200/50 dark:border-slate-800/40">
-        {brandPanel}
-      </div>
+      {/* Centered Desktop 2-Column Grid Container (max-width: 1050px) */}
+      <div className="w-full max-w-[1050px] mx-auto relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center py-4 sm:py-6">
+        {/* LEFT SIDE: Brand, Logo & Coding Visual */}
+        <div className="hidden lg:flex flex-col justify-center space-y-6 select-none pr-4">
+          {brandPanel}
+        </div>
 
-      {/* RIGHT SIDE: Compact Focused Auth Form Surface (~60%) */}
-      <div className="w-full lg:w-[60%] flex flex-col justify-center items-center p-5 sm:p-8 lg:p-10 relative z-10 my-auto py-8">
-        {children}
+        {/* RIGHT SIDE: Compact Focused Auth Form Surface */}
+        <div className="flex flex-col justify-center items-center w-full">
+          {children}
+        </div>
       </div>
     </div>
   );
