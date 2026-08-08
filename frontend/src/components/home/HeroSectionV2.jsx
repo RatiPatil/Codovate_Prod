@@ -147,15 +147,28 @@ const HeroSectionV2 = () => {
       ref={heroRef}
       className="relative pt-24 pb-8 md:pt-32 md:pb-12 flex flex-col justify-between items-center z-10 overflow-hidden"
     >
-      {/* Concentrated Purple Glow matching dark reference atmosphere */}
+      {/* Focused 3-Layer Purple Hero Light (35% smaller, defined core + soft halo) */}
       <div
         ref={heroGlowRef}
-        className="absolute top-[48%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[760px] h-[400px] rounded-full blur-[110px] pointer-events-none opacity-90 dark:opacity-75 z-0"
-        style={{
-          background:
-            'radial-gradient(circle, rgba(147, 51, 234, 0.35) 0%, rgba(124, 58, 237, 0.22) 45%, rgba(99, 102, 241, 0.09) 70%, rgba(255, 255, 255, 0) 85%)',
-        }}
-      />
+        className="absolute top-[48%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[520px] h-[300px] pointer-events-none z-0"
+      >
+        {/* Layer 2: Soft Halo */}
+        <div
+          className="absolute inset-0 rounded-full blur-[75px] opacity-50 dark:opacity-65 pointer-events-none"
+          style={{
+            background:
+              'radial-gradient(circle, rgba(124, 58, 237, 0.38) 0%, rgba(99, 102, 241, 0.18) 55%, transparent 75%)',
+          }}
+        />
+        {/* Layer 1: Defined Rich Purple Core */}
+        <div
+          className="absolute top-[15%] left-[15%] w-[70%] h-[70%] rounded-full blur-[42px] opacity-85 dark:opacity-95 pointer-events-none"
+          style={{
+            background:
+              'radial-gradient(circle, rgba(147, 51, 234, 0.60) 0%, rgba(124, 58, 237, 0.35) 60%, transparent 85%)',
+          }}
+        />
+      </div>
 
       {/* Sparkling Floating Particles */}
       <div ref={particlesRef} className="absolute inset-0 pointer-events-none z-0">
