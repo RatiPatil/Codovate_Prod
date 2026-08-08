@@ -27,30 +27,30 @@ const HeroSectionV2 = () => {
 
       tl.fromTo(
         badgeRef.current,
-        { opacity: 0, y: 20 },
+        { opacity: 0, y: 18 },
         { opacity: 1, y: 0, duration: 0.6, delay: 0.2 }
       )
         .fromTo(
           title1Ref.current,
-          { opacity: 0, y: 25 },
+          { opacity: 0, y: 22 },
           { opacity: 1, y: 0, duration: 0.7 },
           '-=0.4'
         )
         .fromTo(
           title2Ref.current,
-          { opacity: 0, y: 25 },
+          { opacity: 0, y: 22 },
           { opacity: 1, y: 0, duration: 0.7 },
           '-=0.5'
         )
         .fromTo(
           descRef.current,
-          { opacity: 0, y: 20 },
+          { opacity: 0, y: 18 },
           { opacity: 1, y: 0, duration: 0.6 },
           '-=0.4'
         )
         .fromTo(
           ctaRef.current,
-          { opacity: 0, y: 20 },
+          { opacity: 0, y: 18 },
           { opacity: 1, y: 0, duration: 0.6 },
           '-=0.4'
         )
@@ -62,15 +62,15 @@ const HeroSectionV2 = () => {
         )
         .fromTo(
           dashboardWrapperRef.current,
-          { opacity: 0, y: 40, scale: 0.94 },
+          { opacity: 0, y: 35, scale: 0.95 },
           { opacity: 1, y: 0, scale: 1, duration: 0.9, ease: 'power2.out' },
           '-=0.5'
         );
 
       // 2. Scroll-linked Parallax & Scale Connection
       gsap.to(textContentRef.current, {
-        y: '-15%',
-        opacity: 0.85,
+        y: '-12%',
+        opacity: 0.88,
         ease: 'none',
         scrollTrigger: {
           trigger: heroRef.current,
@@ -85,7 +85,7 @@ const HeroSectionV2 = () => {
         { scale: 0.96, y: 0 },
         {
           scale: 1,
-          y: -20,
+          y: -18,
           ease: 'none',
           scrollTrigger: {
             trigger: heroRef.current,
@@ -108,16 +108,16 @@ const HeroSectionV2 = () => {
       {/* Hero Header Content */}
       <div
         ref={textContentRef}
-        className="w-full max-w-5xl mx-auto px-4 text-center space-y-6 flex flex-col items-center"
+        className="w-full max-w-4xl mx-auto px-4 text-center space-y-6 flex flex-col items-center"
       >
-        {/* Small Badge */}
+        {/* Small Rounded Badge */}
         <div
           ref={badgeRef}
           className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-50/90 border border-indigo-200/80 shadow-xs backdrop-blur-md"
         >
           <Sparkles className="w-3.5 h-3.5 text-indigo-600 animate-spin" style={{ animationDuration: '6s' }} />
-          <span className="text-xs font-semibold text-indigo-700 tracking-wide uppercase">
-            ✦ Next-Gen AI Learning & Career Ecosystem
+          <span className="text-xs font-bold text-indigo-700 tracking-wide uppercase">
+            India's Student Career Ecosystem
           </span>
         </div>
 
@@ -127,22 +127,22 @@ const HeroSectionV2 = () => {
             ref={title1Ref}
             className="text-4xl sm:text-6xl lg:text-7xl font-extrabold text-slate-900 tracking-tight leading-[1.1]"
           >
-            Build Skills. Build Projects.
+            Learn. Build. Compete.
           </h1>
           <h1
             ref={title2Ref}
             className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.1] text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600"
           >
-            Build Your Career.
+            Get Hired with Codovate.
           </h1>
         </div>
 
-        {/* Supporting Description */}
+        {/* Narrow Supporting Description */}
         <p
           ref={descRef}
           className="max-w-2xl text-base sm:text-lg text-slate-600 font-normal leading-relaxed text-balance"
         >
-          Codovate unites AI-guided roadmaps, interactive coding, production project hub, and direct mentor guidance in ONE continuous career workspace.
+          Codovate brings learning, projects, coding practice, career guidance, and opportunities together in one platform to help students turn skills into real careers.
         </p>
 
         {/* Primary & Secondary CTAs */}
@@ -157,22 +157,22 @@ const HeroSectionV2 = () => {
           </Link>
 
           <a
-            href="#features"
-            className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full text-sm font-semibold text-slate-700 bg-white/80 hover:bg-white border border-slate-200/90 shadow-sm transition-all duration-300 hover:shadow-md hover:border-slate-300 hover:-translate-y-0.5 active:translate-y-0"
+            href="#resources"
+            className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full text-sm font-semibold text-slate-700 bg-white/80 hover:bg-white border border-slate-200/90 shadow-xs transition-all duration-300 hover:shadow-md hover:border-slate-300 hover:-translate-y-0.5 active:translate-y-0"
           >
             <Play className="w-4 h-4 text-indigo-600 fill-indigo-600/20" />
-            <span>Explore Platform</span>
+            <span>Explore Resources</span>
           </a>
         </div>
 
-        {/* Quick Trust Badges */}
+        {/* Trust Statements (Honest non-numerical claims) */}
         <div
           ref={proofRef}
-          className="pt-3 flex flex-wrap items-center justify-center gap-6 text-xs text-slate-500 font-medium"
+          className="pt-3 flex flex-wrap items-center justify-center gap-6 text-xs text-slate-500 font-semibold"
         >
           <div className="flex items-center gap-1.5">
             <ShieldCheck className="w-4 h-4 text-emerald-500" />
-            <span>No Credit Card Required</span>
+            <span>Structured Path for Ambitious Learners</span>
           </div>
           <div className="w-1 h-1 rounded-full bg-slate-300" />
           <div className="flex items-center gap-1">
@@ -181,8 +181,7 @@ const HeroSectionV2 = () => {
                 <Star key={i} className="w-3 h-3 fill-amber-400" />
               ))}
             </div>
-            <span className="font-semibold text-slate-700 ml-1">4.9/5</span>
-            <span>(50,000+ Students)</span>
+            <span className="font-bold text-slate-700 ml-1">Built for Student Career Growth</span>
           </div>
         </div>
       </div>

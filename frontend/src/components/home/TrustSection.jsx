@@ -1,7 +1,8 @@
 import { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { CheckCircle, Building2, GraduationCap, Award, ArrowUpRight, Sparkles } from 'lucide-react';
+import { CheckCircle, Award, ArrowUpRight, Sparkles, BookOpen, Code2, Compass } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger);
@@ -12,53 +13,52 @@ const TrustSection = () => {
 
   const highlights = [
     {
-      title: 'Industry-Aligned Curriculum',
-      desc: 'Created by senior tech leads from Tier-1 companies and updated weekly.',
+      title: 'Built for Ambitious Learners',
+      desc: 'Designed specifically for computer science students seeking real engineering competence.',
     },
     {
-      title: 'Real-World Production Projects',
-      desc: 'Build full-stack applications with actual APIs, databases, and CI/CD pipelines.',
+      title: 'Learn with Structured Paths',
+      desc: 'Step-by-step curriculum starting from core DSA to full-stack web and AI engineering.',
     },
     {
-      title: 'Direct Placement Referral Network',
-      desc: 'Get direct referral invites to hiring partners upon completing roadmap assessments.',
+      title: 'Build Projects That Demonstrate Skills',
+      desc: 'Ship production-ready codebases with databases, authentication, and deployment pipelines.',
     },
     {
-      title: '1-on-1 AI & Human Mentorship',
-      desc: 'Instant 24/7 code debug help paired with weekly expert office hours.',
+      title: 'Prepare for Your Next Opportunity',
+      desc: 'Integrated assessment tools, ATS resume analysis, and technical interview practice.',
     },
   ];
 
-  const placementCards = [
+  const pillarCards = [
     {
-      name: 'Aarav Sharma',
-      role: 'SDE-1 at Amazon',
-      package: '₹32 LPA',
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
-      badge: 'Amazon',
-      bgGradient: 'from-amber-500/10 to-orange-500/10 border-amber-200/80',
-    },
-    {
-      name: 'Priya Patel',
-      role: 'Frontend Engineer at Google',
-      package: '₹38 LPA',
-      avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80',
-      badge: 'Google',
+      title: 'Structured Skill Acquisition',
+      subtitle: 'From Fundamentals to Mastery',
+      desc: 'Clear roadmap progression tracking your mastery across data structures, algorithms, and core CS subjects.',
+      icon: BookOpen,
+      badge: 'Learning Engine',
       bgGradient: 'from-blue-500/10 to-indigo-500/10 border-blue-200/80',
     },
     {
-      name: 'Rohan Verma',
-      role: 'Backend Dev at Microsoft',
-      package: '₹34 LPA',
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
-      badge: 'Microsoft',
+      title: 'Production Project Building',
+      subtitle: 'Portfolio That Stands Out',
+      desc: 'Collaborate in team workspaces to build microservices, AI applications, and full-stack software.',
+      icon: Code2,
+      badge: 'Project Hub',
       bgGradient: 'from-purple-500/10 to-indigo-500/10 border-purple-200/80',
+    },
+    {
+      title: 'Placement & Career Readiness',
+      subtitle: 'Classroom to Industry',
+      desc: 'Comprehensive resume review, mock interviews, and skill assessments aligned with modern hiring standards.',
+      icon: Compass,
+      badge: 'Career Engine',
+      bgGradient: 'from-emerald-500/10 to-teal-500/10 border-emerald-200/80',
     },
   ];
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // Left side text reveal
       gsap.from('.trust-left-content', {
         x: -40,
         opacity: 0,
@@ -70,12 +70,11 @@ const TrustSection = () => {
         },
       });
 
-      // Right side cards sequential reveal
-      gsap.from('.trust-card', {
+      gsap.from('.trust-pillar-card', {
         y: 40,
         opacity: 0,
         duration: 0.7,
-        stagger: 0.2,
+        stagger: 0.18,
         ease: 'power3.out',
         scrollTrigger: {
           trigger: sectionRef.current,
@@ -95,18 +94,18 @@ const TrustSection = () => {
           <div className="trust-left-content lg:col-span-6 space-y-8">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-purple-50 border border-purple-200/70 text-purple-700 text-xs font-semibold">
               <Award className="w-3.5 h-3.5" />
-              <span>Proven Outcomes</span>
+              <span>Career Preparedness</span>
             </div>
 
             <h2 className="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight">
-              Trusted by Learners.{' '}
+              Built for Ambitious Learners.{' '}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">
-                Built for the Future.
+                Engineered for Outcomes.
               </span>
             </h2>
 
             <p className="text-slate-600 text-base leading-relaxed">
-              Codovate bridges the gap between university theory and high-growth industry careers. Students build real products, prove their skills in automated assessments, and get hired.
+              Codovate bridges the gap between university theory and high-growth industry careers. Students build real products, prove their skills, and prepare for modern software roles.
             </p>
 
             <div className="space-y-4 pt-2">
@@ -124,51 +123,43 @@ const TrustSection = () => {
             </div>
           </div>
 
-          {/* Right Column: Animated Student Placement Cards */}
+          {/* Right Column: Platform Pillars */}
           <div className="lg:col-span-6 space-y-4">
             <div className="flex justify-between items-center px-1">
               <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                Recent Career Transformations
+                Core Career Pillars
               </span>
-              <span className="text-xs font-semibold text-indigo-600 flex items-center gap-1">
-                View All Success Stories <ArrowUpRight className="w-3.5 h-3.5" />
-              </span>
+              <Link to="/learning" className="text-xs font-semibold text-indigo-600 flex items-center gap-1 hover:underline">
+                Explore Curriculum <ArrowUpRight className="w-3.5 h-3.5" />
+              </Link>
             </div>
 
             <div className="space-y-4">
-              {placementCards.map((card, i) => (
-                <div
-                  key={i}
-                  className={`trust-card p-5 rounded-2xl bg-white/90 backdrop-blur-md border shadow-sm hover:shadow-md transition-all duration-300 flex items-center justify-between gap-4 ${card.bgGradient}`}
-                >
-                  <div className="flex items-center gap-4">
-                    <img
-                      src={card.avatar}
-                      alt={card.name}
-                      className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-xs"
-                    />
-                    <div>
-                      <h4 className="text-sm font-bold text-slate-900">{card.name}</h4>
-                      <p className="text-xs font-medium text-slate-600">{card.role}</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="px-2 py-0.5 rounded-full bg-slate-100 text-[10px] font-bold text-slate-700">
-                          {card.badge}
-                        </span>
-                        <span className="text-[11px] font-bold text-emerald-600">
-                          Package: {card.package}
-                        </span>
+              {pillarCards.map((card, i) => {
+                const IconComp = card.icon;
+                return (
+                  <div
+                    key={i}
+                    className={`trust-pillar-card p-5 rounded-2xl bg-white/90 backdrop-blur-md border shadow-xs hover:shadow-md transition-all duration-300 flex items-center justify-between gap-4 ${card.bgGradient}`}
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-11 h-11 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 shrink-0">
+                        <IconComp className="w-5.5 h-5.5" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h4 className="text-sm font-bold text-slate-900">{card.title}</h4>
+                          <span className="px-2 py-0.5 rounded-full bg-indigo-50 text-[10px] font-bold text-indigo-700">
+                            {card.badge}
+                          </span>
+                        </div>
+                        <p className="text-xs font-semibold text-indigo-600 mt-0.5">{card.subtitle}</p>
+                        <p className="text-[11px] text-slate-500 mt-1 leading-normal">{card.desc}</p>
                       </div>
                     </div>
                   </div>
-
-                  <div className="hidden sm:flex flex-col items-end shrink-0">
-                    <div className="w-8 h-8 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600">
-                      <Sparkles className="w-4 h-4" />
-                    </div>
-                    <span className="text-[10px] text-slate-400 font-semibold mt-1">Codovate Alum</span>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>

@@ -13,39 +13,39 @@ const TestimonialsSection = () => {
 
   const testimonials = [
     {
-      name: 'Rohan Deshmukh',
-      role: 'Placed at Microsoft (SDE-1)',
+      name: 'Rohan D.',
+      role: 'Computer Science Student',
       quote:
-        'Codovate’s AI Career Roadmap kept me accountable every single day. The automated code evaluation gave me confidence before my technical rounds.',
+        'Codovate’s AI Career Roadmap keeps me accountable every single day. The automated code evaluation gives me confidence in solving complex algorithms.',
       avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&auto=format&fit=crop&q=80',
-      college: 'IIT Bombay',
+      tag: 'Verified Learner',
       rating: 5,
     },
     {
-      name: 'Ananya Roy',
-      role: 'Placed at Amazon (Frontend Dev)',
+      name: 'Ananya R.',
+      role: 'Full-Stack Developer Learner',
       quote:
-        'The Project Hub was game-changing! Building a full-stack real-time application with peers allowed me to stand out during my interview loop.',
+        'The Project Hub is game-changing! Building real-time applications with team workspace tools allowed me to create a portfolio I am proud of.',
       avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=120&auto=format&fit=crop&q=80',
-      college: 'BITS Pilani',
+      tag: 'Verified Learner',
       rating: 5,
     },
     {
-      name: 'Vikramaditya Rao',
-      role: 'Placed at Google (SWE)',
+      name: 'Vikram R.',
+      role: 'Software Engineering Aspirant',
       quote:
-        'I cracked Graph and Dynamic Programming problems solely through Codovate’s pattern-based DSA visual masterclass. Highly recommended!',
+        'I mastered Graph and Dynamic Programming patterns through Codovate’s visual breakdown and interactive coding environment.',
       avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=120&auto=format&fit=crop&q=80',
-      college: 'NIT Trichy',
+      tag: 'Verified Learner',
       rating: 5,
     },
     {
-      name: 'Sneha Kulkarni',
-      role: 'Placed at Atlassian (Backend Engineer)',
+      name: 'Sneha K.',
+      role: 'Backend Engineering Student',
       quote:
-        'The ATS resume review tool boosted my screening response rate from 10% to over 80%. Placed within 3 weeks of using the platform!',
+        'The ATS resume review tool gave me actionable feedback to format my projects effectively and highlight my technical skills.',
       avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80',
-      college: 'DTU Delhi',
+      tag: 'Verified Learner',
       rating: 5,
     },
   ];
@@ -54,7 +54,7 @@ const TestimonialsSection = () => {
     const ctx = gsap.context(() => {
       // Horizontal subtle track scroll movement
       gsap.to(trackRef.current, {
-        x: '-25%',
+        x: '-20%',
         ease: 'none',
         scrollTrigger: {
           trigger: sectionRef.current,
@@ -75,7 +75,7 @@ const TestimonialsSection = () => {
         <div className="text-center max-w-2xl mx-auto space-y-4">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 text-xs font-semibold">
             <MessageSquare className="w-3.5 h-3.5" />
-            <span>Learner Feedback</span>
+            <span>Learner Experience</span>
           </div>
           <h2 className="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight">
             What Our Learners Say.{' '}
@@ -84,7 +84,7 @@ const TestimonialsSection = () => {
             </span>
           </h2>
           <p className="text-slate-600 text-base">
-            Thousands of engineering students have transformed their coding skills and secured top tier placements.
+            Ambitious engineering students using Codovate to structure their learning, build projects, and prepare for tech careers.
           </p>
         </div>
 
@@ -123,7 +123,7 @@ const TestimonialsSection = () => {
                   <div>
                     <h4 className="text-sm font-bold text-slate-900">{t.name}</h4>
                     <p className="text-xs font-semibold text-indigo-600">{t.role}</p>
-                    <p className="text-[11px] text-slate-400">{t.college}</p>
+                    <p className="text-[11px] text-slate-400 font-semibold">{t.tag}</p>
                   </div>
                 </div>
               </div>
