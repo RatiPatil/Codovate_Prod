@@ -15,7 +15,6 @@ const AnimatedAtmosphere = () => {
 
   useEffect(() => {
     // LAYER 1: Continuous independent breathing & floating loops (8-15s)
-    // Layer A: Large purple radial glow (11 seconds)
     const glowA = gsap.to(layerARef.current, {
       scale: 1.08,
       x: 20,
@@ -27,7 +26,6 @@ const AnimatedAtmosphere = () => {
       ease: 'sine.inOut',
     });
 
-    // Layer B: Soft violet glow (9 seconds)
     const glowB = gsap.to(layerBRef.current, {
       scale: 0.94,
       x: -25,
@@ -39,7 +37,6 @@ const AnimatedAtmosphere = () => {
       ease: 'power1.inOut',
     });
 
-    // Layer C: Lavender/white central highlight (13 seconds)
     const glowC = gsap.to(layerCRef.current, {
       scale: 1.1,
       x: 15,
@@ -51,7 +48,6 @@ const AnimatedAtmosphere = () => {
       ease: 'sine.inOut',
     });
 
-    // Layer D: Very subtle peripheral glow (15 seconds)
     const glowD = gsap.to(layerDRef.current, {
       scale: 1.14,
       x: -18,
@@ -89,49 +85,49 @@ const AnimatedAtmosphere = () => {
   return (
     <div
       ref={containerRef}
-      className="pointer-events-none fixed inset-0 z-0 overflow-hidden min-h-screen"
+      className="pointer-events-none fixed inset-0 z-0 overflow-hidden min-h-screen transition-colors duration-300"
       aria-hidden="true"
     >
-      {/* Pure / Near-White Base Canvas (#FCFDFF) */}
-      <div className="absolute inset-0 bg-[#FCFDFF]" />
+      {/* Base Canvas (#FCFDFF for light / #080A12 for dark) */}
+      <div className="absolute inset-0 bg-[#FCFDFF] dark:bg-[#080A12] transition-colors duration-300" />
 
-      {/* Layer A: Large Purple Radial Glow ( concentrated behind hero center ) */}
+      {/* Layer A: Large Purple Radial Glow */}
       <div
         ref={layerARef}
-        className="absolute top-[8vh] left-[50%] -translate-x-[50%] w-[960px] h-[680px] rounded-full blur-[140px] opacity-75"
+        className="absolute top-[8vh] left-[50%] -translate-x-[50%] w-[960px] h-[680px] rounded-full blur-[140px] opacity-75 dark:opacity-50"
         style={{
           background:
-            'radial-gradient(circle, rgba(147, 51, 234, 0.14) 0%, rgba(99, 102, 241, 0.08) 50%, rgba(255, 255, 255, 0) 75%)',
+            'radial-gradient(circle, rgba(147, 51, 234, 0.16) 0%, rgba(99, 102, 241, 0.1) 50%, rgba(255, 255, 255, 0) 75%)',
         }}
       />
 
       {/* Layer B: Soft Violet Glow */}
       <div
         ref={layerBRef}
-        className="absolute top-[16vh] left-[32%] w-[780px] h-[560px] rounded-full blur-[120px] opacity-70"
+        className="absolute top-[16vh] left-[32%] w-[780px] h-[560px] rounded-full blur-[120px] opacity-70 dark:opacity-45"
         style={{
           background:
-            'radial-gradient(circle, rgba(124, 58, 237, 0.16) 0%, rgba(79, 70, 229, 0.1) 45%, rgba(255, 255, 255, 0) 70%)',
+            'radial-gradient(circle, rgba(124, 58, 237, 0.18) 0%, rgba(79, 70, 229, 0.12) 45%, rgba(255, 255, 255, 0) 70%)',
         }}
       />
 
       {/* Layer C: Lavender / White Central Highlight */}
       <div
         ref={layerCRef}
-        className="absolute top-[20vh] left-[48%] -translate-x-[50%] w-[480px] h-[360px] rounded-full blur-[90px] opacity-80"
+        className="absolute top-[20vh] left-[48%] -translate-x-[50%] w-[480px] h-[360px] rounded-full blur-[90px] opacity-80 dark:opacity-35"
         style={{
           background:
-            'radial-gradient(circle, rgba(192, 132, 252, 0.2) 0%, rgba(255, 255, 255, 0.9) 60%, rgba(255, 255, 255, 0) 80%)',
+            'radial-gradient(circle, rgba(192, 132, 252, 0.22) 0%, rgba(255, 255, 255, 0.9) 60%, rgba(255, 255, 255, 0) 80%)',
         }}
       />
 
-      {/* Layer D: Very Subtle Peripheral Glow */}
+      {/* Layer D: Subtle Peripheral Glow */}
       <div
         ref={layerDRef}
-        className="absolute top-[28vh] right-[25%] w-[600px] h-[440px] rounded-full blur-[110px] opacity-50"
+        className="absolute top-[28vh] right-[25%] w-[600px] h-[440px] rounded-full blur-[110px] opacity-50 dark:opacity-35"
         style={{
           background:
-            'radial-gradient(circle, rgba(168, 85, 247, 0.1) 0%, rgba(129, 140, 248, 0.05) 50%, rgba(255, 255, 255, 0) 75%)',
+            'radial-gradient(circle, rgba(168, 85, 247, 0.12) 0%, rgba(129, 140, 248, 0.07) 50%, rgba(255, 255, 255, 0) 75%)',
         }}
       />
     </div>

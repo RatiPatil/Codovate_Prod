@@ -41,7 +41,7 @@ const Home = () => {
   }, []);
 
   return (
-    <div className="relative min-h-screen bg-[#FCFDFF] text-slate-900 selection:bg-indigo-100 selection:text-indigo-700 font-sans antialiased overflow-x-hidden">
+    <div className="relative min-h-screen bg-[#FCFDFF] dark:bg-[#080A12] text-slate-900 dark:text-slate-100 selection:bg-indigo-100 dark:selection:bg-indigo-900 selection:text-indigo-700 dark:selection:text-indigo-200 font-sans antialiased overflow-x-hidden transition-colors duration-300">
       {/* 1. Global Animated Atmospheric Glow Container (Layers 1 & 2) */}
       <AnimatedAtmosphere />
 

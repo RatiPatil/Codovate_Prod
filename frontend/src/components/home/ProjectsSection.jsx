@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { FolderGit2, Bot, Layout, Smartphone, BarChart3, ExternalLink, ArrowRight, Layers } from 'lucide-react';
+import { FolderGit2, ArrowUpRight, Code, Sparkles, Layers } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 if (typeof window !== 'undefined') {
@@ -11,56 +11,48 @@ if (typeof window !== 'undefined') {
 const ProjectsSection = () => {
   const sectionRef = useRef(null);
 
-  const projectCards = [
+  const projects = [
     {
       title: 'AI RAG Document Assistant',
-      category: 'AI / Machine Learning',
-      badge: 'Production RAG',
-      desc: 'Retrieval-augmented Generation pipeline with vector embeddings, semantic search, and streaming responses.',
-      icon: Bot,
-      tags: ['TypeScript', 'Python', 'Pinecone', 'LangChain'],
-      color: 'from-purple-500 to-indigo-600',
+      desc: 'Build an autonomous document search agent using LangChain, OpenAI embeddings, and Pinecone vector store.',
+      tags: ['React', 'Node.js', 'Python', 'Vector DB'],
+      level: 'Advanced',
+      impact: 'AI Engineering',
     },
     {
-      title: 'Real-time Collaborative Canvas',
-      category: 'Full-Stack Web App',
-      badge: 'WebSockets',
-      desc: 'Multi-user shared whiteboard with live cursor tracking, CRDT state synchronization, and room management.',
-      icon: Layout,
-      tags: ['React 19', 'Node.js', 'Socket.io', 'Tailwind'],
-      color: 'from-blue-500 to-indigo-600',
+      title: 'Real-Time Collaborative Canvas',
+      desc: 'Create a Figma-style multi-user whiteboard with WebSockets, CRDT conflict resolution, and canvas state sync.',
+      tags: ['TypeScript', 'WebSockets', 'Canvas API'],
+      level: 'Intermediate',
+      impact: 'System Architecture',
     },
     {
       title: 'Cross-Platform Career Tracker',
-      category: 'Mobile Application',
-      badge: 'React Native',
-      desc: 'Mobile application to log coding practice streaks, daily interview prep reminders, and offer status updates.',
-      icon: Smartphone,
-      tags: ['React Native', 'Firebase', 'Redux Toolkit'],
-      color: 'from-emerald-500 to-teal-600',
+      desc: 'Develop a full-stack placement portal with role matching, ATS resume scoring, and OAuth2 authentication.',
+      tags: ['Next.js', 'PostgreSQL', 'Tailwind'],
+      level: 'Intermediate',
+      impact: 'Full-Stack Web',
     },
     {
       title: 'Market Sentiment AI Predictor',
-      category: 'Data Science & ML',
-      badge: 'Financial ML',
-      desc: 'Automated NLP pipeline parsing financial news sentiment to predict short-term equity price movements.',
-      icon: BarChart3,
-      tags: ['Python', 'PyTorch', 'FastAPI', 'Pandas'],
-      color: 'from-amber-500 to-orange-600',
+      desc: 'Implement a financial data pipeline parsing news feeds with Transformer sentiment analysis models.',
+      tags: ['Python', 'FastAPI', 'PyTorch', 'Docker'],
+      level: 'Advanced',
+      impact: 'Machine Learning',
     },
   ];
 
   useEffect(() => {
     const ctx = gsap.context(() => {
       gsap.from('.project-card-item', {
-        y: 40,
+        y: 30,
         opacity: 0,
-        duration: 0.7,
-        stagger: 0.15,
+        duration: 0.6,
+        stagger: 0.12,
         ease: 'power3.out',
         scrollTrigger: {
           trigger: sectionRef.current,
-          start: 'top 75%',
+          start: 'top 80%',
         },
       });
     }, sectionRef);
@@ -69,81 +61,78 @@ const ProjectsSection = () => {
   }, []);
 
   return (
-    <section id="projects" ref={sectionRef} className="py-24 md:py-32 relative z-10">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
-        {/* Title */}
-        <div className="text-center max-w-3xl mx-auto space-y-4">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-purple-50 border border-purple-200 text-purple-700 text-xs font-semibold">
-            <FolderGit2 className="w-3.5 h-3.5" />
-            <span>Hands-On Experience</span>
+    <section ref={sectionRef} id="projects" className="py-14 sm:py-16 md:py-20 relative z-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+        {/* Section Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div className="space-y-3 max-w-2xl">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 text-xs font-semibold">
+              <FolderGit2 className="w-3.5 h-3.5" />
+              <span>Production Workspaces</span>
+            </div>
+            <h2 className="text-3xl sm:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-tight">
+              Build Real Software.{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-indigo-600 dark:from-purple-400 dark:to-indigo-400">
+                Not Toy Apps.
+              </span>
+            </h2>
+            <p className="text-slate-600 dark:text-slate-300 text-base">
+              Construct portfolio-worthy projects engineered with production databases, security, and deployment pipelines.
+            </p>
           </div>
-          <h2 className="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight">
-            Learn by Building.{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600">
-              Ship Production Code.
-            </span>
-          </h2>
-          <p className="text-slate-600 text-base sm:text-lg">
-            Stop building generic tutorial clones. Codovate guides you through architecting real software that recruiters actually care about.
-          </p>
+
+          <Link
+            to="/projecthub"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-md hover:shadow-lg transition-all shrink-0 self-start md:self-auto"
+          >
+            <span>Explore All Projects</span>
+            <ArrowUpRight className="w-4 h-4" />
+          </Link>
         </div>
 
-        {/* Project Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {projectCards.map((p, i) => {
-            const IconComp = p.icon;
-            return (
-              <div
-                key={i}
-                className="project-card-item p-8 rounded-3xl bg-white/90 backdrop-blur-md border border-slate-200/80 shadow-sm hover:shadow-xl hover:border-purple-200 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group"
-              >
-                <div className="space-y-6">
-                  <div className="flex items-center justify-between">
-                    <div
-                      className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${p.color} flex items-center justify-center text-white shadow-md group-hover:scale-110 transition-transform`}
-                    >
-                      <IconComp className="w-6 h-6" />
-                    </div>
-                    <span className="text-xs font-bold px-3 py-1 rounded-full bg-purple-50 text-purple-700 border border-purple-200/60">
-                      {p.badge}
-                    </span>
-                  </div>
-
-                  <div className="space-y-2">
-                    <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                      {p.category}
-                    </span>
-                    <h3 className="text-xl sm:text-2xl font-bold text-slate-900 group-hover:text-indigo-600 transition-colors flex items-center gap-2">
-                      <span>{p.title}</span>
-                      <ExternalLink className="w-4 h-4 text-slate-400 group-hover:text-indigo-600 transition-colors" />
-                    </h3>
-                    <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">{p.desc}</p>
-                  </div>
+        {/* 4 Production Project Cards Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {projects.map((p, i) => (
+            <div
+              key={i}
+              className="project-card-item p-7 rounded-3xl bg-white/90 dark:bg-[#111522]/90 backdrop-blur-md border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-xl hover:border-indigo-300 dark:hover:border-indigo-700 transition-all duration-300 flex flex-col justify-between space-y-6 group"
+            >
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 text-xs font-bold border border-indigo-200/80 dark:border-indigo-800">
+                    {p.impact}
+                  </span>
+                  <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 flex items-center gap-1">
+                    <Layers className="w-3.5 h-3.5" /> {p.level}
+                  </span>
                 </div>
 
-                <div className="pt-6 border-t border-slate-100 mt-6 flex flex-wrap items-center justify-between gap-4">
-                  <div className="flex flex-wrap gap-1.5">
-                    {p.tags.map((t, idx) => (
-                      <span
-                        key={idx}
-                        className="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 text-[11px] font-semibold"
-                      >
-                        {t}
-                      </span>
-                    ))}
-                  </div>
+                <h3 className="text-xl font-extrabold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                  {p.title}
+                </h3>
 
-                  <Link
-                    to="/projecthub"
-                    className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 group-hover:text-indigo-800 transition-colors"
-                  >
-                    <span>View Project Spec</span>
-                    <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-                  </Link>
+                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">{p.desc}</p>
+              </div>
+
+              <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between flex-wrap gap-3">
+                <div className="flex flex-wrap gap-1.5">
+                  {p.tags.map((t, tIdx) => (
+                    <span
+                      key={tIdx}
+                      className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-[11px] font-semibold text-slate-600 dark:text-slate-300"
+                    >
+                      {t}
+                    </span>
+                  ))}
+                </div>
+
+                <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 text-xs font-bold group-hover:translate-x-1 transition-transform">
+                  <span>Start Workspace</span>
+                  <ArrowUpRight className="w-4 h-4" />
                 </div>
               </div>
-            );
-          })}
+            </div>
+          ))}
         </div>
       </div>
     </section>

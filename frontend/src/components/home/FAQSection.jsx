@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { HelpCircle, ChevronDown, Sparkles } from 'lucide-react';
+import { HelpCircle, ChevronDown } from 'lucide-react';
 
 const FAQSection = () => {
   const [activeCategory, setActiveCategory] = useState('general');
@@ -7,133 +7,126 @@ const FAQSection = () => {
 
   const categories = [
     { id: 'general', label: 'General' },
-    { id: 'platform', label: 'Platform & AI' },
-    { id: 'placements', label: 'Placements & Mentors' },
-    { id: 'access', label: 'Access & Free Tier' },
+    { id: 'curriculum', label: 'Learning & DSA' },
+    { id: 'projects', label: 'Projects & Hub' },
+    { id: 'career', label: 'Career & Placements' },
   ];
 
   const faqs = {
     general: [
       {
-        q: 'What makes Codovate different from traditional coding platforms?',
-        a: 'Codovate is an integrated career ecosystem. Instead of isolated problem sets, Codovate links your learning roadmaps, coding practice, full-stack projects, and resume building into one AI-driven platform that dynamically adapts to your target goals.',
+        q: 'What is Codovate?',
+        a: 'Codovate is an integrated student career platform that combines AI career roadmaps, structured computer science learning, production project building, and placement preparation into one system.',
       },
       {
-        q: 'Is Codovate suitable for absolute beginners?',
-        a: 'Yes! Codovate provides step-by-step foundational modules starting from C++, Java, and Python basics, gradually scaling up to advanced Data Structures, Algorithms, and System Design.',
+        q: 'Is Codovate suitable for beginners?',
+        a: 'Yes! Our structured learning paths start from foundational programming concepts and progress step-by-step to advanced system design and AI engineering.',
       },
       {
-        q: 'How does the AI Career Engine work?',
-        a: 'Our AI analyzes your code submissions, quiz performances, and assessment speed to identify skill gaps and automatically generate targeted daily recommendations.',
-      },
-    ],
-    platform: [
-      {
-        q: 'Can I write and execute code inside the browser?',
-        a: 'Yes, Codovate includes a full browser-based IDE supporting C++, Java, Python, TypeScript, and Go with automated sandboxed execution and unit test evaluation.',
-      },
-      {
-        q: 'Does Codovate support collaborative team projects?',
-        a: 'Yes! The Project Hub allows you to create or join student project teams, manage tasks with Git integrations, and build portfolio-ready applications together.',
+        q: 'How does Codovate differ from generic video platforms?',
+        a: 'Codovate provides an interactive, auto-evaluated coding environment, real team workspaces, AI career diagnostics, and live progress synchronization.',
       },
     ],
-    placements: [
+    curriculum: [
       {
-        q: 'How do mentor office hours and referrals work?',
-        a: 'Verified mentors from companies like Amazon, Google, and Microsoft host weekly office hours. Top performers in Codovate assessment benchmarks receive direct job referral opportunities.',
+        q: 'How are the DSA problems structured?',
+        a: 'Problems are grouped by core algorithmic patterns (Sliding Window, Two Pointers, Dynamic Programming, Graphs) with automated time/space complexity evaluation.',
       },
       {
-        q: 'What is the ATS Resume Builder score?',
-        a: 'Our AI resume parser evaluates your resume formatting, keyword density, and project descriptions against top ATS systems (Greenhouse, Lever) to ensure maximum recruiter pass rates.',
+        q: 'Does Codovate cover core computer science subjects?',
+        a: 'Yes, Codovate includes curated modules for Operating Systems, DBMS, Computer Networks, and System Design fundamentals.',
       },
     ],
-    access: [
+    projects: [
       {
-        q: 'Is there a free tier available on Codovate?',
-        a: 'Yes! All core CS articles, basic coding practice problems, and community features are 100% free forever.',
+        q: 'What type of projects will I build?',
+        a: 'You will construct production-ready applications including AI document search agents, real-time collaborative whiteboards, full-stack portals, and FastAPI data pipelines.',
       },
       {
-        q: 'Can colleges or institutions partner with Codovate?',
-        a: 'Yes, Codovate offers a dedicated College Administration portal for universities to track student progress, conduct batch assessments, and manage campus placement drives.',
+        q: 'Can I collaborate with other students?',
+        a: 'Yes! Project Hub provides team workspace tools where you can build together with peers.',
+      },
+    ],
+    career: [
+      {
+        q: 'How does the ATS Resume Review work?',
+        a: 'Our AI engine analyzes your resume content, layout, and keywords against top tech role descriptions to provide actionable optimization suggestions.',
+      },
+      {
+        q: 'Are the Mock AI Interviews interactive?',
+        a: 'Yes! You can practice technical and behavioral interview scenarios with real-time feedback on your code and explanations.',
       },
     ],
   };
 
   const currentFaqs = faqs[activeCategory] || faqs.general;
 
-  const toggleAccordion = (i) => {
-    setOpenIndex(openIndex === i ? null : i);
-  };
-
   return (
-    <section id="faq" className="py-24 md:py-32 relative z-10">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-        {/* Header */}
-        <div className="text-center max-w-2xl mx-auto space-y-4">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200 text-xs font-semibold">
+    <section id="faq" className="py-14 sm:py-16 md:py-20 relative z-10">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+        {/* Section Header */}
+        <div className="text-center space-y-3">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 text-xs font-semibold">
             <HelpCircle className="w-3.5 h-3.5" />
             <span>Got Questions?</span>
           </div>
-          <h2 className="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight">
-            Frequently Asked Questions
+          <h2 className="text-3xl sm:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-tight">
+            Frequently Asked Questions.
           </h2>
-          <p className="text-slate-600 text-base">
-            Everything you need to know about the Codovate platform, features, and career programs.
+          <p className="text-slate-600 dark:text-slate-300 text-base">
+            Everything you need to know about the Codovate platform and learning experience.
           </p>
         </div>
 
-        {/* FAQ Container Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* Left Categories Selector */}
-          <div className="lg:col-span-4 flex flex-row lg:flex-col gap-2 overflow-x-auto pb-2 lg:pb-0 scrollbar-none">
-            {categories.map((c) => (
-              <button
-                key={c.id}
-                onClick={() => {
-                  setActiveCategory(c.id);
-                  setOpenIndex(0);
-                }}
-                className={`w-full text-left px-5 py-3.5 rounded-2xl font-bold text-sm transition-all duration-200 shrink-0 ${
-                  activeCategory === c.id
-                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/20'
-                    : 'bg-white/80 hover:bg-white text-slate-700 border border-slate-200/80'
-                }`}
+        {/* Category Filters */}
+        <div className="flex items-center justify-center flex-wrap gap-2">
+          {categories.map((c) => (
+            <button
+              key={c.id}
+              onClick={() => {
+                setActiveCategory(c.id);
+                setOpenIndex(0);
+              }}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                activeCategory === c.id
+                  ? 'bg-indigo-600 text-white shadow-md'
+                  : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+              }`}
+            >
+              {c.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Accordion Items */}
+        <div className="space-y-3">
+          {currentFaqs.map((faq, i) => {
+            const isOpen = openIndex === i;
+            return (
+              <div
+                key={i}
+                className="rounded-2xl bg-white/90 dark:bg-[#111522]/90 backdrop-blur-md border border-slate-200/80 dark:border-slate-800 shadow-xs overflow-hidden transition-all"
               >
-                {c.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Right Accordion List */}
-          <div className="lg:col-span-8 space-y-4">
-            {currentFaqs.map((faq, i) => {
-              const isOpen = openIndex === i;
-              return (
-                <div
-                  key={i}
-                  className="rounded-2xl bg-white/90 backdrop-blur-md border border-slate-200/80 shadow-xs overflow-hidden transition-all duration-200"
+                <button
+                  onClick={() => setOpenIndex(isOpen ? -1 : i)}
+                  className="w-full p-5 text-left flex items-center justify-between gap-4 font-bold text-slate-900 dark:text-white text-sm sm:text-base hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
                 >
-                  <button
-                    onClick={() => toggleAccordion(i)}
-                    className="w-full p-5 text-left font-bold text-slate-900 text-sm sm:text-base flex items-center justify-between gap-4 hover:text-indigo-600 transition-colors"
-                  >
-                    <span>{faq.q}</span>
-                    <ChevronDown
-                      className={`w-5 h-5 text-slate-400 shrink-0 transition-transform duration-300 ${
-                        isOpen ? 'rotate-180 text-indigo-600' : ''
-                      }`}
-                    />
-                  </button>
+                  <span>{faq.q}</span>
+                  <ChevronDown
+                    className={`w-4 h-4 text-slate-400 shrink-0 transition-transform duration-200 ${
+                      isOpen ? 'rotate-180 text-indigo-600 dark:text-indigo-400' : ''
+                    }`}
+                  />
+                </button>
 
-                  {isOpen && (
-                    <div className="px-5 pb-5 pt-1 text-slate-600 text-xs sm:text-sm leading-relaxed border-t border-slate-100/80">
-                      {faq.a}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
+                {isOpen && (
+                  <div className="px-5 pb-5 pt-1 text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed border-t border-slate-100 dark:border-slate-800/60 animate-fadeIn">
+                    {faq.a}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
     </section>

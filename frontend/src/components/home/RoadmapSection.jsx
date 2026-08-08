@@ -1,19 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import {
-  UserPlus,
-  UserCheck,
-  Compass,
-  BookOpen,
-  FolderGit2,
-  FileText,
-  Send,
-  Video,
-  Trophy,
-  Sparkles,
-  CheckCircle2,
-} from 'lucide-react';
+import { Compass, CheckCircle2, Circle } from 'lucide-react';
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger);
@@ -23,109 +11,75 @@ const RoadmapSection = () => {
   const sectionRef = useRef(null);
 
   const steps = [
-    { title: 'Join Platform', desc: 'Set up your free student account', icon: UserPlus, color: 'border-blue-200 text-blue-600 bg-blue-50' },
-    { title: 'Build Profile', desc: 'Input target roles & skill levels', icon: UserCheck, color: 'border-indigo-200 text-indigo-600 bg-indigo-50' },
-    { title: 'AI Roadmap', desc: 'AI generates custom daily path', icon: Compass, color: 'border-purple-200 text-purple-600 bg-purple-50' },
-    { title: 'Learn & Practice', desc: 'Interactive DSA & Core CS modules', icon: BookOpen, color: 'border-purple-200 text-purple-600 bg-purple-50' },
-    { title: 'Build Projects', desc: 'Ship production-ready web apps', icon: FolderGit2, color: 'border-rose-200 text-rose-600 bg-rose-50' },
-    { title: 'Resume & Portfolio', desc: 'Generate 90+ ATS verified resume', icon: FileText, color: 'border-amber-200 text-amber-600 bg-amber-50' },
-    { title: 'Apply to Drives', desc: 'Direct referral match to top firms', icon: Send, color: 'border-sky-200 text-sky-600 bg-sky-50' },
-    { title: 'AI Mock Interview', desc: 'Voice & code technical interview', icon: Video, color: 'border-indigo-200 text-indigo-600 bg-indigo-50' },
-    { title: 'Get Hired', desc: 'Secure high-paying SDE placements', icon: Trophy, color: 'border-emerald-200 text-emerald-600 bg-emerald-50' },
+    { num: '01', title: 'Join Codovate Platform', desc: 'Create your account and set up your student developer profile.' },
+    { num: '02', title: 'Diagnostic Skill Assessment', desc: 'Take quick baseline quizzes to identify strengths and skill gaps.' },
+    { num: '03', title: 'AI Career Roadmap Generation', desc: 'Receive your personalized step-by-step learning trajectory.' },
+    { num: '04', title: 'Master Core CS & DSA', desc: 'Solve curated problems with automated real-time code evaluation.' },
+    { num: '05', title: 'Build Production Projects', desc: 'Construct full-stack applications with databases and API security.' },
+    { num: '06', title: 'ATS Resume Optimization', desc: 'Format your achievements for ATS algorithms and top tech recruiters.' },
+    { num: '07', title: 'Apply to Curated Opportunities', desc: 'Access exclusive campus and off-campus tech job listings.' },
+    { num: '08', title: 'Mock AI Technical Interviews', desc: 'Practice system design and live coding rounds with real-time feedback.' },
+    { num: '09', title: 'Get Hired & Launch Career', desc: 'Land your dream software role and join our alum network.' },
   ];
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // Step nodes reveal on scroll
       gsap.from('.roadmap-step-card', {
-        scale: 0.85,
+        y: 25,
         opacity: 0,
-        y: 30,
-        stagger: 0.1,
         duration: 0.6,
-        ease: 'power3.out',
+        stagger: 0.08,
+        ease: 'power2.out',
         scrollTrigger: {
           trigger: sectionRef.current,
-          start: 'top 75%',
+          start: 'top 80%',
         },
       });
-
-      // Connecting line progress fill
-      gsap.fromTo(
-        '.roadmap-line-progress',
-        { height: '0%' },
-        {
-          height: '100%',
-          ease: 'none',
-          scrollTrigger: {
-            trigger: sectionRef.current,
-            start: 'top 65%',
-            end: 'bottom 40%',
-            scrub: 1,
-          },
-        }
-      );
     }, sectionRef);
 
     return () => ctx.revert();
   }, []);
 
   return (
-    <section id="roadmap" ref={sectionRef} className="py-24 md:py-32 relative z-10">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
-        {/* Title */}
-        <div className="text-center max-w-3xl mx-auto space-y-4">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-semibold">
-            <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-            <span>Step-By-Step Journey</span>
+    <section ref={sectionRef} id="roadmap" className="py-14 sm:py-16 md:py-20 relative z-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+        {/* Section Header */}
+        <div className="text-center max-w-3xl mx-auto space-y-3">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 text-xs font-semibold">
+            <Compass className="w-3.5 h-3.5" />
+            <span>Clear Progression</span>
           </div>
-          <h2 className="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight">
-            Your Automated Career Path.{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600">
-              Classroom to Offer.
+          <h2 className="text-3xl sm:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-tight">
+            Your Step-by-Step{' '}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 dark:from-indigo-400 dark:via-purple-400 dark:to-indigo-400">
+              Career Journey.
             </span>
           </h2>
-          <p className="text-slate-600 text-base sm:text-lg">
-            A clear, 9-stage progression engineered to ensure you never get stuck or wonder what to study next.
+          <p className="text-slate-600 dark:text-slate-300 text-base">
+            From your first day on Codovate to landing your software engineering offer, every milestone is structured for success.
           </p>
         </div>
 
-        {/* Roadmap Steps Grid */}
-        <div className="relative max-w-5xl mx-auto">
-          {/* Vertical Connecting Line (Desktop) */}
-          <div className="absolute left-1/2 -translate-x-1/2 top-8 bottom-8 w-1 bg-slate-200 hidden md:block rounded-full overflow-hidden">
-            <div className="roadmap-line-progress w-full bg-gradient-to-b from-blue-500 via-indigo-600 to-emerald-500 rounded-full" />
-          </div>
+        {/* 9 Step Progression Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative">
+          {steps.map((s, i) => (
+            <div
+              key={i}
+              className="roadmap-step-card p-6 rounded-3xl bg-white/90 dark:bg-[#111522]/90 backdrop-blur-md border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-xl hover:border-indigo-300 dark:hover:border-indigo-700 transition-all duration-300 space-y-4"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-2xl font-extrabold font-mono text-indigo-600 dark:text-indigo-400">
+                  {s.num}
+                </span>
+                <CheckCircle2 className="w-5 h-5 text-indigo-500/80" />
+              </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-y-12 relative z-10">
-            {steps.map((step, idx) => {
-              const IconComp = step.icon;
-              const isEven = idx % 2 === 0;
-
-              return (
-                <div
-                  key={idx}
-                  className={`roadmap-step-card flex items-center gap-4 p-5 rounded-3xl bg-white/95 backdrop-blur-md border border-slate-200/80 shadow-sm hover:shadow-lg hover:border-indigo-200 transition-all duration-300 ${
-                    isEven ? 'md:mr-8 md:text-right md:flex-row-reverse' : 'md:ml-8'
-                  }`}
-                >
-                  <div className={`w-12 h-12 rounded-2xl border flex items-center justify-center shrink-0 shadow-xs ${step.color}`}>
-                    <IconComp className="w-6 h-6" />
-                  </div>
-
-                  <div className="space-y-0.5">
-                    <div className="flex items-center gap-2 md:justify-end">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">
-                        Stage {idx + 1}
-                      </span>
-                    </div>
-                    <h3 className="text-base font-bold text-slate-900">{step.title}</h3>
-                    <p className="text-xs text-slate-500">{step.desc}</p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+              <div>
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">{s.title}</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5 leading-relaxed">{s.desc}</p>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </section>

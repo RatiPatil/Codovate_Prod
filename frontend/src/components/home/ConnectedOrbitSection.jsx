@@ -1,18 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import {
-  Sparkles,
-  Code2,
-  FolderGit2,
-  BookOpen,
-  FileText,
-  Video,
-  Compass,
-  Users,
-  Cpu,
-} from 'lucide-react';
-import Logo from '../common/Logo';
+import { Cpu, Bot, FolderGit2, BookOpen, FileText, Video, Award, Network } from 'lucide-react';
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger);
@@ -21,58 +10,27 @@ if (typeof window !== 'undefined') {
 const ConnectedOrbitSection = () => {
   const sectionRef = useRef(null);
 
-  const orbitNodes = [
-    { label: 'Code Engine', icon: Code2, angle: 0, distance: 220, color: 'text-blue-600 bg-blue-50 border-blue-200' },
-    { label: 'Project Hub', icon: FolderGit2, angle: 51, distance: 220, color: 'text-purple-600 bg-purple-50 border-purple-200' },
-    { label: 'Smart Learning', icon: BookOpen, angle: 102, distance: 220, color: 'text-indigo-600 bg-indigo-50 border-indigo-200' },
-    { label: 'ATS Resume', icon: FileText, angle: 153, distance: 220, color: 'text-emerald-600 bg-emerald-50 border-emerald-200' },
-    { label: 'AI Interview', icon: Video, angle: 204, distance: 220, color: 'text-rose-600 bg-rose-50 border-rose-200' },
-    { label: 'Career Engine', icon: Compass, angle: 255, distance: 220, color: 'text-amber-600 bg-amber-50 border-amber-200' },
-    { label: 'Peer Network', icon: Users, angle: 306, distance: 220, color: 'text-sky-600 bg-sky-50 border-sky-200' },
+  const ecosystemNodes = [
+    { name: 'AI Career Roadmap', icon: Bot, desc: 'Tailored 1-on-1 skill trajectory' },
+    { name: 'Project Workspace', icon: FolderGit2, desc: 'Real-time team collaboration' },
+    { name: 'Smart Curriculum', icon: BookOpen, desc: 'DSA & Core CS mastery' },
+    { name: 'ATS Resume Review', icon: FileText, desc: 'Automated formatting & score' },
+    { name: 'Mock AI Interview', icon: Video, desc: 'Real-time feedback & scoring' },
+    { name: 'Skill Verification', icon: Award, desc: 'Verifiable credentials' },
   ];
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // Intro reveal animation
-      gsap.from('.orbit-center-node', {
-        scale: 0.8,
+      gsap.from('.eco-node-card', {
+        scale: 0.9,
         opacity: 0,
-        duration: 0.9,
-        ease: 'back.out(1.7)',
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: 'top 75%',
-        },
-      });
-
-      gsap.from('.orbit-outer-node', {
-        scale: 0,
-        opacity: 0,
-        stagger: 0.1,
         duration: 0.6,
-        ease: 'back.out(1.5)',
+        stagger: 0.1,
+        ease: 'back.out(1.4)',
         scrollTrigger: {
           trigger: sectionRef.current,
-          start: 'top 70%',
+          start: 'top 80%',
         },
-      });
-
-      // Orbit container subtle continuous rotation
-      gsap.to('.orbit-spin-wrapper', {
-        rotation: 360,
-        duration: 180,
-        repeat: -1,
-        ease: 'none',
-        transformOrigin: '50% 50%',
-      });
-
-      // Counter rotate nodes so text stays upright
-      gsap.to('.orbit-node-inner', {
-        rotation: -360,
-        duration: 180,
-        repeat: -1,
-        ease: 'none',
-        transformOrigin: '50% 50%',
       });
     }, sectionRef);
 
@@ -80,102 +38,62 @@ const ConnectedOrbitSection = () => {
   }, []);
 
   return (
-    <section id="orbit-core" ref={sectionRef} className="py-24 md:py-32 relative z-10 overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-16">
+    <section ref={sectionRef} id="orbit-core" className="py-14 sm:py-16 md:py-20 relative z-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         {/* Section Header */}
-        <div className="max-w-3xl mx-auto space-y-4">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-50 border border-indigo-200/80 text-indigo-700 text-xs font-semibold">
-            <Cpu className="w-3.5 h-3.5" />
-            <span>Connected Ecosystem</span>
+        <div className="text-center max-w-3xl mx-auto space-y-3">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 text-xs font-semibold">
+            <Network className="w-3.5 h-3.5" />
+            <span>Unified Platform Ecosystem</span>
           </div>
-          <h2 className="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight">
-            One Unified Platform.{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600">
-              Infinite Possibilities.
+          <h2 className="text-3xl sm:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-tight">
+            One Connected Ecosystem for Your{' '}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 dark:from-indigo-400 dark:via-purple-400 dark:to-indigo-400">
+              Entire Career Journey.
             </span>
           </h2>
-          <p className="text-slate-600 text-base sm:text-lg">
-            Every module inside Codovate feeds data into your central AI Career Engine, automatically tuning your learning path and project portfolio.
+          <p className="text-slate-600 dark:text-slate-300 text-base">
+            No more fragmented tools. Codovate connects learning, project building, coding practice, and career opportunities into one intelligent system.
           </p>
         </div>
 
-        {/* Orbit System Layout */}
-        <div className="relative w-full max-w-[650px] h-[550px] md:h-[620px] mx-auto flex items-center justify-center">
-          {/* Orbital Rings Background */}
-          <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 650 650">
-            <circle
-              cx="325"
-              cy="325"
-              r="220"
-              fill="none"
-              stroke="rgba(99, 102, 241, 0.2)"
-              strokeWidth="1.5"
-              strokeDasharray="6 6"
-            />
-            <circle
-              cx="325"
-              cy="325"
-              r="140"
-              fill="none"
-              stroke="rgba(168, 85, 247, 0.15)"
-              strokeWidth="1"
-            />
-
-            {/* Connecting rays to nodes */}
-            {orbitNodes.map((n, idx) => {
-              const rad = (n.angle * Math.PI) / 180;
-              const x2 = 325 + Math.cos(rad) * n.distance;
-              const y2 = 325 + Math.sin(rad) * n.distance;
-              return (
-                <line
-                  key={idx}
-                  x1="325"
-                  y1="325"
-                  x2={x2}
-                  y2={y2}
-                  stroke="rgba(129, 140, 248, 0.3)"
-                  strokeWidth="1.2"
-                  strokeDasharray="4 4"
-                />
-              );
-            })}
-          </svg>
-
-          {/* Central Codovate Node */}
-          <div className="orbit-center-node z-20 p-6 rounded-3xl bg-white shadow-[0_12px_40px_rgba(79,70,229,0.2)] border-2 border-indigo-200/90 flex flex-col items-center gap-2 max-w-[190px]">
-            <Logo size="md" />
-            <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 text-[10px] font-bold">
-              <Sparkles className="w-3 h-3 text-amber-500 animate-pulse" />
-              <span>AI Core Hub</span>
+        {/* Central Core & Orbit Network Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Central AI Hub Banner (Spans full width on top) */}
+          <div className="md:col-span-3 p-8 rounded-3xl bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 text-white shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="space-y-2 max-w-xl text-center md:text-left">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 text-white text-xs font-bold backdrop-blur-md">
+                <Cpu className="w-3.5 h-3.5 text-amber-300" />
+                <span>Central Codovate Core Engine</span>
+              </div>
+              <h3 className="text-2xl font-extrabold tracking-tight">AI-Powered Performance Synchronization</h3>
+              <p className="text-indigo-100 text-xs sm:text-sm">
+                Every problem you solve, project you ship, and mock interview you complete continuously updates your career readiness score.
+              </p>
+            </div>
+            <div className="shrink-0 flex items-center justify-center w-20 h-20 rounded-3xl bg-white/15 backdrop-blur-md border border-white/20 shadow-inner">
+              <Cpu className="w-10 h-10 text-white animate-pulse" />
             </div>
           </div>
 
-          {/* Rotating Outer Nodes Container */}
-          <div className="orbit-spin-wrapper absolute inset-0 w-full h-full pointer-events-none">
-            {orbitNodes.map((node, i) => {
-              const rad = (node.angle * Math.PI) / 180;
-              const left = 325 + Math.cos(rad) * node.distance - 65;
-              const top = 325 + Math.sin(rad) * node.distance - 30;
-              const IconComp = node.icon;
-
-              return (
-                <div
-                  key={i}
-                  className="orbit-outer-node absolute pointer-events-auto"
-                  style={{ left: `${left}px`, top: `${top}px` }}
-                >
-                  <div className="orbit-node-inner px-3 py-2 rounded-2xl bg-white/95 backdrop-blur-md border shadow-md flex items-center gap-2 transition-transform hover:scale-110 cursor-pointer">
-                    <div className={`w-8 h-8 rounded-xl border flex items-center justify-center ${node.color}`}>
-                      <IconComp className="w-4 h-4" />
-                    </div>
-                    <span className="text-xs font-bold text-slate-800 tracking-tight whitespace-nowrap">
-                      {node.label}
-                    </span>
-                  </div>
+          {/* 6 Connected Orbit Nodes */}
+          {ecosystemNodes.map((n, i) => {
+            const Icon = n.icon;
+            return (
+              <div
+                key={i}
+                className="eco-node-card p-6 rounded-3xl bg-white/90 dark:bg-[#111522]/90 backdrop-blur-md border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:border-indigo-300 dark:hover:border-indigo-700 transition-all duration-300 space-y-3"
+              >
+                <div className="w-10 h-10 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+                  <Icon className="w-5 h-5" />
                 </div>
-              );
-            })}
-          </div>
+                <div>
+                  <h4 className="text-base font-bold text-slate-900 dark:text-white">{n.name}</h4>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{n.desc}</p>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </section>

@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Users, FolderCheck, BookOpenCheck, TrendingUp } from 'lucide-react';
+import { Target, Trophy, Flame, Code2 } from 'lucide-react';
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger);
@@ -11,77 +11,24 @@ const StatsSection = () => {
   const sectionRef = useRef(null);
 
   const stats = [
-    {
-      id: 'stat-1',
-      icon: Users,
-      value: 50000,
-      suffix: '+',
-      label: 'Active Learners',
-      desc: 'Coding daily on Codovate',
-      color: 'text-indigo-600 bg-indigo-50 border-indigo-100',
-    },
-    {
-      id: 'stat-2',
-      icon: FolderCheck,
-      value: 120000,
-      suffix: '+',
-      label: 'Projects Built',
-      desc: 'Shipped to live web apps',
-      color: 'text-purple-600 bg-purple-50 border-purple-100',
-    },
-    {
-      id: 'stat-3',
-      icon: BookOpenCheck,
-      value: 350,
-      suffix: '+',
-      label: 'Learning Modules',
-      desc: 'DSA, System Design & AI',
-      color: 'text-blue-600 bg-blue-50 border-blue-100',
-    },
-    {
-      id: 'stat-4',
-      icon: TrendingUp,
-      value: 98,
-      suffix: '%',
-      label: 'Career Placement Rate',
-      desc: 'Within 6 months of completion',
-      color: 'text-emerald-600 bg-emerald-50 border-emerald-100',
-    },
+    { label: 'Structured Skill Modules', val: 120, suffix: '+', icon: Code2, color: 'text-indigo-600 dark:text-indigo-400' },
+    { label: 'Production Projects', val: 45, suffix: '+', icon: Target, color: 'text-purple-600 dark:text-purple-400' },
+    { label: 'Skill Assessments', val: 85, suffix: '+', icon: Trophy, color: 'text-blue-600 dark:text-blue-400' },
+    { label: 'Daily Coding Streak', val: 365, suffix: ' Days', icon: Flame, color: 'text-amber-500' },
   ];
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // Cards rise into position
-      gsap.from('.stat-card', {
-        y: 35,
+      gsap.from('.stat-card-item', {
+        y: 25,
         opacity: 0,
-        duration: 0.7,
-        stagger: 0.15,
+        duration: 0.6,
+        stagger: 0.12,
         ease: 'power3.out',
         scrollTrigger: {
           trigger: sectionRef.current,
-          start: 'top 80%',
+          start: 'top 85%',
         },
-      });
-
-      // Animated Number counters
-      stats.forEach((s) => {
-        const obj = { val: 0 };
-        const el = document.getElementById(s.id);
-        if (!el) return;
-
-        gsap.to(obj, {
-          val: s.value,
-          duration: 2.2,
-          ease: 'power2.out',
-          scrollTrigger: {
-            trigger: sectionRef.current,
-            start: 'top 80%',
-          },
-          onUpdate: () => {
-            el.innerText = Math.floor(obj.val).toLocaleString() + s.suffix;
-          },
-        });
       });
     }, sectionRef);
 
@@ -89,34 +36,31 @@ const StatsSection = () => {
   }, []);
 
   return (
-    <section ref={sectionRef} className="py-12 md:py-16 relative z-10">
+    <section ref={sectionRef} className="py-10 sm:py-12 relative z-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {stats.map((s) => {
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+          {stats.map((s, idx) => {
             const Icon = s.icon;
             return (
               <div
-                key={s.id}
-                className="stat-card p-6 rounded-3xl bg-white/90 backdrop-blur-md border border-slate-200/80 shadow-sm hover:shadow-md hover:border-indigo-200 transition-all duration-300 group"
+                key={idx}
+                className="stat-card-item p-6 rounded-3xl bg-white/90 dark:bg-[#111522]/90 backdrop-blur-md border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md transition-all duration-300 space-y-3"
               >
-                <div className="flex items-center justify-between mb-4">
-                  <div className={`w-12 h-12 rounded-2xl border flex items-center justify-center ${s.color}`}>
-                    <Icon className="w-6 h-6" />
+                <div className="flex items-center justify-between">
+                  <div className={`p-2.5 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 ${s.color}`}>
+                    <Icon className="w-5 h-5" />
                   </div>
-                  <span className="text-[10px] font-bold tracking-wider uppercase text-slate-400 bg-slate-100 px-2.5 py-1 rounded-full">
-                    Verified Metric
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
+                    Active
                   </span>
                 </div>
 
-                <div className="space-y-1">
-                  <h3
-                    id={s.id}
-                    className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight font-mono"
-                  >
-                    0{s.suffix}
-                  </h3>
-                  <p className="text-sm font-bold text-slate-800">{s.label}</p>
-                  <p className="text-xs text-slate-500">{s.desc}</p>
+                <div>
+                  <div className="text-2xl sm:text-4xl font-extrabold text-slate-900 dark:text-white font-mono tracking-tight">
+                    {s.val}
+                    <span className="text-indigo-600 dark:text-indigo-400">{s.suffix}</span>
+                  </div>
+                  <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-1">{s.label}</p>
                 </div>
               </div>
             );

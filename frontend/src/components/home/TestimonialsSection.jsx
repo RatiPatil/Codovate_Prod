@@ -52,7 +52,6 @@ const TestimonialsSection = () => {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // Horizontal subtle track scroll movement
       gsap.to(trackRef.current, {
         x: '-20%',
         ease: 'none',
@@ -69,27 +68,27 @@ const TestimonialsSection = () => {
   }, []);
 
   return (
-    <section ref={sectionRef} className="py-24 md:py-32 relative z-10 overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+    <section ref={sectionRef} className="py-14 sm:py-16 md:py-20 relative z-10 overflow-hidden">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
         {/* Section Header */}
-        <div className="text-center max-w-2xl mx-auto space-y-4">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 text-xs font-semibold">
+        <div className="text-center max-w-2xl mx-auto space-y-3">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 text-xs font-semibold">
             <MessageSquare className="w-3.5 h-3.5" />
             <span>Learner Experience</span>
           </div>
-          <h2 className="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight">
+          <h2 className="text-3xl sm:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-tight">
             What Our Learners Say.{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 dark:from-blue-400 dark:via-indigo-400 dark:to-purple-400">
               Real Impact.
             </span>
           </h2>
-          <p className="text-slate-600 text-base">
+          <p className="text-slate-600 dark:text-slate-300 text-base">
             Ambitious engineering students using Codovate to structure their learning, build projects, and prepare for tech careers.
           </p>
         </div>
 
-        {/* Scroll-Linked Horizontal Cards Track */}
-        <div className="relative overflow-x-auto pb-6 pt-2 scrollbar-none">
+        {/* Horizontal Scroll Cards Track */}
+        <div className="relative overflow-x-auto pb-4 pt-1 scrollbar-none">
           <div
             ref={trackRef}
             className="flex gap-6 w-max px-4 transition-transform duration-300 ease-out"
@@ -97,7 +96,7 @@ const TestimonialsSection = () => {
             {testimonials.map((t, i) => (
               <div
                 key={i}
-                className="w-[320px] sm:w-[380px] p-7 rounded-3xl bg-white/95 backdrop-blur-md border border-slate-200/90 shadow-md hover:shadow-xl hover:border-indigo-200 transition-all duration-300 flex flex-col justify-between space-y-6"
+                className="w-[320px] sm:w-[380px] p-7 rounded-3xl bg-white/95 dark:bg-[#111522]/95 backdrop-blur-md border border-slate-200/90 dark:border-slate-800 shadow-md hover:shadow-xl hover:border-indigo-200 dark:hover:border-indigo-800 transition-all duration-300 flex flex-col justify-between space-y-6"
               >
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
@@ -106,24 +105,24 @@ const TestimonialsSection = () => {
                         <Star key={r} className="w-4 h-4 fill-amber-400" />
                       ))}
                     </div>
-                    <Quote className="w-6 h-6 text-indigo-200" />
+                    <Quote className="w-6 h-6 text-indigo-200 dark:text-indigo-900" />
                   </div>
 
-                  <p className="text-xs sm:text-sm text-slate-700 leading-relaxed italic">
+                  <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed italic">
                     "{t.quote}"
                   </p>
                 </div>
 
-                <div className="pt-4 border-t border-slate-100 flex items-center gap-3.5">
+                <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center gap-3.5">
                   <img
                     src={t.avatar}
                     alt={t.name}
-                    className="w-11 h-11 rounded-full object-cover border-2 border-indigo-100 shadow-xs"
+                    className="w-11 h-11 rounded-full object-cover border-2 border-indigo-100 dark:border-indigo-900 shadow-xs"
                   />
                   <div>
-                    <h4 className="text-sm font-bold text-slate-900">{t.name}</h4>
-                    <p className="text-xs font-semibold text-indigo-600">{t.role}</p>
-                    <p className="text-[11px] text-slate-400 font-semibold">{t.tag}</p>
+                    <h4 className="text-sm font-bold text-slate-900 dark:text-white">{t.name}</h4>
+                    <p className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">{t.role}</p>
+                    <p className="text-[11px] text-slate-400 dark:text-slate-500 font-semibold">{t.tag}</p>
                   </div>
                 </div>
               </div>

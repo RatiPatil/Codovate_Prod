@@ -6,7 +6,15 @@ import Logo from '../common/Logo';
 const StickyNavbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [isDark, setIsDark] = useState(false);
+  const [isDark, setIsDark] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return (
+        document.documentElement.classList.contains('dark') ||
+        localStorage.getItem('theme') === 'dark'
+      );
+    }
+    return false;
+  });
   const [activeDropdown, setActiveDropdown] = useState(null);
 
   useEffect(() => {
@@ -20,6 +28,20 @@ const StickyNavbar = () => {
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const toggleTheme = () => {
+    const nextIsDark = !isDark;
+    setIsDark(nextIsDark);
+    if (nextIsDark) {
+      document.documentElement.classList.add('dark');
+      document.documentElement.classList.remove('light');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      document.documentElement.classList.add('light');
+      localStorage.setItem('theme', 'light');
+    }
+  };
 
   const navLinks = [
     {
@@ -72,16 +94,16 @@ const StickyNavbar = () => {
         <div
           className={`w-full max-w-7xl transition-all duration-300 flex items-center justify-between px-6 py-2.5 ${
             isScrolled
-              ? 'bg-white/90 backdrop-blur-xl border border-slate-200/80 shadow-[0_8px_30px_rgba(0,0,0,0.06)] rounded-full py-2'
-              : 'bg-white/70 backdrop-blur-md border border-slate-200/40 rounded-full shadow-xs'
+              ? 'bg-white/90 dark:bg-[#0E121E]/90 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800 shadow-[0_8px_30px_rgba(0,0,0,0.06)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.4)] rounded-full py-2'
+              : 'bg-white/70 dark:bg-[#080A12]/70 backdrop-blur-md border border-slate-200/40 dark:border-slate-800/50 rounded-full shadow-xs'
           }`}
         >
-          {/* LEFT: Small Codovate Logo */}
+          {/* LEFT: Codovate Logo (Automatically switches light/dark logo variant) */}
           <Link to="/" className="flex items-center gap-2 group shrink-0">
-            <Logo variant="light" size="xs" />
+            <Logo variant={isDark ? 'dark' : 'light'} size="xs" />
           </Link>
 
-          {/* CENTER: Navigation items matching reference */}
+          {/* CENTER: Navigation items */}
           <nav className="hidden md:flex items-center gap-8">
             {navLinks.map((link) => (
               <div
@@ -92,22 +114,22 @@ const StickyNavbar = () => {
               >
                 <a
                   href={link.href}
-                  className="flex items-center gap-1 text-sm font-semibold text-slate-700 hover:text-indigo-600 transition-colors py-1"
+                  className="flex items-center gap-1 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors py-1"
                 >
                   <span>{link.name}</span>
                   {link.hasDropdown && (
-                    <ChevronDown className="w-3.5 h-3.5 text-slate-400 group-hover:text-indigo-600 transition-transform duration-200 group-hover:rotate-180" />
+                    <ChevronDown className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-transform duration-200 group-hover:rotate-180" />
                   )}
                 </a>
 
                 {/* Dropdown Menu */}
                 {link.hasDropdown && activeDropdown === link.name && (
-                  <div className="absolute top-full left-0 mt-2 w-56 p-2 bg-white rounded-2xl border border-slate-200/80 shadow-xl backdrop-blur-xl space-y-1 animate-fadeIn">
+                  <div className="absolute top-full left-0 mt-2 w-56 p-2 bg-white dark:bg-[#111522] rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xl backdrop-blur-xl space-y-1 animate-fadeIn">
                     {link.subItems.map((sub, idx) => (
                       <a
                         key={idx}
                         href={sub.href}
-                        className="block px-3 py-2 text-xs font-semibold text-slate-700 hover:text-indigo-600 hover:bg-indigo-50/70 rounded-xl transition-colors"
+                        className="block px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50/70 dark:hover:bg-indigo-950/50 rounded-xl transition-colors"
                       >
                         {sub.name}
                       </a>
@@ -118,17 +140,17 @@ const StickyNavbar = () => {
             ))}
           </nav>
 
-          {/* RIGHT: Sun Theme Toggle + Gradient Get Started Button */}
+          {/* RIGHT: Sun/Moon Theme Toggle + Gradient Get Started Button */}
           <div className="hidden sm:flex items-center gap-4 shrink-0">
             <button
-              onClick={() => setIsDark(!isDark)}
-              className="p-2 rounded-full text-slate-600 hover:text-indigo-600 hover:bg-slate-100 transition-colors"
+              onClick={toggleTheme}
+              className="p-2 rounded-full text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
               aria-label="Toggle theme"
             >
               {isDark ? (
-                <Moon className="w-4.5 h-4.5 text-slate-600" />
+                <Sun className="w-4.5 h-4.5 text-amber-400" />
               ) : (
-                <Sun className="w-4.5 h-4.5 text-slate-600" />
+                <Moon className="w-4.5 h-4.5 text-slate-600" />
               )}
             </button>
 
@@ -143,7 +165,7 @@ const StickyNavbar = () => {
           {/* Mobile Menu Toggle Button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors"
+            className="md:hidden p-2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 transition-colors"
             aria-label="Toggle mobile menu"
           >
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -153,15 +175,15 @@ const StickyNavbar = () => {
 
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 z-40 md:hidden bg-slate-900/40 backdrop-blur-md pt-20 px-6 pb-8">
-          <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-2xl space-y-4">
-            <div className="flex justify-between items-center pb-4 border-b border-slate-100">
-              <Logo size="xs" />
+        <div className="fixed inset-0 z-40 md:hidden bg-slate-900/40 dark:bg-slate-950/70 backdrop-blur-md pt-20 px-6 pb-8">
+          <div className="bg-white dark:bg-[#111522] rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-2xl space-y-4">
+            <div className="flex justify-between items-center pb-4 border-b border-slate-100 dark:border-slate-800">
+              <Logo size="xs" variant={isDark ? 'dark' : 'light'} />
               <button
-                onClick={() => setIsDark(!isDark)}
-                className="p-2 rounded-full text-slate-600 hover:bg-slate-100"
+                onClick={toggleTheme}
+                className="p-2 rounded-full text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
               >
-                {isDark ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+                {isDark ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-600" />}
               </button>
             </div>
 
@@ -171,19 +193,19 @@ const StickyNavbar = () => {
                   key={link.name}
                   href={link.href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center justify-between px-4 py-3 rounded-xl text-sm font-semibold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
+                  className="flex items-center justify-between px-4 py-3 rounded-xl text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
                 >
                   <span>{link.name}</span>
-                  <ChevronRight className="w-4 h-4 text-slate-400" />
+                  <ChevronRight className="w-4 h-4 text-slate-400 dark:text-slate-500" />
                 </a>
               ))}
             </div>
 
-            <div className="pt-4 border-t border-slate-100 flex flex-col gap-2.5">
+            <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex flex-col gap-2.5">
               <Link
                 to="/login"
                 onClick={() => setMobileMenuOpen(false)}
-                className="w-full text-center py-2.5 rounded-xl border border-slate-200 text-sm font-bold text-slate-700 hover:bg-slate-50"
+                className="w-full text-center py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800"
               >
                 Sign In
               </Link>
