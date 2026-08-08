@@ -5,13 +5,13 @@ import React from 'react';
  * Single Source of Truth for the Codovate brand mark across the entire application.
  */
 const SIZE_MAP = {
-  xs:   'h-7 sm:h-8',    // 28px–32px (Compact fit for top nav bar)
-  sm:   'h-[42px]',      // 42px
-  md:   'h-[56px]',      // 56px
-  lg:   'h-[72px]',      // 72px
-  xl:   'h-[96px]',      // 96px
-  xxl:  'h-[120px]',     // 120px
-  hero: 'h-[140px] sm:h-[180px] lg:h-[210px]',
+  xs:   'h-8 sm:h-9',     // 32px–36px (Slightly larger, premium fit for top nav bar)
+  sm:   'h-[46px]',       // 46px
+  md:   'h-[60px]',       // 60px
+  lg:   'h-[78px]',       // 78px
+  xl:   'h-[104px]',      // 104px
+  xxl:  'h-[130px]',      // 130px
+  hero: 'h-[150px] sm:h-[190px] lg:h-[220px]',
 };
 
 export const CodovateLogo = ({
@@ -22,7 +22,7 @@ export const CodovateLogo = ({
   ...props
 }) => {
   const heightClass = responsive
-    ? 'h-7 sm:h-8 lg:h-9'
+    ? 'h-8 sm:h-9 lg:h-10'
     : (SIZE_MAP[size] || SIZE_MAP.xs);
 
   const logoSrc = variant === 'light' ? '/logo-light.png' : '/logo.png';
