@@ -235,9 +235,31 @@ const ProductDashboardPreview = () => {
           </div>
         </div>
 
-        {/* BOTTOM FADE OVERLAY: Smooth gradient fading the bottom of the card into white */}
-        <div className="absolute bottom-0 left-0 right-0 h-44 bg-gradient-to-b from-transparent via-white/80 to-[#FCFDFF] pointer-events-none rounded-b-[32px]" />
+        {/* 🤍 INTENSE MULTI-LAYERED WHITE FADE OVERLAYS */}
+        {/* Layer 1: Deep Taller Bottom Gradient Fade */}
+        <div className="absolute bottom-0 left-0 right-0 h-64 sm:h-72 bg-gradient-to-b from-transparent via-white/85 to-[#FCFDFF] pointer-events-none rounded-b-[32px] z-10" />
+
+        {/* Layer 2: Bottom-Right Corner Radial White Vignette Fade */}
+        <div
+          className="absolute bottom-0 right-0 w-96 h-96 pointer-events-none z-20 rounded-br-[32px]"
+          style={{
+            background:
+              'radial-gradient(circle at bottom right, rgba(252, 253, 255, 1) 0%, rgba(252, 253, 255, 0.95) 45%, rgba(252, 253, 255, 0.6) 70%, rgba(255, 255, 255, 0) 90%)',
+          }}
+        />
+
+        {/* Layer 3: Bottom-Left Corner Radial White Vignette Fade */}
+        <div
+          className="absolute bottom-0 left-0 w-96 h-96 pointer-events-none z-20 rounded-bl-[32px]"
+          style={{
+            background:
+              'radial-gradient(circle at bottom left, rgba(252, 253, 255, 1) 0%, rgba(252, 253, 255, 0.95) 45%, rgba(252, 253, 255, 0.6) 70%, rgba(255, 255, 255, 0) 90%)',
+          }}
+        />
       </div>
+
+      {/* Layer 4: Outer Bottom Transition Fade directly into the section below */}
+      <div className="absolute -bottom-10 inset-x-0 h-40 bg-gradient-to-b from-transparent via-[#FCFDFF]/90 to-[#FCFDFF] pointer-events-none z-30" />
     </div>
   );
 };
