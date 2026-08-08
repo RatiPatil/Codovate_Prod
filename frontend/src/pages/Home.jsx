@@ -1,23 +1,30 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import HeroSection from '../components/home/HeroSection';
-import PublicStats from '../components/home/PublicStats';
-import PlatformFeatures from '../components/home/PlatformFeatures';
-import TeamsSpotlight from '../components/home/TeamsSpotlight';
-import OpportunitiesPreview from '../components/home/OpportunitiesPreview';
-import LearningPreview from '../components/home/LearningPreview';
-import ResumeSpotlight from '../components/home/ResumeSpotlight';
-import JourneySection from '../components/home/JourneySection';
-import WhyCodovateSection from '../components/home/WhyCodovateSection';
+import AnimatedAtmosphere from '../components/home/AnimatedAtmosphere';
+import OrbitalSystem from '../components/home/OrbitalSystem';
+import StickyNavbar from '../components/home/StickyNavbar';
+import HeroSectionV2 from '../components/home/HeroSectionV2';
+import TrustSection from '../components/home/TrustSection';
+import StatsSection from '../components/home/StatsSection';
+import ConnectedOrbitSection from '../components/home/ConnectedOrbitSection';
+import FeaturesGrid from '../components/home/FeaturesGrid';
+import LearningTabsSection from '../components/home/LearningTabsSection';
+import CodeEditorPreview from '../components/home/CodeEditorPreview';
+import ProjectsSection from '../components/home/ProjectsSection';
+import RoadmapSection from '../components/home/RoadmapSection';
+import FreeResourcesSection from '../components/home/FreeResourcesSection';
+import MentorsSection from '../components/home/MentorsSection';
+import TestimonialsSection from '../components/home/TestimonialsSection';
+import FAQSection from '../components/home/FAQSection';
 import FinalCTA from '../components/home/FinalCTA';
-import HomeFooter from '../components/home/HomeFooter';
+import FooterV2 from '../components/home/FooterV2';
 
 const Home = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  // Auto-redirect if already logged in
+  // Auto-redirect if user is logged in
   useEffect(() => {
     if (user) {
       const adminRoles = ['super_admin', 'admin', 'college_admin', 'company_admin', 'mentor'];
@@ -34,23 +41,36 @@ const Home = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white text-slate-900 selection:bg-blue-100 selection:text-blue-700 font-sans antialiased">
-      {/* Main Content Sections */}
-      <main>
-        <HeroSection />
-        <PublicStats />
-        <PlatformFeatures />
-        <TeamsSpotlight />
-        <OpportunitiesPreview />
-        <LearningPreview />
-        <ResumeSpotlight />
-        <JourneySection />
-        <WhyCodovateSection />
+    <div className="relative min-h-screen bg-[#FCFDFF] text-slate-900 selection:bg-indigo-100 selection:text-indigo-700 font-sans antialiased overflow-x-hidden">
+      {/* 1. Global Animated Atmospheric Glow Container (Layers 1 & 2) */}
+      <AnimatedAtmosphere />
+
+      {/* 2. Floating Curved Orbital System & Icon Nodes */}
+      <OrbitalSystem />
+
+      {/* 3. Sticky Floating Pill Navbar */}
+      <StickyNavbar />
+
+      {/* 4. Continuous Animated Homepage Content Stream */}
+      <main className="relative z-10">
+        <HeroSectionV2 />
+        <TrustSection />
+        <StatsSection />
+        <ConnectedOrbitSection />
+        <FeaturesGrid />
+        <LearningTabsSection />
+        <CodeEditorPreview />
+        <ProjectsSection />
+        <RoadmapSection />
+        <FreeResourcesSection />
+        <MentorsSection />
+        <TestimonialsSection />
+        <FAQSection />
         <FinalCTA />
       </main>
 
-      {/* Footer */}
-      <HomeFooter />
+      {/* 5. Clean Footer */}
+      <FooterV2 />
     </div>
   );
 };
