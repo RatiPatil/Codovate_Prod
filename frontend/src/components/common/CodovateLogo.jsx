@@ -3,40 +3,27 @@ import React from 'react';
 /**
  * CodovateLogo — Canonical Global Logo Component
  * Single Source of Truth for the Codovate brand mark across the entire application.
- *
- * Size Breakdowns:
- *   xs  — 36px  (Top nav bar / compact headers)
- *   sm  — 64px  (Mobile: ~58–70px)
- *   md  — 80px  (Tablet: ~72–85px)
- *   lg  — 96px  (Laptop: ~90–100px)
- *   xl  — 102px (Desktop: ~96–105px)
- *   xxl — 120px (Splash / Hero screens)
- *   hero — ~180-230px (Centered Hero screen)
- *
- * variant:
- *   'dark'  (Default: White wordmark for dark backgrounds)
- *   'light' (Dark navy wordmark for white/light backgrounds)
  */
 const SIZE_MAP = {
-  xs:   'h-9',           // 36px
-  sm:   'h-[64px]',      // 64px
-  md:   'h-[80px]',      // 80px
-  lg:   'h-[96px]',      // 96px
-  xl:   'h-[102px]',     // 102px
+  xs:   'h-7 sm:h-8',    // 28px–32px (Compact fit for top nav bar)
+  sm:   'h-[42px]',      // 42px
+  md:   'h-[56px]',      // 56px
+  lg:   'h-[72px]',      // 72px
+  xl:   'h-[96px]',      // 96px
   xxl:  'h-[120px]',     // 120px
-  hero: 'h-[140px] sm:h-[180px] lg:h-[210px]', // Hero centered size (~180-230px width)
+  hero: 'h-[140px] sm:h-[180px] lg:h-[210px]',
 };
 
 export const CodovateLogo = ({
   className = '',
-  size = 'xl',
+  size = 'xs',
   responsive = false,
-  variant = 'dark',
+  variant = 'light',
   ...props
 }) => {
   const heightClass = responsive
-    ? 'h-[64px] sm:h-[80px] lg:h-[96px] xl:h-[102px]'
-    : (SIZE_MAP[size] || SIZE_MAP.xl);
+    ? 'h-7 sm:h-8 lg:h-9'
+    : (SIZE_MAP[size] || SIZE_MAP.xs);
 
   const logoSrc = variant === 'light' ? '/logo-light.png' : '/logo.png';
 

@@ -1,16 +1,17 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Sparkles, Menu, X, ArrowRight, Sun, Moon, ChevronRight } from 'lucide-react';
+import { Sun, Moon, ChevronDown, Menu, X, ChevronRight } from 'lucide-react';
 import Logo from '../common/Logo';
 
 const StickyNavbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isDark, setIsDark] = useState(false);
+  const [activeDropdown, setActiveDropdown] = useState(null);
 
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 30) {
+      if (window.scrollY > 20) {
         setIsScrolled(true);
       } else {
         setIsScrolled(false);
@@ -21,72 +22,121 @@ const StickyNavbar = () => {
   }, []);
 
   const navLinks = [
-    { name: 'Learn', href: '#learning' },
-    { name: 'Build', href: '#projects' },
-    { name: 'Practice', href: '#practice' },
-    { name: 'Career', href: '#roadmap' },
-    { name: 'Resources', href: '#resources' },
+    {
+      name: 'Courses',
+      href: '#learning',
+      hasDropdown: true,
+      subItems: [
+        { name: 'Data Structures & Algorithms', href: '#learning' },
+        { name: 'Full-Stack Web Development', href: '#learning' },
+        { name: 'AI & Machine Learning', href: '#learning' },
+        { name: 'System Design Masterclass', href: '#learning' },
+      ],
+    },
+    {
+      name: 'Explore',
+      href: '#orbit-core',
+      hasDropdown: true,
+      subItems: [
+        { name: 'AI Career Roadmap', href: '#roadmap' },
+        { name: 'Production Project Hub', href: '#projects' },
+        { name: 'Open Access Library', href: '#resources' },
+        { name: 'Mentor Network', href: '#mentors' },
+      ],
+    },
+    {
+      name: 'Practice',
+      href: '#practice',
+      hasDropdown: true,
+      subItems: [
+        { name: 'Interactive Browser IDE', href: '#practice' },
+        { name: 'Skill Diagnostic Tests', href: '#features' },
+        { name: 'AI Mock Interviews', href: '#features' },
+        { name: 'Developer Challenges', href: '#resources' },
+      ],
+    },
+    {
+      name: 'Pricing',
+      href: '#faq',
+      hasDropdown: false,
+    },
   ];
 
   return (
     <>
       <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-out flex justify-center ${
-          isScrolled ? 'py-3 px-4' : 'py-5 px-6'
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-out flex justify-center ${
+          isScrolled ? 'py-2 px-4 sm:px-8' : 'py-3.5 px-6 sm:px-12'
         }`}
       >
         <div
-          className={`w-full max-w-7xl transition-all duration-500 rounded-full flex items-center justify-between px-5 py-2.5 ${
+          className={`w-full max-w-7xl transition-all duration-300 flex items-center justify-between px-6 py-2.5 ${
             isScrolled
-              ? 'bg-white/85 backdrop-blur-xl border border-slate-200/80 shadow-[0_8px_32px_rgba(79,70,229,0.08)] py-2'
-              : 'bg-white/40 backdrop-blur-md border border-slate-200/40 shadow-xs'
+              ? 'bg-white/90 backdrop-blur-xl border border-slate-200/80 shadow-[0_8px_30px_rgba(0,0,0,0.06)] rounded-full py-2'
+              : 'bg-white/70 backdrop-blur-md border border-slate-200/40 rounded-full shadow-xs'
           }`}
         >
-          {/* Left: Codovate Logo */}
+          {/* LEFT: Small Codovate Logo */}
           <Link to="/" className="flex items-center gap-2 group shrink-0">
-            <Logo responsive variant="light" size="sm" />
-            <span className="hidden sm:inline-block text-[10px] font-bold tracking-widest uppercase px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-600 border border-indigo-100/80">
-              AI Core
-            </span>
+            <Logo variant="light" size="xs" />
           </Link>
 
-          {/* Center: Navigation Links */}
-          <nav className="hidden md:flex items-center gap-1 bg-slate-100/70 p-1 rounded-full border border-slate-200/50">
+          {/* CENTER: Navigation items matching reference */}
+          <nav className="hidden md:flex items-center gap-8">
             {navLinks.map((link) => (
-              <a
+              <div
                 key={link.name}
-                href={link.href}
-                className="text-xs font-semibold text-slate-600 hover:text-indigo-600 px-4 py-1.5 rounded-full transition-all duration-200 hover:bg-white hover:shadow-xs"
+                className="relative group"
+                onMouseEnter={() => link.hasDropdown && setActiveDropdown(link.name)}
+                onMouseLeave={() => setActiveDropdown(null)}
               >
-                {link.name}
-              </a>
+                <a
+                  href={link.href}
+                  className="flex items-center gap-1 text-sm font-semibold text-slate-700 hover:text-indigo-600 transition-colors py-1"
+                >
+                  <span>{link.name}</span>
+                  {link.hasDropdown && (
+                    <ChevronDown className="w-3.5 h-3.5 text-slate-400 group-hover:text-indigo-600 transition-transform duration-200 group-hover:rotate-180" />
+                  )}
+                </a>
+
+                {/* Dropdown Menu */}
+                {link.hasDropdown && activeDropdown === link.name && (
+                  <div className="absolute top-full left-0 mt-2 w-56 p-2 bg-white rounded-2xl border border-slate-200/80 shadow-xl backdrop-blur-xl space-y-1 animate-fadeIn">
+                    {link.subItems.map((sub, idx) => (
+                      <a
+                        key={idx}
+                        href={sub.href}
+                        className="block px-3 py-2 text-xs font-semibold text-slate-700 hover:text-indigo-600 hover:bg-indigo-50/70 rounded-xl transition-colors"
+                      >
+                        {sub.name}
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </div>
             ))}
           </nav>
 
-          {/* Right: Actions */}
-          <div className="hidden sm:flex items-center gap-3 shrink-0">
+          {/* RIGHT: Sun Theme Toggle + Gradient Get Started Button */}
+          <div className="hidden sm:flex items-center gap-4 shrink-0">
             <button
               onClick={() => setIsDark(!isDark)}
-              className="p-2 rounded-full text-slate-500 hover:text-indigo-600 hover:bg-slate-100 transition-colors"
+              className="p-2 rounded-full text-slate-600 hover:text-indigo-600 hover:bg-slate-100 transition-colors"
               aria-label="Toggle theme"
             >
-              {isDark ? <Sun className="w-4 h-4 text-amber-500" /> : <Moon className="w-4 h-4 text-slate-600" />}
+              {isDark ? (
+                <Moon className="w-4.5 h-4.5 text-slate-600" />
+              ) : (
+                <Sun className="w-4.5 h-4.5 text-slate-600" />
+              )}
             </button>
 
             <Link
-              to="/login"
-              className="text-xs font-bold text-slate-700 hover:text-indigo-600 px-3.5 py-2 rounded-full transition-colors"
-            >
-              Sign In
-            </Link>
-
-            <Link
               to="/signup"
-              className="group relative inline-flex items-center gap-1.5 px-4.5 py-2 rounded-full text-xs font-bold text-white bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 bg-[length:200%_auto] hover:bg-[position:right_center] transition-all duration-300 shadow-md shadow-indigo-500/20 hover:shadow-indigo-500/35 hover:-translate-y-0.5"
+              className="inline-flex items-center justify-center px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold text-white bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:opacity-95 shadow-md shadow-indigo-500/20 hover:shadow-indigo-500/35 hover:-translate-y-0.5 transition-all duration-200"
             >
-              <Sparkles className="w-3.5 h-3.5 text-amber-300 animate-pulse" />
-              <span>Get Started</span>
-              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+              Get Started
             </Link>
           </div>
 
@@ -101,15 +151,18 @@ const StickyNavbar = () => {
         </div>
       </header>
 
-      {/* Mobile Menu Drawer Overlay */}
+      {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 z-40 md:hidden bg-slate-900/40 backdrop-blur-md pt-24 px-6 pb-8 transition-opacity">
+        <div className="fixed inset-0 z-40 md:hidden bg-slate-900/40 backdrop-blur-md pt-20 px-6 pb-8">
           <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-2xl space-y-4">
             <div className="flex justify-between items-center pb-4 border-b border-slate-100">
-              <Logo size="sm" />
-              <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-full">
-                AI Platform
-              </span>
+              <Logo size="xs" />
+              <button
+                onClick={() => setIsDark(!isDark)}
+                className="p-2 rounded-full text-slate-600 hover:bg-slate-100"
+              >
+                {isDark ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+              </button>
             </div>
 
             <div className="space-y-1">
@@ -137,10 +190,9 @@ const StickyNavbar = () => {
               <Link
                 to="/signup"
                 onClick={() => setMobileMenuOpen(false)}
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-sm font-bold shadow-lg shadow-indigo-500/25"
+                className="w-full text-center py-3 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white text-sm font-bold shadow-lg shadow-indigo-500/25"
               >
-                <Sparkles className="w-4 h-4 text-amber-300" />
-                <span>Get Started</span>
+                Get Started
               </Link>
             </div>
           </div>
