@@ -1,27 +1,32 @@
 import { useState, useRef, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { gsap } from 'gsap';
 import { useToast } from '../components/ui/ToastProvider';
-import { validateEmail } from '../utils/validators';
 import AuthInput from '../components/auth/AuthInput';
 import AuthLayout from '../components/auth/AuthLayout';
 import AuthBrandPanel from '../components/auth/AuthBrandPanel';
 import Logo from '../components/common/Logo';
-import { sendPasswordResetEmail, fetchSignInMethodsForEmail } from 'firebase/auth';
+import { confirmPasswordReset } from 'firebase/auth';
 import { auth } from '../lib/firebase';
-import { Mail, CheckCircle2, ArrowLeft, KeyRound, ShieldCheck } from 'lucide-react';
+import { Lock, CheckCircle2, ArrowLeft, KeyRound, ShieldCheck } from 'lucide-react';
 
-const ForgotPassword = () => {
-  const [email, setEmail] = useState('');
+const ResetPassword = () => {
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
-  const [touched, setTouched] = useState(false);
   const cardRef = useRef(null);
+
   const { addToast } = useToast();
+  const navigate = useNavigate();
+
+  // Get action code (oobCode) from query parameters
+  const queryParams = new URLSearchParams(window.location.search);
+  const oobCode = queryParams.get('oobCode');
 
   useEffect(() => {
-    document.title = 'Reset Password | Codovate';
+    document.title = 'Create New Password | Codovate';
   }, []);
 
   useEffect(() => {
@@ -37,57 +42,46 @@ const ForgotPassword = () => {
     return () => ctx.revert();
   }, []);
 
-  const emailError = touched ? validateEmail(email) : null;
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setTouched(true);
-    const err = validateEmail(email);
-    if (err) return;
+    if (!newPassword || !confirmPassword) {
+      setError('Please fill in all password fields.');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
+    if (newPassword.length < 6) {
+      setError('Password must be at least 6 characters long.');
+      return;
+    }
+
+    if (!oobCode) {
+      setError('Invalid or expired password reset link. Please request a new link.');
+      return;
+    }
 
     setError('');
     setLoading(true);
 
     try {
-      const normalizedEmail = email.trim().toLowerCase();
-
-      const methods = await fetchSignInMethodsForEmail(auth, normalizedEmail);
-
-      if (methods.includes('google.com')) {
-        setError('This account uses Google Sign-In. Please continue with Google Login.');
-        setLoading(false);
-        return;
-      }
-
-      if (methods.includes('phone')) {
-        setError('This account uses Phone Authentication. Please login using your mobile number.');
-        setLoading(false);
-        return;
-      }
-
-      const actionCodeSettings = {
-        url: `${window.location.origin}/login`,
-        handleCodeInApp: false,
-      };
-
-      await sendPasswordResetEmail(auth, normalizedEmail, actionCodeSettings);
+      await confirmPasswordReset(auth, oobCode, newPassword);
       setSuccess(true);
       addToast({
         type: 'success',
-        title: 'Email Sent',
-        message: 'Password reset link has been sent to your email.',
+        title: 'Password Updated',
+        message: 'Your password has been updated successfully.',
       });
     } catch (err) {
       console.error(err);
-      let msg = 'Something went wrong. Please check your connection and try again.';
-      if (err.code === 'auth/user-not-found') msg = 'No account found with this email address.';
-      else if (err.code === 'auth/invalid-email') msg = 'Please enter a valid email address.';
-      else if (err.code === 'auth/network-request-failed') msg = 'Network error. Please check your internet connection.';
-      else if (err.code === 'auth/too-many-requests') msg = 'Too many requests. Please try again later.';
-      else if (err.code === 'auth/operation-not-allowed') msg = 'Password reset is disabled. Please contact support.';
+      let msg = 'Something went wrong. Please request a new password reset link.';
+      if (err.code === 'auth/expired-action-code') msg = 'This password reset link has expired. Please request a new link.';
+      else if (err.code === 'auth/invalid-action-code') msg = 'Invalid or already used reset link. Please request a new link.';
+      else if (err.code === 'auth/weak-password') msg = 'Password is too weak. Please use at least 6 characters.';
 
       setError(msg);
-      addToast({ type: 'error', title: 'Reset Link Failed', message: msg });
+      addToast({ type: 'error', title: 'Update Failed', message: msg });
     } finally {
       setLoading(false);
     }
@@ -95,24 +89,19 @@ const ForgotPassword = () => {
 
   const brandPanel = (
     <AuthBrandPanel
-      badge="Password Recovery"
-      title="Securely Reset Your Codovate Password."
-      subtitle="We will send a secure time-sensitive reset link directly to your registered email address."
+      badge="Account Credentials"
+      title="Create Your New Codovate Password."
+      subtitle="Choose a strong password to protect your projects, learning tracks, and career opportunities."
       benefits={[
         {
           icon: KeyRound,
-          title: 'Encrypted & Secure',
-          desc: '100% encrypted Firebase password reset token',
-        },
-        {
-          icon: Mail,
-          title: 'Instant Delivery',
-          desc: 'Reset instructions arrive directly in your inbox',
+          title: 'Strong Password Policy',
+          desc: 'Minimum 6 characters with encryption',
         },
         {
           icon: ShieldCheck,
-          title: 'Account Protection',
-          desc: 'Keep your projects, roadmaps, and profile safe',
+          title: 'Secure Account Recovery',
+          desc: 'Instant updates to your Firebase credentials',
         },
       ]}
     />
@@ -132,18 +121,18 @@ const ForgotPassword = () => {
         ref={cardRef}
         className="w-full max-w-md bg-white/95 dark:bg-[#111522]/95 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-7 sm:p-9 shadow-xl dark:shadow-[0_20px_60px_rgba(0,0,0,0.5)] backdrop-blur-xl space-y-6 relative overflow-hidden transition-colors"
       >
-        {/* Card Header Icon & Copy */}
+        {/* Card Header */}
         <div className="space-y-3">
           <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
-            <KeyRound className="w-6 h-6" />
+            <Lock className="w-6 h-6" />
           </div>
 
           <div>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-              Reset Your Password
+              Create New Password
             </h2>
             <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-              Enter your registered email address and we'll send you a secure password reset link.
+              Enter your new password below to update your Codovate account credentials.
             </p>
           </div>
         </div>
@@ -167,9 +156,11 @@ const ForgotPassword = () => {
             </div>
 
             <div className="space-y-1">
-              <h3 className="text-slate-900 dark:text-white font-extrabold text-lg">Check Your Inbox</h3>
+              <h3 className="text-slate-900 dark:text-white font-extrabold text-lg">
+                Password Updated Successfully
+              </h3>
               <p className="text-slate-500 dark:text-slate-400 text-xs leading-relaxed">
-                We've sent a password reset link to <strong className="text-slate-800 dark:text-slate-200">{email}</strong>. Please check your inbox and spam folder.
+                Your password has been reset. You can now continue to sign in with your new password.
               </p>
             </div>
 
@@ -177,29 +168,39 @@ const ForgotPassword = () => {
               to="/login"
               className="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white font-bold text-xs sm:text-sm shadow-md block text-center hover:opacity-95 transition-opacity"
             >
-              Return to Sign In
+              Continue to Sign In
             </Link>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4" noValidate>
             <AuthInput
-              id="forgot-email"
-              label="Email Address"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              onBlur={() => setTouched(true)}
-              placeholder="name@example.com"
-              error={emailError}
-              success={touched && !emailError && !!email}
-              autoComplete="email"
+              id="reset-new-password"
+              label="New Password"
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              placeholder="••••••••"
+              autoComplete="new-password"
               disabled={loading}
-              icon={Mail}
+              icon={Lock}
+            />
+
+            <AuthInput
+              id="reset-confirm-password"
+              label="Confirm New Password"
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder="••••••••"
+              autoComplete="new-password"
+              error={confirmPassword !== '' && newPassword !== confirmPassword ? 'Passwords do not match' : null}
+              disabled={loading}
+              icon={Lock}
             />
 
             <button
               type="submit"
-              disabled={loading || (touched && !!emailError)}
+              disabled={loading}
               className="
                 w-full py-3.5 px-6 rounded-xl
                 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600
@@ -213,10 +214,10 @@ const ForgotPassword = () => {
               {loading ? (
                 <span className="flex items-center gap-2">
                   <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-                  <span>Sending Reset Link...</span>
+                  <span>Updating Password...</span>
                 </span>
               ) : (
-                <span>Send Reset Link</span>
+                <span>Update Password</span>
               )}
             </button>
           </form>
@@ -237,4 +238,4 @@ const ForgotPassword = () => {
   );
 };
 
-export default ForgotPassword;
+export default ResetPassword;

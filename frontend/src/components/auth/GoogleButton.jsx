@@ -1,33 +1,29 @@
+import React from 'react';
+
 /**
- * GoogleButton — Reusable Google Sign-In button with official branding.
- * 
- * Props:
- *  - onClick (fn) — handler for Google auth
- *  - loading (bool) — shows spinner
- *  - disabled (bool)
- *  - label (string) — button text (default: "Continue with Google")
+ * GoogleButton — Reusable Google Sign-In button with official branding & dark mode support.
  */
-const GoogleButton = ({ onClick, loading = false, disabled = false, label = 'Google' }) => {
+const GoogleButton = ({ onClick, loading = false, disabled = false, label = 'Continue with Google' }) => {
   return (
     <button
       type="button"
       onClick={onClick}
       disabled={disabled || loading}
       className="
-        flex items-center justify-center gap-2.5 w-full py-3 px-4
-        bg-white hover:bg-slate-50 active:bg-slate-100
+        flex items-center justify-center gap-3 w-full py-3 px-4
+        bg-white hover:bg-slate-50 dark:bg-[#151926] dark:hover:bg-[#1E2436]
         rounded-xl transition-all duration-200
-        text-sm font-semibold text-slate-700
-        shadow-sm hover:shadow border border-slate-200
+        text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200
+        shadow-xs hover:shadow-md border border-slate-200/80 dark:border-slate-800
         disabled:opacity-50 disabled:cursor-not-allowed
-        focus:outline-none focus:ring-4 focus:ring-indigo-500/10
+        focus:outline-none focus:ring-4 focus:ring-indigo-500/10 active:scale-[0.99]
       "
       aria-label={label}
     >
       {loading ? (
-        <div className="w-4 h-4 border-2 border-slate-300 border-t-indigo-600 rounded-full animate-spin" />
+        <div className="w-4 h-4 border-2 border-slate-300 dark:border-slate-600 border-t-indigo-600 dark:border-t-indigo-400 rounded-full animate-spin" />
       ) : (
-        <svg className="w-5 h-5" viewBox="0 0 48 48" aria-hidden="true">
+        <svg className="w-4.5 h-4.5 shrink-0" viewBox="0 0 48 48" aria-hidden="true">
           <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.73 17.74 9.5 24 9.5z"/>
           <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
           <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>

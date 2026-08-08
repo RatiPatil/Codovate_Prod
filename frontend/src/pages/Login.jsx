@@ -5,21 +5,24 @@ import { useToast } from '../components/ui/ToastProvider';
 import { gsap } from 'gsap';
 import { getFirebaseErrorMessage } from '../utils/firebaseErrors';
 import GoogleButton from '../components/auth/GoogleButton';
-import CodovateLogo from '../components/common/CodovateLogo';
-import LoginWorkspaceVisual from '../components/auth/LoginWorkspaceVisual';
-import { Briefcase, Users, BookOpen, Shield } from 'lucide-react';
+import AuthInput from '../components/auth/AuthInput';
+import AuthLayout from '../components/auth/AuthLayout';
+import AuthBrandPanel from '../components/auth/AuthBrandPanel';
+import Logo from '../components/common/Logo';
+import { Mail, Lock, ShieldCheck, ArrowRight, Briefcase, Users, BookOpen } from 'lucide-react';
 
 const Login = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [emailLoading, setEmailLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [errors, setErrors] = useState({});
 
-  const { loginWithGoogle, user } = useAuth();
+  const { loginWithGoogle, loginWithEmail, user } = useAuth();
   const { addToast } = useToast();
   const navigate = useNavigate();
 
-  const logoRef = useRef(null);
-  const formRef = useRef(null);
-  const infoRef = useRef(null);
+  const cardRef = useRef(null);
 
   useEffect(() => {
     document.title = 'Sign In | Codovate';
@@ -37,216 +40,223 @@ const Login = () => {
     }
   }, [user, navigate]);
 
-  // GSAP entrance animations
+  // GSAP entrance animation for Auth Card
   useEffect(() => {
     const ctx = gsap.context(() => {
-      const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
-
-      if (logoRef.current) {
-        tl.fromTo(
-          logoRef.current,
-          { opacity: 0, scale: 0.95, y: 10 },
-          { opacity: 1, scale: 1, y: 0, duration: 0.8 }
-        );
-      }
-
-      if (infoRef.current) {
-        tl.fromTo(
-          infoRef.current.children,
-          { y: 20, opacity: 0 },
-          { y: 0, opacity: 1, duration: 0.6, stagger: 0.1 },
-          '-=0.5'
-        );
-      }
-
-      if (formRef.current) {
-        tl.fromTo(
-          formRef.current,
-          { y: 20, opacity: 0 },
-          { y: 0, opacity: 1, duration: 0.7 },
-          '-=0.6'
+      if (cardRef.current) {
+        gsap.fromTo(
+          cardRef.current,
+          { y: 20, opacity: 0, scale: 0.98 },
+          { y: 0, opacity: 1, scale: 1, duration: 0.7, ease: 'power3.out' }
         );
       }
     });
-
     return () => ctx.revert();
   }, []);
 
-  // ─── Google Login Handler ──────────────────────────────
+  // ─── Google Sign-In Handler ──────────────────────────────
   const handleGoogleLogin = async () => {
     setGoogleLoading(true);
     setErrors({});
     try {
       const resData = await loginWithGoogle();
-
       addToast({
         type: 'success',
-        title: 'Welcome!',
+        title: 'Welcome Back!',
         message: 'Signed in with Google successfully.',
       });
-
       const adminRoles = ['super_admin', 'admin', 'college_admin', 'company_admin', 'mentor'];
-      const targetPath =
-        adminRoles.includes(resData?.user?.role) ? '/admin' : '/dashboard';
-
+      const targetPath = adminRoles.includes(resData?.user?.role) ? '/admin' : '/dashboard';
       navigate(targetPath, { replace: true });
     } catch (err) {
       const msg = getFirebaseErrorMessage(err);
       if (!msg.includes('cancelled')) {
         setErrors({ form: msg });
-        addToast({ type: 'error', title: 'Google Sign-In Failed', message: msg });
+        addToast({ type: 'error', title: 'Sign-In Failed', message: msg });
       }
     } finally {
       setGoogleLoading(false);
     }
   };
 
+  // ─── Email/Password Handler ──────────────────────────────
+  const handleEmailLogin = async (e) => {
+    e.preventDefault();
+    if (!email || !password) {
+      setErrors({ form: 'Please fill in all fields.' });
+      return;
+    }
+
+    setEmailLoading(true);
+    setErrors({});
+    try {
+      if (loginWithEmail) {
+        await loginWithEmail(email, password);
+      }
+      addToast({
+        type: 'success',
+        title: 'Welcome Back!',
+        message: 'Signed in successfully.',
+      });
+      navigate('/dashboard', { replace: true });
+    } catch (err) {
+      const msg = getFirebaseErrorMessage(err);
+      setErrors({ form: msg });
+      addToast({ type: 'error', title: 'Sign-In Failed', message: msg });
+    } finally {
+      setEmailLoading(false);
+    }
+  };
+
+  const brandPanel = (
+    <AuthBrandPanel
+      badge="Welcome Back"
+      title="Continue Building Your Future."
+      subtitle="Access your customized career dashboard, active project workspaces, skill assessments, and mentor networks."
+      benefits={[
+        {
+          icon: Briefcase,
+          title: 'Career Trajectory',
+          desc: 'Track internship applications and recruiter updates',
+        },
+        {
+          icon: Users,
+          title: 'Collaborative Projects',
+          desc: 'Manage microservices & code repos with team tools',
+        },
+        {
+          icon: BookOpen,
+          title: 'Curated Modules',
+          desc: 'Continue your DSA and system design progress',
+        },
+      ]}
+    />
+  );
+
   return (
-    <div className="min-h-screen bg-[#FAFAFC] flex flex-col lg:flex-row font-sans overflow-x-hidden relative text-slate-900">
-      
-      {/* Background Decorative Ambient Dots */}
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-100/40 rounded-full blur-[140px] pointer-events-none z-0" />
-      <div className="absolute bottom-0 left-0 w-[450px] h-[450px] bg-purple-100/40 rounded-full blur-[140px] pointer-events-none z-0" />
+    <AuthLayout brandPanel={brandPanel}>
+      {/* Mobile Top Logo */}
+      <div className="lg:hidden w-full max-w-md mb-6 flex justify-start">
+        <Link to="/">
+          <Logo size="xs" responsive />
+        </Link>
+      </div>
 
-      {/* Grid Pattern Background Overlay */}
+      {/* Main Auth Surface Card */}
       <div
-        className="absolute inset-0 pointer-events-none opacity-[0.035] z-0"
-        style={{
-          backgroundImage: `radial-gradient(#0F172A 1px, transparent 1px)`,
-          backgroundSize: '24px 24px',
-        }}
-      />
-
-      {/* ── LEFT SIDE (45% Split Screen on Desktop) ────────────────────── */}
-      <div className="hidden lg:flex w-full lg:w-[45%] flex-col justify-between p-10 lg:p-14 relative z-10 select-none">
-        
-        {/* Top: Official Codovate Logo (Light Variant) */}
-        <div ref={logoRef} className="pt-2">
-          <Link to="/" className="inline-block focus:outline-none">
-            <CodovateLogo variant="light" size="xl" className="drop-shadow-sm" />
-          </Link>
-        </div>
-
-        {/* Welcome Content */}
-        <div ref={infoRef} className="max-w-md my-auto py-6">
-          
-          <div className="inline-flex items-center px-3.5 py-1.5 rounded-full bg-purple-100/70 border border-purple-200/60 mb-6 backdrop-blur-sm">
-            <span className="text-xs font-bold text-indigo-700 tracking-wide">
-              Welcome to Codovate
-            </span>
-          </div>
-
-          <h1 className="text-4xl lg:text-5xl font-extrabold text-slate-900 leading-[1.15] mb-4 tracking-tight">
-            Sign in to <br />
-            your{' '}
-            <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
-              Codovate
-            </span>
-          </h1>
-
-          <p className="text-slate-500 text-sm lg:text-base leading-relaxed mb-8 font-normal">
-            Access your opportunities, connect with teams, continue learning, and build your future.
-          </p>
-
-          <div className="space-y-4">
-            <div className="flex items-start gap-3.5 group">
-              <div className="w-10 h-10 rounded-xl bg-purple-100/80 text-purple-600 flex items-center justify-center shrink-0 transition-transform group-hover:scale-105">
-                <Briefcase size={18} strokeWidth={2} />
-              </div>
-              <div>
-                <h3 className="text-sm font-bold text-slate-800 leading-tight">
-                  Discover Opportunities
-                </h3>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Find internships, jobs & more
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3.5 group">
-              <div className="w-10 h-10 rounded-xl bg-emerald-100/80 text-emerald-600 flex items-center justify-center shrink-0 transition-transform group-hover:scale-105">
-                <Users size={18} strokeWidth={2} />
-              </div>
-              <div>
-                <h3 className="text-sm font-bold text-slate-800 leading-tight">
-                  Collaborate in Teams
-                </h3>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Connect, build & grow together
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3.5 group">
-              <div className="w-10 h-10 rounded-xl bg-blue-100/80 text-blue-600 flex items-center justify-center shrink-0 transition-transform group-hover:scale-105">
-                <BookOpen size={18} strokeWidth={2} />
-              </div>
-              <div>
-                <h3 className="text-sm font-bold text-slate-800 leading-tight">
-                  Learn & Upskill
-                </h3>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Track progress and achieve goals
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-auto pt-4">
-          <LoginWorkspaceVisual className="w-full" />
-        </div>
-
-      </div>
-
-      {/* ── RIGHT SIDE (55% Split Screen / Form Card) ────────────────────── */}
-      <div className="w-full lg:w-[55%] flex flex-col justify-center items-center p-6 sm:p-10 lg:p-14 relative z-10 min-h-screen lg:min-h-0">
-        
-        <div className="lg:hidden w-full max-w-md mb-6 flex justify-start">
-          <Link to="/">
-            <CodovateLogo variant="light" size="lg" />
-          </Link>
-        </div>
-
-        <div
-          ref={formRef}
-          className="w-full max-w-lg bg-white border border-slate-200/90 rounded-3xl p-8 sm:p-10 shadow-xl shadow-slate-200/50 relative overflow-hidden transition-all duration-300"
-        >
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mb-2">
-            Sign in
+        ref={cardRef}
+        className="w-full max-w-md bg-white/95 dark:bg-[#111522]/95 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-7 sm:p-9 shadow-xl dark:shadow-[0_20px_60px_rgba(0,0,0,0.5)] backdrop-blur-xl space-y-6 relative overflow-hidden transition-colors"
+      >
+        {/* Card Header */}
+        <div className="space-y-1">
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+            Welcome Back
           </h2>
-
-          <p className="text-slate-500 text-sm font-medium mb-8">
-            Sign in with your Google account to get started.
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-normal">
+            Sign in to continue your Codovate journey.
           </p>
-
-          {errors.form && (
-            <div
-              className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm flex items-center gap-3 font-medium auth-fade-in"
-              role="alert"
-            >
-              <span className="text-base">⚠️</span> {errors.form}
-            </div>
-          )}
-
-          <div className="space-y-4">
-            <GoogleButton
-              onClick={handleGoogleLogin}
-              loading={googleLoading}
-              label="Continue with Google"
-            />
-          </div>
-
-          <div className="mt-8 pt-6 border-t border-slate-100 flex items-center justify-center gap-2 text-xs text-slate-400 font-medium text-center">
-            <Shield size={16} className="text-indigo-500 shrink-0" />
-            <span>Your authentication is secure with Google Sign-In.</span>
-          </div>
-
         </div>
 
-      </div>
+        {/* Global Form Error Alert */}
+        {errors.form && (
+          <div
+            className="p-3.5 rounded-2xl bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-xs font-semibold flex items-center gap-2.5 animate-fadeIn"
+            role="alert"
+          >
+            <span className="text-base shrink-0">⚠️</span>
+            <span>{errors.form}</span>
+          </div>
+        )}
 
-    </div>
+        {/* Google Sign-In Button */}
+        <GoogleButton
+          onClick={handleGoogleLogin}
+          loading={googleLoading}
+          label="Continue with Google"
+        />
+
+        {/* Divider */}
+        <div className="relative flex items-center justify-center my-4">
+          <div className="w-full border-t border-slate-200/80 dark:border-slate-800" />
+          <span className="absolute bg-white dark:bg-[#111522] px-3 text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+            OR
+          </span>
+        </div>
+
+        {/* Email / Password Form */}
+        <form onSubmit={handleEmailLogin} className="space-y-4" noValidate>
+          <AuthInput
+            id="login-email"
+            label="Email Address"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="name@example.com"
+            autoComplete="email"
+            disabled={emailLoading || googleLoading}
+            icon={Mail}
+          />
+
+          <AuthInput
+            id="login-password"
+            label="Password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="••••••••"
+            autoComplete="current-password"
+            disabled={emailLoading || googleLoading}
+            icon={Lock}
+          >
+            <div className="flex justify-end pt-1">
+              <Link
+                to="/forgot-password"
+                className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline transition-colors"
+              >
+                Forgot Password?
+              </Link>
+            </div>
+          </AuthInput>
+
+          <button
+            type="submit"
+            disabled={emailLoading || googleLoading}
+            className="
+              w-full py-3.5 px-6 rounded-xl
+              bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600
+              hover:opacity-95 text-white text-xs sm:text-sm font-bold
+              shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/35
+              hover:-translate-y-0.5 active:translate-y-0
+              disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none
+              transition-all duration-200 flex items-center justify-center gap-2 mt-2
+            "
+          >
+            {emailLoading ? (
+              <span className="flex items-center gap-2">
+                <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                <span>Signing you in...</span>
+              </span>
+            ) : (
+              <span className="flex items-center gap-2">
+                <span>Sign In</span>
+                <ArrowRight className="w-4 h-4" />
+              </span>
+            )}
+          </button>
+        </form>
+
+        {/* Security Footer */}
+        <div className="pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+          <span>Don't have an account?</span>
+          <Link
+            to="/signup"
+            className="font-bold text-indigo-600 dark:text-indigo-400 hover:underline transition-colors"
+          >
+            Create Account
+          </Link>
+        </div>
+      </div>
+    </AuthLayout>
   );
 };
 

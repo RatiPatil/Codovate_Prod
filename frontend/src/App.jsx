@@ -23,6 +23,7 @@ const Login = lazy(() => import('./pages/Login'));
 const MentorLogin = lazy(() => import('./pages/MentorLogin'));
 const Signup = lazy(() => import('./pages/Signup'));
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
+const ResetPassword = lazy(() => import('./pages/ResetPassword'));
 const WelcomeExperience = lazy(() => import('./pages/WelcomeExperience'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Opportunities = lazy(() => import('./pages/Opportunities'));
@@ -147,6 +148,7 @@ function App() {
                   <Route path="/admin-login" element={<PublicOnlyRoute><AdminLogin /></PublicOnlyRoute>} />
                   <Route path="/signup" element={<PublicOnlyRoute><Signup /></PublicOnlyRoute>} />
                   <Route path="/forgot-password" element={<PublicOnlyRoute><ForgotPassword /></PublicOnlyRoute>} />
+                  <Route path="/reset-password" element={<PublicOnlyRoute><ResetPassword /></PublicOnlyRoute>} />
 
                   <Route path="/welcome" element={
                     <ProtectedRoute requireOnboarding={false}>

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 /**
- * AuthInput — Reusable form input with validation, password toggle, icon prefixes, and accessible labels.
+ * AuthInput — Reusable form input with validation, password toggle, icon prefixes, and dark mode support.
  */
 const AuthInput = ({
   id,
@@ -24,11 +24,11 @@ const AuthInput = ({
   const inputType = isPassword && showPassword ? 'text' : type;
 
   return (
-    <div className="relative">
+    <div className="relative space-y-1.5">
       {label && (
         <label
           htmlFor={id}
-          className="block text-xs font-semibold text-slate-700 mb-1.5"
+          className="block text-xs font-bold text-slate-700 dark:text-slate-300"
         >
           {label}
         </label>
@@ -36,7 +36,7 @@ const AuthInput = ({
 
       <div className="relative">
         {Icon && (
-          <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+          <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 pointer-events-none">
             <Icon size={18} strokeWidth={1.8} />
           </div>
         )}
@@ -55,17 +55,17 @@ const AuthInput = ({
           aria-invalid={!!error}
           aria-describedby={error ? `${id}-error` : undefined}
           className={`
-            w-full py-3 px-4 text-sm bg-white border rounded-xl text-slate-900 placeholder-slate-400
+            w-full py-3 px-4 text-xs sm:text-sm bg-white dark:bg-[#151926] border rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500
             transition-all duration-200 focus:outline-none
             ${Icon ? 'pl-10' : 'pl-4'}
             ${isPassword ? 'pr-10' : 'pr-4'}
             ${error
-              ? 'border-red-400 focus:border-red-500 focus:ring-4 focus:ring-red-500/10'
+              ? 'border-red-400 dark:border-red-500/80 focus:border-red-500 focus:ring-4 focus:ring-red-500/10'
               : success
-                ? 'border-emerald-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10'
-                : 'border-slate-200 hover:border-slate-300 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10'
+                ? 'border-emerald-400 dark:border-emerald-500/80 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10'
+                : 'border-slate-200/80 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 focus:border-indigo-600 dark:focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/10'
             }
-            ${disabled ? 'opacity-50 cursor-not-allowed bg-slate-50' : ''}
+            ${disabled ? 'opacity-50 cursor-not-allowed bg-slate-50 dark:bg-slate-900' : ''}
           `}
         />
 
@@ -76,7 +76,7 @@ const AuthInput = ({
             <button
               type="button"
               onClick={() => setShowPassword(prev => !prev)}
-              className="text-slate-400 hover:text-slate-600 transition-colors p-0.5"
+              className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors p-0.5"
               tabIndex={-1}
               aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
@@ -110,7 +110,7 @@ const AuthInput = ({
 
       {/* Error message */}
       {error && (
-        <p id={`${id}-error`} className="mt-1.5 text-xs text-red-500 font-medium auth-fade-in" role="alert">
+        <p id={`${id}-error`} className="text-xs text-red-500 font-medium animate-fadeIn" role="alert">
           {error}
         </p>
       )}
@@ -122,4 +122,3 @@ const AuthInput = ({
 };
 
 export default AuthInput;
-
