@@ -65,14 +65,7 @@ const ProductDashboardPreview = () => {
 
   return (
     <div ref={containerRef} className="w-full max-w-6xl mx-auto px-4 relative z-20">
-      {/* Atmosphere Glow Concentration Behind Dashboard Top */}
-      <div
-        className="absolute -top-12 left-1/2 -translate-x-1/2 w-[85%] h-[320px] rounded-full blur-[100px] pointer-events-none opacity-80 dark:opacity-50"
-        style={{
-          background:
-            'radial-gradient(circle, rgba(147, 51, 234, 0.18) 0%, rgba(99, 102, 241, 0.1) 50%, rgba(255, 255, 255, 0) 75%)',
-        }}
-      />
+
 
       {/* Dashboard Preview Surface Card */}
       <div className="relative rounded-[32px] border border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-[#111522]/95 backdrop-blur-xl shadow-[0_20px_60px_rgba(79,70,229,0.08)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.5)] overflow-hidden">

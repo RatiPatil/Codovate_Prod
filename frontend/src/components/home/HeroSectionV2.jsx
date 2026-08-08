@@ -20,6 +20,7 @@ const HeroSectionV2 = () => {
   const ctaRef = useRef(null);
   const proofRef = useRef(null);
   const particlesRef = useRef(null);
+  const heroGlowRef = useRef(null);
 
   const particles = [
     { top: '35%', left: '48%', size: 'w-1 h-1' },
@@ -82,6 +83,7 @@ const HeroSectionV2 = () => {
           '-=0.5'
         );
 
+      // Particle floating loop
       gsap.utils.toArray('.hero-sparkle-dot').forEach((dot, i) => {
         gsap.to(dot, {
           y: '-=25',
@@ -94,6 +96,18 @@ const HeroSectionV2 = () => {
           ease: 'sine.inOut',
           delay: i * 0.15,
         });
+      });
+
+      // Smooth opacity fade out (1 -> 0) on scroll away from Hero, and fade back in (0 -> 1) on scroll back up
+      gsap.to([heroGlowRef.current, particlesRef.current], {
+        opacity: 0,
+        ease: 'power1.out',
+        scrollTrigger: {
+          trigger: heroRef.current,
+          start: 'top top',
+          end: '300px top',
+          scrub: true,
+        },
       });
 
       gsap.to(textContentRef.current, {
@@ -135,6 +149,7 @@ const HeroSectionV2 = () => {
     >
       {/* Concentrated Purple Glow matching dark reference atmosphere */}
       <div
+        ref={heroGlowRef}
         className="absolute top-[48%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[760px] h-[400px] rounded-full blur-[110px] pointer-events-none opacity-90 dark:opacity-75 z-0"
         style={{
           background:

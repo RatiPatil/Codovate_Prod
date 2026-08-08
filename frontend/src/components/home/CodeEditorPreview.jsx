@@ -178,18 +178,7 @@ const CodeEditorPreview = () => {
 
         {/* Editor Container */}
         <div className="relative max-w-4xl mx-auto">
-          {!prefersReducedMotion && (
-            <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
-              <div
-                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[780px] h-[450px] rounded-full blur-[110px] opacity-80 dark:opacity-50 animate-pulse"
-                style={{
-                  background:
-                    'radial-gradient(circle, rgba(168, 85, 247, 0.22) 0%, rgba(129, 140, 248, 0.14) 45%, rgba(99, 102, 241, 0.05) 75%, transparent 90%)',
-                  animationDuration: '9s',
-                }}
-              />
-            </div>
-          )}
+
 
           {/* CODE EDITOR CARD SURFACE */}
           <div
