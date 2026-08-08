@@ -4,22 +4,21 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import {
   LayoutDashboard,
   BookOpen,
-  Compass,
-  FolderGit2,
   Code2,
-  FileText,
-  Briefcase,
   Video,
-  Sparkles,
+  FileText,
+  Compass,
+  Trophy,
   Search,
   Bell,
-  ChevronRight,
+  Sparkles,
   TrendingUp,
-  CheckCircle2,
-  Clock,
-  ArrowUpRight,
-  User,
-  Zap,
+  Flame,
+  ChevronDown,
+  Calendar,
+  Layers,
+  HelpCircle,
+  Award,
 } from 'lucide-react';
 import Logo from '../common/Logo';
 
@@ -29,24 +28,23 @@ if (typeof window !== 'undefined') {
 
 const ProductDashboardPreview = () => {
   const containerRef = useRef(null);
-  const [activeTab, setActiveTab] = useState('Dashboard');
 
   const sidebarNav = [
-    { name: 'Dashboard', icon: LayoutDashboard },
-    { name: 'Learning', icon: BookOpen },
-    { name: 'Roadmap', icon: Compass },
-    { name: 'Projects', icon: FolderGit2 },
-    { name: 'Coding Practice', icon: Code2 },
-    { name: 'Resume', icon: FileText },
-    { name: 'Opportunities', icon: Briefcase },
-    { name: 'Interviews', icon: Video },
+    { name: 'Dashboard', icon: LayoutDashboard, active: true },
+    { name: 'Learning Modules', icon: BookOpen },
+    { name: 'DSA Preparation', icon: Code2 },
+    { name: 'Interview Prep', icon: Video },
+    { name: 'Core Subjects', icon: Layers },
+    { name: 'Project Hub', icon: Compass },
+    { name: 'ATS Resume', icon: FileText },
+    { name: 'Mock Tests', icon: HelpCircle },
   ];
 
   useEffect(() => {
     const ctx = gsap.context(() => {
       gsap.fromTo(
         containerRef.current,
-        { y: 50, scale: 0.95, opacity: 0.9 },
+        { y: 40, scale: 0.96, opacity: 0.9 },
         {
           y: 0,
           scale: 1,
@@ -68,226 +66,177 @@ const ProductDashboardPreview = () => {
 
   return (
     <div ref={containerRef} className="w-full max-w-6xl mx-auto px-4 relative z-20">
-      {/* Subtle Purple Atmospheric Glow Behind Dashboard */}
-      <div className="absolute -inset-4 bg-gradient-to-r from-indigo-500/15 via-purple-500/15 to-indigo-500/10 rounded-[36px] blur-2xl pointer-events-none" />
+      {/* Atmosphere Glow Concentration Behind Dashboard Top */}
+      <div
+        className="absolute -top-12 left-1/2 -translate-x-1/2 w-[85%] h-[320px] rounded-full blur-[100px] pointer-events-none opacity-80"
+        style={{
+          background:
+            'radial-gradient(circle, rgba(147, 51, 234, 0.18) 0%, rgba(99, 102, 241, 0.1) 50%, rgba(255, 255, 255, 0) 75%)',
+        }}
+      />
 
-      {/* Main Dashboard Window Container */}
-      <div className="relative rounded-[28px] border border-slate-200/80 bg-white/95 backdrop-blur-xl shadow-[0_25px_70px_rgba(79,70,229,0.12)] overflow-hidden">
-        {/* Top Window Bar */}
-        <div className="bg-slate-100/90 px-5 py-3 border-b border-slate-200/80 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex gap-1.5">
-              <div className="w-3 h-3 rounded-full bg-rose-400" />
-              <div className="w-3 h-3 rounded-full bg-amber-400" />
-              <div className="w-3 h-3 rounded-full bg-emerald-400" />
-            </div>
-            <span className="text-[11px] font-mono text-slate-400 hidden sm:inline-block">
-              https://codovate.com/dashboard/overview
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-            <span className="text-[11px] font-bold text-slate-600">AI Career Engine Synchronized</span>
-          </div>
-        </div>
-
-        {/* Dashboard Content Grid: Sidebar + Main Workspace */}
-        <div className="grid grid-cols-1 md:grid-cols-12 min-h-[520px]">
-          {/* Sidebar Navigation */}
-          <div className="md:col-span-3 bg-slate-900 text-slate-300 p-4 border-r border-slate-800 flex flex-col justify-between">
-            <div className="space-y-4">
-              <div className="px-2 py-1">
-                <Logo size="sm" variant="dark" />
-              </div>
-
-              <nav className="space-y-1">
-                {sidebarNav.map((item) => {
-                  const Icon = item.icon;
-                  const isActive = activeTab === item.name;
-                  return (
-                    <button
-                      key={item.name}
-                      onClick={() => setActiveTab(item.name)}
-                      className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
-                        isActive
-                          ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md'
-                          : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <Icon className="w-4 h-4" />
-                        <span>{item.name}</span>
-                      </div>
-                      {isActive && <ChevronRight className="w-3.5 h-3.5 text-white/80" />}
-                    </button>
-                  );
-                })}
-              </nav>
+      {/* Dashboard Preview Surface Card */}
+      <div className="relative rounded-[32px] border border-slate-200/80 bg-white/95 backdrop-blur-xl shadow-[0_20px_60px_rgba(79,70,229,0.08)] overflow-hidden">
+        {/* Dashboard Interior Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-12 min-h-[540px]">
+          {/* Left Sidebar */}
+          <div className="md:col-span-3 bg-slate-50/70 p-5 border-r border-slate-200/70 space-y-6">
+            {/* Logo */}
+            <div className="px-2 py-1">
+              <Logo size="xs" variant="light" />
             </div>
 
-            {/* Sidebar User Profile Card */}
-            <div className="p-3 rounded-xl bg-slate-800/80 border border-slate-700/60 flex items-center gap-3 mt-4">
-              <div className="w-8 h-8 rounded-full bg-indigo-500/30 border border-indigo-400/40 flex items-center justify-center text-indigo-300 font-bold text-xs">
-                AS
-              </div>
-              <div className="overflow-hidden text-left">
-                <p className="text-xs font-bold text-white truncate">Aarav Sharma</p>
-                <p className="text-[10px] text-indigo-300">Tier 1 Target • 94% Match</p>
-              </div>
-            </div>
+            {/* Sidebar Items */}
+            <nav className="space-y-1.5">
+              {sidebarNav.map((item, idx) => {
+                const Icon = item.icon;
+                return (
+                  <div
+                    key={idx}
+                    className={`flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
+                      item.active
+                        ? 'bg-slate-200/80 text-slate-900 shadow-xs'
+                        : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100/80'
+                    }`}
+                  >
+                    <Icon className={`w-4 h-4 ${item.active ? 'text-indigo-600' : 'text-slate-400'}`} />
+                    <span>{item.name}</span>
+                  </div>
+                );
+              })}
+            </nav>
           </div>
 
           {/* Main Dashboard Content */}
-          <div className="md:col-span-9 p-6 md:p-8 space-y-6 bg-slate-50/50">
-            {/* Header: Welcome Back */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200/80">
-              <div>
-                <h3 className="text-xl font-extrabold text-slate-900 tracking-tight">
-                  Welcome back, Aarav 👋
-                </h3>
-                <p className="text-xs text-slate-500">
-                  Your AI Career Engine updated 3 new recommended tasks for today.
-                </p>
+          <div className="md:col-span-9 p-6 md:p-8 space-y-6 bg-white relative">
+            {/* Top Toolbar */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <LayoutDashboard className="w-4 h-4 text-slate-400" />
+                <span className="text-xs font-bold text-slate-400">Dashboard</span>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3 flex-wrap">
+                {/* Search */}
                 <div className="relative">
                   <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                   <input
                     type="text"
-                    placeholder="Search modules..."
-                    className="pl-8 pr-3 py-1.5 rounded-full bg-white border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500 w-36 sm:w-48"
+                    placeholder="Search..."
+                    className="pl-8 pr-3 py-1.5 rounded-full bg-slate-100/80 border border-slate-200/60 text-xs text-slate-800 placeholder-slate-400 focus:outline-none w-36 sm:w-44"
                     readOnly
                   />
                 </div>
-                <div className="p-2 rounded-full bg-white border border-slate-200 text-slate-600 relative">
+
+                {/* Notifications */}
+                <div className="p-2 rounded-xl bg-slate-100/80 border border-slate-200/60 text-slate-600">
                   <Bell className="w-4 h-4" />
-                  <span className="w-2 h-2 rounded-full bg-rose-500 absolute top-1 right-1" />
                 </div>
+
+                {/* Live Dashboard Pill */}
+                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100/80 border border-slate-200/60 text-xs font-bold text-slate-700">
+                  <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
+                  <span>Live Dashboard</span>
+                </div>
+
+                {/* Continue Learning CTA */}
+                <button className="px-4 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-xs font-bold text-slate-800 transition-colors">
+                  Continue Learning
+                </button>
               </div>
             </div>
 
-            {/* Top Metrics Row */}
+            {/* Dashboard Title */}
+            <div>
+              <h3 className="text-xl font-extrabold text-slate-900">Dashboard</h3>
+              <p className="text-xs text-slate-400">An exciting exercise is waiting for you</p>
+            </div>
+
+            {/* Statistics Cards Row */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-2">
-                <div className="flex items-center justify-between text-xs text-slate-500">
-                  <span>Learning Progress</span>
-                  <BookOpen className="w-4 h-4 text-indigo-600" />
+              {/* Overall Rank */}
+              <div className="p-4 rounded-2xl bg-slate-50/70 border border-slate-200/60 space-y-2">
+                <div className="flex justify-between items-center text-xs text-slate-500 font-semibold">
+                  <span className="flex items-center gap-1.5">
+                    <Trophy className="w-3.5 h-3.5 text-indigo-600" /> Overall Rank
+                  </span>
+                  <span className="text-slate-400">↗</span>
                 </div>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-2xl font-bold font-mono text-slate-900">88%</span>
-                  <span className="text-[11px] font-bold text-emerald-600 flex items-center">
-                    <TrendingUp className="w-3 h-3 mr-0.5" /> +12% this week
+                  <span className="text-2xl font-extrabold text-slate-900 font-mono">1,341</span>
+                  <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-md">
+                    +2.1% since last month
                   </span>
                 </div>
-                <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-indigo-600 rounded-full w-[88%]" />
+              </div>
+
+              {/* Overall Score */}
+              <div className="p-4 rounded-2xl bg-slate-50/70 border border-slate-200/60 space-y-2">
+                <div className="flex justify-between items-center text-xs text-slate-500 font-semibold">
+                  <span className="flex items-center gap-1.5">
+                    <Award className="w-3.5 h-3.5 text-purple-600" /> Overall Score
+                  </span>
+                  <span className="text-slate-400">↗</span>
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-2xl font-extrabold text-slate-900 font-mono">525</span>
+                  <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-md">
+                    +2.1% since last month
+                  </span>
                 </div>
               </div>
 
-              <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-2">
-                <div className="flex items-center justify-between text-xs text-slate-500">
-                  <span>Career Readiness Score</span>
-                  <Compass className="w-4 h-4 text-purple-600" />
+              {/* Streak */}
+              <div className="p-4 rounded-2xl bg-slate-50/70 border border-slate-200/60 space-y-2">
+                <div className="flex justify-between items-center text-xs text-slate-500 font-semibold">
+                  <span className="flex items-center gap-1.5">
+                    <Flame className="w-3.5 h-3.5 text-amber-500" /> Daily Streak
+                  </span>
+                  <span className="text-slate-400">↗</span>
                 </div>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-2xl font-bold font-mono text-slate-900">94 / 100</span>
-                  <span className="text-[11px] font-bold text-purple-600">Top 3%</span>
-                </div>
-                <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-purple-600 rounded-full w-[94%]" />
-                </div>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-2">
-                <div className="flex items-center justify-between text-xs text-slate-500">
-                  <span>Project Verification</span>
-                  <FolderGit2 className="w-4 h-4 text-emerald-600" />
-                </div>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-2xl font-bold font-mono text-slate-900">4 Verified</span>
-                  <span className="text-[11px] font-bold text-slate-500">Full-Stack RAG</span>
-                </div>
-                <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-emerald-500 rounded-full w-[100%]" />
+                  <span className="text-2xl font-extrabold text-slate-900 font-mono">12 <span className="text-xs text-slate-400 font-sans font-normal">days</span></span>
                 </div>
               </div>
             </div>
 
-            {/* Middle Section: Career Roadmap & Recommended Modules */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-              {/* Left 7 cols: Career Roadmap Progress */}
-              <div className="lg:col-span-7 p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-amber-500" />
-                    <h4 className="text-sm font-bold text-slate-900">Active Target: Full-Stack AI Engineer</h4>
-                  </div>
-                  <span className="px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 text-[10px] font-bold">
-                    Step 4 of 6
-                  </span>
+            {/* Rank & Score Progress Chart Bar */}
+            <div className="p-5 rounded-2xl bg-slate-50/70 border border-slate-200/60 space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div>
+                  <h4 className="text-sm font-bold text-slate-900">Rank & Score Progress</h4>
+                  <p className="text-xs text-slate-400">An exciting exercise is waiting for you</p>
                 </div>
 
-                <div className="space-y-3 pt-1">
-                  <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200/60">
-                    <div className="flex items-center gap-3">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                      <div>
-                        <p className="text-xs font-bold text-slate-800">Advanced Graph Algorithms</p>
-                        <p className="text-[10px] text-slate-500">Dijkstra, Topological Sort & MST</p>
-                      </div>
-                    </div>
-                    <span className="text-[10px] font-mono font-bold text-emerald-600">Completed</span>
-                  </div>
-
-                  <div className="flex items-center justify-between p-3 rounded-xl bg-indigo-50/60 border border-indigo-200/80">
-                    <div className="flex items-center gap-3">
-                      <Zap className="w-4 h-4 text-indigo-600 animate-pulse shrink-0" />
-                      <div>
-                        <p className="text-xs font-bold text-slate-900">System Design: Distributed Cache</p>
-                        <p className="text-[10px] text-indigo-600 font-semibold">Current Focus Task</p>
-                      </div>
-                    </div>
-                    <span className="text-[10px] font-bold bg-indigo-600 text-white px-2.5 py-1 rounded-full">
-                      Continue
-                    </span>
-                  </div>
-
-                  <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200/60 opacity-60">
-                    <div className="flex items-center gap-3">
-                      <Clock className="w-4 h-4 text-slate-400 shrink-0" />
-                      <div>
-                        <p className="text-xs font-bold text-slate-800">Vector Search & RAG Pipelines</p>
-                        <p className="text-[10px] text-slate-500">Pinecone & Embeddings</p>
-                      </div>
-                    </div>
-                    <span className="text-[10px] text-slate-400">Next Up</span>
+                <div className="flex items-center gap-2">
+                  <span className="px-3 py-1 rounded-full bg-purple-50 text-purple-700 text-xs font-bold border border-purple-200">
+                    Your Score
+                  </span>
+                  <div className="flex items-center gap-1 px-3 py-1 rounded-xl bg-white border border-slate-200 text-xs font-semibold text-slate-700">
+                    <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                    <span>This Month</span>
+                    <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
                   </div>
                 </div>
               </div>
 
-              {/* Right 5 cols: Recommended Learning & Opportunities */}
-              <div className="lg:col-span-5 space-y-4">
-                <div className="p-5 rounded-2xl bg-gradient-to-br from-indigo-900 to-slate-900 text-white shadow-md space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400">
-                      Upcoming Opportunity
-                    </span>
-                    <ArrowUpRight className="w-4 h-4 text-slate-400" />
+              {/* Simulated Progress Wave Graph */}
+              <div className="h-28 w-full flex items-end justify-between gap-2 pt-4 px-2">
+                {[35, 45, 60, 55, 75, 65, 80, 90, 85, 95, 100].map((h, i) => (
+                  <div key={i} className="flex-1 bg-indigo-100 rounded-t-lg relative group h-full flex items-end">
+                    <div
+                      className="w-full bg-gradient-to-t from-indigo-500 to-purple-600 rounded-t-lg transition-all duration-500 group-hover:brightness-110"
+                      style={{ height: `${h}%` }}
+                    />
                   </div>
-                  <h4 className="text-sm font-bold">Amazon SDE-1 Placement Drive</h4>
-                  <p className="text-xs text-slate-300">
-                    Your readiness score qualifies for direct referral match.
-                  </p>
-                  <button className="w-full py-2 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 text-xs font-bold hover:brightness-110 transition-all">
-                    Apply via Codovate Referral
-                  </button>
-                </div>
+                ))}
               </div>
             </div>
           </div>
         </div>
+
+        {/* BOTTOM FADE OVERLAY: Smooth gradient fading the bottom of the card into white */}
+        <div className="absolute bottom-0 left-0 right-0 h-44 bg-gradient-to-b from-transparent via-white/80 to-[#FCFDFF] pointer-events-none rounded-b-[32px]" />
       </div>
     </div>
   );
