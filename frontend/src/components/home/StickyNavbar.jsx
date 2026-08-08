@@ -148,9 +148,9 @@ const StickyNavbar = () => {
               aria-label="Toggle theme"
             >
               {isDark ? (
-                <Sun className="w-4.5 h-4.5 text-amber-400" />
+                <Sun className="w-4 h-4 text-amber-400" />
               ) : (
-                <Moon className="w-4.5 h-4.5 text-slate-600" />
+                <Moon className="w-4 h-4 text-slate-600" />
               )}
             </button>
 
