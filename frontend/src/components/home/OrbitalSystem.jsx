@@ -83,6 +83,11 @@ const OrbitalSystem = () => {
             <stop offset="50%" stopColor="#A855F7" stopOpacity="0.35" />
             <stop offset="100%" stopColor="#818CF8" stopOpacity="0.15" />
           </linearGradient>
+          <linearGradient id="iconStrokeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#A855F7" />
+            <stop offset="50%" stopColor="#6366F1" />
+            <stop offset="100%" stopColor="#3B82F6" />
+          </linearGradient>
         </defs>
 
         {/* Primary Orbital Ellipse (Hero) */}
@@ -110,20 +115,17 @@ const OrbitalSystem = () => {
         />
       </svg>
 
-      {/* Floating Icon Node Cards */}
+      {/* Floating Icon Node Cards matching exact CodeHelp DevTools specs */}
       {nodes.map((node) => {
         const IconComponent = node.icon;
         return (
           <div
             key={node.id}
-            className={`orbital-node absolute hidden sm:flex items-center gap-2.5 px-3.5 py-2 rounded-2xl bg-white/90 dark:bg-[#151926]/90 backdrop-blur-md border border-purple-100/80 dark:border-slate-800 shadow-[0_8px_24px_rgba(99,102,241,0.12)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.5)] hover:border-indigo-300 dark:hover:border-indigo-600 transition-colors pointer-events-auto cursor-default ${node.pos}`}
+            className={`orbital-node absolute hidden sm:flex pointer-events-auto cursor-default ${node.pos}`}
           >
-            <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950/80 dark:to-purple-950/80 flex items-center justify-center text-indigo-600 dark:text-indigo-400 border border-indigo-100/60 dark:border-indigo-900/50 shadow-xs">
-              <IconComponent className="w-4 h-4" />
+            <div className="flex scale-90 sm:scale-100 items-center justify-center rounded-xl border px-4 py-2 sm:px-5 sm:py-2.5 backdrop-blur-md border-slate-200/40 bg-white/55 shadow-[0_2px_12px_rgba(91,118,219,0.08)] dark:border-white/10 dark:bg-[rgba(30,30,30,0.80)] dark:shadow-[inset_0.8px_0.8px_10.88px_0_rgba(255,255,255,0.10)] dark:backdrop-blur-[29.77px] transition-all hover:scale-105">
+              <IconComponent className="w-5 h-5 sm:w-6 sm:h-6 text-indigo-600 dark:text-purple-400 stroke-[1.2]" />
             </div>
-            <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 tracking-tight">
-              {node.label}
-            </span>
           </div>
         );
       })}
