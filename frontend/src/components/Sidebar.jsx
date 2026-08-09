@@ -20,19 +20,19 @@ import {
 } from 'lucide-react';
 import Logo from './common/Logo';
 
-/* Navigation Items matching Unstop Reference Layout */
+/* Navigation Items — use clean URL segments, NOT query params */
 const NAV_ITEMS = [
-  { path: '/dashboard', label: 'Home', Icon: Home, exact: true },
-  { path: '/opportunities?type=internship', label: 'Internships', Icon: GraduationCap },
-  { path: '/opportunities?type=job', label: 'Jobs', Icon: Briefcase },
-  { path: '/opportunities?type=competition', label: 'Competitions', Icon: Trophy },
-  { path: '/mentors', label: 'Mentorship', Icon: Users },
-  { path: '/skill-assessments', label: 'Mock Tests', Icon: FileCheck2 },
-  { path: '/mock-interview', label: 'Mock Interview', Icon: Video },
-  { path: '/coding-practice', label: '100 Days to Code', Icon: Code2 },
-  { path: '/learning', label: 'Courses', Icon: BookOpen },
-  { path: '/roadmap', label: 'More', Icon: Compass, hasSub: true },
-  { path: '/applications', label: 'My Activity', Icon: ChevronRight, hasSub: true },
+  { path: '/dashboard',                  label: 'Home',          Icon: Home,         exact: true  },
+  { path: '/opportunities/internship',   label: 'Internships',   Icon: GraduationCap, exact: true },
+  { path: '/opportunities/job',          label: 'Jobs',          Icon: Briefcase,     exact: true },
+  { path: '/opportunities/competition',  label: 'Competitions',  Icon: Trophy,        exact: true },
+  { path: '/mentors',                    label: 'Mentorship',    Icon: Users                      },
+  { path: '/skill-assessments',          label: 'Mock Tests',    Icon: FileCheck2                 },
+  { path: '/mock-interview',             label: 'Mock Interview',Icon: Video                      },
+  { path: '/coding-practice',            label: '100 Days to Code', Icon: Code2                  },
+  { path: '/learning',                   label: 'Courses',       Icon: BookOpen                   },
+  { path: '/roadmap',                    label: 'More',          Icon: Compass,      hasSub: true },
+  { path: '/applications',               label: 'My Activity',   Icon: ChevronRight, hasSub: true },
 ];
 
 const Sidebar = ({ mobileOpen, setMobileOpen }) => {
@@ -42,8 +42,13 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
 
   const isPathActive = (item) => {
     const current = location.pathname;
-    if (item.exact) return current === '/dashboard' || current === '/';
-    return current.startsWith(item.path.split('?')[0]);
+    // Exact match — used for dashboard and all opportunity types (prevents triple highlight)
+    if (item.exact) {
+      if (item.path === '/dashboard') return current === '/dashboard' || current === '/';
+      return current === item.path;
+    }
+    // Prefix match for non-exact items (e.g. /learning matches /learning/course/:id)
+    return current === item.path || current.startsWith(item.path + '/');
   };
 
   const initials = (user?.name || 'R')
