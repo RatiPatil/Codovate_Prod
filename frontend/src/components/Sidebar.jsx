@@ -109,17 +109,17 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
     <div className="flex flex-col h-full bg-white text-slate-700 border-r border-slate-200/80 select-none font-sans relative">
       
       {/* Top Header: Logo + Toggle & Mobile Close */}
-      <div className="px-5 pt-5 pb-3 flex items-center justify-between shrink-0">
+      <div className="pt-10 pb-8 flex items-center justify-center shrink-0 relative">
         <button
           onClick={() => navigate('/dashboard')}
-          className="focus:outline-none flex items-center gap-2"
+          className="focus:outline-none flex flex-col items-center justify-center"
         >
-          <Logo size="lg" className="h-14 sm:h-16 object-contain" />
+          <Logo size="hero" className="h-28 sm:h-[120px] object-contain" />
         </button>
 
         <button
           onClick={() => setMobileOpen && setMobileOpen(false)}
-          className="md:hidden text-slate-400 hover:text-slate-700 transition-colors p-1 rounded-lg hover:bg-slate-100"
+          className="md:hidden absolute right-4 top-4 text-slate-400 hover:text-slate-700 transition-colors p-1 rounded-lg hover:bg-slate-100"
           aria-label="Close menu"
         >
           <X size={20} />
@@ -128,7 +128,7 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
 
 
       {/* Vertical Navigation Links Stream */}
-      <nav className="flex-1 px-3 py-2 space-y-1">
+      <nav className="flex-1 px-4 py-2 space-y-1">
         {NAV_ITEMS.map((item) => {
           if (item.isToggle) {
             const isOpen = item.id === 'more' ? isMoreOpen : isActivityOpen;
@@ -139,13 +139,13 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
               <div key={item.id} className="relative">
                 <button
                   onClick={toggle}
-                  className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl font-semibold text-sm transition-all duration-150 ${isOpen ? 'bg-slate-100/80 text-slate-900' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80'}`}
+                  className={`w-full flex items-center justify-between px-4 py-3.5 rounded-xl font-medium text-[15px] transition-all duration-150 ${isOpen ? 'text-[#1E3A8A] bg-blue-50/50' : 'text-[#334155] hover:text-[#1E3A8A] hover:bg-slate-50'}`}
                 >
-                  <div className="flex items-center gap-3 truncate">
-                    <item.Icon size={19} strokeWidth={1.8} className={isOpen ? 'text-slate-900' : 'text-slate-500'} />
+                  <div className="flex items-center gap-4 truncate">
+                    <item.Icon size={22} strokeWidth={1.5} className={isOpen ? 'text-[#1E3A8A]' : 'text-[#475569]'} />
                     <span className="truncate">{item.label}</span>
                   </div>
-                  <ChevronRight size={16} className={isOpen ? 'text-slate-900' : 'text-slate-400'} />
+                  <ChevronRight size={16} className={isOpen ? 'text-[#1E3A8A]' : 'text-[#94A3B8]'} />
                 </button>
                 {isOpen && (
                   <div className="absolute left-[102%] top-0 w-60 bg-white border border-slate-100 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.15)] rounded-3xl py-2 z-[100] animate-fadeIn">
@@ -155,7 +155,7 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
                         onClick={() => toast('This feature is currently under development.', { icon: '🚧' })}
                         className="w-full flex items-center justify-between px-5 py-3 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors"
                       >
-                        <div className="flex items-center gap-3 truncate">
+                        <div className="flex items-center gap-3.5 truncate">
                           <subItem.Icon size={18} strokeWidth={1.8} className="text-slate-500" />
                           <span className="truncate">{subItem.label}</span>
                         </div>
@@ -177,46 +177,42 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
               key={item.label}
               to={item.path}
               onClick={() => setMobileOpen && setMobileOpen(false)}
-              className={`flex items-center justify-between px-4 py-3 rounded-2xl font-semibold text-sm transition-all duration-150 ${
+              className={`flex items-center justify-between px-4 py-3.5 rounded-xl font-medium text-[15px] transition-all duration-150 ${
                 active
-                  ? 'bg-[#EBF3FF] text-[#0066FF]'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80'
+                  ? 'text-[#1E3A8A] bg-blue-50/50'
+                  : 'text-[#334155] hover:text-[#1E3A8A] hover:bg-slate-50'
               }`}
             >
-              <div className="flex items-center gap-3 truncate">
-                <Icon size={19} strokeWidth={active ? 2.2 : 1.8} className={active ? 'text-[#0066FF]' : 'text-slate-500'} />
+              <div className="flex items-center gap-4 truncate">
+                <Icon size={22} strokeWidth={1.5} className={active ? 'text-[#1E3A8A]' : 'text-[#475569]'} />
                 <span className="truncate">{item.label}</span>
               </div>
-
-              {item.hasSub && (
-                <ChevronRight size={16} className="text-slate-400 shrink-0" />
-              )}
             </Link>
           );
         })}
       </nav>
 
       {/* Bottom Control Bar: Notifications, Chat, Profile Avatar */}
-      <div className="p-3 border-t border-slate-100 flex items-center justify-between shrink-0 bg-slate-50/50">
+      <div className="px-6 py-5 border-t border-slate-100 flex items-center justify-between shrink-0 bg-white">
         <button
           onClick={() => navigate('/notifications')}
-          className="p-2 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-200/60 transition-colors"
+          className="text-[#64748B] hover:text-[#1E3A8A] transition-colors"
           aria-label="Notifications"
         >
-          <Bell size={18} />
+          <Bell size={22} strokeWidth={1.5} />
         </button>
 
         <button
           onClick={() => navigate('/community')}
-          className="p-2 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-200/60 transition-colors"
+          className="text-[#64748B] hover:text-[#1E3A8A] transition-colors"
           aria-label="Community Chat"
         >
-          <MessageSquare size={18} />
+          <MessageSquare size={22} strokeWidth={1.5} />
         </button>
 
         <button
           onClick={() => navigate('/profile')}
-          className="w-8 h-8 rounded-full bg-[#0066FF] text-white font-bold text-xs flex items-center justify-center shadow-xs hover:opacity-90 transition-opacity"
+          className="w-9 h-9 rounded-full bg-[#0066FF] text-white font-semibold text-sm flex items-center justify-center shadow-md shadow-blue-500/20 hover:opacity-90 transition-opacity"
           aria-label="Profile"
         >
           {initials}
