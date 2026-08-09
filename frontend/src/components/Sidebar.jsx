@@ -1,171 +1,148 @@
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
-  Home, Map, BookOpen, Briefcase, Users, FolderGit2,
-  ClipboardList, User, FileText, Video, MessageSquare,
-  Settings, X, ChevronRight,
+  Home,
+  GraduationCap,
+  Briefcase,
+  Trophy,
+  Users,
+  FileCheck2,
+  Video,
+  Code2,
+  BookOpen,
+  ChevronRight,
+  Plus,
+  Compass,
+  X,
+  Bell,
+  MessageSquare,
 } from 'lucide-react';
 import Logo from './common/Logo';
 
-/* ─── Sectioned Navigation matching wireframe ─── */
-const NAV_SECTIONS = [
-  {
-    title: 'MAIN',
-    items: [
-      { path: '/dashboard',                 label: 'Home',         Icon: Home,          exact: true },
-      { path: '/roadmap',                   label: 'Roadmap',      Icon: Map                        },
-      { path: '/learning',                  label: 'Learn',        Icon: BookOpen                   },
-      { path: '/opportunities/internship',  label: 'Opportunities', Icon: Briefcase,    exact: true },
-      { path: '/teams',                     label: 'Teams',        Icon: Users                      },
-      { path: '/projecthub',               label: 'Projects',     Icon: FolderGit2                 },
-    ],
-  },
-  {
-    title: 'CAREER',
-    items: [
-      { path: '/applications',   label: 'Applications', Icon: ClipboardList },
-      { path: '/profile',        label: 'Portfolio',    Icon: User          },
-      { path: '/resume-builder', label: 'Resume',       Icon: FileText      },
-    ],
-  },
-  {
-    title: 'COMMUNITY',
-    items: [
-      { path: '/mentors',    label: 'Mentorship', Icon: Video          },
-      { path: '/community',  label: 'Community',  Icon: MessageSquare  },
-    ],
-  },
+/* Navigation Items — use clean URL segments, NOT query params */
+const NAV_ITEMS = [
+  { path: '/dashboard',                  label: 'Home',          Icon: Home,         exact: true  },
+  { path: '/opportunities/internship',   label: 'Internships',   Icon: GraduationCap, exact: true },
+  { path: '/opportunities/job',          label: 'Jobs',          Icon: Briefcase,     exact: true },
+  { path: '/opportunities/competition',  label: 'Competitions',  Icon: Trophy,        exact: true },
+  { path: '/mentors',                    label: 'Mentorship',    Icon: Users                      },
+  { path: '/skill-assessments',          label: 'Mock Tests',    Icon: FileCheck2                 },
+  { path: '/mock-interview',             label: 'Mock Interview',Icon: Video                      },
+  { path: '/coding-practice',            label: '100 Days to Code', Icon: Code2                  },
+  { path: '/learning',                   label: 'Courses',       Icon: BookOpen                   },
+  { path: '/roadmap',                    label: 'More',          Icon: Compass,      hasSub: true },
+  { path: '/applications',               label: 'My Activity',   Icon: ChevronRight, hasSub: true },
 ];
 
-/* Bottom account links (no section header, just at bottom) */
-const BOTTOM_ITEMS = [
-  { path: '/profile',  label: 'Profile',  Icon: User     },
-  { path: '/settings', label: 'Settings', Icon: Settings },
-];
-
-/* ─── isPathActive — exact or prefix, never bleeds across siblings ─── */
-const checkActive = (item, pathname) => {
-  if (item.exact) {
-    if (item.path === '/dashboard') return pathname === '/dashboard' || pathname === '/';
-    return pathname === item.path;
-  }
-  return pathname === item.path || pathname.startsWith(item.path + '/');
-};
-
-/* ─── Single Nav Link Row ─── */
-const NavLink = ({ item, onClick, pathname }) => {
-  const navigate = useNavigate();
-  const active   = checkActive(item, pathname);
-  const Icon     = item.Icon;
-
-  return (
-    <button
-      onClick={() => { navigate(item.path); onClick?.(); }}
-      className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-[13.5px] font-semibold transition-all duration-150 text-left focus:outline-none ${
-        active
-          ? 'bg-[#4F46E5] text-white shadow-sm font-bold'
-          : 'text-slate-400 hover:text-white hover:bg-white/[0.08]'
-      }`}
-    >
-      <Icon
-        size={17}
-        strokeWidth={active ? 2.2 : 1.75}
-        className={active ? 'text-white shrink-0' : 'text-slate-500 shrink-0'}
-      />
-      <span className="truncate">{item.label}</span>
-    </button>
-  );
-};
-
-/* ═══════════════════════════════ SIDEBAR ═══════════════════ */
 const Sidebar = ({ mobileOpen, setMobileOpen }) => {
   const navigate  = useNavigate();
   const location  = useLocation();
   const { user }  = useAuth();
 
-  const initials = (user?.name || 'S')
+  const isPathActive = (item) => {
+    const current = location.pathname;
+    // Exact match — used for dashboard and all opportunity types (prevents triple highlight)
+    if (item.exact) {
+      if (item.path === '/dashboard') return current === '/dashboard' || current === '/';
+      return current === item.path;
+    }
+    // Prefix match for non-exact items (e.g. /learning matches /learning/course/:id)
+    return current === item.path || current.startsWith(item.path + '/');
+  };
+
+  const initials = (user?.name || 'R')
     .split(' ')
     .map(w => w[0])
-    .slice(0, 2)
+    .slice(0, 1)
     .join('')
     .toUpperCase();
 
-  const close = () => setMobileOpen && setMobileOpen(false);
-
   const Content = () => (
-    <div className="flex flex-col h-full bg-[#0F172A] text-white select-none overflow-hidden font-sans">
-
-      {/* ── Logo ─────────────────────────────────────── */}
-      <div className="px-5 pt-6 pb-4 flex items-center justify-between shrink-0 border-b border-white/[0.06]">
+    <div className="flex flex-col h-full bg-white text-slate-700 border-r border-slate-200/80 select-none overflow-hidden font-sans">
+      
+      {/* Top Header: Logo + Toggle & Mobile Close */}
+      <div className="px-5 pt-5 pb-3 flex items-center justify-between shrink-0">
         <button
-          onClick={() => { navigate('/dashboard'); close(); }}
-          className="focus:outline-none group"
+          onClick={() => navigate('/dashboard')}
+          className="focus:outline-none flex items-center gap-2"
         >
-          <Logo responsive variant="dark" />
+          <Logo responsive size="xs" />
         </button>
 
         <button
-          onClick={close}
-          className="md:hidden text-slate-500 hover:text-white transition-colors p-1.5 rounded-lg hover:bg-white/10"
+          onClick={() => setMobileOpen && setMobileOpen(false)}
+          className="md:hidden text-slate-400 hover:text-slate-700 transition-colors p-1 rounded-lg hover:bg-slate-100"
           aria-label="Close menu"
         >
-          <X size={18} />
+          <X size={20} />
         </button>
       </div>
 
-      {/* ── Scrollable Nav Body ───────────────────────── */}
-      <nav className="flex-1 px-3 py-4 overflow-y-auto sidebar-scroll space-y-5">
+      {/* Primary Action Button: + Post Opportunity */}
+      <div className="px-4 py-2 shrink-0">
+        <button
+          onClick={() => navigate('/opportunities')}
+          className="w-full h-11 bg-[#E0EEFF] hover:bg-[#D0E4FF] text-[#0066FF] font-bold rounded-2xl flex items-center justify-center gap-2 text-sm transition-all duration-150 active:scale-[0.98]"
+        >
+          <Plus size={18} strokeWidth={2.5} />
+          <span>+ Post</span>
+        </button>
+      </div>
 
-        {NAV_SECTIONS.map((section) => (
-          <div key={section.title} className="space-y-0.5">
-            {/* Section header label */}
-            <p className="px-3.5 mb-1.5 text-[10px] font-extrabold text-slate-600 uppercase tracking-widest">
-              {section.title}
-            </p>
+      {/* Vertical Navigation Links Stream */}
+      <nav className="flex-1 px-3 py-2 space-y-1 overflow-y-auto sidebar-scroll">
+        {NAV_ITEMS.map((item) => {
+          const active = isPathActive(item);
+          const Icon = item.Icon;
+          return (
+            <Link
+              key={item.label}
+              to={item.path}
+              onClick={() => setMobileOpen && setMobileOpen(false)}
+              className={`flex items-center justify-between px-4 py-3 rounded-2xl font-semibold text-sm transition-all duration-150 ${
+                active
+                  ? 'bg-[#EBF3FF] text-[#0066FF]'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80'
+              }`}
+            >
+              <div className="flex items-center gap-3 truncate">
+                <Icon size={19} strokeWidth={active ? 2.2 : 1.8} className={active ? 'text-[#0066FF]' : 'text-slate-500'} />
+                <span className="truncate">{item.label}</span>
+              </div>
 
-            {section.items.map(item => (
-              <NavLink
-                key={item.path + item.label}
-                item={item}
-                pathname={location.pathname}
-                onClick={close}
-              />
-            ))}
-          </div>
-        ))}
-
+              {item.hasSub && (
+                <ChevronRight size={16} className="text-slate-400 shrink-0" />
+              )}
+            </Link>
+          );
+        })}
       </nav>
 
-      {/* ── Bottom: Profile + Settings + Avatar ──────── */}
-      <div className="px-3 pb-4 pt-3 border-t border-white/[0.06] shrink-0 space-y-0.5">
-        {BOTTOM_ITEMS.map(item => (
-          <NavLink
-            key={item.path + item.label}
-            item={item}
-            pathname={location.pathname}
-            onClick={close}
-          />
-        ))}
-
-        {/* User Avatar Row */}
+      {/* Bottom Control Bar: Notifications, Chat, Profile Avatar */}
+      <div className="p-3 border-t border-slate-100 flex items-center justify-between shrink-0 bg-slate-50/50">
         <button
-          onClick={() => { navigate('/profile'); close(); }}
-          className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl mt-2 hover:bg-white/[0.08] transition-colors focus:outline-none group"
+          onClick={() => navigate('/notifications')}
+          className="p-2 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-200/60 transition-colors"
+          aria-label="Notifications"
         >
-          <div
-            className="w-8 h-8 rounded-full bg-indigo-600 text-white font-extrabold text-xs flex items-center justify-center shrink-0 overflow-hidden"
-            style={{ background: 'linear-gradient(135deg, #4F46E5, #7C3AED)' }}
-          >
-            {user?.photoURL
-              ? <img src={user.photoURL} alt="avatar" className="w-full h-full object-cover" />
-              : initials
-            }
-          </div>
-          <div className="flex-1 min-w-0 text-left">
-            <p className="text-xs font-bold text-slate-200 truncate">{user?.name || 'Student'}</p>
-            <p className="text-[10px] text-slate-500 truncate">{user?.email}</p>
-          </div>
-          <ChevronRight size={13} className="text-slate-600 shrink-0" />
+          <Bell size={18} />
+        </button>
+
+        <button
+          onClick={() => navigate('/community')}
+          className="p-2 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-200/60 transition-colors"
+          aria-label="Community Chat"
+        >
+          <MessageSquare size={18} />
+        </button>
+
+        <button
+          onClick={() => navigate('/profile')}
+          className="w-8 h-8 rounded-full bg-[#0066FF] text-white font-bold text-xs flex items-center justify-center shadow-xs hover:opacity-90 transition-opacity"
+          aria-label="Profile"
+        >
+          {initials}
         </button>
       </div>
 
@@ -174,22 +151,22 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
 
   return (
     <>
-      {/* Desktop */}
-      <aside className="hidden md:flex flex-col w-[240px] h-screen sticky top-0 shrink-0 z-20 print:hidden">
+      {/* Desktop Fixed Left Navigation (Width: 230px) */}
+      <aside className="hidden md:flex flex-col w-[230px] h-screen sticky top-0 shrink-0 z-20 print:hidden">
         <Content />
       </aside>
 
-      {/* Mobile Overlay */}
+      {/* Mobile Backdrop Overlay */}
       {mobileOpen && (
         <div
-          className="md:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
-          onClick={close}
+          className="md:hidden fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-40 transition-opacity"
+          onClick={() => setMobileOpen(false)}
         />
       )}
 
-      {/* Mobile Drawer */}
+      {/* Mobile Slide-Out Drawer */}
       <aside
-        className={`md:hidden fixed top-0 left-0 h-screen w-[240px] z-50 transition-transform duration-300 ease-out print:hidden ${
+        className={`md:hidden fixed top-0 left-0 h-screen w-[230px] z-50 transition-transform duration-300 ease-out print:hidden ${
           mobileOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >

@@ -1,475 +1,407 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import {
-  Search, MapPin, Clock, Laptop, Briefcase, Heart,
-  Share2, X, AlertCircle, ChevronDown, ArrowRight,
-  GraduationCap, Trophy, BookOpen, Users, RefreshCw,
-  Calendar, Star, Building2, ExternalLink,
+  Search,
+  MapPin,
+  Laptop,
+  Briefcase,
+  Clock,
+  ChevronDown,
+  X,
+  AlertCircle,
+  ArrowRight,
+  Building2,
+  Calendar,
 } from 'lucide-react';
 
-/* ─── Work-mode filter tabs ─── */
-const WORK_TABS = [
-  { id: 'all',    label: 'All'      },
-  { id: 'remote', label: 'Remote'   },
-  { id: 'onsite', label: 'On-site'  },
-  { id: 'hybrid', label: 'Hybrid'   },
-];
-
-/* ─── Page config per type ─── */
-const PAGE_CONFIG = {
-  internship:  { title: 'Internships',  subtitle: 'Find internships that match your skills.',  Icon: GraduationCap },
-  job:         { title: 'Jobs',         subtitle: 'Browse full-time roles from top companies.', Icon: Briefcase     },
-  competition: { title: 'Competitions', subtitle: 'Compete, win, and build your profile.',      Icon: Trophy        },
-  all:         { title: 'Opportunities',subtitle: 'Discover internships, jobs, and more.',      Icon: Briefcase     },
-};
-
-/* ─── Utilities ─── */
-const fmtDate = (val) => {
+/* ─── Format Date Utility ─── */
+const formatDate = (val) => {
   if (!val) return null;
   const d = val?.toDate ? val.toDate() : new Date(val);
   if (isNaN(d.getTime())) return null;
   return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
 };
 
-const getWorkMode = (opp) => {
-  if (opp.work_mode) return opp.work_mode;
-  if (opp.is_remote || opp.mode === 'remote') return 'Remote';
-  if (opp.mode === 'hybrid') return 'Hybrid';
-  if (opp.location) return opp.location;
-  return 'On-site';
-};
-
-/* ─── Skill Tag ─── */
-const Tag = ({ label, variant = 'skill' }) => {
-  const classes = {
-    skill:    'bg-slate-100 text-slate-700 border border-slate-200',
-    meta:     'bg-blue-50 text-blue-700 border border-blue-100',
-    location: 'bg-amber-50 text-amber-700 border border-amber-100',
-  }[variant] || 'bg-slate-100 text-slate-700';
-
-  return (
-    <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-lg ${classes}`}>
-      {label}
-    </span>
-  );
-};
-
-/* ─── Status Badge ─── */
-const StatusDot = ({ isOpen }) => (
-  <span className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full ${
-    isOpen
-      ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-      : 'bg-slate-100 text-slate-500 border border-slate-200'
-  }`}>
-    <span className={`w-1.5 h-1.5 rounded-full ${isOpen ? 'bg-emerald-500' : 'bg-slate-400'}`} />
-    {isOpen ? 'Open' : 'Closed'}
-  </span>
-);
-
-/* ═══════════════════════════════════════════════════════
-   OPPORTUNITY ROW CARD (Wireframe layout)
-═══════════════════════════════════════════════════════ */
-const OppCard = ({ opp, saved, onSave }) => {
+/* ─── Clean Internship Card ─── */
+const InternshipCard = ({ opp }) => {
   const navigate = useNavigate();
 
-  const isOpen     = opp.is_active !== false && !['closed','inactive'].includes((opp.status || '').toLowerCase());
-  const workMode   = getWorkMode(opp);
-  const skills     = (opp.required_skills || []).slice(0, 4);
-  const hiddenSkills = (opp.required_skills || []).length - skills.length;
-  const deadline   = fmtDate(opp.deadline || opp.application_deadline);
-  const posted     = fmtDate(opp.created_at);
-  const noExp      = !opp.experience_required || /fresher|no prior|0 year|^0$/i.test(opp.experience_required);
-
-  const metaTags = [
-    workMode,
-    opp.employment_type || opp.duration || null,
-    opp.stipend ? `₹${opp.stipend}` : (opp.salary ? `₹${opp.salary}` : null),
-  ].filter(Boolean);
+  const title       = opp.title || 'Untitled Internship';
+  const company     = opp.company || opp.organizationName || opp.organization || 'Organization';
+  const logo        = opp.company_logo_url || opp.logo || opp.organizationLogo;
+  const location    = opp.location || '';
+  const workMode    = opp.mode || opp.workMode || (opp.is_remote ? 'Remote' : location ? 'On-site' : 'Work from Home');
+  const duration    = opp.duration || opp.employment_type;
+  const stipend     = opp.stipend || opp.salary;
+  const skills      = (opp.required_skills || opp.skills || []).slice(0, 4);
+  const deadline    = formatDate(opp.deadline);
+  const postedDate  = formatDate(opp.created_at);
+  const isOpen      = opp.is_active !== false && !['closed', 'inactive'].includes((opp.status || '').toLowerCase());
 
   return (
-    <div className="group bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6 hover:border-indigo-300/60 hover:shadow-md transition-all duration-200">
-      <div className="flex items-start gap-4">
-
-        {/* Company Avatar */}
-        <div className="w-12 h-12 shrink-0 rounded-2xl bg-indigo-50 border border-indigo-100/80 flex items-center justify-center font-extrabold text-indigo-600 text-lg overflow-hidden">
-          {opp.company_logo_url
-            ? <img src={opp.company_logo_url} alt="" className="w-full h-full object-contain p-1.5" />
-            : (opp.company || 'C').charAt(0).toUpperCase()
-          }
+    <div className="bg-white rounded-xl border border-slate-200/80 p-5 hover:border-indigo-500/40 hover:shadow-sm transition-all duration-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="flex items-start gap-4 flex-1 min-w-0">
+        {/* Organization Logo */}
+        <div className="w-12 h-12 rounded-xl bg-slate-100 border border-slate-200/80 flex items-center justify-center font-bold text-indigo-600 text-base shrink-0 overflow-hidden">
+          {logo ? (
+            <img src={logo} alt={company} className="w-full h-full object-contain p-1" />
+          ) : (
+            company.charAt(0).toUpperCase()
+          )}
         </div>
 
-        {/* Content */}
-        <div className="flex-1 min-w-0 space-y-3">
-
-          {/* Title + Company */}
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0">
-              <h3 className="font-extrabold text-base sm:text-lg text-slate-900 leading-snug group-hover:text-indigo-600 transition-colors line-clamp-2">
-                {opp.title}
+        {/* Info Area */}
+        <div className="min-w-0 flex-1 space-y-2">
+          {/* Title & Company */}
+          <div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="font-bold text-base text-slate-900 leading-snug truncate">
+                {title}
               </h3>
-              <div className="flex items-center gap-2 mt-1 flex-wrap">
-                <span className="flex items-center gap-1 text-sm font-semibold text-slate-600">
-                  <Building2 size={13} className="text-slate-400" />
-                  {opp.company || opp.organization || 'Company'}
-                </span>
-                <StatusDot isOpen={isOpen} />
-              </div>
-            </div>
-
-            {/* Match Score */}
-            {opp.match_score != null && (
-              <div className={`shrink-0 flex flex-col items-center justify-center w-14 h-14 rounded-2xl border font-extrabold ${
-                opp.match_score >= 70
-                  ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
-                  : opp.match_score >= 40
-                  ? 'bg-amber-50 border-amber-200 text-amber-700'
-                  : 'bg-slate-100 border-slate-200 text-slate-500'
+              <span className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full border ${
+                isOpen
+                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                  : 'bg-slate-100 text-slate-500 border-slate-200'
               }`}>
-                <span className="text-base leading-none">{opp.match_score}</span>
-                <span className="text-[9px] font-bold mt-0.5">match</span>
-              </div>
+                {isOpen ? 'Open' : 'Closed'}
+              </span>
+            </div>
+            <p className="text-xs font-semibold text-slate-500 mt-0.5 flex items-center gap-1.5">
+              <Building2 size={13} className="text-slate-400 shrink-0" />
+              <span>{company}</span>
+            </p>
+          </div>
+
+          {/* Details Row: Work Mode, Location, Duration, Stipend */}
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-600 font-medium">
+            {workMode && (
+              <span className="flex items-center gap-1">
+                {workMode.toLowerCase().includes('remote') || workMode.toLowerCase().includes('home') ? (
+                  <Laptop size={12} className="text-slate-400" />
+                ) : (
+                  <MapPin size={12} className="text-slate-400" />
+                )}
+                <span>{workMode}</span>
+              </span>
+            )}
+
+            {location && !workMode.toLowerCase().includes('remote') && (
+              <>
+                <span className="text-slate-300">·</span>
+                <span>{location}</span>
+              </>
+            )}
+
+            {duration && (
+              <>
+                <span className="text-slate-300">·</span>
+                <span className="flex items-center gap-1">
+                  <Clock size={12} className="text-slate-400" />
+                  <span>{duration}</span>
+                </span>
+              </>
+            )}
+
+            {stipend ? (
+              <>
+                <span className="text-slate-300">·</span>
+                <span className="font-bold text-emerald-700">₹{stipend}</span>
+              </>
+            ) : (
+              <>
+                <span className="text-slate-300">·</span>
+                <span className="text-slate-500">Unpaid / Learning</span>
+              </>
             )}
           </div>
 
-          {/* Meta Tags Row: location • duration • stipend */}
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-slate-500 font-medium">
-            {noExp && (
-              <span className="flex items-center gap-1 text-amber-600 font-semibold">
-                <Star size={11} className="fill-amber-400 stroke-amber-400" />
-                No prior experience required
-              </span>
-            )}
-            {metaTags.map((t, i) => (
-              <span key={i} className="flex items-center gap-1">
-                {i === 0 && (workMode.toLowerCase() === 'remote' ? <Laptop size={12} /> : <MapPin size={12} />)}
-                {i === 1 && <Clock size={12} />}
-                <span className={i === 2 ? 'font-extrabold text-emerald-700' : ''}>{t}</span>
-                {i < metaTags.length - 1 && <span className="ml-2 text-slate-300">·</span>}
-              </span>
-            ))}
-          </div>
-
-          {/* Skill Tags */}
+          {/* Skills Tags */}
           {skills.length > 0 && (
-            <div className="flex flex-wrap gap-1.5">
-              {skills.map(s => <Tag key={s} label={s} variant="skill" />)}
-              {hiddenSkills > 0 && (
-                <span className="text-[11px] font-semibold text-slate-400 px-1 py-1">+{hiddenSkills}</span>
-              )}
+            <div className="flex flex-wrap gap-1.5 pt-0.5">
+              {skills.map((skill) => (
+                <span
+                  key={skill}
+                  className="text-[11px] font-medium px-2.5 py-0.5 rounded-md bg-indigo-50/70 text-indigo-700 border border-indigo-100/80"
+                >
+                  {skill}
+                </span>
+              ))}
             </div>
           )}
 
-          {/* Bottom Row: Deadline + Actions */}
-          <div className="flex items-center justify-between pt-3 border-t border-slate-100">
-            <div className="flex items-center gap-3 text-xs text-slate-500 font-medium">
-              {deadline && (
-                <span className="flex items-center gap-1">
-                  <Calendar size={12} className="text-slate-400" />
-                  <span>Deadline: <strong className="text-slate-700">{deadline}</strong></span>
-                </span>
-              )}
-              {!deadline && posted && (
-                <span>Posted {posted}</span>
-              )}
+          {/* Dates Info */}
+          {(deadline || postedDate) && (
+            <div className="text-[11px] text-slate-400 font-medium flex items-center gap-3 pt-0.5">
+              {postedDate && <span>Posted: {postedDate}</span>}
+              {deadline && <span className="text-amber-600 font-semibold flex items-center gap-1"><Calendar size={11} /> Apply by: {deadline}</span>}
             </div>
-
-            <div className="flex items-center gap-2">
-              {/* Save */}
-              <button
-                onClick={e => { e.stopPropagation(); onSave?.(opp.id); }}
-                className={`p-2 rounded-xl transition-colors ${
-                  saved ? 'text-red-500 bg-red-50' : 'text-slate-400 hover:text-red-400 hover:bg-red-50'
-                }`}
-                aria-label="Save"
-              >
-                <Heart size={15} fill={saved ? 'currentColor' : 'none'} />
-              </button>
-
-              {/* Share */}
-              <button
-                onClick={e => { e.stopPropagation(); navigator.clipboard?.writeText(`${window.location.origin}/opportunities/${opp.id}`); }}
-                className="p-2 rounded-xl text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
-                aria-label="Share"
-              >
-                <Share2 size={15} />
-              </button>
-
-              {/* View Button */}
-              <button
-                onClick={() => navigate(`/opportunities/${opp.id}`)}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition-colors shadow-xs"
-              >
-                View <ArrowRight size={13} />
-              </button>
-            </div>
-          </div>
-
+          )}
         </div>
+      </div>
+
+      {/* CTA Button */}
+      <div className="shrink-0 w-full sm:w-auto pt-2 sm:pt-0">
+        <button
+          onClick={() => navigate(`/opportunities/${opp.id}`)}
+          className="w-full sm:w-auto px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs transition-colors flex items-center justify-center gap-1.5 shadow-xs"
+        >
+          <span>View Details</span>
+          <ArrowRight size={13} />
+        </button>
       </div>
     </div>
   );
 };
 
-/* ─── Card Skeleton ─── */
-const CardSkeleton = () => (
-  <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 animate-pulse">
-    <div className="flex gap-4">
-      <div className="w-12 h-12 rounded-2xl bg-slate-200 shrink-0" />
-      <div className="flex-1 space-y-3">
-        <div className="h-5 bg-slate-200 rounded-xl w-3/5" />
-        <div className="h-4 bg-slate-100 rounded-xl w-2/5" />
-        <div className="h-4 bg-slate-100 rounded-xl w-4/5" />
-        <div className="flex gap-2 pt-1">
-          <div className="h-6 w-24 bg-slate-100 rounded-lg" />
-          <div className="h-6 w-20 bg-slate-100 rounded-lg" />
-          <div className="h-6 w-16 bg-slate-100 rounded-lg" />
-        </div>
-        <div className="flex justify-between pt-3 border-t border-slate-100">
-          <div className="h-4 w-36 bg-slate-100 rounded" />
-          <div className="h-8 w-20 bg-indigo-100 rounded-xl" />
-        </div>
+/* ─── Skeleton Row ─── */
+const SkeletonRow = () => (
+  <div className="bg-white rounded-xl border border-slate-200/80 p-5 animate-pulse flex items-start gap-4">
+    <div className="w-12 h-12 rounded-xl bg-slate-200 shrink-0" />
+    <div className="flex-1 space-y-2.5">
+      <div className="h-5 bg-slate-200 rounded-lg w-1/3" />
+      <div className="h-4 bg-slate-100 rounded-lg w-1/4" />
+      <div className="h-4 bg-slate-100 rounded-lg w-1/2" />
+      <div className="flex gap-2 pt-1">
+        <div className="h-5 w-16 bg-indigo-50 rounded-md" />
+        <div className="h-5 w-16 bg-indigo-50 rounded-md" />
       </div>
     </div>
   </div>
 );
 
-/* ═══════════════════════════════════════════════════════
-   MAIN OPPORTUNITIES / INTERNSHIPS PAGE
-═══════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════
+   CLEAN PRODUCTION INTERNSHIPS PAGE
+═══════════════════════════════════════════════════════════ */
 const Opportunities = () => {
-  const navigate   = useNavigate();
-  const { type: urlType } = useParams();
+  const [internships, setInternships] = useState([]);
+  const [loading, setLoading]         = useState(true);
+  const [error, setError]             = useState(null);
 
-  const [activeType,    setActiveType]    = useState(urlType || 'internship');
-  const [workTab,       setWorkTab]       = useState('all');
-  const [searchQuery,   setSearchQuery]   = useState('');
-  const [locationQuery, setLocationQuery] = useState('');
-  const [opportunities, setOpportunities] = useState([]);
-  const [loading,       setLoading]       = useState(true);
-  const [error,         setError]         = useState(null);
-  const [savedIds,      setSavedIds]      = useState(new Set());
+  /* Filters State */
+  const [workModeFilter, setWorkModeFilter] = useState('All');
+  const [searchQuery, setSearchQuery]       = useState('');
+  const [sortBy, setSortBy]                 = useState('newest');
 
-  /* Sync type from URL param */
-  useEffect(() => {
-    const t = urlType || 'internship';
-    if (t !== activeType) {
-      setActiveType(t);
-      setWorkTab('all');
-      setSearchQuery('');
-      setLocationQuery('');
-    }
-  }, [urlType]);
-
-  /* Fetch from backend */
-  const fetchOpportunities = useCallback(async () => {
+  /* Fetch Internships strictly from Firestore backend API */
+  const fetchInternships = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      const params = new URLSearchParams();
-      if (activeType && activeType !== 'all') params.append('type', activeType);
-      if (searchQuery.trim()) params.append('search', searchQuery.trim());
-      const res  = await api.get(`/opportunities?${params.toString()}`);
-      const data = Array.isArray(res.data) ? res.data :
-                   Array.isArray(res.data?.opportunities) ? res.data.opportunities : [];
-      setOpportunities(data);
-    } catch {
-      setError('Could not load opportunities. Please try again.');
-      setOpportunities([]);
+      const res = await api.get('/opportunities?type=internship');
+      const data = Array.isArray(res.data) ? res.data : Array.isArray(res.data?.opportunities) ? res.data.opportunities : [];
+
+      // Filter for type == Internship (case-insensitive) & active status
+      const filtered = data.filter((opp) => {
+        const typeMatch = !opp.type || opp.type.toLowerCase().includes('internship');
+        const activeMatch = opp.is_active !== false && opp.status !== 'inactive';
+        return typeMatch && activeMatch;
+      });
+
+      setInternships(filtered);
+    } catch (err) {
+      console.error('Failed to load internships:', err);
+      setError('Unable to load internships.');
     } finally {
       setLoading(false);
     }
-  }, [activeType, searchQuery]);
+  }, []);
 
-  useEffect(() => { fetchOpportunities(); }, [fetchOpportunities]);
+  useEffect(() => {
+    fetchInternships();
+  }, [fetchInternships]);
 
-  /* Client-side work mode filter */
-  const filtered = opportunities.filter(o => {
-    const mode = getWorkMode(o).toLowerCase();
-    if (workTab === 'remote') return mode.includes('remote');
-    if (workTab === 'onsite') return mode.includes('on-site') || mode.includes('onsite') || (!mode.includes('remote') && !mode.includes('hybrid'));
-    if (workTab === 'hybrid') return mode.includes('hybrid');
-    return true; // 'all'
-  }).filter(o => {
-    if (!locationQuery.trim()) return true;
-    const loc = (getWorkMode(o) + ' ' + (o.location || '')).toLowerCase();
-    return loc.includes(locationQuery.toLowerCase());
+  /* Apply Client-Side Filters & Search */
+  const filteredInternships = internships.filter((opp) => {
+    // 1. Work Mode Filter
+    if (workModeFilter !== 'All') {
+      const mode = (opp.mode || opp.workMode || (opp.is_remote ? 'Remote' : 'On-site')).toLowerCase();
+      const target = workModeFilter.toLowerCase();
+      if (!mode.includes(target)) return false;
+    }
+
+    // 2. Search Query (Title, Company, Skills)
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      const title = (opp.title || '').toLowerCase();
+      const company = (opp.company || opp.organization || '').toLowerCase();
+      const skills = (opp.required_skills || opp.skills || []).join(' ').toLowerCase();
+      if (!title.includes(q) && !company.includes(q) && !skills.includes(q)) {
+        return false;
+      }
+    }
+
+    return true;
   });
 
-  const config = PAGE_CONFIG[activeType] || PAGE_CONFIG.all;
-  const PageIcon = config.Icon;
+  /* Sorting */
+  const sortedInternships = [...filteredInternships].sort((a, b) => {
+    if (sortBy === 'newest') {
+      const da = a.created_at?.toMillis ? a.created_at.toMillis() : new Date(a.created_at || 0).getTime();
+      const db = b.created_at?.toMillis ? b.created_at.toMillis() : new Date(b.created_at || 0).getTime();
+      return db - da;
+    }
+    if (sortBy === 'deadline') {
+      const da = a.deadline?.toMillis ? a.deadline.toMillis() : new Date(a.deadline || '9999-12-31').getTime();
+      const db = b.deadline?.toMillis ? b.deadline.toMillis() : new Date(b.deadline || '9999-12-31').getTime();
+      return da - db;
+    }
+    return 0;
+  });
+
+  /* Count text */
+  const countText = loading
+    ? 'Loading...'
+    : sortedInternships.length === 1
+    ? '1 internship'
+    : sortedInternships.length > 0
+    ? `${sortedInternships.length} internships`
+    : 'No internships';
+
+  const hasActiveFilters = workModeFilter !== 'All' || searchQuery.trim() !== '';
 
   return (
-    <div className="w-full font-sans pb-16 space-y-5 max-w-4xl">
-
-      {/* ── PAGE HEADING ─────────────────────────────── */}
-      <div className="space-y-1">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center">
-            <PageIcon size={20} className="text-indigo-600" />
-          </div>
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-              {config.title}
-            </h1>
-            <p className="text-sm text-slate-500 font-medium">{config.subtitle}</p>
-          </div>
-        </div>
+    <div className="w-full font-sans pb-16 max-w-5xl mx-auto space-y-6">
+      
+      {/* ── PAGE TITLE ────────────────────────────────────────── */}
+      <div>
+        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+          Internships
+        </h1>
+        <p className="text-sm font-medium text-slate-500 mt-1">
+          Find internships that match your skills and career goals.
+        </p>
       </div>
 
-      {/* ── TYPE TABS ────────────────────────────────── */}
-      <div className="flex items-center gap-2 flex-wrap">
-        {[
-          { id: 'internship',  label: 'Internships',   Icon: GraduationCap },
-          { id: 'job',         label: 'Jobs',           Icon: Briefcase     },
-          { id: 'competition', label: 'Competitions',   Icon: Trophy        },
-        ].map(({ id, label, Icon }) => (
-          <button
-            key={id}
-            onClick={() => { setActiveType(id); setWorkTab('all'); navigate(`/opportunities/${id}`, { replace: true }); }}
-            className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold border transition-all ${
-              activeType === id
-                ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs'
-                : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-300 hover:text-indigo-600'
-            }`}
-          >
-            <Icon size={14} />
-            {label}
-          </button>
-        ))}
-      </div>
-
-      {/* ── WORK MODE FILTER TABS ─────────────────────── */}
-      <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-xl p-1 w-fit">
-        {WORK_TABS.map(({ id, label }) => (
-          <button
-            key={id}
-            onClick={() => setWorkTab(id)}
-            className={`px-4 py-1.5 rounded-lg text-sm font-semibold transition-all ${
-              workTab === id
-                ? 'bg-slate-900 text-white shadow-xs'
-                : 'text-slate-500 hover:text-slate-800'
-            }`}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
-
-      {/* ── SEARCH + LOCATION ROW ──────────────────────── */}
-      <div className="flex gap-3 flex-wrap sm:flex-nowrap">
-        {/* Search */}
-        <div className="relative flex-1 min-w-0">
-          <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+      {/* ── FILTER BAR & SEARCH ───────────────────────────────── */}
+      <div className="bg-white rounded-xl border border-slate-200/80 p-4 space-y-3.5 shadow-2xs">
+        
+        {/* Search Field */}
+        <div className="relative w-full">
+          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
           <input
             type="text"
             value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            onKeyDown={e => { if (e.key === 'Enter') fetchOpportunities(); }}
-            placeholder={`Search ${config.title.toLowerCase()}...`}
-            className="w-full h-11 pl-10 pr-10 rounded-xl bg-white border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all"
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search internships..."
+            className="w-full h-10 pl-10 pr-9 rounded-lg bg-slate-50 border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20 transition-all"
           />
           {searchQuery && (
             <button
-              onClick={() => { setSearchQuery(''); fetchOpportunities(); }}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1"
             >
               <X size={14} />
             </button>
           )}
         </div>
 
-        {/* Location filter */}
-        <div className="relative w-44 shrink-0">
-          <MapPin size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-          <input
-            type="text"
-            value={locationQuery}
-            onChange={e => setLocationQuery(e.target.value)}
-            placeholder="Location"
-            className="w-full h-11 pl-9 pr-8 rounded-xl bg-white border border-slate-200 text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all"
-          />
-          <ChevronDown size={13} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+        {/* Filter Controls Row */}
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-1 border-t border-slate-100">
+          {/* Work Mode Selectors */}
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {['All', 'Remote', 'On-site', 'Hybrid'].map((mode) => (
+              <button
+                key={mode}
+                onClick={() => setWorkModeFilter(mode)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                  workModeFilter === mode
+                    ? 'bg-indigo-600 text-white shadow-2xs'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200/70'
+                }`}
+              >
+                {mode}
+              </button>
+            ))}
+          </div>
+
+          {/* Sort Dropdown */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-medium text-slate-400 hidden sm:inline">Sort:</span>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="px-3 py-1.5 rounded-lg bg-slate-100 border border-slate-200 text-xs font-semibold text-slate-700 focus:outline-none focus:border-indigo-500"
+            >
+              <option value="newest">Newest First</option>
+              <option value="deadline">Deadline (Earliest)</option>
+            </select>
+          </div>
         </div>
 
-        {/* Refresh */}
-        <button
-          onClick={fetchOpportunities}
-          disabled={loading}
-          className="h-11 w-11 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:border-indigo-300 hover:text-indigo-600 transition-colors disabled:opacity-50 shrink-0"
-          title="Refresh"
-        >
-          <RefreshCw size={15} className={loading ? 'animate-spin' : ''} />
-        </button>
       </div>
 
-      {/* ── RESULTS COUNT ──────────────────────────────── */}
-      {!loading && !error && (
-        <div className="flex items-center justify-between">
-          <p className="text-sm font-bold text-slate-700">
-            <span className="text-indigo-600 font-extrabold">{filtered.length}</span>{' '}
-            {config.title.toLowerCase()}{filtered.length !== 1 ? '' : ''}
-            {searchQuery && <span className="font-normal text-slate-400"> for "{searchQuery}"</span>}
-          </p>
-          {(workTab !== 'all' || locationQuery) && (
-            <button
-              onClick={() => { setWorkTab('all'); setLocationQuery(''); }}
-              className="text-xs font-bold text-indigo-600 hover:underline flex items-center gap-1"
-            >
-              <X size={11} /> Clear filters
-            </button>
-          )}
-        </div>
-      )}
+      {/* ── RESULT COUNT ─────────────────────────────────────── */}
+      <div className="flex items-center justify-between px-1">
+        <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+          {countText}
+        </p>
 
-      {/* ── CARDS LIST ─────────────────────────────────── */}
-      <div className="space-y-3">
+        {hasActiveFilters && (
+          <button
+            onClick={() => {
+              setWorkModeFilter('All');
+              setSearchQuery('');
+            }}
+            className="text-xs font-semibold text-indigo-600 hover:underline"
+          >
+            Clear Filters
+          </button>
+        )}
+      </div>
+
+      {/* ── INTERNSHIP LIST ───────────────────────────────────── */}
+      <div className="space-y-4">
         {loading ? (
-          Array.from({ length: 5 }).map((_, i) => <CardSkeleton key={i} />)
+          Array.from({ length: 4 }).map((_, i) => <SkeletonRow key={i} />)
         ) : error ? (
-          <div className="bg-white rounded-2xl border border-red-200 p-12 text-center space-y-3">
+          /* Error State */
+          <div className="bg-white rounded-xl border border-red-200 p-10 text-center space-y-3">
             <AlertCircle size={32} className="text-red-400 mx-auto" />
-            <p className="font-semibold text-red-600 text-sm">{error}</p>
+            <h3 className="font-bold text-slate-800 text-base">Unable to load internships.</h3>
+            <p className="text-xs text-slate-500">Please try again.</p>
             <button
-              onClick={fetchOpportunities}
-              className="px-5 py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-700 transition-colors"
+              onClick={fetchInternships}
+              className="px-4 py-2 rounded-lg bg-indigo-600 text-white text-xs font-semibold hover:bg-indigo-700 transition-colors"
             >
               Try Again
             </button>
           </div>
-        ) : filtered.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-slate-200 p-16 text-center space-y-3">
-            <div className="w-16 h-16 rounded-2xl bg-indigo-50 flex items-center justify-center mx-auto">
-              <Briefcase size={28} className="text-indigo-400" />
+        ) : sortedInternships.length === 0 ? (
+          /* Empty State */
+          <div className="bg-white rounded-xl border border-slate-200 p-12 text-center space-y-3">
+            <div className="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center mx-auto font-bold text-xl">
+              💼
             </div>
-            <h3 className="font-extrabold text-lg text-slate-800">No {config.title} Found</h3>
-            <p className="text-sm text-slate-400 max-w-xs mx-auto">
-              {searchQuery
-                ? `No results for "${searchQuery}". Try different keywords.`
-                : workTab !== 'all'
-                ? `No ${workTab} ${config.title.toLowerCase()} right now. Try "All".`
-                : 'New opportunities are added regularly. Check back soon!'
-              }
-            </p>
-            <button
-              onClick={() => { setSearchQuery(''); setWorkTab('all'); setLocationQuery(''); }}
-              className="mt-2 px-5 py-2.5 rounded-xl bg-indigo-50 text-indigo-600 text-sm font-bold hover:bg-indigo-100 transition-colors"
-            >
-              Clear Filters
-            </button>
+            {hasActiveFilters ? (
+              <>
+                <h3 className="font-bold text-slate-800 text-base">No internships found</h3>
+                <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                  Try changing your search or filters.
+                </p>
+                <button
+                  onClick={() => {
+                    setWorkModeFilter('All');
+                    setSearchQuery('');
+                  }}
+                  className="px-4 py-2 rounded-lg bg-indigo-50 text-indigo-600 text-xs font-semibold hover:bg-indigo-100 transition-colors"
+                >
+                  Clear Filters
+                </button>
+              </>
+            ) : (
+              <>
+                <h3 className="font-bold text-slate-800 text-base">No internships available right now.</h3>
+                <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                  New opportunities will appear here when they are published.
+                </p>
+              </>
+            )}
           </div>
         ) : (
-          filtered.map(opp => (
-            <OppCard
-              key={opp.id}
-              opp={opp}
-              saved={savedIds.has(opp.id)}
-              onSave={id => setSavedIds(prev => {
-                const next = new Set(prev);
-                if (next.has(id)) next.delete(id); else next.add(id);
-                return next;
-              })}
-            />
+          /* Internship Cards List */
+          sortedInternships.map((opp) => (
+            <InternshipCard key={opp.id} opp={opp} />
           ))
         )}
       </div>
