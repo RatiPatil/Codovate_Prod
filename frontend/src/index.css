@@ -145,6 +145,14 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
+/* ── Hide scrollbar utility (horizontal scroll rows) ── */
+.hide-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
 
 /* â”€â”€â”€ Toast Notifications â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @keyframes toast-slide-in {
