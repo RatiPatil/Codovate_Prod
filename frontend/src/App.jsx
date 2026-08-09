@@ -166,6 +166,12 @@ function App() {
                       <Layout><Opportunities /></Layout>
                     </ProtectedRoute>
                   } />
+                  <Route path="/opportunities/:type" element={
+                    <ProtectedRoute>
+                      <Layout><Opportunities /></Layout>
+                    </ProtectedRoute>
+                  } />
+
                   <Route path="/applications" element={
                     <ProtectedRoute>
                       <Layout><Applications /></Layout>
