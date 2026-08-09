@@ -199,7 +199,7 @@ function App() {
                   <Route path="/skill-assessments" element={<ProtectedRoute><Layout><SkillAssessments /></Layout></ProtectedRoute>} />
                   <Route path="/coding-practice" element={<ProtectedRoute><Layout><CodingPractice /></Layout></ProtectedRoute>} />
                   <Route path="/projecthub" element={<ProtectedRoute><Layout><ProjectHub /></Layout></ProtectedRoute>} />
-                  <Route path="/mentors" element={<Navigate to="/opportunities/internship" replace />} />
+                  <Route path="/mentors" element={<ProtectedRoute><Layout><Mentors /></Layout></ProtectedRoute>} />
                   <Route path="/community" element={<ProtectedRoute><Layout><Community /></Layout></ProtectedRoute>} />
                   <Route path="/teams/*" element={<ProtectedRoute><Layout><TeamsLayout /></Layout></ProtectedRoute>} />
                   <Route path="/events" element={<ProtectedRoute><Layout><Events /></Layout></ProtectedRoute>} />

@@ -28,6 +28,7 @@ const NAV_SECTIONS = [
       { path: '/roadmap', label: 'My Roadmap', Icon: Compass },
       { path: '/learning', label: 'Learn', Icon: BookOpen },
       { path: '/opportunities/internship', label: 'Opportunities', Icon: GraduationCap },
+      { path: '/mentors', label: 'Mentorship', Icon: Users },
       { path: '/teams', label: 'Teams', Icon: Users },
       { path: '/projecthub', label: 'Projects', Icon: Code2 },
     ]
