@@ -2,272 +2,262 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../api/axios';
 import {
-  Database,
-  BarChart2,
-  Code2,
-  Megaphone,
-  Globe,
-  Layout,
-  Users,
-  ChevronRight,
-  SlidersHorizontal,
-  MapPin,
-  Clock,
-  Laptop,
-  Briefcase,
-  Heart,
-  Share2,
-  ChevronDown,
-  X,
-  Sparkles,
-  AlertCircle,
-  Search,
-  Trophy,
-  Star,
-  GraduationCap,
-  BookOpen,
+  Search, MapPin, Clock, Laptop, Briefcase, Heart,
+  Share2, X, AlertCircle, ChevronDown, ArrowRight,
+  GraduationCap, Trophy, BookOpen, Users, RefreshCw,
+  Calendar, Star, Building2, ExternalLink,
 } from 'lucide-react';
 
-/* ─── Domain Category Tabs ─── */
-const DOMAIN_TABS = [
-  { id: 'all',       label: 'All',                Icon: Sparkles   },
-  { id: 'data',      label: 'Data Analysis',      Icon: Database   },
-  { id: 'dataSci',   label: 'Data Science',       Icon: BarChart2  },
-  { id: 'software',  label: 'Software Dev',       Icon: Code2      },
-  { id: 'marketing', label: 'Digital Marketing',  Icon: Megaphone  },
-  { id: 'web',       label: 'Web Development',    Icon: Globe      },
-  { id: 'uiux',      label: 'UI/UX',              Icon: Layout     },
-  { id: 'hr',        label: 'HR',                 Icon: Users      },
+/* ─── Work-mode filter tabs ─── */
+const WORK_TABS = [
+  { id: 'all',    label: 'All'      },
+  { id: 'remote', label: 'Remote'   },
+  { id: 'onsite', label: 'On-site'  },
+  { id: 'hybrid', label: 'Hybrid'   },
 ];
 
-/* ─── Featured Right Panel Items ─── */
-const FEATURED_SIDE = [
-  { id: 1, title: 'Win Cash Prizes & PPIs!',              company: 'Codovate Challenge 2026',           category: 'Competition', logoColor: '#0066FF', logoText: 'C', cta: 'Register Now!', path: '/opportunities/competition' },
-  { id: 2, title: 'Growth Marketing Intern',               company: 'Codovate ONE is hiring!',           category: 'Internship',  logoColor: '#7C3AED', logoText: 'G', cta: 'Apply Now',     path: '/opportunities/internship'  },
-  { id: 3, title: 'Codovate Alchemy 2026',                 company: 'Design Competition',                category: 'Competition', logoColor: '#DC2626', logoText: 'A', cta: null,            path: '/opportunities/competition' },
-  { id: 4, title: 'Join our Exclusive Event on August 21', company: 'Codovate Community',               category: 'Event',       logoColor: '#0891B2', logoText: 'E', cta: null,            path: '/community'                 },
-];
-
-/* ─── Opportunity Types ─── */
-const OPP_TYPES = [
-  { id: 'internship',  label: 'Internships',  Icon: GraduationCap },
-  { id: 'job',         label: 'Jobs',         Icon: Briefcase     },
-  { id: 'competition', label: 'Competitions', Icon: Trophy        },
-];
+/* ─── Page config per type ─── */
+const PAGE_CONFIG = {
+  internship:  { title: 'Internships',  subtitle: 'Find internships that match your skills.',  Icon: GraduationCap },
+  job:         { title: 'Jobs',         subtitle: 'Browse full-time roles from top companies.', Icon: Briefcase     },
+  competition: { title: 'Competitions', subtitle: 'Compete, win, and build your profile.',      Icon: Trophy        },
+  all:         { title: 'Opportunities',subtitle: 'Discover internships, jobs, and more.',      Icon: Briefcase     },
+};
 
 /* ─── Utilities ─── */
-const formatDate = (val) => {
-  if (!val) return '';
+const fmtDate = (val) => {
+  if (!val) return null;
   const d = val?.toDate ? val.toDate() : new Date(val);
-  if (isNaN(d.getTime())) return '';
+  if (isNaN(d.getTime())) return null;
   return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
 };
 
-/* ─── Status Badge ─── */
-const StatusBadge = ({ isOpen }) =>
-  isOpen ? (
-    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[11px] font-bold">
-      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
-      Open
-    </span>
-  ) : (
-    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-500 text-[11px] font-bold">
-      Closed
-    </span>
-  );
+const getWorkMode = (opp) => {
+  if (opp.work_mode) return opp.work_mode;
+  if (opp.is_remote || opp.mode === 'remote') return 'Remote';
+  if (opp.mode === 'hybrid') return 'Hybrid';
+  if (opp.location) return opp.location;
+  return 'On-site';
+};
 
-/* ─── Skill Chip ─── */
-const SkillChip = ({ label }) => (
-  <span className="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-[#EBF3FF] text-[#0066FF] border border-blue-100/80">
-    {label}
-  </span>
-);
+/* ─── Skill Tag ─── */
+const Tag = ({ label, variant = 'skill' }) => {
+  const classes = {
+    skill:    'bg-slate-100 text-slate-700 border border-slate-200',
+    meta:     'bg-blue-50 text-blue-700 border border-blue-100',
+    location: 'bg-amber-50 text-amber-700 border border-amber-100',
+  }[variant] || 'bg-slate-100 text-slate-700';
 
-/* ─── Match Score Badge ─── */
-const MatchBadge = ({ score }) => {
-  if (score == null) return null;
-  const cls =
-    score >= 80 ? 'bg-emerald-50 border-emerald-200 text-emerald-700' :
-    score >= 50 ? 'bg-amber-50 border-amber-200 text-amber-700' :
-                  'bg-slate-100 border-slate-200 text-slate-500';
   return (
-    <div className={`flex flex-col items-center justify-center w-14 h-14 rounded-xl border font-extrabold shrink-0 ${cls}`}>
-      <span className="text-base leading-none">{score}</span>
-      <span className="text-[9px] font-bold mt-0.5 leading-none">match</span>
-    </div>
+    <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-lg ${classes}`}>
+      {label}
+    </span>
   );
 };
 
-/* ─── Opportunity Card ─── */
-const OpportunityCard = ({ opp, onSave, saved }) => {
+/* ─── Status Badge ─── */
+const StatusDot = ({ isOpen }) => (
+  <span className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full ${
+    isOpen
+      ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+      : 'bg-slate-100 text-slate-500 border border-slate-200'
+  }`}>
+    <span className={`w-1.5 h-1.5 rounded-full ${isOpen ? 'bg-emerald-500' : 'bg-slate-400'}`} />
+    {isOpen ? 'Open' : 'Closed'}
+  </span>
+);
+
+/* ═══════════════════════════════════════════════════════
+   OPPORTUNITY ROW CARD (Wireframe layout)
+═══════════════════════════════════════════════════════ */
+const OppCard = ({ opp, saved, onSave }) => {
   const navigate = useNavigate();
 
-  const requiredSkills = opp.required_skills || [];
-  const domains        = opp.domains || [];
-  const allTags        = [...new Set([...requiredSkills, ...domains])].filter(Boolean);
-  const visibleTags    = allTags.slice(0, 3);
-  const hiddenCount    = allTags.length - visibleTags.length;
+  const isOpen     = opp.is_active !== false && !['closed','inactive'].includes((opp.status || '').toLowerCase());
+  const workMode   = getWorkMode(opp);
+  const skills     = (opp.required_skills || []).slice(0, 4);
+  const hiddenSkills = (opp.required_skills || []).length - skills.length;
+  const deadline   = fmtDate(opp.deadline || opp.application_deadline);
+  const posted     = fmtDate(opp.created_at);
+  const noExp      = !opp.experience_required || /fresher|no prior|0 year|^0$/i.test(opp.experience_required);
 
-  const isOpen    = opp.is_active !== false && !['closed', 'inactive'].includes((opp.status || '').toLowerCase());
-  const workMode  = opp.work_mode || (opp.is_remote ? 'Work from Home' : opp.location || '');
-  const noExp     = !opp.experience_required || opp.experience_required === '0' || /fresher|no prior|0 year/i.test(opp.experience_required);
+  const metaTags = [
+    workMode,
+    opp.employment_type || opp.duration || null,
+    opp.stipend ? `₹${opp.stipend}` : (opp.salary ? `₹${opp.salary}` : null),
+  ].filter(Boolean);
 
   return (
-    <article
-      onClick={() => navigate(`/opportunities/${opp.id}`)}
-      className="group bg-white rounded-2xl border border-slate-200/80 p-5 hover:border-[#0066FF]/40 hover:shadow-md transition-all duration-200 cursor-pointer"
-    >
+    <div className="group bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6 hover:border-indigo-300/60 hover:shadow-md transition-all duration-200">
       <div className="flex items-start gap-4">
 
         {/* Company Avatar */}
-        <div className="w-11 h-11 shrink-0 rounded-xl bg-[#EBF3FF] border border-blue-100 flex items-center justify-center font-extrabold text-[#0066FF] text-base overflow-hidden">
+        <div className="w-12 h-12 shrink-0 rounded-2xl bg-indigo-50 border border-indigo-100/80 flex items-center justify-center font-extrabold text-indigo-600 text-lg overflow-hidden">
           {opp.company_logo_url
-            ? <img src={opp.company_logo_url} alt={opp.company} className="w-full h-full object-contain p-1" />
+            ? <img src={opp.company_logo_url} alt="" className="w-full h-full object-contain p-1.5" />
             : (opp.company || 'C').charAt(0).toUpperCase()
           }
         </div>
 
-        <div className="flex-1 min-w-0 space-y-2.5">
+        {/* Content */}
+        <div className="flex-1 min-w-0 space-y-3">
 
-          {/* Title + Match Score */}
+          {/* Title + Company */}
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <h3 className="font-extrabold text-base sm:text-lg text-slate-900 leading-tight group-hover:text-[#0066FF] transition-colors line-clamp-2">
+              <h3 className="font-extrabold text-base sm:text-lg text-slate-900 leading-snug group-hover:text-indigo-600 transition-colors line-clamp-2">
                 {opp.title}
               </h3>
-              <p className="text-sm font-semibold text-slate-500 mt-0.5 truncate">
-                {opp.company || opp.organization || 'Company'}
-              </p>
+              <div className="flex items-center gap-2 mt-1 flex-wrap">
+                <span className="flex items-center gap-1 text-sm font-semibold text-slate-600">
+                  <Building2 size={13} className="text-slate-400" />
+                  {opp.company || opp.organization || 'Company'}
+                </span>
+                <StatusDot isOpen={isOpen} />
+              </div>
             </div>
-            <MatchBadge score={opp.match_score} />
+
+            {/* Match Score */}
+            {opp.match_score != null && (
+              <div className={`shrink-0 flex flex-col items-center justify-center w-14 h-14 rounded-2xl border font-extrabold ${
+                opp.match_score >= 70
+                  ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                  : opp.match_score >= 40
+                  ? 'bg-amber-50 border-amber-200 text-amber-700'
+                  : 'bg-slate-100 border-slate-200 text-slate-500'
+              }`}>
+                <span className="text-base leading-none">{opp.match_score}</span>
+                <span className="text-[9px] font-bold mt-0.5">match</span>
+              </div>
+            )}
           </div>
 
-          {/* Meta Tags */}
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500 font-medium">
-            {noExp ? (
-              <span className="flex items-center gap-1">
-                <Star size={11} className="text-amber-500" />
+          {/* Meta Tags Row: location • duration • stipend */}
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-slate-500 font-medium">
+            {noExp && (
+              <span className="flex items-center gap-1 text-amber-600 font-semibold">
+                <Star size={11} className="fill-amber-400 stroke-amber-400" />
                 No prior experience required
               </span>
-            ) : (
-              <span className="flex items-center gap-1">
-                <Briefcase size={11} />
-                {opp.experience_required}
+            )}
+            {metaTags.map((t, i) => (
+              <span key={i} className="flex items-center gap-1">
+                {i === 0 && (workMode.toLowerCase() === 'remote' ? <Laptop size={12} /> : <MapPin size={12} />)}
+                {i === 1 && <Clock size={12} />}
+                <span className={i === 2 ? 'font-extrabold text-emerald-700' : ''}>{t}</span>
+                {i < metaTags.length - 1 && <span className="ml-2 text-slate-300">·</span>}
               </span>
-            )}
-
-            {opp.employment_type && (
-              <>
-                <span className="text-slate-300">·</span>
-                <span className="flex items-center gap-1">
-                  <Clock size={11} />
-                  {opp.employment_type}
-                </span>
-              </>
-            )}
-
-            {workMode && (
-              <>
-                <span className="text-slate-300">·</span>
-                <span className="flex items-center gap-1">
-                  {opp.is_remote ? <Laptop size={11} /> : <MapPin size={11} />}
-                  {workMode}
-                </span>
-              </>
-            )}
-
-            {opp.stipend && (
-              <>
-                <span className="text-slate-300">·</span>
-                <span className="font-extrabold text-emerald-700">₹{opp.stipend}</span>
-              </>
-            )}
+            ))}
           </div>
 
           {/* Skill Tags */}
-          {visibleTags.length > 0 && (
+          {skills.length > 0 && (
             <div className="flex flex-wrap gap-1.5">
-              {visibleTags.map(tag => <SkillChip key={tag} label={tag} />)}
-              {hiddenCount > 0 && (
-                <span className="text-[11px] font-semibold text-slate-400 px-1 py-1">+{hiddenCount}</span>
+              {skills.map(s => <Tag key={s} label={s} variant="skill" />)}
+              {hiddenSkills > 0 && (
+                <span className="text-[11px] font-semibold text-slate-400 px-1 py-1">+{hiddenSkills}</span>
               )}
             </div>
           )}
 
-          {/* Bottom: Status + Date + Actions */}
-          <div className="flex items-center justify-between pt-2 border-t border-slate-100">
-            <div className="flex items-center gap-2">
-              <StatusBadge isOpen={isOpen} />
-              {opp.created_at && (
-                <span className="text-[11px] text-slate-400 font-medium">
-                  Posted {formatDate(opp.created_at)}
+          {/* Bottom Row: Deadline + Actions */}
+          <div className="flex items-center justify-between pt-3 border-t border-slate-100">
+            <div className="flex items-center gap-3 text-xs text-slate-500 font-medium">
+              {deadline && (
+                <span className="flex items-center gap-1">
+                  <Calendar size={12} className="text-slate-400" />
+                  <span>Deadline: <strong className="text-slate-700">{deadline}</strong></span>
                 </span>
+              )}
+              {!deadline && posted && (
+                <span>Posted {posted}</span>
               )}
             </div>
 
-            <div className="flex items-center gap-1" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center gap-2">
+              {/* Save */}
               <button
-                onClick={e => { e.stopPropagation(); onSave && onSave(opp.id); }}
-                className={`p-2 rounded-lg transition-colors ${saved ? 'text-red-500' : 'text-slate-400 hover:text-red-400'} hover:bg-red-50`}
+                onClick={e => { e.stopPropagation(); onSave?.(opp.id); }}
+                className={`p-2 rounded-xl transition-colors ${
+                  saved ? 'text-red-500 bg-red-50' : 'text-slate-400 hover:text-red-400 hover:bg-red-50'
+                }`}
                 aria-label="Save"
               >
                 <Heart size={15} fill={saved ? 'currentColor' : 'none'} />
               </button>
+
+              {/* Share */}
               <button
-                onClick={e => { e.stopPropagation(); navigator.clipboard?.writeText(window.location.origin + `/opportunities/${opp.id}`); }}
-                className="p-2 rounded-lg text-slate-400 hover:text-[#0066FF] hover:bg-blue-50 transition-colors"
+                onClick={e => { e.stopPropagation(); navigator.clipboard?.writeText(`${window.location.origin}/opportunities/${opp.id}`); }}
+                className="p-2 rounded-xl text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
                 aria-label="Share"
               >
                 <Share2 size={15} />
               </button>
+
+              {/* View Button */}
+              <button
+                onClick={() => navigate(`/opportunities/${opp.id}`)}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition-colors shadow-xs"
+              >
+                View <ArrowRight size={13} />
+              </button>
             </div>
           </div>
+
         </div>
       </div>
-    </article>
+    </div>
   );
 };
 
-/* ─── Skeleton ─── */
+/* ─── Card Skeleton ─── */
 const CardSkeleton = () => (
-  <div className="bg-white rounded-2xl border border-slate-200/80 p-5 animate-pulse">
+  <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 animate-pulse">
     <div className="flex gap-4">
-      <div className="w-11 h-11 rounded-xl bg-slate-200 shrink-0" />
+      <div className="w-12 h-12 rounded-2xl bg-slate-200 shrink-0" />
       <div className="flex-1 space-y-3">
-        <div className="h-5 bg-slate-200 rounded-xl w-3/4" />
-        <div className="h-4 bg-slate-100 rounded-xl w-1/2" />
-        <div className="h-4 bg-slate-100 rounded-xl w-2/3" />
-        <div className="flex gap-2">
-          <div className="h-6 w-20 bg-blue-50 rounded-lg" />
-          <div className="h-6 w-20 bg-blue-50 rounded-lg" />
+        <div className="h-5 bg-slate-200 rounded-xl w-3/5" />
+        <div className="h-4 bg-slate-100 rounded-xl w-2/5" />
+        <div className="h-4 bg-slate-100 rounded-xl w-4/5" />
+        <div className="flex gap-2 pt-1">
+          <div className="h-6 w-24 bg-slate-100 rounded-lg" />
+          <div className="h-6 w-20 bg-slate-100 rounded-lg" />
+          <div className="h-6 w-16 bg-slate-100 rounded-lg" />
+        </div>
+        <div className="flex justify-between pt-3 border-t border-slate-100">
+          <div className="h-4 w-36 bg-slate-100 rounded" />
+          <div className="h-8 w-20 bg-indigo-100 rounded-xl" />
         </div>
       </div>
     </div>
   </div>
 );
 
-/* ═══════════════════════════════════════════════════════════
-   MAIN OPPORTUNITIES PAGE — reads :type from URL segment
-═══════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════
+   MAIN OPPORTUNITIES / INTERNSHIPS PAGE
+═══════════════════════════════════════════════════════ */
 const Opportunities = () => {
-  const navigate = useNavigate();
-  const { type: urlType } = useParams();           // /opportunities/internship → urlType = "internship"
+  const navigate   = useNavigate();
+  const { type: urlType } = useParams();
 
-  /* Derive active type from URL param — default "internship" */
-  const [activeType,   setActiveType]   = useState(urlType || 'internship');
-  const [activeDomain, setActiveDomain] = useState('all');
-  const [searchQuery,  setSearchQuery]  = useState('');
+  const [activeType,    setActiveType]    = useState(urlType || 'internship');
+  const [workTab,       setWorkTab]       = useState('all');
+  const [searchQuery,   setSearchQuery]   = useState('');
+  const [locationQuery, setLocationQuery] = useState('');
   const [opportunities, setOpportunities] = useState([]);
-  const [loading, setLoading]             = useState(true);
-  const [error,   setError]               = useState(null);
-  const [savedIds, setSavedIds]           = useState(new Set());
+  const [loading,       setLoading]       = useState(true);
+  const [error,         setError]         = useState(null);
+  const [savedIds,      setSavedIds]      = useState(new Set());
 
-  /* Sync activeType with URL param changes (e.g. clicking Sidebar nav links) */
+  /* Sync type from URL param */
   useEffect(() => {
-    if (urlType && urlType !== activeType) {
-      setActiveType(urlType);
-      setActiveDomain('all');
+    const t = urlType || 'internship';
+    if (t !== activeType) {
+      setActiveType(t);
+      setWorkTab('all');
       setSearchQuery('');
+      setLocationQuery('');
     }
   }, [urlType]);
 
@@ -284,7 +274,7 @@ const Opportunities = () => {
                    Array.isArray(res.data?.opportunities) ? res.data.opportunities : [];
       setOpportunities(data);
     } catch {
-      setError('Failed to load opportunities. Please try again.');
+      setError('Could not load opportunities. Please try again.');
       setOpportunities([]);
     } finally {
       setLoading(false);
@@ -293,259 +283,197 @@ const Opportunities = () => {
 
   useEffect(() => { fetchOpportunities(); }, [fetchOpportunities]);
 
-  /* Domain filter (client-side keyword match) */
-  const DOMAIN_KEYWORDS = {
-    data:      ['data analysis', 'data analyst', 'analytics'],
-    dataSci:   ['data science', 'machine learning', 'ml', 'ai'],
-    software:  ['software', 'backend', 'fullstack', 'full-stack', 'python', 'java', 'node'],
-    marketing: ['marketing', 'digital', 'seo', 'content', 'social media'],
-    web:       ['web development', 'frontend', 'react', 'html', 'css', 'javascript'],
-    uiux:      ['ui', 'ux', 'design', 'figma', 'product design'],
-    hr:        ['hr', 'human resources', 'recruiter', 'talent'],
-  };
+  /* Client-side work mode filter */
+  const filtered = opportunities.filter(o => {
+    const mode = getWorkMode(o).toLowerCase();
+    if (workTab === 'remote') return mode.includes('remote');
+    if (workTab === 'onsite') return mode.includes('on-site') || mode.includes('onsite') || (!mode.includes('remote') && !mode.includes('hybrid'));
+    if (workTab === 'hybrid') return mode.includes('hybrid');
+    return true; // 'all'
+  }).filter(o => {
+    if (!locationQuery.trim()) return true;
+    const loc = (getWorkMode(o) + ' ' + (o.location || '')).toLowerCase();
+    return loc.includes(locationQuery.toLowerCase());
+  });
 
-  const visibleOpportunities = activeDomain === 'all'
-    ? opportunities
-    : opportunities.filter(o => {
-        const keywords = DOMAIN_KEYWORDS[activeDomain] || [];
-        const haystack = `${o.title || ''} ${(o.required_skills || []).join(' ')} ${(o.domains || []).join(' ')}`.toLowerCase();
-        return keywords.some(k => haystack.includes(k));
-      });
-
-  /* Type label */
-  const typeLabel = OPP_TYPES.find(t => t.id === activeType)?.label || 'Opportunities';
+  const config = PAGE_CONFIG[activeType] || PAGE_CONFIG.all;
+  const PageIcon = config.Icon;
 
   return (
-    <div className="w-full font-sans pb-16">
-      <div className="flex flex-col lg:flex-row gap-6 items-start">
+    <div className="w-full font-sans pb-16 space-y-5 max-w-4xl">
 
-        {/* ── LEFT: Main Content ─────────────────────────────── */}
-        <div className="flex-1 min-w-0 space-y-5">
-
-          {/* Page Heading */}
+      {/* ── PAGE HEADING ─────────────────────────────── */}
+      <div className="space-y-1">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center">
+            <PageIcon size={20} className="text-indigo-600" />
+          </div>
           <div>
-            <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight">
-              {loading
-                ? <span className="inline-block w-64 h-10 bg-slate-200 rounded-xl animate-pulse" />
-                : <>{visibleOpportunities.length > 0 ? `${visibleOpportunities.length}+ ` : ''}<span className="text-slate-900">{typeLabel}</span><span className="text-slate-500 font-bold"> for Students</span></>
-              }
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+              {config.title}
             </h1>
-            <p className="text-sm font-semibold text-[#0066FF] mt-1.5">
-              Latest {typeLabel} in India.
-            </p>
+            <p className="text-sm text-slate-500 font-medium">{config.subtitle}</p>
           </div>
+        </div>
+      </div>
 
-          {/* ─ Domain Category Tabs (Horizontal Scroll) ─ */}
-          <div className="relative">
-            <div className="flex gap-3 overflow-x-auto hide-scrollbar pb-1 pr-12">
-              {DOMAIN_TABS.map(({ id, label, Icon }) => (
-                <button
-                  key={id}
-                  onClick={() => setActiveDomain(id)}
-                  className={`flex flex-col items-center gap-2 px-4 py-3 min-w-[90px] rounded-[16px] border flex-shrink-0 transition-all duration-150 focus:outline-none ${
-                    activeDomain === id
-                      ? 'bg-[#EBF3FF] border-[#0066FF]/40 shadow-xs'
-                      : 'bg-white border-slate-200/80 hover:bg-slate-50 hover:border-slate-300'
-                  }`}
-                >
-                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${activeDomain === id ? 'bg-white' : 'bg-[#EBF3FF]'}`}>
-                    <Icon size={19} className={activeDomain === id ? 'text-[#0066FF]' : 'text-slate-500'} />
-                  </div>
-                  <span className={`text-xs font-bold text-center leading-tight ${activeDomain === id ? 'text-[#0066FF]' : 'text-slate-700'}`}>
-                    {label}
-                  </span>
-                </button>
-              ))}
-            </div>
+      {/* ── TYPE TABS ────────────────────────────────── */}
+      <div className="flex items-center gap-2 flex-wrap">
+        {[
+          { id: 'internship',  label: 'Internships',   Icon: GraduationCap },
+          { id: 'job',         label: 'Jobs',           Icon: Briefcase     },
+          { id: 'competition', label: 'Competitions',   Icon: Trophy        },
+        ].map(({ id, label, Icon }) => (
+          <button
+            key={id}
+            onClick={() => { setActiveType(id); setWorkTab('all'); navigate(`/opportunities/${id}`, { replace: true }); }}
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold border transition-all ${
+              activeType === id
+                ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs'
+                : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-300 hover:text-indigo-600'
+            }`}
+          >
+            <Icon size={14} />
+            {label}
+          </button>
+        ))}
+      </div>
 
-            {/* Scroll fade + arrow */}
-            <div className="absolute right-0 top-0 h-full w-14 bg-gradient-to-l from-[#F4F7FE] to-transparent pointer-events-none flex items-center justify-end pr-2">
-              <div className="w-7 h-7 rounded-full bg-white border border-slate-200 shadow-xs flex items-center justify-center">
-                <ChevronRight size={14} className="text-slate-500" />
-              </div>
-            </div>
-          </div>
+      {/* ── WORK MODE FILTER TABS ─────────────────────── */}
+      <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-xl p-1 w-fit">
+        {WORK_TABS.map(({ id, label }) => (
+          <button
+            key={id}
+            onClick={() => setWorkTab(id)}
+            className={`px-4 py-1.5 rounded-lg text-sm font-semibold transition-all ${
+              workTab === id
+                ? 'bg-slate-900 text-white shadow-xs'
+                : 'text-slate-500 hover:text-slate-800'
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
 
-          {/* ─ Type Toggle + Search Row ─ */}
-          <div className="flex flex-wrap items-center gap-2">
-            {/* Type switcher buttons — NO auto-select of all 3 */}
-            <div className="flex items-center gap-1.5 bg-white border border-slate-200 rounded-xl p-1">
-              {OPP_TYPES.map(({ id, label, Icon }) => (
-                <button
-                  key={id}
-                  onClick={() => {
-                    setActiveType(id);
-                    setActiveDomain('all');
-                    navigate(`/opportunities/${id}`, { replace: true });
-                  }}
-                  className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
-                    activeType === id
-                      ? 'bg-[#0066FF] text-white shadow-xs'
-                      : 'text-slate-600 hover:text-[#0066FF] hover:bg-[#EBF3FF]'
-                  }`}
-                >
-                  <Icon size={13} />
-                  {label}
-                </button>
-              ))}
-            </div>
-
-            {/* Location filter pill (future implementation) */}
-            <button className="flex items-center gap-1.5 px-3.5 py-2 rounded-full border border-slate-200 bg-white text-slate-600 text-xs font-bold hover:border-[#0066FF] hover:text-[#0066FF] transition-all whitespace-nowrap">
-              <MapPin size={12} />
-              <span>Location</span>
-              <ChevronDown size={11} className="opacity-60" />
+      {/* ── SEARCH + LOCATION ROW ──────────────────────── */}
+      <div className="flex gap-3 flex-wrap sm:flex-nowrap">
+        {/* Search */}
+        <div className="relative flex-1 min-w-0">
+          <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter') fetchOpportunities(); }}
+            placeholder={`Search ${config.title.toLowerCase()}...`}
+            className="w-full h-11 pl-10 pr-10 rounded-xl bg-white border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => { setSearchQuery(''); fetchOpportunities(); }}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+            >
+              <X size={14} />
             </button>
-
-            {/* Sort pill */}
-            <button className="flex items-center gap-1.5 px-3.5 py-2 rounded-full border border-slate-200 bg-white text-slate-600 text-xs font-bold hover:border-[#0066FF] hover:text-[#0066FF] transition-all whitespace-nowrap">
-              <SlidersHorizontal size={12} />
-              <span>Sort By</span>
-              <ChevronDown size={11} className="opacity-60" />
-            </button>
-          </div>
-
-          {/* ─ Search Bar ─ */}
-          <div className="relative">
-            <Search size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter') fetchOpportunities(); }}
-              placeholder={`Search ${typeLabel.toLowerCase()}...`}
-              className="w-full h-11 pl-10 pr-10 rounded-xl bg-white border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#0066FF] focus:ring-2 focus:ring-[#0066FF]/20 transition-all"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => { setSearchQuery(''); fetchOpportunities(); }}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 p-1"
-              >
-                <X size={14} />
-              </button>
-            )}
-          </div>
-
-          {/* ─ Card List ─ */}
-          <div className="space-y-3">
-            {loading ? (
-              Array.from({ length: 5 }).map((_, i) => <CardSkeleton key={i} />)
-            ) : error ? (
-              <div className="bg-white rounded-2xl border border-red-200 p-10 text-center">
-                <AlertCircle size={32} className="text-red-400 mx-auto mb-3" />
-                <p className="text-sm font-semibold text-red-600 mb-4">{error}</p>
-                <button
-                  onClick={fetchOpportunities}
-                  className="px-5 py-2.5 rounded-xl bg-[#0066FF] text-white text-sm font-bold hover:bg-blue-700 transition-colors"
-                >
-                  Try Again
-                </button>
-              </div>
-            ) : visibleOpportunities.length === 0 ? (
-              <div className="bg-white rounded-2xl border border-slate-200 p-14 text-center">
-                <div className="w-16 h-16 rounded-2xl bg-[#EBF3FF] flex items-center justify-center mx-auto mb-4">
-                  <Briefcase size={28} className="text-[#0066FF]" />
-                </div>
-                <h3 className="font-extrabold text-lg text-slate-800 mb-1">No {typeLabel} Found</h3>
-                <p className="text-sm text-slate-400 max-w-xs mx-auto font-medium">
-                  {searchQuery
-                    ? `No results for "${searchQuery}". Try different keywords.`
-                    : 'New opportunities are added regularly. Check back soon!'
-                  }
-                </p>
-                {(searchQuery || activeDomain !== 'all') && (
-                  <button
-                    onClick={() => { setSearchQuery(''); setActiveDomain('all'); }}
-                    className="mt-4 px-5 py-2.5 rounded-xl bg-[#EBF3FF] text-[#0066FF] text-sm font-bold hover:bg-[#D0E4FF] transition-colors"
-                  >
-                    Clear Filters
-                  </button>
-                )}
-              </div>
-            ) : (
-              visibleOpportunities.map(opp => (
-                <OpportunityCard
-                  key={opp.id}
-                  opp={opp}
-                  onSave={id => setSavedIds(prev => {
-                    const next = new Set(prev);
-                    if (next.has(id)) next.delete(id); else next.add(id);
-                    return next;
-                  })}
-                  saved={savedIds.has(opp.id)}
-                />
-              ))
-            )}
-          </div>
-
+          )}
         </div>
 
-        {/* ── RIGHT: Featured Sidebar ─────────────────────────── */}
-        <aside className="hidden lg:flex flex-col w-72 xl:w-80 shrink-0 space-y-4">
+        {/* Location filter */}
+        <div className="relative w-44 shrink-0">
+          <MapPin size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+          <input
+            type="text"
+            value={locationQuery}
+            onChange={e => setLocationQuery(e.target.value)}
+            placeholder="Location"
+            className="w-full h-11 pl-9 pr-8 rounded-xl bg-white border border-slate-200 text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all"
+          />
+          <ChevronDown size={13} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+        </div>
 
-          {/* Featured Panel */}
-          <div className="bg-white rounded-2xl border border-slate-200/80 overflow-hidden">
-            <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
-              <h3 className="font-extrabold text-slate-900 text-sm">Featured</h3>
-              <Trophy size={15} className="text-amber-500" />
-            </div>
-
-            <div className="divide-y divide-slate-100">
-              {FEATURED_SIDE.map(item => (
-                <div
-                  key={item.id}
-                  onClick={() => navigate(item.path)}
-                  className="flex items-start gap-3 px-4 py-3.5 hover:bg-slate-50/80 cursor-pointer transition-colors group"
-                >
-                  <div
-                    className="w-9 h-9 rounded-lg flex items-center justify-center font-extrabold text-white text-sm shrink-0"
-                    style={{ background: item.logoColor }}
-                  >
-                    {item.logoText}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-extrabold text-slate-900 leading-snug group-hover:text-[#0066FF] transition-colors">
-                      {item.title}
-                    </p>
-                    <p className="text-[11px] text-slate-400 font-medium mt-0.5 truncate">{item.company}</p>
-                    {item.cta && (
-                      <span className="mt-1 block text-[10px] font-extrabold text-[#0066FF]">{item.cta} →</span>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Quick Browse */}
-          <div className="bg-white rounded-2xl border border-slate-200/80 overflow-hidden">
-            <div className="px-4 py-3 border-b border-slate-100">
-              <h3 className="font-extrabold text-slate-900 text-sm">Quick Browse</h3>
-            </div>
-            <div className="px-3 py-3 space-y-1">
-              {[
-                { label: 'Internships',  path: '/opportunities/internship',  Icon: GraduationCap },
-                { label: 'Jobs',         path: '/opportunities/job',         Icon: Briefcase     },
-                { label: 'Competitions', path: '/opportunities/competition', Icon: Trophy        },
-                { label: 'Mentorship',   path: '/mentors',                   Icon: Users         },
-                { label: 'Courses',      path: '/learning',                  Icon: BookOpen      },
-              ].map(({ label, path, Icon }) => (
-                <button
-                  key={path}
-                  onClick={() => navigate(path)}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-700 hover:bg-[#EBF3FF] hover:text-[#0066FF] transition-all text-left focus:outline-none"
-                >
-                  <Icon size={15} className="shrink-0" />
-                  <span>{label}</span>
-                  <ChevronRight size={11} className="ml-auto text-slate-400" />
-                </button>
-              ))}
-            </div>
-          </div>
-
-        </aside>
-
+        {/* Refresh */}
+        <button
+          onClick={fetchOpportunities}
+          disabled={loading}
+          className="h-11 w-11 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:border-indigo-300 hover:text-indigo-600 transition-colors disabled:opacity-50 shrink-0"
+          title="Refresh"
+        >
+          <RefreshCw size={15} className={loading ? 'animate-spin' : ''} />
+        </button>
       </div>
+
+      {/* ── RESULTS COUNT ──────────────────────────────── */}
+      {!loading && !error && (
+        <div className="flex items-center justify-between">
+          <p className="text-sm font-bold text-slate-700">
+            <span className="text-indigo-600 font-extrabold">{filtered.length}</span>{' '}
+            {config.title.toLowerCase()}{filtered.length !== 1 ? '' : ''}
+            {searchQuery && <span className="font-normal text-slate-400"> for "{searchQuery}"</span>}
+          </p>
+          {(workTab !== 'all' || locationQuery) && (
+            <button
+              onClick={() => { setWorkTab('all'); setLocationQuery(''); }}
+              className="text-xs font-bold text-indigo-600 hover:underline flex items-center gap-1"
+            >
+              <X size={11} /> Clear filters
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* ── CARDS LIST ─────────────────────────────────── */}
+      <div className="space-y-3">
+        {loading ? (
+          Array.from({ length: 5 }).map((_, i) => <CardSkeleton key={i} />)
+        ) : error ? (
+          <div className="bg-white rounded-2xl border border-red-200 p-12 text-center space-y-3">
+            <AlertCircle size={32} className="text-red-400 mx-auto" />
+            <p className="font-semibold text-red-600 text-sm">{error}</p>
+            <button
+              onClick={fetchOpportunities}
+              className="px-5 py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-700 transition-colors"
+            >
+              Try Again
+            </button>
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="bg-white rounded-2xl border border-slate-200 p-16 text-center space-y-3">
+            <div className="w-16 h-16 rounded-2xl bg-indigo-50 flex items-center justify-center mx-auto">
+              <Briefcase size={28} className="text-indigo-400" />
+            </div>
+            <h3 className="font-extrabold text-lg text-slate-800">No {config.title} Found</h3>
+            <p className="text-sm text-slate-400 max-w-xs mx-auto">
+              {searchQuery
+                ? `No results for "${searchQuery}". Try different keywords.`
+                : workTab !== 'all'
+                ? `No ${workTab} ${config.title.toLowerCase()} right now. Try "All".`
+                : 'New opportunities are added regularly. Check back soon!'
+              }
+            </p>
+            <button
+              onClick={() => { setSearchQuery(''); setWorkTab('all'); setLocationQuery(''); }}
+              className="mt-2 px-5 py-2.5 rounded-xl bg-indigo-50 text-indigo-600 text-sm font-bold hover:bg-indigo-100 transition-colors"
+            >
+              Clear Filters
+            </button>
+          </div>
+        ) : (
+          filtered.map(opp => (
+            <OppCard
+              key={opp.id}
+              opp={opp}
+              saved={savedIds.has(opp.id)}
+              onSave={id => setSavedIds(prev => {
+                const next = new Set(prev);
+                if (next.has(id)) next.delete(id); else next.add(id);
+                return next;
+              })}
+            />
+          ))
+        )}
+      </div>
+
     </div>
   );
 };
