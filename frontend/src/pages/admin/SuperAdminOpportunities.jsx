@@ -132,6 +132,28 @@ const SuperAdminOpportunities = () => {
       )
     },
     {
+      header: 'Homepage Featured',
+      render: (row) => (
+        <button
+          onClick={async () => {
+            try {
+              await api.put(`/admin/opportunities/${row.id}`, { is_featured: !row.is_featured });
+              fetchOps();
+            } catch (err) {
+              showAlert("Failed to update featured status");
+            }
+          }}
+          className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+            row.is_featured
+              ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40 hover:bg-amber-500/30'
+              : 'bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700'
+          }`}
+        >
+          {row.is_featured ? '★ Featured' : '☆ Feature'}
+        </button>
+      )
+    },
+    {
       header: 'Actions',
       render: (row) => (
         <div className="flex gap-2">
