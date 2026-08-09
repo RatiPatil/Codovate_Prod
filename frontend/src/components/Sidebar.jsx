@@ -12,13 +12,34 @@ import {
   Code2,
   BookOpen,
   ChevronRight,
+  ChevronDown,
   Plus,
   Compass,
   X,
   Bell,
   MessageSquare,
+  Brain,
+  HelpCircle,
+  PenTool,
+  Mic,
+  Globe,
+  PartyPopper,
+  Book,
+  PlaySquare,
+  Lock,
+  Terminal,
+  Activity,
+  CheckCheck,
+  Waypoints,
+  Library,
+  Calendar,
+  Award,
+  History,
+  Heart,
+  Bookmark
 } from 'lucide-react';
 import Logo from './common/Logo';
+import toast from 'react-hot-toast';
 
 /* Navigation Items — use clean URL segments, NOT query params */
 const NAV_ITEMS = [
@@ -31,16 +52,44 @@ const NAV_ITEMS = [
   { path: '/mock-interview',             label: 'Mock Interview',Icon: Video                      },
   { path: '/coding-practice',            label: '100 Days to Code', Icon: Code2                  },
   { path: '/learning',                   label: 'Courses',       Icon: BookOpen                   },
-  { path: '/roadmap',                    label: 'More',          Icon: Compass,      hasSub: true },
-  { path: '/applications',               label: 'My Activity',   Icon: ChevronRight, hasSub: true },
+  { isToggle: true, id: 'more',          label: 'More',          Icon: Compass,      hasSub: true },
+  { isToggle: true, id: 'activity',      label: 'My Activity',   Icon: Activity,     hasSub: true },
+];
+
+const MORE_ITEMS = [
+  { label: 'Practice', Icon: Brain },
+  { label: 'Hackathons', Icon: Terminal },
+  { label: 'Quizzes', Icon: HelpCircle },
+  { label: 'Scholarships', Icon: GraduationCap },
+  { label: 'Workshops', Icon: PenTool },
+  { label: 'Conferences', Icon: Mic },
+  { label: 'Cultural Events', Icon: Globe },
+  { label: 'College Festivals', Icon: PartyPopper },
+  { label: 'Articles', Icon: Book },
+  { label: 'Resources', Icon: PlaySquare },
+];
+
+const ACTIVITY_ITEMS = [
+  { label: 'My Applications', Icon: CheckCheck },
+  { label: 'My Rounds', Icon: Waypoints },
+  { label: 'My Courses', Icon: Library },
+  { label: 'My Sessions', Icon: Calendar },
+  { label: 'My Certificates', Icon: Award },
+  { label: 'Recently Viewed', Icon: History },
+  { label: 'Watchlist', Icon: Heart },
+  { label: 'Bookmarked Questions', Icon: Bookmark },
 ];
 
 const Sidebar = ({ mobileOpen, setMobileOpen }) => {
   const navigate  = useNavigate();
   const location  = useLocation();
   const { user }  = useAuth();
+  
+  const [isMoreOpen, setIsMoreOpen] = useState(false);
+  const [isActivityOpen, setIsActivityOpen] = useState(false);
 
   const isPathActive = (item) => {
+    if (item.isToggle) return false;
     const current = location.pathname;
     // Exact match — used for dashboard and all opportunity types (prevents triple highlight)
     if (item.exact) {
@@ -93,6 +142,46 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
       {/* Vertical Navigation Links Stream */}
       <nav className="flex-1 px-3 py-2 space-y-1 overflow-y-auto sidebar-scroll">
         {NAV_ITEMS.map((item) => {
+          if (item.isToggle) {
+            const isOpen = item.id === 'more' ? isMoreOpen : isActivityOpen;
+            const toggle = () => item.id === 'more' ? setIsMoreOpen(!isMoreOpen) : setIsActivityOpen(!isActivityOpen);
+            const subItems = item.id === 'more' ? MORE_ITEMS : ACTIVITY_ITEMS;
+
+            return (
+              <div key={item.id} className="space-y-1">
+                <button
+                  onClick={toggle}
+                  className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl font-semibold text-sm transition-all duration-150 text-slate-600 hover:text-slate-900 hover:bg-slate-100/80`}
+                >
+                  <div className="flex items-center gap-3 truncate">
+                    <item.Icon size={19} strokeWidth={1.8} className="text-slate-500" />
+                    <span className="truncate">{item.label}</span>
+                  </div>
+                  {isOpen ? <ChevronDown size={16} className="text-slate-400 shrink-0" /> : <ChevronRight size={16} className="text-slate-400 shrink-0" />}
+                </button>
+                {isOpen && (
+                  <div className="pl-4 pr-2 py-1 space-y-1">
+                    {subItems.map(subItem => (
+                      <button
+                        key={subItem.label}
+                        onClick={() => toast('This feature is currently under development.', { icon: '🚧' })}
+                        className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl font-semibold text-sm text-slate-500 hover:text-slate-800 hover:bg-slate-100/50 transition-all"
+                      >
+                        <div className="flex items-center gap-3 truncate">
+                          <subItem.Icon size={17} strokeWidth={1.8} />
+                          <span className="truncate">{subItem.label}</span>
+                        </div>
+                        <span className="text-[9px] uppercase tracking-wider font-bold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded flex items-center gap-1 shrink-0">
+                          <Lock size={8} /> Dev
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          }
+
           const active = isPathActive(item);
           const Icon = item.Icon;
           return (
