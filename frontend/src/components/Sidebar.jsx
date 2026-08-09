@@ -109,12 +109,12 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
     <div className="flex flex-col h-full bg-white text-slate-700 border-r border-slate-200/80 select-none font-sans relative">
       
       {/* Top Header: Logo + Toggle & Mobile Close */}
-      <div className="pt-10 pb-8 flex items-center justify-center shrink-0 relative">
+      <div className="pt-6 pb-4 flex items-center justify-center shrink-0 relative">
         <button
           onClick={() => navigate('/dashboard')}
-          className="focus:outline-none flex flex-col items-center justify-center"
+          className="focus:outline-none flex flex-row items-center justify-center"
         >
-          <Logo size="hero" className="h-28 sm:h-[120px] object-contain" />
+          <Logo size="lg" className="h-14 sm:h-16 object-contain" />
         </button>
 
         <button
@@ -139,13 +139,13 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
               <div key={item.id} className="relative">
                 <button
                   onClick={toggle}
-                  className={`w-full flex items-center justify-between px-4 py-3.5 rounded-xl font-medium text-[15px] transition-all duration-150 ${isOpen ? 'text-[#1E3A8A] bg-blue-50/50' : 'text-[#334155] hover:text-[#1E3A8A] hover:bg-slate-50'}`}
+                  className={`w-full flex items-center justify-between px-4 py-3.5 rounded-xl font-semibold text-[15px] transition-all duration-150 ${isOpen ? 'text-[#0066FF] bg-[#EBF3FF]' : 'text-slate-600 hover:text-[#0066FF] hover:bg-[#F8FAFC]'}`}
                 >
                   <div className="flex items-center gap-4 truncate">
-                    <item.Icon size={22} strokeWidth={1.5} className={isOpen ? 'text-[#1E3A8A]' : 'text-[#475569]'} />
+                    <item.Icon size={20} strokeWidth={1.8} className={isOpen ? 'text-[#0066FF]' : 'text-slate-500'} />
                     <span className="truncate">{item.label}</span>
                   </div>
-                  <ChevronRight size={16} className={isOpen ? 'text-[#1E3A8A]' : 'text-[#94A3B8]'} />
+                  <ChevronRight size={16} className={isOpen ? 'text-[#0066FF]' : 'text-slate-400'} />
                 </button>
                 {isOpen && (
                   <div className="absolute left-[102%] top-0 w-60 bg-white border border-slate-100 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.15)] rounded-3xl py-2 z-[100] animate-fadeIn">
@@ -177,14 +177,14 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
               key={item.label}
               to={item.path}
               onClick={() => setMobileOpen && setMobileOpen(false)}
-              className={`flex items-center justify-between px-4 py-3.5 rounded-xl font-medium text-[15px] transition-all duration-150 ${
+              className={`flex items-center justify-between px-4 py-3.5 rounded-xl font-semibold text-[15px] transition-all duration-150 ${
                 active
-                  ? 'text-[#1E3A8A] bg-blue-50/50'
-                  : 'text-[#334155] hover:text-[#1E3A8A] hover:bg-slate-50'
+                  ? 'text-[#0066FF] bg-[#EBF3FF]'
+                  : 'text-slate-600 hover:text-[#0066FF] hover:bg-[#F8FAFC]'
               }`}
             >
               <div className="flex items-center gap-4 truncate">
-                <Icon size={22} strokeWidth={1.5} className={active ? 'text-[#1E3A8A]' : 'text-[#475569]'} />
+                <Icon size={20} strokeWidth={1.8} className={active ? 'text-[#0066FF]' : 'text-slate-500'} />
                 <span className="truncate">{item.label}</span>
               </div>
             </Link>
