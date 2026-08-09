@@ -9,7 +9,7 @@ import {
   AlertCircle, ExternalLink, ShieldCheck, Clock, MapPin,
 } from 'lucide-react';
 
-/* ─── Student category tiles ─── */
+/* ─── Static category tiles (paths only, no fake data) ─── */
 const CATEGORIES = [
   { id: 'internships',  title: 'Internships',   path: '/opportunities/internship',  Icon: GraduationCap },
   { id: 'jobs',         title: 'Jobs',           path: '/opportunities/job',          Icon: Briefcase     },

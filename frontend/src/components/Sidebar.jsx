@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
@@ -7,47 +7,32 @@ import {
   Briefcase,
   Trophy,
   Users,
+  FileCheck2,
+  Video,
   Code2,
   BookOpen,
   ChevronRight,
+  Plus,
   Compass,
   X,
   Bell,
   MessageSquare,
-  User,
-  Settings,
 } from 'lucide-react';
 import Logo from './common/Logo';
 
-/* Student Navigation Config */
-const NAV_SECTIONS = [
-  {
-    title: 'MAIN',
-    items: [
-      { path: '/dashboard', label: 'Home', Icon: Home, exact: true },
-      { path: '/roadmap', label: 'My Roadmap', Icon: Compass },
-      { path: '/learning', label: 'Learn', Icon: BookOpen },
-      { path: '/opportunities/internship', label: 'Opportunities', Icon: GraduationCap },
-      { path: '/mentors', label: 'Mentorship', Icon: Users },
-      { path: '/teams', label: 'Teams', Icon: Users },
-      { path: '/projecthub', label: 'Projects', Icon: Code2 },
-    ]
-  },
-  {
-    title: 'CAREER',
-    items: [
-      { path: '/applications', label: 'Applications', Icon: ChevronRight },
-      { path: '/portfolio', label: 'Portfolio', Icon: Trophy },
-      { path: '/resume-builder', label: 'Resume', Icon: Briefcase },
-    ]
-  },
-  {
-    title: 'PROFILE',
-    items: [
-      { path: '/profile', label: 'Profile', Icon: User },
-      { path: '/settings', label: 'Settings', Icon: Settings },
-    ]
-  }
+/* Navigation Items — use clean URL segments, NOT query params */
+const NAV_ITEMS = [
+  { path: '/dashboard',                  label: 'Home',          Icon: Home,         exact: true  },
+  { path: '/opportunities/internship',   label: 'Internships',   Icon: GraduationCap, exact: true },
+  { path: '/opportunities/job',          label: 'Jobs',          Icon: Briefcase,     exact: true },
+  { path: '/opportunities/competition',  label: 'Competitions',  Icon: Trophy,        exact: true },
+  { path: '/mentors',                    label: 'Mentorship',    Icon: Users                      },
+  { path: '/skill-assessments',          label: 'Mock Tests',    Icon: FileCheck2                 },
+  { path: '/mock-interview',             label: 'Mock Interview',Icon: Video                      },
+  { path: '/coding-practice',            label: '100 Days to Code', Icon: Code2                  },
+  { path: '/learning',                   label: 'Courses',       Icon: BookOpen                   },
+  { path: '/roadmap',                    label: 'More',          Icon: Compass,      hasSub: true },
+  { path: '/applications',               label: 'My Activity',   Icon: ChevronRight, hasSub: true },
 ];
 
 const Sidebar = ({ mobileOpen, setMobileOpen }) => {
@@ -57,10 +42,12 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
 
   const isPathActive = (item) => {
     const current = location.pathname;
+    // Exact match — used for dashboard and all opportunity types (prevents triple highlight)
     if (item.exact) {
       if (item.path === '/dashboard') return current === '/dashboard' || current === '/';
       return current === item.path;
     }
+    // Prefix match for non-exact items (e.g. /learning matches /learning/course/:id)
     return current === item.path || current.startsWith(item.path + '/');
   };
 
@@ -92,36 +79,44 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
         </button>
       </div>
 
+      {/* Primary Action Button: + Post Opportunity */}
+      <div className="px-4 py-2 shrink-0">
+        <button
+          onClick={() => navigate('/opportunities')}
+          className="w-full h-11 bg-[#E0EEFF] hover:bg-[#D0E4FF] text-[#0066FF] font-bold rounded-2xl flex items-center justify-center gap-2 text-sm transition-all duration-150 active:scale-[0.98]"
+        >
+          <Plus size={18} strokeWidth={2.5} />
+          <span>+ Post</span>
+        </button>
+      </div>
+
       {/* Vertical Navigation Links Stream */}
-      <nav className="flex-1 px-3 py-2 space-y-5 overflow-y-auto sidebar-scroll">
-        {NAV_SECTIONS.map((section) => (
-          <div key={section.title} className="space-y-1">
-            <p className="px-4 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
-              {section.title}
-            </p>
-            {section.items.map((item) => {
-              const active = isPathActive(item);
-              const Icon = item.Icon;
-              return (
-                <Link
-                  key={item.label}
-                  to={item.path}
-                  onClick={() => setMobileOpen && setMobileOpen(false)}
-                  className={`flex items-center justify-between px-4 py-2.5 rounded-2xl font-semibold text-xs sm:text-sm transition-all duration-150 ${
-                    active
-                      ? 'bg-[#EBF3FF] text-[#0066FF]'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80'
-                  }`}
-                >
-                  <div className="flex items-center gap-3 truncate">
-                    <Icon size={18} strokeWidth={active ? 2.2 : 1.8} className={active ? 'text-[#0066FF]' : 'text-slate-500'} />
-                    <span className="truncate">{item.label}</span>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-        ))}
+      <nav className="flex-1 px-3 py-2 space-y-1 overflow-y-auto sidebar-scroll">
+        {NAV_ITEMS.map((item) => {
+          const active = isPathActive(item);
+          const Icon = item.Icon;
+          return (
+            <Link
+              key={item.label}
+              to={item.path}
+              onClick={() => setMobileOpen && setMobileOpen(false)}
+              className={`flex items-center justify-between px-4 py-3 rounded-2xl font-semibold text-sm transition-all duration-150 ${
+                active
+                  ? 'bg-[#EBF3FF] text-[#0066FF]'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80'
+              }`}
+            >
+              <div className="flex items-center gap-3 truncate">
+                <Icon size={19} strokeWidth={active ? 2.2 : 1.8} className={active ? 'text-[#0066FF]' : 'text-slate-500'} />
+                <span className="truncate">{item.label}</span>
+              </div>
+
+              {item.hasSub && (
+                <ChevronRight size={16} className="text-slate-400 shrink-0" />
+              )}
+            </Link>
+          );
+        })}
       </nav>
 
       {/* Bottom Control Bar: Notifications, Chat, Profile Avatar */}
@@ -156,7 +151,7 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
 
   return (
     <>
-      {/* Desktop Fixed Left Navigation */}
+      {/* Desktop Fixed Left Navigation (Width: 230px) */}
       <aside className="hidden md:flex flex-col w-[230px] h-screen sticky top-0 shrink-0 z-20 print:hidden">
         <Content />
       </aside>
