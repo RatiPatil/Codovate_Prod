@@ -132,7 +132,15 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
         {NAV_ITEMS.map((item) => {
           if (item.isToggle) {
             const isOpen = item.id === 'more' ? isMoreOpen : isActivityOpen;
-            const toggle = () => item.id === 'more' ? setIsMoreOpen(!isMoreOpen) : setIsActivityOpen(!isActivityOpen);
+            const toggle = () => {
+              if (item.id === 'more') {
+                setIsMoreOpen(!isMoreOpen);
+                setIsActivityOpen(false);
+              } else {
+                setIsActivityOpen(!isActivityOpen);
+                setIsMoreOpen(false);
+              }
+            };
             const subItems = item.id === 'more' ? MORE_ITEMS : ACTIVITY_ITEMS;
 
             return (
@@ -148,7 +156,7 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
                   <ChevronRight size={16} className={isOpen ? 'text-[#0066FF]' : 'text-slate-400'} />
                 </button>
                 {isOpen && (
-                  <div className="absolute left-[102%] top-0 w-60 bg-white border border-slate-100 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.15)] rounded-3xl py-2 z-[100] animate-fadeIn">
+                  <div className="absolute left-[102%] bottom-0 w-60 bg-white border border-slate-100 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.15)] rounded-3xl py-2 z-[100] animate-fadeIn">
                     {subItems.map(subItem => (
                       <button
                         key={subItem.label}
