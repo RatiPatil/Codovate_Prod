@@ -1,247 +1,144 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import api from '../api/axios';
 import {
   Home,
-  Map,
-  BookOpen,
+  GraduationCap,
   Briefcase,
+  Trophy,
   Users,
-  FolderGit2,
-  ClipboardList,
-  User,
-  FileText,
+  FileCheck2,
   Video,
-  MessageSquare,
-  Settings,
+  Code2,
+  BookOpen,
+  ChevronRight,
+  Plus,
+  Compass,
   X,
-  Sparkles,
+  Bell,
+  MessageSquare,
 } from 'lucide-react';
 import Logo from './common/Logo';
 
-/* Categorized Navigation Order matching Product Shell Requirements */
-const NAV_SECTIONS = [
-  {
-    title: 'MAIN',
-    items: [
-      { path: '/dashboard',     label: 'Home',          Icon: Home },
-      { path: '/roadmap',       label: 'My Roadmap',    Icon: Map },
-      { path: '/learning',      label: 'Learn',         Icon: BookOpen },
-      { path: '/opportunities', label: 'Opportunities', Icon: Briefcase },
-      { path: '/teams',         label: 'Teams',         Icon: Users },
-      { path: '/projecthub',    label: 'Projects',      Icon: FolderGit2 },
-    ],
-  },
-  {
-    title: 'CAREER',
-    items: [
-      { path: '/applications',  label: 'Applications',  Icon: ClipboardList },
-      { path: '/profile',       label: 'Portfolio',     Icon: User },
-      { path: '/resume-builder',label: 'Resume',        Icon: FileText },
-    ],
-  },
-  {
-    title: 'COMMUNITY',
-    items: [
-      { path: '/mentors',       label: 'Mentorship',    Icon: Video },
-      { path: '/community',     label: 'Community',     Icon: MessageSquare },
-    ],
-  },
-  {
-    title: 'ACCOUNT',
-    items: [
-      { path: '/profile',       label: 'Profile',       Icon: User },
-      { path: '/settings',      label: 'Settings',      Icon: Settings },
-    ],
-  },
+/* Navigation Items matching Unstop Reference Layout */
+const NAV_ITEMS = [
+  { path: '/dashboard', label: 'Home', Icon: Home, exact: true },
+  { path: '/opportunities?type=internship', label: 'Internships', Icon: GraduationCap },
+  { path: '/opportunities?type=job', label: 'Jobs', Icon: Briefcase },
+  { path: '/opportunities?type=competition', label: 'Competitions', Icon: Trophy },
+  { path: '/mentors', label: 'Mentorship', Icon: Users },
+  { path: '/skill-assessments', label: 'Mock Tests', Icon: FileCheck2 },
+  { path: '/mock-interview', label: 'Mock Interview', Icon: Video },
+  { path: '/coding-practice', label: '100 Days to Code', Icon: Code2 },
+  { path: '/learning', label: 'Courses', Icon: BookOpen },
+  { path: '/roadmap', label: 'More', Icon: Compass, hasSub: true },
+  { path: '/applications', label: 'My Activity', Icon: ChevronRight, hasSub: true },
 ];
 
-/* ── Circular Progress Ring ────────────────────────────── */
-const CircularProgress = ({ pct = 0, size = 76 }) => {
-  const strokeWidth = 5;
-  const radius = (size - strokeWidth) / 2;
-  const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (pct / 100) * circumference;
-
-  return (
-    <svg width={size} height={size} className="transform -rotate-90">
-      <circle
-        cx={size / 2}
-        cy={size / 2}
-        r={radius}
-        stroke="rgba(255, 255, 255, 0.15)"
-        strokeWidth={strokeWidth}
-        fill="transparent"
-      />
-      <circle
-        cx={size / 2}
-        cy={size / 2}
-        r={radius}
-        stroke="#818CF8"
-        strokeWidth={strokeWidth}
-        strokeDasharray={circumference}
-        strokeDashoffset={strokeDashoffset}
-        strokeLinecap="round"
-        fill="transparent"
-        className="transition-all duration-700 ease-out"
-      />
-    </svg>
-  );
-};
-
-/* ── Main Sidebar Component ────────────────────────────── */
 const Sidebar = ({ mobileOpen, setMobileOpen }) => {
   const navigate  = useNavigate();
   const location  = useLocation();
   const { user }  = useAuth();
 
-  const [profilePct, setProfilePct] = useState(0);
-  const [loadingPct, setLoadingPct] = useState(true);
-
-  /* Profile completion fetch and sync */
-  useEffect(() => {
-    let isMounted = true;
-    api.get('/students/workspace')
-      .then(r => {
-        if (!isMounted) return;
-        const pct = r.data?.profile?.profile_completion ?? user?.profileCompletion ?? 0;
-        setProfilePct(Number(pct) || 0);
-      })
-      .catch(() => {
-        if (isMounted) setProfilePct(Number(user?.profileCompletion) || 0);
-      })
-      .finally(() => {
-        if (isMounted) setLoadingPct(false);
-      });
-
-    return () => { isMounted = false; };
-  }, [user]);
-
-  /* Real-time profile update listener */
-  useEffect(() => {
-    const handleUpdate = (e) => {
-      if (e.detail?.completion !== undefined) {
-        setProfilePct(Number(e.detail.completion) || 0);
-      }
-    };
-    window.addEventListener('profile_updated', handleUpdate);
-    return () => window.removeEventListener('profile_updated', handleUpdate);
-  }, []);
-
-  const isPathActive = (itemPath, sectionTitle, label) => {
+  const isPathActive = (item) => {
     const current = location.pathname;
-    if (itemPath === '/dashboard') return current === '/dashboard' || current === '/';
-    if (itemPath === '/profile') {
-      if (sectionTitle === 'CAREER' && label === 'Portfolio') return current === '/profile';
-      if (sectionTitle === 'ACCOUNT' && label === 'Profile') return current === '/profile';
-      return current === '/profile';
-    }
-    return current.startsWith(itemPath);
+    if (item.exact) return current === '/dashboard' || current === '/';
+    return current.startsWith(item.path.split('?')[0]);
   };
 
-  const isComplete = profilePct >= 100;
+  const initials = (user?.name || 'R')
+    .split(' ')
+    .map(w => w[0])
+    .slice(0, 1)
+    .join('')
+    .toUpperCase();
 
-  /* Sidebar Content */
   const Content = () => (
-    <div className="flex flex-col h-full bg-[#0F172A] text-slate-100 border-r border-slate-800/80 select-none overflow-hidden font-sans">
+    <div className="flex flex-col h-full bg-white text-slate-700 border-r border-slate-200/80 select-none overflow-hidden font-sans">
       
-      {/* Top Header: Codovate Logo & Branding */}
-      <div className="px-5 pt-6 pb-4 flex flex-col items-start justify-center relative shrink-0 border-b border-slate-800/60">
-        <div className="flex items-center justify-between w-full">
-          <button
-            onClick={() => navigate('/dashboard')}
-            className="focus:outline-none text-left"
-          >
-            <Logo responsive variant="dark" size="xs" />
-          </button>
+      {/* Top Header: Logo + Toggle & Mobile Close */}
+      <div className="px-5 pt-5 pb-3 flex items-center justify-between shrink-0">
+        <button
+          onClick={() => navigate('/dashboard')}
+          className="focus:outline-none flex items-center gap-2"
+        >
+          <Logo responsive size="xs" />
+        </button>
 
-          {/* Mobile Close Button */}
-          <button
-            onClick={() => setMobileOpen && setMobileOpen(false)}
-            className="md:hidden text-slate-400 hover:text-white transition-colors p-1 rounded-lg hover:bg-slate-800"
-            aria-label="Close menu"
-          >
-            <X size={20} />
-          </button>
-        </div>
-
-        <p className="text-[11px] font-medium text-slate-400 mt-2 tracking-wide">
-          Learn. Build. Compete. Grow.
-        </p>
+        <button
+          onClick={() => setMobileOpen && setMobileOpen(false)}
+          className="md:hidden text-slate-400 hover:text-slate-700 transition-colors p-1 rounded-lg hover:bg-slate-100"
+          aria-label="Close menu"
+        >
+          <X size={20} />
+        </button>
       </div>
 
-      {/* Categorized Navigation Stream */}
-      <nav className="flex-1 px-3 py-3 space-y-4 overflow-y-auto sidebar-scroll">
-        {NAV_SECTIONS.map((section, idx) => (
-          <div key={section.title || idx} className="space-y-1">
-            <h3 className="px-3 text-[11px] font-bold text-slate-400/80 uppercase tracking-wider">
-              {section.title}
-            </h3>
-            <div className="space-y-0.5 mt-1">
-              {section.items.map(({ path, label, Icon }) => {
-                const active = isPathActive(path, section.title, label);
-                return (
-                  <Link
-                    key={`${section.title}-${label}`}
-                    to={path}
-                    onClick={() => setMobileOpen && setMobileOpen(false)}
-                    className={`flex items-center gap-3 px-3.5 py-2 rounded-lg font-medium text-[13.5px] transition-all duration-150 ${
-                      active
-                        ? 'bg-[#4F46E5] text-white shadow-sm shadow-indigo-900/40 font-semibold'
-                        : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
-                    }`}
-                  >
-                    <Icon size={18} strokeWidth={active ? 2 : 1.75} className={active ? 'text-white' : 'text-slate-400'} />
-                    <span className="truncate">{label}</span>
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-        ))}
+      {/* Primary Action Button: + Post Opportunity */}
+      <div className="px-4 py-2 shrink-0">
+        <button
+          onClick={() => navigate('/opportunities')}
+          className="w-full h-11 bg-[#E0EEFF] hover:bg-[#D0E4FF] text-[#0066FF] font-bold rounded-2xl flex items-center justify-center gap-2 text-sm transition-all duration-150 active:scale-[0.98]"
+        >
+          <Plus size={18} strokeWidth={2.5} />
+          <span>+ Post</span>
+        </button>
+      </div>
+
+      {/* Vertical Navigation Links Stream */}
+      <nav className="flex-1 px-3 py-2 space-y-1 overflow-y-auto sidebar-scroll">
+        {NAV_ITEMS.map((item) => {
+          const active = isPathActive(item);
+          const Icon = item.Icon;
+          return (
+            <Link
+              key={item.label}
+              to={item.path}
+              onClick={() => setMobileOpen && setMobileOpen(false)}
+              className={`flex items-center justify-between px-4 py-3 rounded-2xl font-semibold text-sm transition-all duration-150 ${
+                active
+                  ? 'bg-[#EBF3FF] text-[#0066FF]'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80'
+              }`}
+            >
+              <div className="flex items-center gap-3 truncate">
+                <Icon size={19} strokeWidth={active ? 2.2 : 1.8} className={active ? 'text-[#0066FF]' : 'text-slate-500'} />
+                <span className="truncate">{item.label}</span>
+              </div>
+
+              {item.hasSub && (
+                <ChevronRight size={16} className="text-slate-400 shrink-0" />
+              )}
+            </Link>
+          );
+        })}
       </nav>
 
-      {/* Profile Upgrade Card — Anchored to bottom */}
-      <div className="p-3 shrink-0 mt-auto border-t border-slate-800/60 bg-[#0B0F19]/50">
-        <div className="rounded-xl p-3.5 bg-slate-900/90 border border-slate-800 text-white relative overflow-hidden flex flex-col items-center text-center shadow-sm">
-          {/* Subtle Accent Radial Glow */}
-          <div className="absolute -top-10 -right-10 w-28 h-28 bg-indigo-600/15 rounded-full blur-xl pointer-events-none" />
+      {/* Bottom Control Bar: Notifications, Chat, Profile Avatar */}
+      <div className="p-3 border-t border-slate-100 flex items-center justify-between shrink-0 bg-slate-50/50">
+        <button
+          onClick={() => navigate('/notifications')}
+          className="p-2 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-200/60 transition-colors"
+          aria-label="Notifications"
+        >
+          <Bell size={18} />
+        </button>
 
-          <div className="flex items-center gap-1.5 mb-1 relative z-10">
-            <Sparkles size={14} className="text-indigo-400" />
-            <p className="font-bold text-[13.5px] text-white">
-              {isComplete ? 'Profile Ready ✓' : 'Upgrade Profile'}
-            </p>
-          </div>
-          <p className="text-[11px] leading-snug mb-3 text-slate-400 max-w-[190px] relative z-10">
-            {isComplete
-              ? 'Your profile is 100% complete and ready for recruiters'
-              : 'Complete your details to unlock relevant opportunities'}
-          </p>
+        <button
+          onClick={() => navigate('/community')}
+          className="p-2 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-200/60 transition-colors"
+          aria-label="Community Chat"
+        >
+          <MessageSquare size={18} />
+        </button>
 
-          {/* Dynamic Progress Ring */}
-          <div className="relative mb-3 flex items-center justify-center z-10">
-            <CircularProgress pct={loadingPct ? 0 : profilePct} size={70} />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="font-bold text-[14px] text-white tracking-tight">
-                {loadingPct ? '…' : `${profilePct}%`}
-              </span>
-            </div>
-          </div>
-
-          {/* Action Button */}
-          <button
-            onClick={() => {
-              if (setMobileOpen) setMobileOpen(false);
-              navigate('/profile');
-            }}
-            className="w-full bg-[#4F46E5] hover:bg-indigo-600 font-bold text-[12.5px] rounded-lg py-2 px-3 text-white transition-all relative z-10 flex items-center justify-center gap-1 shadow-xs active:scale-[0.98]"
-          >
-            <span>{isComplete ? 'View Profile' : 'Complete Now'}</span>
-            <span className="text-xs">→</span>
-          </button>
-        </div>
+        <button
+          onClick={() => navigate('/profile')}
+          className="w-8 h-8 rounded-full bg-[#0066FF] text-white font-bold text-xs flex items-center justify-center shadow-xs hover:opacity-90 transition-opacity"
+          aria-label="Profile"
+        >
+          {initials}
+        </button>
       </div>
 
     </div>
@@ -249,22 +146,22 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
 
   return (
     <>
-      {/* Desktop Fixed Left Navigation (Width: 245px) */}
-      <aside className="hidden md:flex flex-col w-[245px] h-screen sticky top-0 shrink-0 z-20 print:hidden">
+      {/* Desktop Fixed Left Navigation (Width: 230px) */}
+      <aside className="hidden md:flex flex-col w-[230px] h-screen sticky top-0 shrink-0 z-20 print:hidden">
         <Content />
       </aside>
 
       {/* Mobile Backdrop Overlay */}
       {mobileOpen && (
         <div
-          className="md:hidden fixed inset-0 bg-slate-950/70 backdrop-blur-xs z-40 transition-opacity"
+          className="md:hidden fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-40 transition-opacity"
           onClick={() => setMobileOpen(false)}
         />
       )}
 
       {/* Mobile Slide-Out Drawer */}
       <aside
-        className={`md:hidden fixed top-0 left-0 h-screen w-[245px] z-50 transition-transform duration-300 ease-out print:hidden ${
+        className={`md:hidden fixed top-0 left-0 h-screen w-[230px] z-50 transition-transform duration-300 ease-out print:hidden ${
           mobileOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
