@@ -49,8 +49,6 @@ const NAV_ITEMS = [
   { path: '/opportunities/competition',  label: 'Competitions',  Icon: Trophy,        exact: true },
   { path: '/mentors',                    label: 'Mentorship',    Icon: Users                      },
   { path: '/skill-assessments',          label: 'Mock Tests',    Icon: FileCheck2                 },
-  { path: '/mock-interview',             label: 'Mock Interview',Icon: Video                      },
-  { path: '/coding-practice',            label: '100 Days to Code', Icon: Code2                  },
   { path: '/learning',                   label: 'Courses',       Icon: BookOpen                   },
   { isToggle: true, id: 'more',          label: 'More',          Icon: Compass,      hasSub: true },
   { isToggle: true, id: 'activity',      label: 'My Activity',   Icon: Activity,     hasSub: true },
