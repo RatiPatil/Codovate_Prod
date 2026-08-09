@@ -26,33 +26,25 @@ const OrbitalSystem = () => {
   ];
 
   useEffect(() => {
+    // Respect prefers-reduced-motion
+    const prefersReducedMotion =
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (prefersReducedMotion) return;
+
     const ctx = gsap.context(() => {
+      // Soft floating animation for icons with gentle opacity breathing
       gsap.utils.toArray('.orbital-node').forEach((node, i) => {
         gsap.to(node, {
-          y: i % 2 === 0 ? '-=15' : '+=15',
-          rotate: i % 2 === 0 ? '+=3' : '-=3',
-          duration: 4 + (i % 3),
+          y: i % 2 === 0 ? -8 : 8,
+          opacity: i % 2 === 0 ? 0.75 : 0.55,
+          duration: 5 + (i % 4),
           repeat: -1,
           yoyo: true,
           ease: 'sine.inOut',
-          delay: i * 0.3,
+          delay: i * 0.4,
         });
-      });
-
-      gsap.to('.orbital-ring-1', {
-        rotation: 360,
-        duration: 120,
-        repeat: -1,
-        ease: 'none',
-        transformOrigin: '50% 50%',
-      });
-
-      gsap.to('.orbital-ring-2', {
-        rotation: -360,
-        duration: 160,
-        repeat: -1,
-        ease: 'none',
-        transformOrigin: '50% 50%',
       });
     }, containerRef);
 
@@ -62,69 +54,33 @@ const OrbitalSystem = () => {
   return (
     <div
       ref={containerRef}
-      className="absolute inset-x-0 top-0 h-[850px] pointer-events-none z-10 overflow-hidden"
+      className="absolute inset-x-0 top-0 h-[850px] pointer-events-none z-10 overflow-hidden select-none"
       aria-hidden="true"
     >
-      {/* Curved SVG Orbital Paths (Hero Only) */}
+      {/* 
+        INVISIBLE SVG Path for positioning reference only.
+        Zero visible strokes, zero dashed lines, zero visible orbital borders.
+      */}
       <svg
-        className="absolute top-0 left-1/2 -translate-x-1/2 w-[1400px] h-[850px] opacity-60 dark:opacity-40"
+        className="absolute top-0 left-1/2 -translate-x-1/2 w-[1400px] h-[850px] opacity-0 pointer-events-none"
         viewBox="0 0 1400 850"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
       >
-        <defs>
-          <linearGradient id="orbitGradient1" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#C084FC" stopOpacity="0.35" />
-            <stop offset="50%" stopColor="#818CF8" stopOpacity="0.45" />
-            <stop offset="100%" stopColor="#6366F1" stopOpacity="0.2" />
-          </linearGradient>
-          <linearGradient id="orbitGradient2" x1="100%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#60A5FA" stopOpacity="0.25" />
-            <stop offset="50%" stopColor="#A855F7" stopOpacity="0.35" />
-            <stop offset="100%" stopColor="#818CF8" stopOpacity="0.15" />
-          </linearGradient>
-          <linearGradient id="iconStrokeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#A855F7" />
-            <stop offset="50%" stopColor="#6366F1" />
-            <stop offset="100%" stopColor="#3B82F6" />
-          </linearGradient>
-        </defs>
-
-        {/* Primary Orbital Ellipse (Hero) */}
-        <ellipse
-          className="orbital-ring-1"
-          cx="700"
-          cy="420"
-          rx="580"
-          ry="320"
-          stroke="url(#orbitGradient1)"
-          strokeWidth="1.5"
-          strokeDasharray="8 6"
-        />
-
-        {/* Secondary Inner Orbital Ring */}
-        <ellipse
-          className="orbital-ring-2"
-          cx="700"
-          cy="420"
-          rx="420"
-          ry="230"
-          stroke="url(#orbitGradient2)"
-          strokeWidth="1.2"
-          strokeDasharray="6 4"
-        />
+        <ellipse cx="700" cy="420" rx="580" ry="320" stroke="none" />
+        <ellipse cx="700" cy="420" rx="420" ry="230" stroke="none" />
       </svg>
 
-      {/* Floating Icon Node Cards matching exact CodeHelp DevTools specs */}
+      {/* Floating Translucent Icon Badges (No strong borders, soft atmospheric blend) */}
       {nodes.map((node) => {
         const IconComponent = node.icon;
         return (
           <div
             key={node.id}
-            className={`orbital-node absolute hidden sm:flex pointer-events-auto cursor-default ${node.pos}`}
+            className={`orbital-node absolute hidden sm:flex pointer-events-auto cursor-default opacity-65 ${node.pos}`}
           >
-            <div className="flex scale-90 sm:scale-100 items-center justify-center rounded-xl border px-4 py-2 sm:px-5 sm:py-2.5 backdrop-blur-md border-slate-200/40 bg-white/55 shadow-[0_2px_12px_rgba(91,118,219,0.08)] dark:border-white/10 dark:bg-[rgba(30,30,30,0.80)] dark:shadow-[inset_0.8px_0.8px_10.88px_0_rgba(255,255,255,0.10)] dark:backdrop-blur-[29.77px] transition-all hover:scale-105">
-              <IconComponent className="w-5 h-5 sm:w-6 sm:h-6 text-indigo-600 dark:text-purple-400 stroke-[1.2]" />
+            <div className="flex scale-90 sm:scale-100 items-center justify-center rounded-xl px-3.5 py-2 sm:px-4 sm:py-2.5 backdrop-blur-md bg-white/30 dark:bg-white/5 border border-white/20 dark:border-white/10 shadow-xs hover:bg-white/45 dark:hover:bg-white/10 transition-all duration-300">
+              <IconComponent className="w-4.5 h-4.5 sm:w-5 sm:h-5 text-indigo-600 dark:text-purple-300 opacity-90 stroke-[1.5]" />
             </div>
           </div>
         );

@@ -20,13 +20,12 @@ const AnimatedAtmosphere = () => {
     const arr = [];
     const sizes = ['w-[1.5px] h-[1.5px]', 'w-1 h-1', 'w-[2.5px] h-[2.5px]', 'w-1.5 h-1.5'];
     const colors = [
-      'bg-white/60 dark:bg-white/70 shadow-[0_0_6px_rgba(255,255,255,0.7)]',
-      'bg-purple-200/70 dark:bg-purple-200/80 shadow-[0_0_8px_rgba(192,132,252,0.8)]',
-      'bg-indigo-300/60 dark:bg-indigo-300/70 shadow-[0_0_6px_rgba(165,180,252,0.7)]',
+      'bg-white/50 dark:bg-white/60 shadow-[0_0_6px_rgba(255,255,255,0.6)]',
+      'bg-purple-200/60 dark:bg-purple-200/70 shadow-[0_0_8px_rgba(192,132,252,0.7)]',
+      'bg-indigo-300/50 dark:bg-indigo-300/60 shadow-[0_0_6px_rgba(165,180,252,0.6)]',
     ];
 
     for (let i = 0; i < 32; i++) {
-      // Even distribution across left (5% - 95%) and top (12% - 75%)
       const left = 5 + (i * 2.85) % 90;
       const top = 12 + ((i * 7.3) % 65);
       const size = sizes[i % sizes.length];
@@ -40,64 +39,70 @@ const AnimatedAtmosphere = () => {
   }, []);
 
   useEffect(() => {
+    const prefersReducedMotion =
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
     const ctx = gsap.context(() => {
-      // 1. Layer A: Primary Breathing Loop (Slow & Infinite, 11s)
-      gsap.to(layerARef.current, {
-        scale: 1.06,
-        opacity: 1,
-        duration: 11,
-        repeat: -1,
-        yoyo: true,
-        ease: 'sine.inOut',
-      });
-
-      // 2. Layer B: Secondary Organic Drift (X/Y Movement, 16s)
-      gsap.to(layerBRef.current, {
-        x: 30,
-        y: -20,
-        scale: 1.05,
-        duration: 16,
-        repeat: -1,
-        yoyo: true,
-        ease: 'sine.inOut',
-      });
-
-      // 3. Layer C: Soft Core Pulse (8.5s)
-      gsap.to(layerCRef.current, {
-        scale: 1.08,
-        opacity: 0.95,
-        duration: 8.5,
-        repeat: -1,
-        yoyo: true,
-        ease: 'sine.inOut',
-      });
-
-      // 4. Layer D: Highlight Shimmer (6.5s)
-      gsap.to(layerDRef.current, {
-        scale: 1.1,
-        opacity: 1,
-        duration: 6.5,
-        repeat: -1,
-        yoyo: true,
-        ease: 'sine.inOut',
-      });
-
-      // 5. Living Particles Shimmer & Float Loops
-      if (particlesRef.current) {
-        const dots = particlesRef.current.querySelectorAll('.atm-particle-dot');
-        dots.forEach((dot, index) => {
-          const p = particles[index];
-          if (!p) return;
-          gsap.to(dot, {
-            y: -14,
-            opacity: 0.55,
-            duration: p.duration,
-            delay: p.delay,
-            repeat: -1,
-            yoyo: true,
-            ease: 'sine.inOut',
-          });
+      if (!prefersReducedMotion) {
+        // 1. Layer A: Primary Breathing Loop (Slow & Infinite, 11s)
+        gsap.to(layerARef.current, {
+          scale: 1.04,
+          opacity: 0.95,
+          duration: 11,
+          repeat: -1,
+          yoyo: true,
+          ease: 'sine.inOut',
         });
+
+        // 2. Layer B: Secondary Organic Drift (X/Y Movement, 16s)
+        gsap.to(layerBRef.current, {
+          x: 20,
+          y: -15,
+          scale: 1.03,
+          duration: 16,
+          repeat: -1,
+          yoyo: true,
+          ease: 'sine.inOut',
+        });
+
+        // 3. Layer C: Soft Core Pulse (8.5s)
+        gsap.to(layerCRef.current, {
+          scale: 1.06,
+          opacity: 0.92,
+          duration: 8.5,
+          repeat: -1,
+          yoyo: true,
+          ease: 'sine.inOut',
+        });
+
+        // 4. Layer D: Highlight Shimmer (6.5s)
+        gsap.to(layerDRef.current, {
+          scale: 1.08,
+          opacity: 0.95,
+          duration: 6.5,
+          repeat: -1,
+          yoyo: true,
+          ease: 'sine.inOut',
+        });
+
+        // 5. Living Particles Shimmer & Float Loops
+        if (particlesRef.current) {
+          const dots = particlesRef.current.querySelectorAll('.atm-particle-dot');
+          dots.forEach((dot, index) => {
+            const p = particles[index];
+            if (!p) return;
+            gsap.to(dot, {
+              y: -12,
+              opacity: 0.45,
+              duration: p.duration,
+              delay: p.delay,
+              repeat: -1,
+              yoyo: true,
+              ease: 'sine.inOut',
+            });
+          });
+        }
       }
 
       // 6. GSAP ScrollTrigger: Smooth 0% -> 100% Opacity Fade Out & Upward Drift on Scroll
