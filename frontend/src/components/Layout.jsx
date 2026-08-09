@@ -23,23 +23,22 @@ const Layout = ({ children }) => {
   }, [socket, addToast]);
 
   return (
-    <div className="flex h-screen overflow-hidden print:block print:h-auto print:overflow-visible">
+    <div className="flex h-screen overflow-hidden bg-[#F8FAFC] dark:bg-[#080A12] text-slate-900 dark:text-slate-100 font-sans print:block print:h-auto print:overflow-visible transition-colors duration-200">
 
-      {/* Dark sidebar */}
+      {/* Product Shell Sidebar (245px width) */}
       <Sidebar mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
 
-      {/* Right: header + scrollable content */}
-      <div className="flex-1 flex flex-col overflow-hidden relative">
+      {/* Right Column: Sticky Shell Header + Main Scrollable Content */}
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
 
-        {/* Sticky shell header */}
+        {/* Sticky Shell Header (64px height) */}
         <ShellHeader onMobileMenuOpen={() => setMobileOpen(true)} />
 
-        {/* Light content area */}
-        <main
-          className="flex-1 overflow-y-auto overflow-x-hidden print:p-0 print:overflow-visible"
-          style={{ background: '#f0f2ff' }}
-        >
-          {children}
+        {/* Main Content Viewport */}
+        <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 lg:p-8 bg-[#F8FAFC] dark:bg-[#080A12] print:p-0 print:overflow-visible">
+          <div className="max-w-7xl mx-auto w-full">
+            {children}
+          </div>
         </main>
 
       </div>
