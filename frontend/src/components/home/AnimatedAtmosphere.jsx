@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useMemo } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
@@ -9,59 +9,178 @@ if (typeof window !== 'undefined') {
 const AnimatedAtmosphere = () => {
   const containerRef = useRef(null);
   const glowWrapperRef = useRef(null);
-  const coreRef = useRef(null);
+  const layerARef = useRef(null);
+  const layerBRef = useRef(null);
+  const layerCRef = useRef(null);
+  const layerDRef = useRef(null);
+  const particlesRef = useRef(null);
+
+  // Generate 32 subtle, elegant living particles
+  const particles = useMemo(() => {
+    const arr = [];
+    const sizes = ['w-[1.5px] h-[1.5px]', 'w-1 h-1', 'w-[2.5px] h-[2.5px]', 'w-1.5 h-1.5'];
+    const colors = [
+      'bg-white/60 dark:bg-white/70 shadow-[0_0_6px_rgba(255,255,255,0.7)]',
+      'bg-purple-200/70 dark:bg-purple-200/80 shadow-[0_0_8px_rgba(192,132,252,0.8)]',
+      'bg-indigo-300/60 dark:bg-indigo-300/70 shadow-[0_0_6px_rgba(165,180,252,0.7)]',
+    ];
+
+    for (let i = 0; i < 32; i++) {
+      // Even distribution across left (5% - 95%) and top (12% - 75%)
+      const left = 5 + (i * 2.85) % 90;
+      const top = 12 + ((i * 7.3) % 65);
+      const size = sizes[i % sizes.length];
+      const color = colors[i % colors.length];
+      const duration = 6 + (i % 7) * 1.2;
+      const delay = (i % 5) * 0.8;
+
+      arr.push({ left: `${left}%`, top: `${top}%`, size, color, duration, delay });
+    }
+    return arr;
+  }, []);
 
   useEffect(() => {
-    // 1. Atmosphere breathing loop matching HTML reference spec
-    const animCore = gsap.to(coreRef.current, {
-      scale: 1.06,
-      opacity: 0.95,
-      x: 6,
-      y: -4,
-      duration: 7,
-      repeat: -1,
-      yoyo: true,
-      ease: 'sine.inOut',
-    });
-
-    // 2. GSAP ScrollTrigger: Smooth opacity fade (1 -> 0 on scroll down 0-300px, 0 -> 1 on scroll back to top)
     const ctx = gsap.context(() => {
+      // 1. Layer A: Primary Breathing Loop (Slow & Infinite, 11s)
+      gsap.to(layerARef.current, {
+        scale: 1.06,
+        opacity: 1,
+        duration: 11,
+        repeat: -1,
+        yoyo: true,
+        ease: 'sine.inOut',
+      });
+
+      // 2. Layer B: Secondary Organic Drift (X/Y Movement, 16s)
+      gsap.to(layerBRef.current, {
+        x: 30,
+        y: -20,
+        scale: 1.05,
+        duration: 16,
+        repeat: -1,
+        yoyo: true,
+        ease: 'sine.inOut',
+      });
+
+      // 3. Layer C: Soft Core Pulse (8.5s)
+      gsap.to(layerCRef.current, {
+        scale: 1.08,
+        opacity: 0.95,
+        duration: 8.5,
+        repeat: -1,
+        yoyo: true,
+        ease: 'sine.inOut',
+      });
+
+      // 4. Layer D: Highlight Shimmer (6.5s)
+      gsap.to(layerDRef.current, {
+        scale: 1.1,
+        opacity: 1,
+        duration: 6.5,
+        repeat: -1,
+        yoyo: true,
+        ease: 'sine.inOut',
+      });
+
+      // 5. Living Particles Shimmer & Float Loops
+      if (particlesRef.current) {
+        const dots = particlesRef.current.querySelectorAll('.atm-particle-dot');
+        dots.forEach((dot, index) => {
+          const p = particles[index];
+          if (!p) return;
+          gsap.to(dot, {
+            y: -14,
+            opacity: 0.55,
+            duration: p.duration,
+            delay: p.delay,
+            repeat: -1,
+            yoyo: true,
+            ease: 'sine.inOut',
+          });
+        });
+      }
+
+      // 6. GSAP ScrollTrigger: Smooth 0% -> 100% Opacity Fade Out & Upward Drift on Scroll
       gsap.fromTo(
         glowWrapperRef.current,
-        { opacity: 1 },
+        { opacity: 1, y: 0 },
         {
           opacity: 0,
+          y: -90,
           ease: 'power1.out',
           scrollTrigger: {
             trigger: document.body,
             start: 'top top',
-            end: '300px top',
+            end: '380px top',
             scrub: true,
           },
         }
       );
     }, containerRef);
 
-    return () => {
-      animCore.kill();
-      ctx.revert();
-    };
-  }, []);
+    return () => ctx.revert();
+  }, [particles]);
 
   return (
     <div
       ref={containerRef}
-      className="pointer-events-none absolute top-0 left-0 right-0 h-[650px] z-0 overflow-hidden"
+      className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-[1280px] h-[750px] z-0 overflow-hidden select-none"
       aria-hidden="true"
     >
-      <div ref={glowWrapperRef} className="absolute inset-0 pointer-events-none flex items-center justify-center">
-        {/* Reference Atmospheric Purple Light Glow Element */}
+      <div
+        ref={glowWrapperRef}
+        className="relative w-full h-full flex items-center justify-center will-change-[transform,opacity]"
+      >
+        {/* LAYER A: Large Deep Diffuse Atmosphere (50-70% Viewport Width) */}
         <div
-          ref={coreRef}
-          aria-hidden="true"
-          className="pointer-events-none absolute left-1/2 top-[220px] -z-10 w-[420px] h-[420px] sm:w-[500px] sm:h-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-r from-blue-600/25 via-indigo-600/28 to-purple-600/30 dark:from-blue-500/30 dark:via-purple-600/35 dark:to-indigo-500/30 blur-3xl"
-          style={{ animation: '1.2s ease 0s 1 normal forwards running nf-glow-fade' }}
+          ref={layerARef}
+          className="absolute top-[16%] left-1/2 -translate-x-1/2 w-[850px] sm:w-[1100px] h-[520px] sm:h-[650px] rounded-full blur-[150px] opacity-75 dark:opacity-85 pointer-events-none transition-colors duration-500"
+          style={{
+            background:
+              'radial-gradient(ellipse at center, rgba(124, 58, 237, 0.38) 0%, rgba(99, 102, 241, 0.22) 38%, rgba(147, 51, 234, 0.10) 65%, transparent 85%)',
+          }}
         />
+
+        {/* LAYER B: Medium Violet Atmosphere (Secondary Organic Drift) */}
+        <div
+          ref={layerBRef}
+          className="absolute top-[20%] left-1/2 -translate-x-1/2 w-[650px] sm:w-[820px] h-[380px] sm:h-[480px] rounded-full blur-[110px] opacity-70 dark:opacity-85 pointer-events-none transition-colors duration-500"
+          style={{
+            background:
+              'radial-gradient(ellipse at center, rgba(147, 51, 234, 0.48) 0%, rgba(109, 93, 251, 0.26) 45%, transparent 75%)',
+          }}
+        />
+
+        {/* LAYER C: Soft Lavender Core */}
+        <div
+          ref={layerCRef}
+          className="absolute top-[24%] left-1/2 -translate-x-1/2 w-[450px] sm:w-[580px] h-[280px] sm:h-[360px] rounded-full blur-[75px] opacity-85 dark:opacity-95 pointer-events-none transition-colors duration-500"
+          style={{
+            background:
+              'radial-gradient(circle at center, rgba(168, 85, 247, 0.60) 0%, rgba(124, 58, 237, 0.32) 55%, transparent 85%)',
+          }}
+        />
+
+        {/* LAYER D: Central Blue-Violet Highlight Core */}
+        <div
+          ref={layerDRef}
+          className="absolute top-[26%] left-1/2 -translate-x-1/2 w-[300px] sm:w-[380px] h-[180px] sm:h-[240px] rounded-full blur-[45px] opacity-90 dark:opacity-100 pointer-events-none transition-colors duration-500"
+          style={{
+            background:
+              'radial-gradient(circle at center, rgba(192, 132, 252, 0.75) 0%, rgba(99, 102, 241, 0.38) 60%, transparent 90%)',
+          }}
+        />
+
+        {/* LIVING ATMOSPHERIC PARTICLES (32 Organic Dots) */}
+        <div ref={particlesRef} className="absolute inset-0 pointer-events-none z-0">
+          {particles.map((p, i) => (
+            <div
+              key={i}
+              className={`atm-particle-dot absolute rounded-full opacity-20 pointer-events-none ${p.size} ${p.color}`}
+              style={{ top: p.top, left: p.left }}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );

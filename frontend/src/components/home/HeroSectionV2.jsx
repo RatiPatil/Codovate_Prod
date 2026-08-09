@@ -19,23 +19,6 @@ const HeroSectionV2 = () => {
   const descRef = useRef(null);
   const ctaRef = useRef(null);
   const proofRef = useRef(null);
-  const particlesRef = useRef(null);
-  const heroGlowRef = useRef(null);
-
-  const particles = [
-    { top: '35%', left: '48%', size: 'w-1 h-1' },
-    { top: '42%', left: '42%', size: 'w-1.5 h-1.5' },
-    { top: '50%', left: '55%', size: 'w-1 h-1' },
-    { top: '58%', left: '45%', size: 'w-1.5 h-1.5' },
-    { top: '38%', left: '58%', size: 'w-1 h-1' },
-    { top: '46%', left: '38%', size: 'w-2 h-2' },
-    { top: '54%', left: '62%', size: 'w-1 h-1' },
-    { top: '62%', left: '50%', size: 'w-1.5 h-1.5' },
-    { top: '40%', left: '52%', size: 'w-1 h-1' },
-    { top: '48%', left: '47%', size: 'w-1.5 h-1.5' },
-    { top: '56%', left: '54%', size: 'w-1 h-1' },
-    { top: '64%', left: '44%', size: 'w-1.5 h-1.5' },
-  ];
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -83,36 +66,9 @@ const HeroSectionV2 = () => {
           '-=0.5'
         );
 
-      // Particle floating loop
-      gsap.utils.toArray('.hero-sparkle-dot').forEach((dot, i) => {
-        gsap.to(dot, {
-          y: '-=25',
-          x: i % 2 === 0 ? '+=12' : '-=12',
-          opacity: i % 3 === 0 ? 0.9 : 0.4,
-          scale: i % 2 === 0 ? 1.4 : 0.8,
-          duration: 3 + (i % 3),
-          repeat: -1,
-          yoyo: true,
-          ease: 'sine.inOut',
-          delay: i * 0.15,
-        });
-      });
-
-      // Smooth opacity fade out (1 -> 0) on scroll away from Hero, and fade back in (0 -> 1) on scroll back up
-      gsap.to([heroGlowRef.current, particlesRef.current], {
-        opacity: 0,
-        ease: 'power1.out',
-        scrollTrigger: {
-          trigger: heroRef.current,
-          start: 'top top',
-          end: '300px top',
-          scrub: true,
-        },
-      });
-
       gsap.to(textContentRef.current, {
-        y: '-12%',
-        opacity: 0.88,
+        y: '-10%',
+        opacity: 0.92,
         ease: 'none',
         scrollTrigger: {
           trigger: heroRef.current,
@@ -147,60 +103,11 @@ const HeroSectionV2 = () => {
       ref={heroRef}
       className="relative pt-24 pb-8 md:pt-32 md:pb-12 flex flex-col justify-between items-center z-10 overflow-hidden"
     >
-      {/* Focused Ambient Purple Light Glow (Matching Reference Image) */}
-      <div
-        ref={heroGlowRef}
-        className="absolute top-[45%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[480px] h-[480px] sm:w-[580px] sm:h-[580px] pointer-events-none z-0"
-      >
-        {/* Soft Halo Outer */}
-        <div
-          className="absolute inset-0 rounded-full blur-[90px] opacity-60 dark:opacity-75 pointer-events-none"
-          style={{
-            background:
-              'radial-gradient(circle, rgba(124, 58, 237, 0.35) 0%, rgba(99, 102, 241, 0.20) 50%, transparent 75%)',
-          }}
-        />
-        {/* Defined Rich Core */}
-        <div
-          className="absolute top-[12%] left-[12%] w-[76%] h-[76%] rounded-full blur-[50px] opacity-85 dark:opacity-95 pointer-events-none"
-          style={{
-            background:
-              'radial-gradient(circle, rgba(147, 51, 234, 0.65) 0%, rgba(124, 58, 237, 0.40) 55%, rgba(79, 70, 229, 0.15) 75%, transparent 90%)',
-          }}
-        />
-      </div>
-
-      {/* Sparkling Floating Dots matching reference image */}
-      <div ref={particlesRef} className="absolute inset-0 pointer-events-none z-0">
-        {[
-          { top: '22%', left: '32%', size: 'w-1 h-1' },
-          { top: '25%', left: '71%', size: 'w-1 h-1' },
-          { top: '28%', left: '93%', size: 'w-1 h-1' },
-          { top: '30%', left: '08%', size: 'w-1 h-1' },
-          { top: '52%', left: '19%', size: 'w-1.5 h-1.5' },
-          { top: '60%', left: '59%', size: 'w-1 h-1' },
-          { top: '68%', left: '44%', size: 'w-1 h-1' },
-          { top: '48%', left: '84%', size: 'w-1 h-1' },
-        ].map((p, i) => (
-          <div
-            key={i}
-            className={`hero-sparkle-dot absolute rounded-full bg-purple-200 dark:bg-purple-200 shadow-[0_0_8px_rgba(192,132,252,0.9)] opacity-75 ${p.size}`}
-            style={{ top: p.top, left: p.left }}
-          />
-        ))}
-      </div>
-
       {/* Hero Header Content */}
       <div
         ref={textContentRef}
         className="w-full max-w-4xl mx-auto px-4 text-center space-y-5 flex flex-col items-center relative z-10"
       >
-        {/* Text Background Ambient Glow Element (Reference Snippet Spec) */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute left-1/2 top-1/2 -z-10 w-[420px] h-[420px] sm:w-[480px] sm:h-[480px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-r from-blue-600/25 via-indigo-600/28 to-purple-600/30 dark:from-blue-500/30 dark:via-purple-600/35 dark:to-indigo-500/30 blur-3xl"
-          style={{ animation: '1.2s ease 0s 1 normal forwards running nf-glow-fade' }}
-        />
         {/* Badge */}
         <div
           ref={badgeRef}
