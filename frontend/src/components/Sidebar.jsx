@@ -184,7 +184,11 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
             <Link
               key={item.label}
               to={item.path}
-              onClick={() => setMobileOpen && setMobileOpen(false)}
+              onClick={() => {
+                if (setMobileOpen) setMobileOpen(false);
+                setIsMoreOpen(false);
+                setIsActivityOpen(false);
+              }}
               className={`flex items-center justify-between px-4 py-3.5 rounded-xl font-semibold text-[15px] transition-all duration-150 ${
                 active
                   ? 'text-[#0066FF] bg-[#EBF3FF]'
