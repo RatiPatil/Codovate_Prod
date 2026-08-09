@@ -186,6 +186,12 @@ const HeroSectionV2 = () => {
         ref={textContentRef}
         className="w-full max-w-4xl mx-auto px-4 text-center space-y-5 flex flex-col items-center relative z-10"
       >
+        {/* Text Background Ambient Glow Element */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute left-1/2 top-1/2 -z-10 w-96 h-96 sm:w-[460px] sm:h-[460px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-r from-blue-500/25 via-indigo-500/25 to-purple-600/30 dark:from-blue-600/30 dark:via-purple-600/35 dark:to-indigo-500/30 blur-3xl"
+          style={{ animation: '1.2s ease 0s 1 normal forwards running nf-glow-fade' }}
+        />
         {/* Badge */}
         <div
           ref={badgeRef}
