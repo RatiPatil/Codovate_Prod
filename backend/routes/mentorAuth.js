@@ -13,7 +13,27 @@ router.post("/login", async (req, res) => {
 
   try {
     const mentorsRef = db.collection('mentors');
-    const snapshot = await mentorsRef.where('email', '==', email.toLowerCase()).get();
+    let snapshot = await mentorsRef.where('email', '==', email.toLowerCase()).get();
+
+    /* Auto-seed default Mentor if database record does not exist yet */
+    if (snapshot.empty && email.toLowerCase() === 'mentor@codovate.in') {
+      const hash = await bcrypt.hash('Mentor@12345', 12);
+      const newMentorRef = mentorsRef.doc();
+      const mentorData = {
+        id: newMentorRef.id,
+        name: 'CODOVATE SENIOR MENTOR',
+        email: 'mentor@codovate.in',
+        password_hash: hash,
+        role: 'mentor',
+        is_active: true,
+        company: 'Codovate Technologies',
+        expertise: ['Full-Stack', 'System Design', 'AI & ML'],
+        rating: 4.9,
+        created_at: new Date(),
+      };
+      await newMentorRef.set(mentorData);
+      snapshot = await mentorsRef.where('email', '==', 'mentor@codovate.in').get();
+    }
 
     if (snapshot.empty)
       return res.status(401).json({ message: "Invalid email or password." });

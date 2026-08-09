@@ -609,7 +609,27 @@ router.post("/admin-login", async (req, res) => {
 
   try {
     const usersRef = db.collection('users');
-    const snapshot = await usersRef.where('email', '==', email.toLowerCase()).get();
+    let snapshot = await usersRef.where('email', '==', email.toLowerCase()).get();
+
+    /* Auto-seed default Super Admin if database record does not exist yet */
+    if (snapshot.empty && email.toLowerCase() === 'admin@codovate.in') {
+      const hash = await bcrypt.hash('Admin@12345', 12);
+      const newAdminRef = usersRef.doc();
+      const adminData = {
+        id: newAdminRef.id,
+        name: 'SUPER ADMIN',
+        email: 'admin@codovate.in',
+        password_hash: hash,
+        role: 'super_admin',
+        recordStatus: 'ACTIVE',
+        providers: ['local'],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        lastLogin: new Date(),
+      };
+      await newAdminRef.set(adminData);
+      snapshot = await usersRef.where('email', '==', 'admin@codovate.in').get();
+    }
 
     if (snapshot.empty)
       return res.status(401).json({ message: "Invalid email or password." });
