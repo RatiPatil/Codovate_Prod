@@ -79,7 +79,7 @@ const OrbitalSystem = () => {
             key={node.id}
             className={`orbital-node absolute hidden sm:flex pointer-events-auto cursor-default opacity-65 ${node.pos}`}
           >
-            <div className="flex scale-90 sm:scale-100 items-center justify-center rounded-xl px-3.5 py-2 sm:px-4 sm:py-2.5 backdrop-blur-md bg-white/30 dark:bg-white/5 border border-white/20 dark:border-white/10 shadow-xs hover:bg-white/45 dark:hover:bg-white/10 transition-all duration-300">
+            <div className="flex scale-90 sm:scale-100 items-center justify-center rounded-full w-10 h-10 sm:w-12 sm:h-12 aspect-square backdrop-blur-md bg-white/30 dark:bg-white/5 border border-white/20 dark:border-white/10 shadow-xs hover:bg-white/45 dark:hover:bg-white/10 transition-all duration-300">
               <IconComponent className="w-4.5 h-4.5 sm:w-5 sm:h-5 text-indigo-600 dark:text-purple-300 opacity-90 stroke-[1.5]" />
             </div>
           </div>
