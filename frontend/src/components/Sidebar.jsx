@@ -114,7 +114,7 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
           onClick={() => navigate('/dashboard')}
           className="focus:outline-none flex items-center gap-2"
         >
-          <Logo size="md" className="h-12 sm:h-14 object-contain" />
+          <Logo size="lg" className="h-14 sm:h-16 object-contain" />
         </button>
 
         <button
@@ -126,16 +126,6 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
         </button>
       </div>
 
-      {/* Primary Action Button: + Post Opportunity */}
-      <div className="px-4 py-2 shrink-0">
-        <button
-          onClick={() => navigate('/opportunities')}
-          className="w-full h-11 bg-[#E0EEFF] hover:bg-[#D0E4FF] text-[#0066FF] font-bold rounded-2xl flex items-center justify-center gap-2 text-sm transition-all duration-150 active:scale-[0.98]"
-        >
-          <Plus size={18} strokeWidth={2.5} />
-          <span>+ Post</span>
-        </button>
-      </div>
 
       {/* Vertical Navigation Links Stream */}
       <nav className="flex-1 px-3 py-2 space-y-1 overflow-y-auto sidebar-scroll">
