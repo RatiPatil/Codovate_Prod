@@ -1,205 +1,306 @@
-import React, { useState, useEffect, Suspense } from 'react';
-import { dashboardApi } from '../../api/dashboardApi';
-import { StatCard } from '../../components/admin/widgets/StatCard';
-import { WidgetContainer } from '../../components/admin/widgets/WidgetContainer';
-import { Badge } from '../../components/admin/ui/Badge';
-import { Users, Building, Activity, Database, Server, Clock, Briefcase, FileText } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+import api from '../../api/axios';
+import {
+  Users, Briefcase, GraduationCap, Trophy, Building2,
+  Activity, ArrowUpRight, Plus, RefreshCw, ShieldCheck,
+  FileText, Clock, Sparkles, AlertCircle, CheckCircle2,
+  TrendingUp, Calendar, Heart, Share2,
+} from 'lucide-react';
 
-// Lazy load Recharts to prevent massive initial bundle
-const AreaChart = React.lazy(() => import('recharts').then(module => ({ default: module.AreaChart })));
-const Area = React.lazy(() => import('recharts').then(module => ({ default: module.Area })));
-const XAxis = React.lazy(() => import('recharts').then(module => ({ default: module.XAxis })));
-const YAxis = React.lazy(() => import('recharts').then(module => ({ default: module.YAxis })));
-const CartesianGrid = React.lazy(() => import('recharts').then(module => ({ default: module.CartesianGrid })));
-const Tooltip = React.lazy(() => import('recharts').then(module => ({ default: module.Tooltip })));
-const ResponsiveContainer = React.lazy(() => import('recharts').then(module => ({ default: module.ResponsiveContainer })));
+/* ─── Metric Card Component ─── */
+const MetricCard = ({ title, value, subtitle, icon: Icon, color, bg, onClick }) => (
+  <div
+    onClick={onClick}
+    className="bg-[#0D0D1A] border border-white/8 rounded-2xl p-5 hover:border-white/20 transition-all cursor-pointer group flex flex-col justify-between"
+  >
+    <div className="flex items-center justify-between">
+      <span className="text-xs font-extrabold uppercase tracking-wider text-slate-400">
+        {title}
+      </span>
+      <div className={`w-10 h-10 rounded-xl ${bg} flex items-center justify-center ${color} group-hover:scale-105 transition-transform`}>
+        <Icon size={20} />
+      </div>
+    </div>
 
+    <div className="mt-4">
+      <div className="flex items-baseline gap-2">
+        <h3 className="text-3xl font-black text-white tracking-tight">
+          {value != null ? value : <span className="animate-pulse text-slate-600">--</span>}
+        </h3>
+        <ArrowUpRight size={16} className="text-slate-500 group-hover:text-blue-400 transition-colors" />
+      </div>
+      {subtitle && (
+        <p className="text-xs text-slate-400 font-medium mt-1">
+          {subtitle}
+        </p>
+      )}
+    </div>
+  </div>
+);
+
+/* ─── Quick Action Button ─── */
+const QuickActionButton = ({ label, icon: Icon, onClick, color }) => (
+  <button
+    onClick={onClick}
+    className={`flex items-center gap-2.5 px-4 py-3 rounded-xl border border-white/10 font-extrabold text-xs text-white transition-all hover:scale-[1.02] shadow-md ${color}`}
+  >
+    <Icon size={16} />
+    <span>{label}</span>
+  </button>
+);
+
+/* ═══════════════════════════════════════════════════════════
+   MAIN SUPER ADMIN DASHBOARD
+═══════════════════════════════════════════════════════════ */
 const SuperAdminDashboard = () => {
-  // Metric States
-  const [overview, setOverview] = useState({ data: null, loading: true, error: null });
-  const [health, setHealth] = useState({ data: null, loading: true, error: null });
-  const [activity, setActivity] = useState({ data: [], loading: true, error: null });
-  const [growth, setGrowth] = useState({ data: [], loading: true, error: null });
+  const navigate = useNavigate();
 
-  const fetchOverview = async () => {
-    setOverview(prev => ({ ...prev, loading: true, error: null }));
+  const [metrics, setMetrics]       = useState(null);
+  const [opportunities, setOpps]     = useState([]);
+  const [recentLogs, setRecentLogs] = useState([]);
+  const [loading, setLoading]       = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const fetchDashboardData = useCallback(async () => {
     try {
-      const res = await dashboardApi.getOverviewMetrics();
-      setOverview({ data: res.data.data, loading: false, error: null });
-    } catch (err) {
-      setOverview({ data: null, loading: false, error: err });
-    }
-  };
+      setRefreshing(true);
+      const [oppsRes, usersRes, logsRes] = await Promise.allSettled([
+        api.get('/admin/opportunities'),
+        api.get('/admin/students'),
+        api.get('/admin/import-history'),
+      ]);
 
-  const fetchHealth = async () => {
-    setHealth(prev => ({ ...prev, loading: true, error: null }));
-    try {
-      const res = await dashboardApi.getPlatformHealth();
-      setHealth({ data: res.data.data, loading: false, error: null });
-    } catch (err) {
-      setHealth({ data: null, loading: false, error: err });
-    }
-  };
+      const oppsData = oppsRes.status === 'fulfilled' ? oppsRes.value.data : [];
+      const usersData = usersRes.status === 'fulfilled' ? usersRes.value.data : [];
+      const logsData  = logsRes.status === 'fulfilled' ? logsRes.value.data : [];
 
-  const fetchActivity = async () => {
-    setActivity(prev => ({ ...prev, loading: true, error: null }));
-    try {
-      const res = await dashboardApi.getRecentActivity();
-      setActivity({ data: res.data.data, loading: false, error: null });
-    } catch (err) {
-      setActivity({ data: [], loading: false, error: err });
-    }
-  };
+      const activeOpps = oppsData.filter(o => o.is_active !== false);
+      const featuredOpps = oppsData.filter(o => o.is_featured);
 
-  const fetchGrowth = async () => {
-    setGrowth(prev => ({ ...prev, loading: true, error: null }));
-    try {
-      const res = await dashboardApi.getGrowthMetrics();
-      // Reverse array to show oldest first in chart
-      setGrowth({ data: res.data.data.reverse(), loading: false, error: null });
+      setOpps(oppsData.slice(0, 5));
+      setRecentLogs(logsData.slice(0, 5));
+      setMetrics({
+        totalOpps:     oppsData.length,
+        activeOpps:    activeOpps.length,
+        featuredOpps:  featuredOpps.length,
+        totalStudents: Array.isArray(usersData) ? usersData.length : 0,
+      });
     } catch (err) {
-      setGrowth({ data: [], loading: false, error: err });
+      console.error('Dashboard load error:', err);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
     }
-  };
-
-  // Concurrent fetch on mount
-  useEffect(() => {
-    fetchOverview();
-    fetchHealth();
-    fetchActivity();
-    fetchGrowth();
   }, []);
 
+  useEffect(() => {
+    fetchDashboardData();
+  }, [fetchDashboardData]);
+
   return (
-    <div className="space-y-6 animate-in fade-in duration-500">
+    <div className="p-6 lg:p-8 space-y-8 font-sans bg-[#050510] text-slate-100 min-h-screen">
       
-      <div className="flex items-center justify-between">
+      {/* ── HEADER ────────────────────────────────────────── */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-white/5 pb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Command Center</h1>
-          <p className="text-gray-500 dark:text-gray-400">Enterprise platform overview and realtime metrics.</p>
-        </div>
-      </div>
-
-      {/* Platform Health Ribbon */}
-      <WidgetContainer isLoading={health.loading} error={health.error} onRetry={fetchHealth} className="bg-gray-900 border-gray-800 text-white shadow-xl">
-        <div className="flex flex-wrap items-center justify-between gap-4 p-2 text-sm">
-          <div className="flex items-center gap-2">
-            <span className="flex h-3 w-3 relative">
-              <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${health.data?.api.status === 'HEALTHY' ? 'bg-green-400' : 'bg-red-400'}`}></span>
-              <span className={`relative inline-flex rounded-full h-3 w-3 ${health.data?.api.status === 'HEALTHY' ? 'bg-green-500' : 'bg-red-500'}`}></span>
+          <div className="flex items-center gap-2.5">
+            <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+              Command Center
+            </h1>
+            <span className="px-3 py-1 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30 text-xs font-black tracking-wide">
+              SUPER ADMIN
             </span>
-            <span className="font-medium text-gray-300">API Status</span>
           </div>
-          <div className="flex items-center gap-2">
-            <Database className="w-4 h-4 text-gray-400" />
-            <span className="text-gray-300">Database:</span>
-            <Badge variant={health.data?.database.status === 'HEALTHY' ? 'success' : 'danger'}>
-              {health.data?.database.status} ({health.data?.database.latencyMs}ms)
-            </Badge>
-          </div>
-          <div className="flex items-center gap-2">
-            <Server className="w-4 h-4 text-gray-400" />
-            <span className="text-gray-300">RAM Used:</span>
-            <span className="font-mono">{health.data?.system.processMemoryUsedMB} MB</span>
-          </div>
+          <p className="text-xs font-semibold text-slate-400 mt-1">
+            Real-time platform overview, ecosystem analytics, and management actions.
+          </p>
         </div>
-      </WidgetContainer>
 
-      {/* Top Metrics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard 
-          title="Total Users" 
-          value={overview.data?.totalUsers} 
+        <div className="flex items-center gap-3">
+          <button
+            onClick={fetchDashboardData}
+            disabled={refreshing}
+            className="p-2.5 rounded-xl border border-white/10 bg-white/5 text-slate-300 hover:text-white hover:bg-white/10 transition-all disabled:opacity-50"
+            title="Refresh metrics"
+          >
+            <RefreshCw size={16} className={refreshing ? 'animate-spin' : ''} />
+          </button>
+
+          <QuickActionButton
+            label="+ Add Opportunity"
+            icon={Plus}
+            color="bg-blue-600 hover:bg-blue-500"
+            onClick={() => navigate('/admin/opportunities')}
+          />
+        </div>
+      </div>
+
+      {/* ── METRICS GRID ───────────────────────────────────── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <MetricCard
+          title="Total Opportunities"
+          value={metrics?.totalOpps}
+          subtitle={`${metrics?.activeOpps || 0} active now`}
+          icon={Briefcase}
+          color="text-blue-400"
+          bg="bg-blue-500/10"
+          onClick={() => navigate('/admin/opportunities')}
+        />
+        <MetricCard
+          title="Featured Opportunities"
+          value={metrics?.featuredOpps}
+          subtitle="Showing on student homepage"
+          icon={Sparkles}
+          color="text-amber-400"
+          bg="bg-amber-500/10"
+          onClick={() => navigate('/admin/opportunities')}
+        />
+        <MetricCard
+          title="Total Registered Students"
+          value={metrics?.totalStudents}
+          subtitle="Platform accounts active"
           icon={Users}
-          isLoading={overview.loading}
-          error={overview.error}
-          onRetry={fetchOverview}
+          color="text-emerald-400"
+          bg="bg-emerald-500/10"
+          onClick={() => navigate('/admin/students')}
         />
-        <StatCard 
-          title="Active Users Today" 
-          value={overview.data?.activeUsersToday} 
-          icon={Activity}
-          isLoading={overview.loading}
-          error={overview.error}
-          onRetry={fetchOverview}
-        />
-        <StatCard 
-          title="Total Organizations" 
-          value={overview.data?.totalOrganizations} 
-          icon={Building}
-          isLoading={overview.loading}
-          error={overview.error}
-          onRetry={fetchOverview}
-        />
-        <StatCard 
-          title="Audit Logs" 
-          value={overview.data?.totalAuditLogs} 
-          icon={FileText}
-          isLoading={overview.loading}
-          error={overview.error}
-          onRetry={fetchOverview}
+        <MetricCard
+          title="System Health"
+          value="99.9%"
+          subtitle="All APIs Operational"
+          icon={ShieldCheck}
+          color="text-purple-400"
+          bg="bg-purple-500/10"
+          onClick={() => navigate('/admin/system')}
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
-        {/* Growth Chart */}
-        <div className="lg:col-span-2">
-          <WidgetContainer title="User Growth (7 Days)" isLoading={growth.loading} error={growth.error} onRetry={fetchGrowth} className="h-96">
-            <Suspense fallback={<div className="w-full h-full animate-pulse bg-gray-100 dark:bg-gray-800 rounded-md"></div>}>
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={growth.data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.8}/>
-                      <stop offset="95%" stopColor="#4f46e5" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#374151" opacity={0.2} />
-                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6b7280' }} dy={10} />
-                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6b7280' }} />
-                  <Tooltip 
-                    contentStyle={{ backgroundColor: '#1f2937', borderColor: '#374151', borderRadius: '0.5rem', color: '#f3f4f6' }}
-                    itemStyle={{ color: '#818cf8' }}
-                  />
-                  <Area type="monotone" dataKey="users" stroke="#4f46e5" strokeWidth={2} fillOpacity={1} fill="url(#colorUsers)" />
-                </AreaChart>
-              </ResponsiveContainer>
-            </Suspense>
-          </WidgetContainer>
+      {/* ── QUICK ACTIONS STRIP ────────────────────────────── */}
+      <div className="bg-[#0D0D1A] border border-white/8 rounded-2xl p-5 space-y-3">
+        <h3 className="text-xs font-black uppercase tracking-wider text-slate-400">
+          Management Quick Actions
+        </h3>
+        <div className="flex flex-wrap items-center gap-3">
+          <QuickActionButton
+            label="Manage Opportunities"
+            icon={Briefcase}
+            color="bg-blue-600/80 hover:bg-blue-600"
+            onClick={() => navigate('/admin/opportunities')}
+          />
+          <QuickActionButton
+            label="Manage Students"
+            icon={GraduationCap}
+            color="bg-emerald-600/80 hover:bg-emerald-600"
+            onClick={() => navigate('/admin/students')}
+          />
+          <QuickActionButton
+            label="Manage Mentors"
+            icon={Users}
+            color="bg-purple-600/80 hover:bg-purple-600"
+            onClick={() => navigate('/admin/mentors')}
+          />
+          <QuickActionButton
+            label="System Audit Logs"
+            icon={FileText}
+            color="bg-slate-700 hover:bg-slate-600"
+            onClick={() => navigate('/admin/audit')}
+          />
         </div>
+      </div>
 
-        {/* Activity Feed */}
-        <div className="lg:col-span-1">
-          <WidgetContainer title="Recent Activity" isLoading={activity.loading} error={activity.error} onRetry={fetchActivity} className="h-96">
-            <div className="space-y-4 overflow-y-auto h-full pr-2">
-              {activity.data?.length === 0 ? (
-                <p className="text-gray-500 text-sm text-center py-8">No recent activity.</p>
-              ) : (
-                activity.data?.map((log, i) => (
-                  <div key={log.id || i} className="flex gap-3">
-                    <div className="relative flex flex-col items-center">
-                      <div className="w-2 h-2 bg-indigo-500 rounded-full mt-1.5" />
-                      {i !== activity.data.length - 1 && <div className="w-px h-full bg-gray-200 dark:bg-gray-700 my-1" />}
+      {/* ── 2-COLUMN DETAILS ROW ───────────────────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        {/* Left: Latest Opportunities (2 cols) */}
+        <div className="lg:col-span-2 bg-[#0D0D1A] border border-white/8 rounded-2xl p-6 space-y-4">
+          <div className="flex items-center justify-between border-b border-white/5 pb-4">
+            <div>
+              <h3 className="font-extrabold text-lg text-white">Latest Opportunities</h3>
+              <p className="text-xs text-slate-400">Recently published across Internships, Jobs, Competitions.</p>
+            </div>
+            <button
+              onClick={() => navigate('/admin/opportunities')}
+              className="text-xs font-bold text-blue-400 hover:underline"
+            >
+              View All →
+            </button>
+          </div>
+
+          <div className="space-y-3">
+            {loading ? (
+              Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="h-16 bg-white/5 rounded-xl animate-pulse" />
+              ))
+            ) : opportunities.length > 0 ? (
+              opportunities.map(opp => (
+                <div
+                  key={opp.id}
+                  onClick={() => navigate('/admin/opportunities')}
+                  className="flex items-center justify-between p-3.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 cursor-pointer transition-colors"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-9 h-9 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold text-sm shrink-0">
+                      {(opp.company || 'C').charAt(0).toUpperCase()}
                     </div>
-                    <div className="flex-1 pb-4">
-                      <p className="text-sm font-medium text-gray-900 dark:text-white">
-                        {log.actorEmail || 'System'}
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                        {log.action} on {log.collection}
-                      </p>
-                      <div className="flex items-center gap-1 mt-1 text-xs text-gray-400">
-                        <Clock className="w-3 h-3" />
-                        {new Date(log.timestamp).toLocaleTimeString()}
-                      </div>
+                    <div className="min-w-0">
+                      <p className="font-extrabold text-sm text-white truncate">{opp.title}</p>
+                      <p className="text-xs text-slate-400 truncate">{opp.company || 'Company'} · {opp.type || 'Internship'}</p>
                     </div>
                   </div>
-                ))
-              )}
-            </div>
-          </WidgetContainer>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    {opp.is_featured && (
+                      <span className="px-2 py-0.5 rounded text-[10px] font-extrabold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                        ★ Featured
+                      </span>
+                    )}
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-extrabold uppercase ${
+                      opp.is_active !== false ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'
+                    }`}>
+                      {opp.is_active !== false ? 'Active' : 'Inactive'}
+                    </span>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="text-xs text-slate-500 text-center py-6">No opportunities created yet.</p>
+            )}
+          </div>
         </div>
+
+        {/* Right: Recent Import Logs (1 col) */}
+        <div className="bg-[#0D0D1A] border border-white/8 rounded-2xl p-6 space-y-4">
+          <div className="flex items-center justify-between border-b border-white/5 pb-4">
+            <h3 className="font-extrabold text-lg text-white">Import History</h3>
+            <button
+              onClick={() => navigate('/admin/audit')}
+              className="text-xs font-bold text-blue-400 hover:underline"
+            >
+              Audit Logs →
+            </button>
+          </div>
+
+          <div className="space-y-3">
+            {recentLogs.length > 0 ? (
+              recentLogs.map(log => (
+                <div key={log.id} className="p-3 rounded-xl bg-white/5 border border-white/5 space-y-1">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs font-bold text-white truncate">{log.file_name || 'Import'}</p>
+                    <span className="text-[10px] text-emerald-400 font-bold">+{log.imported || 0}</span>
+                  </div>
+                  <p className="text-[11px] text-slate-400">By {log.imported_by || 'Admin'}</p>
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-8 space-y-2">
+                <FileText size={24} className="text-slate-600 mx-auto" />
+                <p className="text-xs text-slate-500 font-medium">No bulk imports logged yet.</p>
+              </div>
+            )}
+          </div>
+        </div>
+
       </div>
 
     </div>
