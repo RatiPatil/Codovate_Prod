@@ -15,8 +15,11 @@ const AuthLayout = ({ children, brandPanel }) => {
 
   return (
     <div className="min-h-screen bg-[#FCFDFF] dark:bg-[#080A12] text-slate-900 dark:text-slate-100 flex items-center justify-center p-4 sm:p-6 lg:p-8 font-sans relative overflow-x-hidden transition-colors duration-300">
-      {/* Subtle Central Radial Purple Glow (Accent only, behind authentication content) */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] sm:w-[700px] h-[400px] sm:h-[500px] bg-gradient-to-r from-indigo-500/10 via-purple-500/12 to-indigo-600/10 dark:from-indigo-600/15 dark:via-purple-600/18 dark:to-indigo-500/15 rounded-full blur-[140px] pointer-events-none z-0" />
+      {/* Centered Ambient Atmospheric Glow Element */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute left-1/2 top-1/2 -z-10 w-[380px] h-[380px] sm:w-[480px] sm:h-[480px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-r from-blue-500/20 via-indigo-500/25 to-purple-600/30 dark:from-blue-600/25 dark:via-indigo-600/30 dark:to-purple-600/35 blur-3xl transition-opacity duration-700"
+      />
 
       {/* Grid Pattern Background Overlay */}
       <div
