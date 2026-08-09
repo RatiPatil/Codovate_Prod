@@ -67,7 +67,7 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
           onClick={() => navigate('/dashboard')}
           className="focus:outline-none flex items-center gap-2"
         >
-          <Logo responsive size="xs" />
+          <Logo size="md" className="h-12 sm:h-14 object-contain" />
         </button>
 
         <button
