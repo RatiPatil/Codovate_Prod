@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
@@ -85,6 +85,23 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
   
   const [isMoreOpen, setIsMoreOpen] = useState(false);
   const [isActivityOpen, setIsActivityOpen] = useState(false);
+  const navRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (navRef.current && !navRef.current.contains(e.target)) {
+        setIsMoreOpen(false);
+        setIsActivityOpen(false);
+      }
+    };
+    
+    if (isMoreOpen || isActivityOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isMoreOpen, isActivityOpen]);
 
   const isPathActive = (item) => {
     if (item.isToggle) return false;
@@ -128,7 +145,7 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
 
 
       {/* Vertical Navigation Links Stream */}
-      <nav className="flex-1 px-4 py-2 space-y-1">
+      <nav ref={navRef} className="flex-1 px-4 py-2 space-y-1">
         {NAV_ITEMS.map((item) => {
           if (item.isToggle) {
             const isOpen = item.id === 'more' ? isMoreOpen : isActivityOpen;
