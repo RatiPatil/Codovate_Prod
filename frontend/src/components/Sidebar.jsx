@@ -106,7 +106,7 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
     .toUpperCase();
 
   const Content = () => (
-    <div className="flex flex-col h-full bg-white text-slate-700 border-r border-slate-200/80 select-none overflow-hidden font-sans">
+    <div className="flex flex-col h-full bg-white text-slate-700 border-r border-slate-200/80 select-none font-sans relative">
       
       {/* Top Header: Logo + Toggle & Mobile Close */}
       <div className="px-5 pt-5 pb-3 flex items-center justify-between shrink-0">
@@ -128,7 +128,7 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
 
 
       {/* Vertical Navigation Links Stream */}
-      <nav className="flex-1 px-3 py-2 space-y-1 overflow-y-auto sidebar-scroll">
+      <nav className="flex-1 px-3 py-2 space-y-1">
         {NAV_ITEMS.map((item) => {
           if (item.isToggle) {
             const isOpen = item.id === 'more' ? isMoreOpen : isActivityOpen;
@@ -136,30 +136,30 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
             const subItems = item.id === 'more' ? MORE_ITEMS : ACTIVITY_ITEMS;
 
             return (
-              <div key={item.id} className="space-y-1">
+              <div key={item.id} className="relative">
                 <button
                   onClick={toggle}
-                  className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl font-semibold text-sm transition-all duration-150 text-slate-600 hover:text-slate-900 hover:bg-slate-100/80`}
+                  className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl font-semibold text-sm transition-all duration-150 ${isOpen ? 'bg-slate-100/80 text-slate-900' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80'}`}
                 >
                   <div className="flex items-center gap-3 truncate">
-                    <item.Icon size={19} strokeWidth={1.8} className="text-slate-500" />
+                    <item.Icon size={19} strokeWidth={1.8} className={isOpen ? 'text-slate-900' : 'text-slate-500'} />
                     <span className="truncate">{item.label}</span>
                   </div>
-                  {isOpen ? <ChevronDown size={16} className="text-slate-400 shrink-0" /> : <ChevronRight size={16} className="text-slate-400 shrink-0" />}
+                  <ChevronRight size={16} className={isOpen ? 'text-slate-900' : 'text-slate-400'} />
                 </button>
                 {isOpen && (
-                  <div className="pl-4 pr-2 py-1 space-y-1">
+                  <div className="absolute left-[102%] top-0 w-60 bg-white border border-slate-100 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.15)] rounded-3xl py-2 z-[100] animate-fadeIn">
                     {subItems.map(subItem => (
                       <button
                         key={subItem.label}
                         onClick={() => toast('This feature is currently under development.', { icon: '🚧' })}
-                        className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl font-semibold text-sm text-slate-500 hover:text-slate-800 hover:bg-slate-100/50 transition-all"
+                        className="w-full flex items-center justify-between px-5 py-3 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors"
                       >
                         <div className="flex items-center gap-3 truncate">
-                          <subItem.Icon size={17} strokeWidth={1.8} />
+                          <subItem.Icon size={18} strokeWidth={1.8} className="text-slate-500" />
                           <span className="truncate">{subItem.label}</span>
                         </div>
-                        <span className="text-[9px] uppercase tracking-wider font-bold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded flex items-center gap-1 shrink-0">
+                        <span className="text-[9px] uppercase tracking-wider font-bold bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded flex items-center gap-1 shrink-0">
                           <Lock size={8} /> Dev
                         </span>
                       </button>
