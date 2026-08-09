@@ -9,14 +9,13 @@ import {
   AlertCircle, ExternalLink, ShieldCheck, Clock, MapPin,
 } from 'lucide-react';
 
-/* ─── Static category tiles (paths only, no fake data) ─── */
+/* ─── Student category tiles ─── */
 const CATEGORIES = [
   { id: 'internships',  title: 'Internships',   path: '/opportunities/internship',  Icon: GraduationCap },
   { id: 'jobs',         title: 'Jobs',           path: '/opportunities/job',          Icon: Briefcase     },
   { id: 'competitions', title: 'Competitions',   path: '/opportunities/competition',  Icon: Trophy        },
   { id: 'mock-tests',   title: 'Mock Tests',     path: '/skill-assessments',          Icon: FileCheck2    },
   { id: 'interviews',   title: 'Mock Interviews',path: '/mock-interview',             Icon: Video         },
-  { id: 'mentorships',  title: 'Mentorships',    path: '/mentors',                    Icon: Users         },
   { id: 'courses',      title: 'Courses',        path: '/learning',                   Icon: BookOpen      },
 ];
 

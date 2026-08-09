@@ -75,17 +75,8 @@ const ShellHeader = ({ onMobileMenuOpen }) => {
         </div>
       </div>
 
-      {/* Right Controls: Business Button, Notifications & Profile Avatar */}
+      {/* Right Controls: Notifications & Profile Avatar */}
       <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-        
-        {/* Business / Enterprise Pill Button */}
-        <button
-          onClick={() => navigate('/opportunities')}
-          className="hidden sm:flex items-center gap-2 h-10 px-4 rounded-full bg-[#E0EEFF] hover:bg-[#D0E4FF] text-[#0066FF] font-bold text-xs sm:text-sm transition-all"
-        >
-          <Building2 size={16} />
-          <span>For Business</span>
-        </button>
 
         {/* Notifications Icon */}
         <button
