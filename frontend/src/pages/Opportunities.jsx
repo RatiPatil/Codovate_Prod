@@ -10,25 +10,28 @@ import {
   Layout,
   Users,
   ChevronRight,
-  SlidersHorizontal,
   MapPin,
   Clock,
   Laptop,
   Briefcase,
   Heart,
   Share2,
-  ChevronDown,
   X,
   Sparkles,
   AlertCircle,
   Search,
-  Star,
-  GraduationCap,
   Trophy,
+  HelpCircle,
+  GraduationCap,
+  Mic,
+  Calendar,
+  Gift,
+  Award,
+  UserCheck,
 } from 'lucide-react';
 
-/* ─── Domain Category Cards (Horizontal Row) ─── */
-const DOMAIN_TABS = [
+/* ─── Internships Category Tabs ─── */
+const INTERNSHIP_DOMAINS = [
   { id: 'all',       label: 'All',                Icon: Sparkles   },
   { id: 'data',      label: 'Data Analysis',      Icon: Database   },
   { id: 'dataSci',   label: 'Data Science',       Icon: BarChart2  },
@@ -39,6 +42,17 @@ const DOMAIN_TABS = [
   { id: 'hr',        label: 'HR',                 Icon: Users      },
 ];
 
+/* ─── Competitions Category Tabs (Exact Reference Match) ─── */
+const COMPETITION_DOMAINS = [
+  { id: 'all',          label: 'Competitions',   Icon: Trophy        },
+  { id: 'hackathons',   label: 'Hackathons',     Icon: Code2         },
+  { id: 'quizzes',      label: 'Quizzes',        Icon: HelpCircle    },
+  { id: 'scholarships', label: 'Scholarships',   Icon: GraduationCap },
+  { id: 'workshops',    label: 'Workshops',      Icon: Briefcase     },
+  { id: 'conferences',  label: 'Conferences',    Icon: Mic           },
+  { id: 'cultural',     label: 'Cultural Events',Icon: Globe         },
+];
+
 /* ─── Format Date Utility ─── */
 const formatDate = (val) => {
   if (!val) return '';
@@ -47,7 +61,18 @@ const formatDate = (val) => {
   return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
 };
 
-/* ─── Match Score Circle/Square Badge ─── */
+/* ─── Days Left Calculator ─── */
+const getDaysLeft = (val) => {
+  if (!val) return null;
+  const d = val?.toDate ? val.toDate() : new Date(val);
+  if (isNaN(d.getTime())) return null;
+  const diff = Math.ceil((d.getTime() - new Date().getTime()) / (1000 * 3600 * 24));
+  if (diff < 0) return 'Ended';
+  if (diff === 0) return 'Ends Today';
+  return `${diff} days left`;
+};
+
+/* ─── Match Score Badge ─── */
 const MatchBadge = ({ score }) => {
   if (score == null) return null;
   const color =
@@ -62,7 +87,7 @@ const MatchBadge = ({ score }) => {
   );
 };
 
-/* ─── Skill & Domain Chips ─── */
+/* ─── Skill & Tag Chips ─── */
 const SkillChip = ({ label }) => (
   <span className="text-[11px] font-medium px-2.5 py-1 rounded-lg bg-[#EBF3FF] text-[#0066FF] border border-blue-100/80 leading-none">
     {label}
@@ -74,6 +99,18 @@ const TagPill = ({ label }) => (
     {label}
   </span>
 );
+
+/* ─── Reward Badge for Competitions ─── */
+const RewardBadge = ({ reward }) => {
+  if (!reward) return null;
+  return (
+    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200/80 text-xs font-bold shadow-2xs">
+      <Gift size={13} className="text-emerald-600" />
+      <span>{reward}</span>
+      <span>👏</span>
+    </span>
+  );
+};
 
 /* ─── Status Badge ─── */
 const StatusBadge = ({ isOpen }) =>
@@ -88,11 +125,11 @@ const StatusBadge = ({ isOpen }) =>
     </span>
   );
 
-/* ─── INTERNSHIP CARD (Exact Reference Style) ─── */
-const OpportunityCard = ({ opp, onSave, saved }) => {
+/* ─── OPPORTUNITY / COMPETITION CARD COMPONENT ─── */
+const OpportunityCard = ({ opp, isCompetition, onSave, saved }) => {
   const navigate = useNavigate();
 
-  const title          = opp.title || 'Untitled Opportunity';
+  const title          = opp.title || 'Untitled Challenge';
   const company        = opp.company || opp.organization || 'Organization';
   const logo           = opp.company_logo_url || opp.logo;
   const requiredSkills = opp.required_skills || opp.skills || [];
@@ -101,18 +138,21 @@ const OpportunityCard = ({ opp, onSave, saved }) => {
   const hiddenSkills   = requiredSkills.length - visibleSkills.length;
   const visibleDomains = domains.slice(0, 3);
 
-  const isOpen    = opp.is_active !== false && !['closed', 'inactive'].includes((opp.status || '').toLowerCase());
-  const workMode  = opp.mode || opp.workMode || (opp.is_remote ? 'Work from Home' : opp.location || 'On-site');
-  const duration  = opp.duration || opp.employment_type || 'Part Time';
-  const noExp     = !opp.experience_required || opp.experience_required === '0' || /fresher|no prior|0 year/i.test(opp.experience_required);
-  const postedDate = formatDate(opp.created_at);
+  const isOpen      = opp.is_active !== false && !['closed', 'inactive'].includes((opp.status || '').toLowerCase());
+  const workMode    = opp.mode || opp.workMode || (opp.is_remote ? 'Online' : opp.location || 'Online');
+  const duration    = opp.duration || opp.employment_type || 'Part Time';
+  const noExp       = !opp.experience_required || opp.experience_required === '0' || /fresher|no prior|0 year/i.test(opp.experience_required);
+  const postedDate  = formatDate(opp.created_at);
+  const daysLeft    = getDaysLeft(opp.deadline);
+  const rewardText  = opp.reward || opp.stipend || opp.prize || (isCompetition ? 'Pre-Placement Interviews' : null);
+  const teamSize    = opp.team_size || opp.participation || 'Individual Participation';
 
   return (
     <article
       onClick={() => navigate(`/opportunities/${opp.id}`)}
       className="group bg-white rounded-[24px] border border-slate-200/80 p-5 sm:p-6 hover:border-[#0066FF]/40 hover:shadow-md transition-all duration-200 cursor-pointer space-y-3.5"
     >
-      {/* Top Title & Match Score Row */}
+      {/* Header Row */}
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-start gap-3.5 min-w-0">
           <div className="w-12 h-12 rounded-2xl bg-[#EBF3FF] border border-blue-100 flex items-center justify-center font-extrabold text-[#0066FF] text-lg shrink-0 overflow-hidden">
@@ -132,48 +172,69 @@ const OpportunityCard = ({ opp, onSave, saved }) => {
           </div>
         </div>
 
-        <MatchBadge score={opp.match_score} />
+        {!isCompetition && <MatchBadge score={opp.match_score} />}
       </div>
 
-      {/* Meta Icons Row: Experience · Duration · Location · Stipend */}
+      {/* Meta Info Row */}
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-slate-500 font-medium pt-0.5">
-        {noExp ? (
-          <span className="flex items-center gap-1">
-            <Briefcase size={13} className="text-slate-400" />
-            No prior experience required
-          </span>
-        ) : (
-          <span className="flex items-center gap-1">
-            <Briefcase size={13} className="text-slate-400" />
-            {opp.experience_required}
-          </span>
-        )}
-
-        <span className="text-slate-300">·</span>
-        <span className="flex items-center gap-1">
-          <Clock size={13} className="text-slate-400" />
-          {duration}
-        </span>
-
-        <span className="text-slate-300">·</span>
-        <span className="flex items-center gap-1">
-          {workMode.toLowerCase().includes('home') || workMode.toLowerCase().includes('remote') ? (
-            <Laptop size={13} className="text-slate-400" />
-          ) : (
-            <MapPin size={13} className="text-slate-400" />
-          )}
-          {workMode}
-        </span>
-
-        {opp.stipend && (
+        {isCompetition ? (
           <>
+            <span className="flex items-center gap-1">
+              <UserCheck size={13} className="text-slate-400" />
+              {teamSize}
+            </span>
+
             <span className="text-slate-300">·</span>
-            <span className="font-bold text-emerald-700">₹{opp.stipend}</span>
+            <span className="flex items-center gap-1">
+              {workMode.toLowerCase().includes('online') || workMode.toLowerCase().includes('remote') ? (
+                <Laptop size={13} className="text-slate-400" />
+              ) : (
+                <MapPin size={13} className="text-slate-400" />
+              )}
+              {workMode}
+            </span>
+          </>
+        ) : (
+          <>
+            {noExp ? (
+              <span className="flex items-center gap-1">
+                <Briefcase size={13} className="text-slate-400" />
+                No prior experience required
+              </span>
+            ) : (
+              <span className="flex items-center gap-1">
+                <Briefcase size={13} className="text-slate-400" />
+                {opp.experience_required}
+              </span>
+            )}
+
+            <span className="text-slate-300">·</span>
+            <span className="flex items-center gap-1">
+              <Clock size={13} className="text-slate-400" />
+              {duration}
+            </span>
+
+            <span className="text-slate-300">·</span>
+            <span className="flex items-center gap-1">
+              {workMode.toLowerCase().includes('home') || workMode.toLowerCase().includes('remote') ? (
+                <Laptop size={13} className="text-slate-400" />
+              ) : (
+                <MapPin size={13} className="text-slate-400" />
+              )}
+              {workMode}
+            </span>
+
+            {opp.stipend && (
+              <>
+                <span className="text-slate-300">·</span>
+                <span className="font-bold text-emerald-700">₹{opp.stipend}</span>
+              </>
+            )}
           </>
         )}
       </div>
 
-      {/* Skills Chips */}
+      {/* Skills / Domain Chips */}
       {visibleSkills.length > 0 && (
         <div className="flex flex-wrap items-center gap-1.5">
           {visibleSkills.map((skill) => (
@@ -196,13 +257,25 @@ const OpportunityCard = ({ opp, onSave, saved }) => {
         </div>
       )}
 
-      {/* Bottom Footer Row: Status · Date · Action Controls */}
+      {/* Reward Badge if present */}
+      {rewardText && (
+        <div className="pt-0.5">
+          <RewardBadge reward={rewardText} />
+        </div>
+      )}
+
+      {/* Footer Row */}
       <div className="flex items-center justify-between pt-2 border-t border-slate-100">
         <div className="flex items-center gap-3">
           <StatusBadge isOpen={isOpen} />
           {postedDate && (
             <span className="text-xs text-slate-400 font-medium">
               Posted {postedDate}
+            </span>
+          )}
+          {daysLeft && (
+            <span className="text-xs font-bold text-amber-600 flex items-center gap-1">
+              ⏳ {daysLeft}
             </span>
           )}
         </div>
@@ -236,7 +309,7 @@ const OpportunityCard = ({ opp, onSave, saved }) => {
   );
 };
 
-/* ─── Skeleton Row ─── */
+/* ─── Skeleton ─── */
 const CardSkeleton = () => (
   <div className="bg-white rounded-[24px] border border-slate-200/80 p-6 animate-pulse space-y-4">
     <div className="flex justify-between items-start gap-4">
@@ -258,7 +331,7 @@ const CardSkeleton = () => (
 );
 
 /* ═══════════════════════════════════════════════════════════
-   MAIN INTERNSHIPS PAGE
+   MAIN OPPORTUNITIES PAGE (Supports /internship, /job, /competition)
 ═══════════════════════════════════════════════════════════ */
 const Opportunities = () => {
   const { type: urlType } = useParams();
@@ -266,6 +339,7 @@ const Opportunities = () => {
   const [activeType, setActiveType]         = useState(urlType || 'internship');
   const [activeDomain, setActiveDomain]     = useState('all');
   const [workModeFilter, setWorkModeFilter] = useState('All');
+  const [teamSizeFilter, setTeamSizeFilter] = useState('All');
   const [searchQuery, setSearchQuery]       = useState('');
   const [sortBy, setSortBy]                 = useState('newest');
 
@@ -279,9 +353,13 @@ const Opportunities = () => {
       setActiveType(urlType);
       setActiveDomain('all');
       setWorkModeFilter('All');
+      setTeamSizeFilter('All');
       setSearchQuery('');
     }
   }, [urlType]);
+
+  const isCompetition = activeType === 'competition' || activeType === 'hackathon';
+  const categoryTabs  = isCompetition ? COMPETITION_DOMAINS : INTERNSHIP_DOMAINS;
 
   /* Fetch strictly from backend Firestore API */
   const fetchOpportunities = useCallback(async () => {
@@ -311,67 +389,51 @@ const Opportunities = () => {
     fetchOpportunities();
   }, [fetchOpportunities]);
 
-  /* Domain Keyword Mapping */
-  const DOMAIN_KEYWORDS = {
-    data:      ['data analysis', 'data analyst', 'analytics'],
-    dataSci:   ['data science', 'machine learning', 'ml', 'ai'],
-    software:  ['software', 'backend', 'fullstack', 'full-stack', 'python', 'java', 'node'],
-    marketing: ['marketing', 'digital', 'seo', 'content', 'social media'],
-    web:       ['web development', 'frontend', 'react', 'html', 'css', 'javascript'],
-    uiux:      ['ui', 'ux', 'design', 'figma', 'product design'],
-    hr:        ['hr', 'human resources', 'recruiter', 'talent'],
-  };
-
-  /* Client-side Domain & Work Mode Filtering */
+  /* Filtering */
   const visibleOpportunities = opportunities.filter((o) => {
-    // 1. Domain Tab Filter
-    if (activeDomain !== 'all') {
-      const keywords = DOMAIN_KEYWORDS[activeDomain] || [];
-      const haystack = `${o.title || ''} ${(o.required_skills || []).join(' ')} ${(o.domains || []).join(' ')}`.toLowerCase();
-      if (!keywords.some((k) => haystack.includes(k))) return false;
-    }
-
-    // 2. Work Mode Filter
     if (workModeFilter !== 'All') {
-      const mode = (o.mode || o.workMode || (o.is_remote ? 'Remote' : 'On-site')).toLowerCase();
+      const mode = (o.mode || o.workMode || (o.is_remote ? 'Online' : 'On-site')).toLowerCase();
       const target = workModeFilter.toLowerCase();
       if (!mode.includes(target)) return false;
     }
-
     return true;
   });
 
-  const typeLabel = activeType === 'job' ? 'Jobs' :
-                    activeType === 'competition' ? 'Competitions' :
+  const pageTitle = isCompetition ? 'Competitions' :
+                    activeType === 'job' ? 'Jobs' :
                     'Internships';
+
+  const pageSubtitle = isCompetition ? 'Online quizzes, case studies & challenges with prizes' :
+                       activeType === 'job' ? 'Full-time jobs and entry-level positions in India' :
+                       'Latest Internships in India.';
 
   const hasActiveFilters = activeDomain !== 'all' || workModeFilter !== 'All' || searchQuery.trim() !== '';
 
   return (
     <div className="w-full font-sans pb-16 space-y-6">
       
-      {/* ── HEADER TITLE: "116 Internships for Students" Style ── */}
+      {/* ── HEADER TITLE: "21341+ Competitions for Students" Style ── */}
       <div>
         <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight">
           {loading ? (
             <span className="inline-block w-64 h-10 bg-slate-200 rounded-xl animate-pulse" />
           ) : (
             <>
-              {visibleOpportunities.length > 0 && `${visibleOpportunities.length} `}
-              <span className="text-slate-900">{typeLabel}</span>
+              {visibleOpportunities.length > 0 && `${visibleOpportunities.length}+ `}
+              <span className="text-slate-900">{pageTitle}</span>
               <span className="text-slate-500 font-bold"> for Students</span>
             </>
           )}
         </h1>
         <p className="text-sm font-semibold text-[#0066FF] mt-1">
-          Latest {typeLabel} in India.
+          {pageSubtitle}
         </p>
       </div>
 
-      {/* ── HORIZONTAL DOMAIN CATEGORY CARDS (7 Soft Sky Blue Cards) ── */}
+      {/* ── HORIZONTAL CATEGORY CARDS ── */}
       <div className="relative">
         <div className="flex gap-3 overflow-x-auto hide-scrollbar pb-1">
-          {DOMAIN_TABS.map(({ id, label, Icon }) => (
+          {categoryTabs.map(({ id, label, Icon }) => (
             <button
               key={id}
               onClick={() => setActiveDomain(id)}
@@ -402,24 +464,41 @@ const Opportunities = () => {
       {/* ── FILTER PILLS BAR ── */}
       <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-2xs">
         
-        {/* Left Filter Pills */}
+        {/* Filter Pills */}
         <div className="flex items-center gap-2 flex-wrap">
-          {/* Work Mode Filter Pills */}
-          <div className="flex items-center gap-1">
-            {['All', 'Remote', 'On-site', 'Hybrid'].map((mode) => (
-              <button
-                key={mode}
-                onClick={() => setWorkModeFilter(mode)}
-                className={`px-3 py-1.5 rounded-full border text-xs font-bold transition-all ${
-                  workModeFilter === mode
-                    ? 'bg-[#0066FF] text-white border-[#0066FF] shadow-xs'
-                    : 'bg-white text-slate-600 border-slate-200 hover:border-[#0066FF] hover:text-[#0066FF]'
-                }`}
-              >
-                {mode}
-              </button>
-            ))}
-          </div>
+          {isCompetition ? (
+            <div className="flex items-center gap-1">
+              {['All', 'Individual', 'Team'].map((ts) => (
+                <button
+                  key={ts}
+                  onClick={() => setTeamSizeFilter(ts)}
+                  className={`px-3 py-1.5 rounded-full border text-xs font-bold transition-all ${
+                    teamSizeFilter === ts
+                      ? 'bg-[#0066FF] text-white border-[#0066FF] shadow-xs'
+                      : 'bg-white text-slate-600 border-slate-200 hover:border-[#0066FF] hover:text-[#0066FF]'
+                  }`}
+                >
+                  {ts === 'All' ? 'Team Size' : ts}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="flex items-center gap-1">
+              {['All', 'Remote', 'On-site', 'Hybrid'].map((mode) => (
+                <button
+                  key={mode}
+                  onClick={() => setWorkModeFilter(mode)}
+                  className={`px-3 py-1.5 rounded-full border text-xs font-bold transition-all ${
+                    workModeFilter === mode
+                      ? 'bg-[#0066FF] text-white border-[#0066FF] shadow-xs'
+                      : 'bg-white text-slate-600 border-slate-200 hover:border-[#0066FF] hover:text-[#0066FF]'
+                  }`}
+                >
+                  {mode}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Search Input & Sort Dropdown */}
@@ -431,7 +510,7 @@ const Opportunities = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter') fetchOpportunities(); }}
-              placeholder="Search internships..."
+              placeholder={`Search ${pageTitle.toLowerCase()}...`}
               className="w-full h-9 pl-9 pr-8 rounded-full bg-slate-50 border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#0066FF] focus:ring-1 focus:ring-[#0066FF]/20 transition-all"
             />
             {searchQuery && (
@@ -444,7 +523,6 @@ const Opportunities = () => {
             )}
           </div>
 
-          {/* Sort Dropdown */}
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
@@ -457,7 +535,7 @@ const Opportunities = () => {
 
       </div>
 
-      {/* ── INTERNSHIPS LIST (Full Width — No Right Panel) ── */}
+      {/* ── OPPORTUNITIES LIST (Full Width) ── */}
       <div className="space-y-4">
         {loading ? (
           Array.from({ length: 4 }).map((_, i) => <CardSkeleton key={i} />)
@@ -475,11 +553,11 @@ const Opportunities = () => {
         ) : visibleOpportunities.length === 0 ? (
           <div className="bg-white rounded-[24px] border border-slate-200 p-14 text-center space-y-3">
             <div className="w-14 h-14 rounded-2xl bg-[#EBF3FF] flex items-center justify-center mx-auto text-[#0066FF]">
-              <Briefcase size={28} />
+              <Trophy size={28} />
             </div>
             {hasActiveFilters ? (
               <>
-                <h3 className="font-extrabold text-lg text-slate-800">No internships found</h3>
+                <h3 className="font-extrabold text-lg text-slate-800">No {pageTitle.toLowerCase()} found</h3>
                 <p className="text-xs font-medium text-slate-400 max-w-xs mx-auto">
                   Try changing your search or filters.
                 </p>
@@ -487,6 +565,7 @@ const Opportunities = () => {
                   onClick={() => {
                     setActiveDomain('all');
                     setWorkModeFilter('All');
+                    setTeamSizeFilter('All');
                     setSearchQuery('');
                   }}
                   className="mt-2 px-5 py-2.5 rounded-xl bg-[#EBF3FF] text-[#0066FF] text-xs font-bold hover:bg-[#D0E4FF] transition-colors"
@@ -496,9 +575,9 @@ const Opportunities = () => {
               </>
             ) : (
               <>
-                <h3 className="font-extrabold text-lg text-slate-800">No internships available right now.</h3>
+                <h3 className="font-extrabold text-lg text-slate-800">No {pageTitle.toLowerCase()} available right now.</h3>
                 <p className="text-xs font-medium text-slate-400 max-w-xs mx-auto">
-                  New opportunities will appear here when they are published.
+                  New challenges and competitions will appear here when they are published.
                 </p>
               </>
             )}
@@ -508,6 +587,7 @@ const Opportunities = () => {
             <OpportunityCard
               key={opp.id}
               opp={opp}
+              isCompetition={isCompetition}
               onSave={(id) =>
                 setSavedIds((prev) => {
                   const next = new Set(prev);
