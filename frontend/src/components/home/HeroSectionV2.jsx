@@ -147,35 +147,44 @@ const HeroSectionV2 = () => {
       ref={heroRef}
       className="relative pt-24 pb-8 md:pt-32 md:pb-12 flex flex-col justify-between items-center z-10 overflow-hidden"
     >
-      {/* Focused 3-Layer Purple Hero Light (35% smaller, defined core + soft halo) */}
+      {/* Focused Ambient Purple Light Glow (Matching Reference Image) */}
       <div
         ref={heroGlowRef}
-        className="absolute top-[48%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[520px] h-[300px] pointer-events-none z-0"
+        className="absolute top-[45%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[480px] h-[480px] sm:w-[580px] sm:h-[580px] pointer-events-none z-0"
       >
-        {/* Layer 2: Soft Halo */}
+        {/* Soft Halo Outer */}
         <div
-          className="absolute inset-0 rounded-full blur-[75px] opacity-50 dark:opacity-65 pointer-events-none"
+          className="absolute inset-0 rounded-full blur-[90px] opacity-60 dark:opacity-75 pointer-events-none"
           style={{
             background:
-              'radial-gradient(circle, rgba(124, 58, 237, 0.38) 0%, rgba(99, 102, 241, 0.18) 55%, transparent 75%)',
+              'radial-gradient(circle, rgba(124, 58, 237, 0.35) 0%, rgba(99, 102, 241, 0.20) 50%, transparent 75%)',
           }}
         />
-        {/* Layer 1: Defined Rich Purple Core */}
+        {/* Defined Rich Core */}
         <div
-          className="absolute top-[15%] left-[15%] w-[70%] h-[70%] rounded-full blur-[42px] opacity-85 dark:opacity-95 pointer-events-none"
+          className="absolute top-[12%] left-[12%] w-[76%] h-[76%] rounded-full blur-[50px] opacity-85 dark:opacity-95 pointer-events-none"
           style={{
             background:
-              'radial-gradient(circle, rgba(147, 51, 234, 0.60) 0%, rgba(124, 58, 237, 0.35) 60%, transparent 85%)',
+              'radial-gradient(circle, rgba(147, 51, 234, 0.65) 0%, rgba(124, 58, 237, 0.40) 55%, rgba(79, 70, 229, 0.15) 75%, transparent 90%)',
           }}
         />
       </div>
 
-      {/* Sparkling Floating Particles */}
+      {/* Sparkling Floating Dots matching reference image */}
       <div ref={particlesRef} className="absolute inset-0 pointer-events-none z-0">
-        {particles.map((p, i) => (
+        {[
+          { top: '22%', left: '32%', size: 'w-1 h-1' },
+          { top: '25%', left: '71%', size: 'w-1 h-1' },
+          { top: '28%', left: '93%', size: 'w-1 h-1' },
+          { top: '30%', left: '08%', size: 'w-1 h-1' },
+          { top: '52%', left: '19%', size: 'w-1.5 h-1.5' },
+          { top: '60%', left: '59%', size: 'w-1 h-1' },
+          { top: '68%', left: '44%', size: 'w-1 h-1' },
+          { top: '48%', left: '84%', size: 'w-1 h-1' },
+        ].map((p, i) => (
           <div
             key={i}
-            className={`hero-sparkle-dot absolute rounded-full bg-white dark:bg-purple-200 shadow-[0_0_10px_rgba(255,255,255,0.9)] opacity-70 ${p.size}`}
+            className={`hero-sparkle-dot absolute rounded-full bg-purple-200 dark:bg-purple-200 shadow-[0_0_8px_rgba(192,132,252,0.9)] opacity-75 ${p.size}`}
             style={{ top: p.top, left: p.left }}
           />
         ))}
