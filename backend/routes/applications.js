@@ -1,28 +1,23 @@
 const express = require("express");
+const { mapDoc, mapDocs } = require('../utils/firestoreMapper');
 const router = express.Router();
 const { db } = require("../config/firebase");
 const auth = require("../middleware/auth");
-
 // Get all applications (admin only)
 router.get("/", auth, async (req, res) => {
   if (!["admin", "super_admin", "college_admin", "company_admin"].includes(req.user.role)) return res.status(403).json({ message: "Admin only." });
   try {
     const appsSnapshot = await db.collection("applications").get();
-    
     let applications = [];
     for (const doc of appsSnapshot.docs) {
       const app = mapDoc(doc);
       app.id = doc.id;
-      
       const studentDoc = await db.collection("profiles").doc(app.user_id).get();
       const s = studentDoc.exists ? mapDoc(studentDoc) : {};
-      
       const userDoc = await db.collection("users").doc(app.user_id).get();
       const u = userDoc.exists ? mapDoc(userDoc) : {};
-      
       const oppDoc = await db.collection("opportunities").doc(app.opportunity_id).get();
       const o = oppDoc.exists ? mapDoc(oppDoc) : {};
-      
       applications.push({
         ...app,
         student_name: s.personalInfo?.name || u.name || "Unknown",
@@ -31,56 +26,44 @@ router.get("/", auth, async (req, res) => {
         company: o.company || "Unknown"
       });
     }
-
     applications.sort((a, b) => {
       const timeA = a.applied_at?.toMillis ? a.applied_at.toMillis() : new Date(a.applied_at).getTime();
       const timeB = b.applied_at?.toMillis ? b.applied_at.toMillis() : new Date(b.applied_at).getTime();
       return timeB - timeA;
     });
-
     res.json(applications);
   } catch (err) {
     console.error("Get all applications error:", err.message);
     res.status(500).json({ message: "Server error." });
   }
 });
-
 // Apply to opportunity
 router.post("/", auth, async (req, res) => {
   const { opportunity_id } = req.body;
-
   if (!opportunity_id)
     return res.status(400).json({ message: "Opportunity ID is required." });
-
   try {
     // Check opportunity exists and is active
     const oppRef = db.collection("opportunities").doc(opportunity_id);
     const oppDoc = await oppRef.get();
-    
     if (!oppDoc.exists)
       return res.status(404).json({ message: "Opportunity not found." });
-      
     const opp = mapDoc(oppDoc);
     if (opp.is_active === false || opp.status === 'Inactive')
       return res.status(400).json({ message: "Opportunity is closed." });
-
     // Check deadline
     if (opp.deadline && new Date(opp.deadline) < new Date())
       return res.status(400).json({ message: "Application deadline has passed." });
-
     // Check if already applied (check both user_id and student_id compatibility fields)
     const [userAppsSnap, studentAppsSnap] = await Promise.all([
       db.collection("applications").where("user_id", "==", req.user.id).where("opportunity_id", "==", opportunity_id).get(),
       db.collection("applications").where("student_id", "==", req.user.id).where("opportunity_id", "==", opportunity_id).get()
     ]);
-      
     if (!userAppsSnap.empty || !studentAppsSnap.empty)
       return res.status(409).json({ message: "You already applied to this opportunity." });
-
     // Get student details
     const studentDoc = await db.collection("profiles").doc(req.user.id).get();
     const student = studentDoc.exists ? mapDoc(studentDoc) : {};
-
     // Create application
     const newAppRef = db.collection("applications").doc();
     const application = {
@@ -95,14 +78,11 @@ router.post("/", auth, async (req, res) => {
       status: 'Applied',
       applied_at: new Date()
     };
-    
     await newAppRef.set(application);
-
     // Scoring Engine Integration
     const { awardPoints, updatePlacementScore } = require("../utils/scoring");
     await awardPoints(req.user.id, `apply_internship_${opportunity_id}`, 20, true);
     await updatePlacementScore(req.user.id);
-
     // Log platform event
     await db.collection('platform_events').add({
       actor_id: req.user.id,
@@ -112,7 +92,6 @@ router.post("/", auth, async (req, res) => {
       metadata: { status: 'Applied' },
       created_at: new Date()
     });
-
     // Create notification for user
     const notifRef = db.collection("notifications").doc();
     await notifRef.set({
@@ -125,7 +104,6 @@ router.post("/", auth, async (req, res) => {
       is_read: false,
       created_at: new Date()
     });
-
     // 🔴 REAL-TIME: Emit to user
     req.io.to(`user_${req.user.id}`).emit("application_update", {
       type: "new_application",
@@ -137,14 +115,12 @@ router.post("/", auth, async (req, res) => {
         deadline: opp.deadline,
       },
     });
-
     // 🔴 REAL-TIME: Emit stats to global
     req.io.to("global").emit("stats_update", {
       type: "new_application",
       user: student.personalInfo?.name || 'Anonymous',
       opportunity: opp.title,
     });
-
     // 🔴 REAL-TIME: Emit full application to Admin Room
     req.io.to("admin_room").emit("admin_new_application", {
       ...application,
@@ -153,47 +129,36 @@ router.post("/", auth, async (req, res) => {
       opportunity_title: opp.title || "Unknown",
       company: opp.company || "Unknown"
     });
-
     console.log(`✅ ${student.personalInfo?.name || 'Student'} applied to ${opp.title}`);
     res.status(201).json(application);
-
   } catch (err) {
     console.error("Apply error:", err.message);
     res.status(500).json({ message: "Server error." });
   }
 });
-
 // Track external application click
 router.post("/external", auth, async (req, res) => {
   const { opportunity_id } = req.body;
-
   if (!opportunity_id)
     return res.status(400).json({ message: "Opportunity ID is required." });
-
   try {
     const oppRef = db.collection("opportunities").doc(opportunity_id);
     const oppDoc = await oppRef.get();
-    
     if (!oppDoc.exists)
       return res.status(404).json({ message: "Opportunity not found." });
-      
     const opp = mapDoc(oppDoc);
-
     // Check if already tracked
     const existingApps = await db.collection("applications")
       .where("user_id", "==", req.user.id)
       .where("opportunity_id", "==", opportunity_id)
       .where("status", "==", "External Link Opened")
       .get();
-      
     if (!existingApps.empty) {
       return res.status(200).json({ message: "Already tracked" });
     }
-
     // Fetch Student Name
     const studentDoc = await db.collection("profiles").doc(req.user.id).get();
     const studentName = studentDoc.exists ? (mapDoc(studentDoc).personalInfo?.name || 'Unknown Student') : 'Unknown Student';
-
     const newAppRef = db.collection("applications").doc();
     const application = {
       id: newAppRef.id,
@@ -208,23 +173,18 @@ router.post("/external", auth, async (req, res) => {
       applied_at: new Date(),
       is_external: true
     };
-    
     await newAppRef.set(application);
-
     // Scoring Engine Integration for external apply
     const { awardPoints, updatePlacementScore } = require("../utils/scoring");
     await awardPoints(req.user.id, `apply_internship_${opportunity_id}`, 10, true); // give fewer points for external? Or 20 as before. Let's give 20.
     await updatePlacementScore(req.user.id);
-
     console.log(`🌐 Student ${req.user.id} opened external opportunity ${opp.title}`);
     res.status(201).json(application);
-
   } catch (err) {
     console.error("External apply error:", err.message);
     res.status(500).json({ message: "Server error." });
   }
 });
-
 // Get my applications
 router.get("/my", auth, async (req, res) => {
   try {
@@ -232,11 +192,9 @@ router.get("/my", auth, async (req, res) => {
       db.collection("applications").where("user_id", "==", req.user.id).get(),
       db.collection("applications").where("student_id", "==", req.user.id).get()
     ]);
-
     const appsMap = new Map();
     userAppsSnap.docs.forEach(doc => appsMap.set(doc.id, { id: doc.id, ...mapDoc(doc) }));
     studentAppsSnap.docs.forEach(doc => appsMap.set(doc.id, { id: doc.id, ...mapDoc(doc) }));
-
     const appsList = Array.from(appsMap.values());
     const applications = await Promise.all(appsList.map(async (app) => {
       if (app.opportunity_id) {
@@ -262,7 +220,6 @@ router.get("/my", auth, async (req, res) => {
         type: app.type || 'Job'
       };
     }));
-    
     applications.sort((a, b) => {
       const getTime = (val) => {
         if (!val) return 0;
@@ -273,54 +230,37 @@ router.get("/my", auth, async (req, res) => {
       };
       return getTime(b.applied_at || b.createdAt) - getTime(a.applied_at || a.createdAt);
     });
-
     res.json(applications);
   } catch (err) {
     console.error("Get applications error:", err.message);
     res.status(500).json({ message: "Server error." });
   }
 });
-
 // Update application status (admin only) — real-time notification
 router.put("/:id/status", auth, async (req, res) => {
   if (!["admin", "super_admin", "college_admin", "company_admin"].includes(req.user.role))
     return res.status(403).json({ message: "Admin only." });
-
   const { status } = req.body;
   const validStatuses = ["Applied", "Under Review", "Selected", "Rejected"];
-
   if (!validStatuses.includes(status))
     return res.status(400).json({ message: "Invalid status." });
-
   try {
     const appRef = db.collection("applications").doc(req.params.id);
     const appDoc = await appRef.get();
-    
     if (!appDoc.exists)
       return res.status(404).json({ message: "Application not found." });
-      
     await appRef.update({ status, updated_at: new Date() });
-    
     // Scoring Engine Integration for Selection
     if (status === "Selected") {
       const { awardPoints, updatePlacementScore } = require("../utils/scoring");
-
-      const {
-        mapDoc: mapDoc,
-        mapDocs: mapDocs
-      } = require('../utils/firestoreMapper');
-
       await awardPoints(mapDoc(appDoc).user_id, `selected_internship_${req.params.id}`, 500, true);
       await updatePlacementScore(mapDoc(appDoc).user_id);
     }
-    
     const app = mapDoc(appDoc);
     app.id = appDoc.id;
-
     // Get opportunity details
     const oppDoc = await db.collection("opportunities").doc(app.opportunity_id).get();
     const opp = oppDoc.exists ? mapDoc(oppDoc) : {};
-
     // Create notification
     const notifRef = db.collection("notifications").doc();
     await notifRef.set({
@@ -333,7 +273,6 @@ router.put("/:id/status", auth, async (req, res) => {
       is_read: false,
       created_at: new Date()
     });
-
     // 🔴 REAL-TIME: Notify the student instantly
     req.io.to(`user_${app.user_id}`).emit("application_update", {
       type: "status_change",
@@ -341,40 +280,30 @@ router.put("/:id/status", auth, async (req, res) => {
       status: status,
       opportunity: opp.title || 'Unknown',
     });
-
     req.io.to(`user_${app.user_id}`).emit("new_notification", {
       title: `Application ${status}`,
       body: `Your application to ${opp.title || 'a company'} is now ${status}`,
     });
-
     res.json({ ...app, status });
   } catch (err) {
     console.error("Update status error:", err.message);
     res.status(500).json({ message: "Server error." });
   }
 });
-
 // Withdraw application (student only, only if status is 'Applied')
 router.delete("/:id", auth, async (req, res) => {
   try {
     const appRef = db.collection("applications").doc(req.params.id);
     const appDoc = await appRef.get();
-
     if (!appDoc.exists)
       return res.status(404).json({ message: "Application not found." });
-
     const app = mapDoc(appDoc);
-
     if (app.user_id !== req.user.id)
       return res.status(403).json({ message: "Not authorized." });
-
     if (app.status !== 'Applied')
       return res.status(400).json({ message: "Cannot withdraw — application is already under review or decided." });
-
     await appRef.delete();
-
     req.io.to(`user_${req.user.id}`).emit("application_withdrawn", { application_id: req.params.id });
-
     console.log(`✅ Application ${req.params.id} withdrawn.`);
     res.json({ message: "Application withdrawn successfully." });
   } catch (err) {
@@ -388,38 +317,29 @@ router.put("/:id/track", auth, async (req, res) => {
   try {
     const appRef = db.collection("applications").doc(req.params.id);
     const appDoc = await appRef.get();
-
     if (!appDoc.exists)
       return res.status(404).json({ message: "Application not found." });
-
     const app = mapDoc(appDoc);
-
     if (app.user_id !== req.user.id)
       return res.status(403).json({ message: "Not authorized." });
-
     const updateData = {};
     if (status) updateData.status = status;
     if (notes !== undefined) updateData.notes = notes;
     if (follow_up_date !== undefined) updateData.follow_up_date = follow_up_date;
     if (interview_date !== undefined) updateData.interview_date = interview_date;
     if (documents_submitted !== undefined) updateData.documents_submitted = documents_submitted;
-
     await appRef.update(updateData);
-    
     // Fetch updated
     const updatedDoc = await appRef.get();
-
     req.io.to(`user_${req.user.id}`).emit("application_update", {
       type: "tracker_update",
       application_id: req.params.id,
       ...updateData
     });
-
     res.json(mapDoc(updatedDoc));
   } catch (err) {
     console.error("Tracker update error:", err.message);
     res.status(500).json({ message: "Server error." });
   }
 });
-
 module.exports = router;
