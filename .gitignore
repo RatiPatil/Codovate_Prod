@@ -19,3 +19,8 @@ backend/config/serviceAccountKey.json
 *.backup*
 *.backup.*
 .github/workflows/backup/
+
+# Deployment backups
+*.backup*
+*.backup.*
+.github/workflows/backup/
