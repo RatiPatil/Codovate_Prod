@@ -76,6 +76,8 @@ jobs:
           mkdir -p ~/.ssh
           printf '%s' "$VPS_SSH_KEY_B64" | base64 --decode > ~/.ssh/codovate_vps
           chmod 600 ~/.ssh/codovate_vps
+            ssh-keygen -y -f ~/.ssh/codovate_vps >/dev/null
+            echo "Decoded SSH key = VALID"
           ssh-keyscan -H "${{ secrets.VPS_HOST }}" >> ~/.ssh/known_hosts
 
       - name: Deploy to VPS
