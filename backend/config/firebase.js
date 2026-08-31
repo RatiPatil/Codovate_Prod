@@ -8,8 +8,10 @@ const fs = require('fs');
 let serviceAccount = null;
 
 // Support Render Secret Files natively
-if (fs.existsSync('/etc/secrets/serviceAccountKey.json')) {
-  serviceAccount = require('/etc/secrets/serviceAccountKey.json');
+if (fs.existsSync('/var/www/codovate/secrets/serviceAccountKey.json')) {
+  serviceAccount = JSON.parse(
+    fs.readFileSync('/var/www/codovate/secrets/serviceAccountKey.json', 'utf8')
+  );
   if (serviceAccount.private_key) {
     serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
   }

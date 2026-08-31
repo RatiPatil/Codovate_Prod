@@ -18,7 +18,7 @@ export const SocketProvider = ({ children }) => {
       if (!url && import.meta.env.VITE_API_URL) {
         url = import.meta.env.VITE_API_URL.replace(/\/api\/?$/, '');
       }
-      if (!url) url = 'http://localhost:5000';
+      if (!url) url = '';
 
       // Fix domain names with underscores (e.g. codovate_prod.onrender.com -> codovate-prod.onrender.com)
       return url.replace(/([a-zA-Z0-9]+)_([a-zA-Z0-9-]+\.onrender\.com)/g, '$1-$2');

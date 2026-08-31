@@ -1,0 +1,133 @@
+name: Codovate Production VPS Deployment
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: codovate-production
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Backend Dependencies
+        working-directory: backend
+        run: npm install --legacy-peer-deps
+
+      - name: Validate Backend
+        working-directory: backend
+        run: node -c server.js
+
+      - name: Install Frontend Dependencies
+        working-directory: frontend
+        run: npm install --legacy-peer-deps
+
+      - name: Build Frontend
+        working-directory: frontend
+        env:
+          VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
+          VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
+          VITE_FIREBASE_PROJECT_ID: ${{ secrets.VITE_FIREBASE_PROJECT_ID }}
+          VITE_FIREBASE_STORAGE_BUCKET: ${{ secrets.VITE_FIREBASE_STORAGE_BUCKET }}
+          VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
+          VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
+          VITE_FIREBASE_MEASUREMENT_ID: ${{ secrets.VITE_FIREBASE_MEASUREMENT_ID }}
+          VITE_API_URL: /api
+          VITE_SOCKET_URL: ""
+        run: npm run build
+
+      - name: Verify Build
+        working-directory: frontend
+        run: |
+          test -f dist/index.html
+          du -sh dist
+          echo "Frontend build verified"
+
+  deploy:
+    name: Deploy to Hostinger VPS
+    runs-on: ubuntu-latest
+    needs: build-and-test
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure SSH
+        env:
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/codovate_vps
+          chmod 600 ~/.ssh/codovate_vps
+          ssh-keyscan -H "${{ secrets.VPS_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Deploy to VPS
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+        run: |
+          ssh -i ~/.ssh/codovate_vps "$VPS_USER@$VPS_HOST" << 'REMOTE'
+            set -e
+
+            cd /var/www/codovate/Codovate_Prod
+
+            echo "===== UPDATE SOURCE CODE ====="
+            git fetch origin main
+            git reset --hard origin/main
+
+            echo "===== FRONTEND DEPENDENCIES ====="
+            cd frontend
+            npm install --legacy-peer-deps
+
+            echo "===== FRONTEND BUILD ====="
+            npm run build
+
+            echo "===== BACKEND DEPENDENCIES ====="
+            cd ../backend
+            npm install --legacy-peer-deps
+
+            echo "===== RESTART BACKEND ====="
+            pm2 restart codovate-backend --update-env
+
+            echo "===== NGINX CHECK ====="
+            sudo nginx -t
+            sudo systemctl reload nginx
+
+            echo "===== DEPLOYMENT HEALTH CHECK ====="
+            sleep 5
+
+            test -f /var/www/codovate/Codovate_Prod/frontend/dist/index.html
+
+            curl -fsS \
+              --max-time 15 \
+              http://127.0.0.1:5000/socket.io/?EIO=4&transport=polling \
+              > /dev/null
+
+            curl -fsS \
+              --max-time 15 \
+              --resolve codovate.in:80:127.0.0.1 \
+              http://codovate.in/ \
+              > /dev/null
+
+            echo "===== PM2 STATUS ====="
+            pm2 status
+
+            echo "===== DEPLOYMENT SUCCESSFUL ====="
+          REMOTE

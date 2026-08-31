@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const getBaseUrl = () => {
-  let url = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+  let url = import.meta.env.VITE_API_URL || '/api';
   return url.replace(/([a-zA-Z0-9]+)_([a-zA-Z0-9-]+\.onrender\.com)/g, '$1-$2');
 };
 

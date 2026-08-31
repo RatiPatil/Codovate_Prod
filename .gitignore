@@ -5,3 +5,7 @@ build
 backend/.env
 backend/config/serviceAccountKey.json
 *.log
+# Deployment backups
+*.backup*
+*.backup.*
+.github/workflows/backup/
