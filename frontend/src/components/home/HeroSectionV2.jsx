@@ -130,7 +130,7 @@ const HeroSectionV2 = () => {
             ref={title2Ref}
             className="text-4xl sm:text-6xl lg:text-7xl font-serif font-normal text-slate-900 dark:text-white tracking-tight leading-[1.1]"
           >
-            with Codovate ONE
+            with Codovate
           </h1>
         </div>
 
@@ -139,7 +139,7 @@ const HeroSectionV2 = () => {
           ref={descRef}
           className="max-w-2xl text-base sm:text-lg text-slate-600 dark:text-slate-400 font-normal leading-relaxed text-balance"
         >
-          Codovate ONE gives you a fully integrated path to placements – DSA, development, projects, contests, core CS subjects and interview prep in one system.
+          Codovate gives you a fully integrated path to placements – DSA, development, projects, contests, core CS subjects and interview prep in one system.
         </p>
 
         {/* CTAs */}
@@ -155,7 +155,7 @@ const HeroSectionV2 = () => {
             to="/signup"
             className="group relative inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl text-sm font-bold text-white bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:opacity-95 transition-all duration-200 shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:-translate-y-0.5"
           >
-            <span>Codovate ONE</span>
+            <span>Codovate</span>
           </Link>
         </div>
 
