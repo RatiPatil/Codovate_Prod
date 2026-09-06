@@ -120,9 +120,12 @@ jobs:
         run: |
           set -e
           mkdir -p ~/.ssh
-          printf '%s' "$VPS_SSH_KEY_B64" | base64 --decode > ~/.ssh/codovate_vps
+          printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/codovate_vps
           chmod 600 ~/.ssh/codovate_vps
-          ssh-keygen -y -f ~/.ssh/codovate_vps >/dev/null
+          echo "SSH key file type:"
+          file ~/.ssh/codovate_vps
+          echo "SSH key fingerprint:"
+          ssh-keygen -y -f ~/.ssh/codovate_vps | ssh-keygen -lf - -E sha256
           ssh-keyscan -H "$VPS_HOST" >> ~/.ssh/known_hosts
           echo "SSH configuration verified"
 
