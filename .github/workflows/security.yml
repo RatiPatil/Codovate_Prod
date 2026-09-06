@@ -1,0 +1,59 @@
+name: Codovate Security Guard
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  repository-guard:
+    name: Repository Integrity Guard
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Block Dhuldev contamination
+        run: |
+          if grep -RniE 'dhuldev|dhuldev-nashta|nasta center|twilight-spicule|twilight_spicule' . \
+            --exclude-dir=.git \
+            --exclude-dir=node_modules \
+            --exclude-dir=dist \
+            --exclude='package-lock.json' \
+            --exclude='*.map'; then
+            echo "ERROR: Dhuldev/unwanted website reference detected."
+            exit 1
+          fi
+          echo "No Dhuldev references found."
+
+      - name: Block Render production endpoint
+        run: |
+          if grep -Rni 'codovate-prod.onrender.com' . \
+            --exclude-dir=.git \
+            --exclude-dir=node_modules \
+            --exclude-dir=dist \
+            --exclude='package-lock.json'; then
+            echo "ERROR: Old Render production endpoint detected."
+            exit 1
+          fi
+          echo "No old Render endpoint found."
+
+      - name: Block obvious private-key material
+        run: |
+          if grep -RniE 'BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY' . \
+            --exclude-dir=.git \
+            --exclude-dir=node_modules \
+            --exclude-dir=dist; then
+            echo "ERROR: Private key material detected in repository."
+            exit 1
+          fi
+          echo "No private-key material detected."
+
+      - name: Check Git diff
+        run: git diff --check
