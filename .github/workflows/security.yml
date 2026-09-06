@@ -32,17 +32,13 @@ jobs:
           fi
           echo "No Dhuldev references found."
 
-      - name: Block Render production endpoint
+      - name: Block old Render production endpoint
         run: |
-          if grep -Rni 'codovate-prod.onrender.com' . \
-            --exclude-dir=.git \
-            --exclude-dir=node_modules \
-            --exclude-dir=dist \
-            --exclude='package-lock.json'; then
-            echo "ERROR: Old Render production endpoint detected."
+          if git grep -ni 'codovate-prod.onrender.com' -- frontend backend; then
+            echo "ERROR: Old Render production endpoint detected in application code."
             exit 1
           fi
-          echo "No old Render endpoint found."
+          echo "No old Render endpoint in application code."
 
       - name: Block obvious private-key material
         run: |
