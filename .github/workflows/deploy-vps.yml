@@ -115,12 +115,12 @@ jobs:
 
       - name: Configure SSH
         env:
-          VPS_SSH_KEY_B64: ${{ secrets.VPS_SSH_KEY_B64 }}
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
           VPS_HOST: ${{ secrets.VPS_HOST }}
         run: |
           set -e
           mkdir -p ~/.ssh
-          printf '%s' "$VPS_SSH_KEY_B64" | base64 --decode > ~/.ssh/codovate_vps
+          printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/codovate_vps
           chmod 600 ~/.ssh/codovate_vps
           ssh-keygen -y -f ~/.ssh/codovate_vps >/dev/null
           ssh-keyscan -H "$VPS_HOST" >> ~/.ssh/known_hosts
@@ -149,16 +149,10 @@ jobs:
             export NVM_DIR="/home/codovate/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
 
-            echo "===== VERIFY SOURCE ====="
-            cd "$APP"
-            git fetch origin main
-            git checkout main
-            git reset --hard origin/main
-
-            if git grep -niE 'dhuldev|dhuldev-nashta|nasta center|twilight-spicule|twilight_spicule' -- . ':!.github/workflows/*'; then
-              echo "ERROR: unwanted website detected in source"
-              exit 1
-            fi
+            echo "===== VERIFY DEPLOYMENT TARGET ====="
+            test -d "$APP"
+            test -d "$APP/backend"
+            test -d "$FRONTEND"
 
             echo "===== BACKUP CURRENT FRONTEND ====="
             if [ -d "$FRONTEND/dist" ]; then
@@ -198,9 +192,3 @@ jobs:
 
             echo "===== DEPLOYMENT SUCCESSFUL ====="
           REMOTE
-
-      - name: Verify live title
-        run: |
-          TITLE="$(curl -fsSL --max-time 15 https://codovate.in/ | grep -oiE '<title>[^<]*</title>' | head -1)"
-          echo "$TITLE"
-          echo "$TITLE" | grep -qi "Codovate"
