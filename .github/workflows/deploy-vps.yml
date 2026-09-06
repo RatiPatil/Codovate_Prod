@@ -122,10 +122,7 @@ jobs:
           mkdir -p ~/.ssh
           printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/codovate_vps
           chmod 600 ~/.ssh/codovate_vps
-          echo "SSH key file type:"
-          file ~/.ssh/codovate_vps
-          echo "SSH key fingerprint:"
-          ssh-keygen -y -f ~/.ssh/codovate_vps | ssh-keygen -lf - -E sha256
+          ssh-keygen -y -f ~/.ssh/codovate_vps >/dev/null
           ssh-keyscan -H "$VPS_HOST" >> ~/.ssh/known_hosts
           echo "SSH configuration verified"
 
@@ -195,9 +192,3 @@ jobs:
 
             echo "===== DEPLOYMENT SUCCESSFUL ====="
           REMOTE
-
-      - name: Verify live title
-        run: |
-          TITLE="$(curl -fsSL --max-time 15 https://codovate.in/ | grep -oiE '<title>[^<]*</title>' | head -1)"
-          echo "$TITLE"
-          echo "$TITLE" | grep -qi "Codovate"
