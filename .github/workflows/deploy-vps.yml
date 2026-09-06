@@ -40,7 +40,7 @@ jobs:
 
       - name: Block unwanted website
         run: |
-          if git grep -niE 'dhuldev|dhuldev-nashta|nasta center|twilight-spicule|twilight_spicule'; then
+          if git grep -niE 'dhuldev|dhuldev-nashta|nasta center|twilight-spicule|twilight_spicule' -- . ':!.github/workflows/*'; then
             echo "ERROR: Unwanted website content detected"
             exit 1
           fi
@@ -163,7 +163,7 @@ jobs:
             git checkout main
             git reset --hard origin/main
 
-            if git grep -niE 'dhuldev|dhuldev-nashta|nasta center|twilight-spicule|twilight_spicule'; then
+            if git grep -niE 'dhuldev|dhuldev-nashta|nasta center|twilight-spicule|twilight_spicule' -- . ':!.github/workflows/*'; then
               echo "ERROR: unwanted website detected in source"
               exit 1
             fi
