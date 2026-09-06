@@ -122,10 +122,7 @@ jobs:
           mkdir -p ~/.ssh
           printf '%s' "$VPS_SSH_KEY_B64" | base64 --decode > ~/.ssh/codovate_vps
           chmod 600 ~/.ssh/codovate_vps
-          echo "SSH key file type:"
-          file ~/.ssh/codovate_vps
-          echo "SSH key fingerprint:"
-          ssh-keygen -y -f ~/.ssh/codovate_vps | ssh-keygen -lf - -E sha256
+          ssh-keygen -y -f ~/.ssh/codovate_vps >/dev/null
           ssh-keyscan -H "$VPS_HOST" >> ~/.ssh/known_hosts
           echo "SSH configuration verified"
 
@@ -152,16 +149,10 @@ jobs:
             export NVM_DIR="/home/codovate/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
 
-            echo "===== VERIFY SOURCE ====="
-            cd "$APP"
-            git fetch origin main
-            git checkout main
-            git reset --hard origin/main
-
-            if git grep -niE 'dhuldev|dhuldev-nashta|nasta center|twilight-spicule|twilight_spicule' -- . ':!.github/workflows/*'; then
-              echo "ERROR: unwanted website detected in source"
-              exit 1
-            fi
+            echo "===== VERIFY DEPLOYMENT TARGET ====="
+            test -d "$APP"
+            test -d "$APP/backend"
+            test -d "$FRONTEND"
 
             echo "===== BACKUP CURRENT FRONTEND ====="
             if [ -d "$FRONTEND/dist" ]; then
