@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { getAuth } from 'firebase/auth';
 
 const getBaseUrl = () => {
   let url = import.meta.env.VITE_API_URL || '/api';
@@ -11,21 +10,9 @@ const api = axios.create({
   timeout: parseInt(import.meta.env.VITE_API_TIMEOUT, 10) || 30000,
 });
 
-api.interceptors.request.use(async (config) => {
-  try {
-    const auth = getAuth();
-    const user = auth.currentUser;
-
-    if (user) {
-      const token = await user.getIdToken();
-      config.headers = config.headers || {};
-      config.headers.Authorization = `Bearer ${token}`;
-      config.headers['X-Firebase-UID'] = user.uid;
-    }
-  } catch (error) {
-    console.error('[Axios] Firebase token resolution failed:', error);
-  }
-
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+  if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
 
@@ -36,7 +23,15 @@ api.interceptors.response.use(
     const isAuthRoute = err.config?.url?.includes('/auth/');
     
     if (err.response?.status === 401 && !isAuthRoute) {
-      window.dispatchEvent(new CustomEvent('codovate:auth-required'));
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      localStorage.removeItem('rememberMe');
+      sessionStorage.removeItem('token');
+      sessionStorage.removeItem('user');
+      window.localStorage.setItem('logoutEvent', Date.now());
+      if (window.location.pathname !== '/login' && window.location.pathname !== '/admin-login') {
+        window.location.href = '/login';
+      }
     } else if (err.response?.status === 403) {
       console.warn('[Axios] 403 Forbidden:', err.response?.data?.message || 'Access Denied');
       // If they get a 403 on an initial load, we might want to redirect them

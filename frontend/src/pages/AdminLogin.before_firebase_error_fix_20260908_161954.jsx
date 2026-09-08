@@ -32,14 +32,15 @@ const AdminLogin = () => {
     setError('');
     setLoading(true);
     try {
-      await loginWithEmail(form.email.trim(), form.password);
+      const result = await loginWithEmail(form.email, form.password);
 
-      navigate('/admin', { replace: true });
+      if (!result?.firebaseUser) {
+        throw new Error('Firebase authentication failed.');
+      }
+
+      navigate('/admin');
     } catch (err) {
-      console.error('[AdminLogin] Authentication error:', err);
-      const code = err?.code || '';
-      const message = err?.message || 'Authentication failed.';
-      setError(code ? `${code}: ${message}` : message);
+      setError(err.response?.data?.message || 'Authentication failed.');
       gsap.fromTo(formRef.current, { x: -10 }, { x: 0, duration: 0.5, ease: 'elastic.out(1, 0.3)' });
     } finally {
       setLoading(false);

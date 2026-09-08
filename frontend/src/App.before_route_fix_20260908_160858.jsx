@@ -1,4 +1,3 @@
-import { Navigate, Route, Routes, useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useMemo, useState } from 'react';
 import {
   dashboardApi,
@@ -21,12 +20,6 @@ import SectionHeader from './components/ui/SectionHeader';
 import StatCard from './components/ui/StatCard';
 import PrimaryButton from './components/ui/PrimaryButton';
 import SecondaryButton from './components/ui/SecondaryButton';
-import Login from './pages/Login';
-import Home from './pages/Home';
-import AdminLogin from './pages/AdminLogin';
-import SuperAdminDashboard from './pages/SuperAdminDashboard';
-import MentorLogin from './pages/MentorLogin';
-import RecruiterLogin from './pages/RecruiterLogin';
 import AuthGate from './components/auth/AuthGate';
 
 const navItems = [
@@ -423,7 +416,7 @@ function GenericListPage({ title, description, loader, emptyTitle }) {
   );
 }
 
-function ProtectedApp() {
+function App() {
   const [active, setActive] = useState('dashboard');
 
   const page = useMemo(() => {
@@ -530,21 +523,6 @@ function ProtectedApp() {
         {page}
       </AppShell>
     </AuthGate>
-  );
-}
-
-function App() {
-  return (
-    <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route path="/admin-login" element={<AdminLogin />} />
-      <Route path="/admin" element={<SuperAdminDashboard />} />
-      <Route path="/mentor-login" element={<MentorLogin />} />
-      <Route path="/recruiter-login" element={<RecruiterLogin />} />
-      <Route path="/" element={<Home />} />
-      <Route path="/dashboard" element={<ProtectedApp />} />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
   );
 }
 

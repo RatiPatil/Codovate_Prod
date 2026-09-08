@@ -1,224 +1,294 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { signInWithPopup, signInWithRedirect, getRedirectResult, linkWithPopup } from 'firebase/auth';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
+import {
+  getRedirectResult,
+  linkWithPopup,
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  signInWithRedirect,
+  signOut,
+  updateProfile,
+} from 'firebase/auth';
 import { auth, googleProvider } from '../lib/firebase';
-import api from '../api/axios';
+
+const AuthContext = createContext(null);
 
 const defaultAuthContext = {
   user: null,
   token: null,
   loading: true,
   initialized: false,
-  updateUser: () => {},
   login: () => {},
-  logout: () => {},
-  loginWithGoogle: () => {},
-  linkGoogleAccount: () => {}
+  loginWithEmail: async () => {},
+  loginWithGoogle: async () => {},
+  linkGoogleAccount: async () => {},
+  logout: async () => {},
+  updateUser: async () => {},
 };
 
-const AuthContext = createContext(defaultAuthContext);
+const normalizeFirebaseUser = (firebaseUser) => {
+  if (!firebaseUser) return null;
 
-function setAuthData(token, user, rememberMe = true) {
-  const storage = rememberMe ? localStorage : sessionStorage;
-  storage.setItem('token', token);
-  storage.setItem('user', JSON.stringify(user));
-  if (rememberMe) {
-    localStorage.setItem('rememberMe', 'true');
-  } else {
-    localStorage.removeItem('rememberMe');
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-  }
-}
+  return {
+    uid: firebaseUser.uid,
+    id: firebaseUser.uid,
+    firebase_uid: firebaseUser.uid,
+    email: firebaseUser.email || null,
+    phone: firebaseUser.phoneNumber || null,
+    full_name: firebaseUser.displayName || null,
+    displayName: firebaseUser.displayName || null,
+    avatar_url: firebaseUser.photoURL || null,
+    photoURL: firebaseUser.photoURL || null,
+    email_verified: !!firebaseUser.emailVerified,
+    phone_verified: !!firebaseUser.phoneNumber,
+    providers: (firebaseUser.providerData || []).map(
+      (provider) => provider.providerId
+    ),
+  };
+};
 
-function isTokenValid(token) {
-  if (!token) return false;
-  try {
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    if (payload.exp && payload.exp * 1000 < Date.now() + 5 * 60 * 1000) {
-      return false;
-    }
-    return true;
-  } catch (e) {
-    return false;
-  }
-}
-
-function getAuthData() {
-  const lsToken = localStorage.getItem('token');
-  const lsUser = localStorage.getItem('user');
-  
-  if (lsToken && lsUser) {
-    if (isTokenValid(lsToken)) {
-      return { token: lsToken, user: JSON.parse(lsUser) };
-    } else {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      localStorage.removeItem('rememberMe');
-    }
-  }
-
-  const ssToken = sessionStorage.getItem('token');
-  const ssUser = sessionStorage.getItem('user');
-  
-  if (ssToken && ssUser) {
-    if (isTokenValid(ssToken)) {
-      return { token: ssToken, user: JSON.parse(ssUser) };
-    } else {
-      sessionStorage.removeItem('token');
-      sessionStorage.removeItem('user');
-    }
-  }
-
-  return { token: null, user: null };
-}
-
-function clearAuthData() {
-  localStorage.removeItem('token');
-  localStorage.removeItem('user');
-  localStorage.removeItem('rememberMe');
-  localStorage.removeItem('onboarding_completed');
-  sessionStorage.removeItem('token');
-  sessionStorage.removeItem('user');
-  sessionStorage.removeItem('onboarding_completed');
-}
+const getFreshToken = async (firebaseUser) => {
+  if (!firebaseUser) return null;
+  return firebaseUser.getIdToken(true);
+};
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const [firebaseUser, setFirebaseUser] = useState(null);
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
   const [initialized, setInitialized] = useState(false);
 
-  // Initial load: restore session
-  useEffect(() => {
-    let isMounted = true;
+  const syncFirebaseSession = useCallback(async (nextFirebaseUser) => {
+    setFirebaseUser(nextFirebaseUser || null);
 
-    const initAuth = async () => {
-      const { token: savedToken, user: savedUser } = getAuthData();
+    if (!nextFirebaseUser) {
+      setToken(null);
+      return null;
+    }
 
-      if (savedToken && savedUser && isMounted) {
-        setToken(savedToken);
-        setUser(savedUser);
-      }
+    const nextToken = await getFreshToken(nextFirebaseUser);
+    setToken(nextToken);
 
-      if (isMounted) {
-        setLoading(false);
-        setInitialized(true);
-      }
+    return {
+      firebaseUser: nextFirebaseUser,
+      token: nextToken,
+      user: normalizeFirebaseUser(nextFirebaseUser),
     };
-
-    initAuth();
-
-    return () => { isMounted = false; };
   }, []);
 
-  // Handle Google Redirect Result
   useEffect(() => {
-    const checkRedirect = async () => {
+    let mounted = true;
+
+    const unsubscribe = onAuthStateChanged(
+      auth,
+      async (nextFirebaseUser) => {
+        if (!mounted) return;
+
+        try {
+          await syncFirebaseSession(nextFirebaseUser);
+        } catch (error) {
+          console.error('[Codovate Auth] Session sync failed:', error);
+          if (mounted) {
+            setFirebaseUser(null);
+            setToken(null);
+          }
+        } finally {
+          if (mounted) {
+            setLoading(false);
+            setInitialized(true);
+          }
+        }
+      },
+      (error) => {
+        console.error('[Codovate Auth] Firebase state error:', error);
+
+        if (mounted) {
+          setFirebaseUser(null);
+          setToken(null);
+          setLoading(false);
+          setInitialized(true);
+        }
+      }
+    );
+
+    return () => {
+      mounted = false;
+      unsubscribe();
+    };
+  }, [syncFirebaseSession]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const resolveRedirect = async () => {
       try {
         const result = await getRedirectResult(auth);
-        if (result) {
-          const idToken = await result.user.getIdToken();
-          const res = await api.post('/auth/google', { idToken });
-          const { token: jwtToken, user: userData } = res.data;
-          login(jwtToken, userData, true);
+
+        if (result?.user && mounted) {
+          await syncFirebaseSession(result.user);
         }
-      } catch (err) {
-        console.warn("Firebase Redirect Auth Error:", err);
+      } catch (error) {
+        console.error('[Codovate Auth] Redirect login failed:', error);
       }
     };
-    checkRedirect();
+
+    resolveRedirect();
+
+    return () => {
+      mounted = false;
+    };
+  }, [syncFirebaseSession]);
+
+  const login = useCallback((nextToken, nextUser) => {
+    setToken(nextToken || null);
+    setFirebaseUser(auth.currentUser || null);
+
+    if (nextUser) {
+      try {
+        localStorage.setItem('user', JSON.stringify(nextUser));
+      } catch (_) {}
+    }
   }, []);
 
-  // Login
-  const login = useCallback((newToken, newUser, rememberMe = true) => {
-    setAuthData(newToken, newUser, rememberMe);
-    setToken(newToken);
-    setUser(newUser);
-  }, []);
+  const loginWithEmail = useCallback(async (email, password) => {
+    if (!email?.trim() || !password) {
+      throw new Error('Email and password are required.');
+    }
 
-  // Google Login
+    try {
+      const result = await signInWithEmailAndPassword(
+        auth,
+        email.trim(),
+        password
+      );
+
+      const session = await syncFirebaseSession(result.user);
+
+      return session;
+    } catch (error) {
+      console.error('[Codovate Auth] Email login failed:', {
+        code: error?.code,
+        message: error?.message,
+      });
+      throw error;
+    }
+  }, [syncFirebaseSession]);
+
   const loginWithGoogle = useCallback(async () => {
     try {
-      let result = null;
-      try {
-        result = await signInWithPopup(auth, googleProvider);
-      } catch (popupErr) {
-        console.warn("Popup error, attempting redirect fallback:", popupErr);
-        if (
-          popupErr.code === 'auth/popup-blocked' ||
-          popupErr.code === 'auth/popup-closed-by-user' ||
-          popupErr.code === 'auth/cancelled-popup-request' ||
-          (popupErr.message && popupErr.message.includes('Cross-Origin-Opener-Policy'))
-        ) {
-          await signInWithRedirect(auth, googleProvider);
-          return null;
-        }
-        throw popupErr;
+      const result = await signInWithPopup(auth, googleProvider);
+      return syncFirebaseSession(result.user);
+    } catch (error) {
+      console.error('[Codovate Auth] Google popup failed:', {
+        code: error?.code,
+        message: error?.message,
+      });
+
+      if (
+        error?.code === 'auth/popup-blocked' ||
+        error?.code === 'auth/popup-closed-by-user' ||
+        error?.code === 'auth/cancelled-popup-request' ||
+        error?.message?.includes('Cross-Origin-Opener-Policy')
+      ) {
+        await signInWithRedirect(auth, googleProvider);
+        return null;
       }
 
-      if (result) {
-        const idToken = await result.user.getIdToken();
-        const res = await api.post('/auth/google', { idToken });
-
-        const { token: jwtToken, user: userData } = res.data;
-        login(jwtToken, userData, true);
-
-        return { token: jwtToken, user: userData };
-      }
-    } catch (err) {
-      console.error("Google authentication error:", err);
-      try { await auth.signOut(); } catch(e) {}
-      throw err;
+      throw error;
     }
-  }, [login]);
+  }, [syncFirebaseSession]);
 
-  // Link Google Account
   const linkGoogleAccount = useCallback(async () => {
+    if (!auth.currentUser) {
+      throw new Error('You must be signed in before linking Google.');
+    }
+
+    const result = await linkWithPopup(auth.currentUser, googleProvider);
+    return syncFirebaseSession(result.user);
+  }, [syncFirebaseSession]);
+
+  const logout = useCallback(async () => {
     try {
-      if (!auth.currentUser) throw new Error("No active Firebase session.");
-      const result = await linkWithPopup(auth.currentUser, googleProvider);
+      await signOut(auth);
+    } finally {
+      setFirebaseUser(null);
+      setToken(null);
 
       try {
-        await api.post('/auth/sync-providers', {
-          providers: result.user.providerData.map(p => p.providerId.replace('.com', ''))
-        });
-      } catch (e) {
-        console.warn("Could not sync providers to backend", e);
-      }
-      return result;
-    } catch (err) {
-      console.error("Link account error:", err);
-      throw err;
+        localStorage.removeItem('user');
+        sessionStorage.removeItem('user');
+      } catch (_) {}
     }
   }, []);
 
-  // Logout
-  const logout = useCallback(async () => {
-    try { await auth.signOut(); } catch (e) {}
-    clearAuthData();
-    setToken(null);
-    setUser(null);
-  }, []);
+  const updateUser = useCallback(
+    async (updates = {}) => {
+      if (!auth.currentUser) {
+        throw new Error('No authenticated Firebase user.');
+      }
 
-  // Update User Profile State
-  const updateUser = useCallback((updatedFields) => {
-    setUser(prev => {
-      if (!prev) return prev;
-      const nextUser = { ...prev, ...updatedFields };
-      const isRemember = localStorage.getItem('rememberMe') === 'true';
-      const storage = isRemember ? localStorage : sessionStorage;
-      storage.setItem('user', JSON.stringify(nextUser));
-      return nextUser;
-    });
-  }, []);
+      const displayName =
+        updates.displayName ??
+        updates.full_name ??
+        auth.currentUser.displayName;
+
+      const photoURL =
+        updates.photoURL ??
+        updates.avatar_url ??
+        auth.currentUser.photoURL;
+
+      await updateProfile(auth.currentUser, {
+        displayName,
+        photoURL,
+      });
+
+      return syncFirebaseSession(auth.currentUser);
+    },
+    [syncFirebaseSession]
+  );
+
+  const value = useMemo(
+    () => ({
+      user: normalizeFirebaseUser(firebaseUser),
+      token,
+      loading,
+      initialized,
+      login,
+      loginWithEmail,
+      loginWithGoogle,
+      linkGoogleAccount,
+      logout,
+      updateUser,
+    }),
+    [
+      firebaseUser,
+      token,
+      loading,
+      initialized,
+      login,
+      loginWithEmail,
+      loginWithGoogle,
+      linkGoogleAccount,
+      logout,
+      updateUser,
+    ]
+  );
 
   return (
-    <AuthContext.Provider value={{
-      user, token, login, loginWithGoogle, linkGoogleAccount, logout, loading, initialized, updateUser
-    }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-export const useAuth = () => useContext(AuthContext) || defaultAuthContext;
+export const useAuth = () =>
+  useContext(AuthContext) || defaultAuthContext;
+
+export default AuthContext;

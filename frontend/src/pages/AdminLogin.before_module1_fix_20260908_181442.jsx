@@ -1,3 +1,5 @@
+import { auth } from "../lib/firebase";
+import { signInWithEmailAndPassword } from "firebase/auth";
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -32,9 +34,13 @@ const AdminLogin = () => {
     setError('');
     setLoading(true);
     try {
-      await loginWithEmail(form.email.trim(), form.password);
+      const result = await signInWithEmailAndPassword(auth, form.email, form.password);
 
-      navigate('/admin', { replace: true });
+      if (!result?.firebaseUser) {
+        throw new Error('Firebase authentication failed.');
+      }
+
+      navigate('/admin');
     } catch (err) {
       console.error('[AdminLogin] Authentication error:', err);
       const code = err?.code || '';

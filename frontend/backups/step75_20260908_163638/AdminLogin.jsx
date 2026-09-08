@@ -32,9 +32,13 @@ const AdminLogin = () => {
     setError('');
     setLoading(true);
     try {
-      await loginWithEmail(form.email.trim(), form.password);
+      const result = await loginWithEmail(form.email, form.password);
 
-      navigate('/admin', { replace: true });
+      if (!result?.firebaseUser) {
+        throw new Error('Firebase authentication failed.');
+      }
+
+      navigate('/admin');
     } catch (err) {
       console.error('[AdminLogin] Authentication error:', err);
       const code = err?.code || '';

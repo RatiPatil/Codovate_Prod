@@ -36,8 +36,8 @@ api.interceptors.response.use(
     const isAuthRoute = err.config?.url?.includes('/auth/');
     
     if (err.response?.status === 401 && !isAuthRoute) {
-      window.dispatchEvent(new CustomEvent('codovate:auth-required'));
-    } else if (err.response?.status === 403) {
+        window.dispatchEvent(new CustomEvent('codovate:auth-required'));
+      } else if (err.response?.status === 403) {
       console.warn('[Axios] 403 Forbidden:', err.response?.data?.message || 'Access Denied');
       // If they get a 403 on an initial load, we might want to redirect them
       // For API calls, they can be handled locally by the component.

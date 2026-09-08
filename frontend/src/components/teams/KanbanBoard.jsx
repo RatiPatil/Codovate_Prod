@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { Clock, MessageSquare, Paperclip, MoreHorizontal, Plus } from 'lucide-react';
 import api from '../../api/axios';
 import { showAlert } from '../../utils/uiUtils';

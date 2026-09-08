@@ -22,7 +22,6 @@ import StatCard from './components/ui/StatCard';
 import PrimaryButton from './components/ui/PrimaryButton';
 import SecondaryButton from './components/ui/SecondaryButton';
 import Login from './pages/Login';
-import Home from './pages/Home';
 import AdminLogin from './pages/AdminLogin';
 import SuperAdminDashboard from './pages/SuperAdminDashboard';
 import MentorLogin from './pages/MentorLogin';
@@ -541,8 +540,7 @@ function App() {
       <Route path="/admin" element={<SuperAdminDashboard />} />
       <Route path="/mentor-login" element={<MentorLogin />} />
       <Route path="/recruiter-login" element={<RecruiterLogin />} />
-      <Route path="/" element={<Home />} />
-      <Route path="/dashboard" element={<ProtectedApp />} />
+      <Route path="/" element={<ProtectedApp />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
