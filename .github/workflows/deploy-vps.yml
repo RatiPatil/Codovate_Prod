@@ -1,9 +1,8 @@
-name: Codovate Production VPS Deployment
+name: Codovate Production Deployment
 
 on:
   push:
-    branches:
-      - main
+    branches: ["main"]
   workflow_dispatch:
 
 permissions:
@@ -11,125 +10,185 @@ permissions:
 
 concurrency:
   group: codovate-production
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
-  build-and-test:
-    name: Build and Test
+  build:
+    name: Build & Validate
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            frontend/package-lock.json
+            backend/package-lock.json
 
-      - name: Install Backend Dependencies
+      - name: Verify repository
+        run: |
+          test -f frontend/package.json
+          test -f frontend/src/lib/firebase.js
+          test -f backend/package.json
+          test -f backend/server.js
+          test -f backend/routes/community.js
+
+      - name: Block unwanted website
+        run: |
+          if git grep -niE 'dhuldev|dhuldev-nashta|nasta center|twilight-spicule|twilight_spicule' -- . ':!.github/workflows/*'; then
+            echo "ERROR: Unwanted website content detected"
+            exit 1
+          fi
+          echo "No unwanted website content found"
+
+      - name: Install backend
         working-directory: backend
-        run: npm install --legacy-peer-deps
+        run: npm ci --omit=dev
 
-      - name: Validate Backend
+      - name: Validate backend
         working-directory: backend
         run: node -c server.js
 
-      - name: Install Frontend Dependencies
+      - name: Install frontend
         working-directory: frontend
-        run: npm install --legacy-peer-deps
+        run: npm ci --legacy-peer-deps
 
-      - name: Build Frontend
+      - name: Build frontend
         working-directory: frontend
-        env:
-          VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
-          VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
-          VITE_FIREBASE_PROJECT_ID: ${{ secrets.VITE_FIREBASE_PROJECT_ID }}
-          VITE_FIREBASE_STORAGE_BUCKET: ${{ secrets.VITE_FIREBASE_STORAGE_BUCKET }}
-          VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
-          VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
-          VITE_FIREBASE_MEASUREMENT_ID: ${{ secrets.VITE_FIREBASE_MEASUREMENT_ID }}
-          VITE_API_URL: /api
-          VITE_SOCKET_URL: ""
         run: npm run build
+        env:
+          VITE_FIREBASE_API_KEY: ${{ vars.VITE_FIREBASE_API_KEY }}
+          VITE_FIREBASE_AUTH_DOMAIN: ${{ vars.VITE_FIREBASE_AUTH_DOMAIN }}
+          VITE_FIREBASE_PROJECT_ID: ${{ vars.VITE_FIREBASE_PROJECT_ID }}
+          VITE_FIREBASE_STORAGE_BUCKET: ${{ vars.VITE_FIREBASE_STORAGE_BUCKET }}
+          VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ vars.VITE_FIREBASE_MESSAGING_SENDER_ID }}
+          VITE_FIREBASE_APP_ID: ${{ vars.VITE_FIREBASE_APP_ID }}
+          VITE_FIREBASE_MEASUREMENT_ID: ${{ vars.VITE_FIREBASE_MEASUREMENT_ID }}
+          VITE_API_BASE_URL: https://codovate.in/api
+          VITE_API_URL: https://codovate.in/api
+          VITE_SOCKET_URL: https://codovate.in
 
-      - name: Verify Build
+      - name: Verify frontend
         working-directory: frontend
         run: |
           test -f dist/index.html
-          du -sh dist
+          grep -qi "Codovate" dist/index.html
+          if grep -RqiE 'dhuldev|nasta center|twilight-spicule|twilight_spicule' dist; then
+            echo "ERROR: Unwanted website detected in build"
+            exit 1
+          fi
+          if grep -Rqi 'apiKey:void 0' dist/assets; then
+            echo "ERROR: Firebase API key missing from production build"
+            exit 1
+          fi
           echo "Frontend build verified"
+
+      - name: Upload frontend artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: codovate-frontend-dist
+          path: frontend/dist
+          if-no-files-found: error
+          retention-days: 7
 
   deploy:
     name: Deploy to Hostinger VPS
     runs-on: ubuntu-latest
-    needs: build-and-test
+    needs: build
+    environment:
+      name: production
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
+
+      - name: Download frontend artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: codovate-frontend-dist
+          path: frontend/dist
 
       - name: Configure SSH
         env:
-          VPS_SSH_KEY_B64: ${{ secrets.VPS_SSH_KEY_B64 }}
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_HOST: ${{ secrets.VPS_HOST }}
         run: |
+          set -e
           mkdir -p ~/.ssh
-          printf '%s' "$VPS_SSH_KEY_B64" | base64 --decode > ~/.ssh/codovate_vps
+          printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/codovate_vps
           chmod 600 ~/.ssh/codovate_vps
-            ssh-keygen -y -f ~/.ssh/codovate_vps >/dev/null
-            echo "Decoded SSH key = VALID"
-          ssh-keyscan -H "${{ secrets.VPS_HOST }}" >> ~/.ssh/known_hosts
+          ssh-keygen -y -f ~/.ssh/codovate_vps >/dev/null
+          ssh-keyscan -H "$VPS_HOST" >> ~/.ssh/known_hosts
+          echo "SSH configuration verified"
 
-      - name: Deploy to VPS
+      - name: Deploy frontend artifact
         env:
           VPS_HOST: ${{ secrets.VPS_HOST }}
           VPS_USER: ${{ secrets.VPS_USER }}
         run: |
+          set -e
+
+          tar -czf frontend-dist.tar.gz -C frontend dist
+
+          scp -i ~/.ssh/codovate_vps \
+            frontend-dist.tar.gz \
+            "$VPS_USER@$VPS_HOST:/tmp/codovate-frontend-dist.tar.gz"
+
           ssh -i ~/.ssh/codovate_vps "$VPS_USER@$VPS_HOST" << 'REMOTE'
             set -e
 
-            cd /var/www/codovate/Codovate_Prod
+            APP="/var/www/codovate/Codovate_Prod"
+            FRONTEND="/var/www/codovate/frontend"
+            BACKUP="/var/www/codovate/frontend"
 
-            echo "===== UPDATE SOURCE CODE ====="
-            git fetch origin main
-            git reset --hard origin/main
+            export NVM_DIR="/home/codovate/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
 
-            echo "===== FRONTEND DEPENDENCIES ====="
-            cd frontend
-            npm install --legacy-peer-deps
+            echo "===== VERIFY DEPLOYMENT TARGET ====="
+            test -d "$APP"
+            test -d "$APP/backend"
+            test -d "$FRONTEND"
 
-            echo "===== FRONTEND BUILD ====="
-            npm run build
+            echo "===== BACKUP CURRENT FRONTEND ====="
+            if [ -d "$FRONTEND/dist" ]; then
+              mv "$FRONTEND/dist" "$FRONTEND/dist_previous_$(date +%Y%m%d_%H%M%S)"
+            fi
 
-            echo "===== BACKEND DEPENDENCIES ====="
-            cd ../backend
-            npm install --legacy-peer-deps
+            echo "===== INSTALL NEW FRONTEND ARTIFACT ====="
+            mkdir -p "$FRONTEND"
+            tar -xzf /tmp/codovate-frontend-dist.tar.gz -C "$FRONTEND"
+            chown -R codovate:codovate "$FRONTEND/dist"
 
-            echo "===== RESTART BACKEND ====="
+            echo "===== VERIFY FRONTEND ====="
+            test -f "$FRONTEND/dist/index.html"
+            grep -qi "Codovate" "$FRONTEND/dist/index.html"
+
+            if grep -RqiE 'dhuldev|nasta center|twilight-spicule|twilight_spicule' "$FRONTEND/dist"; then
+              echo "ERROR: unwanted website detected in deployed frontend"
+              exit 1
+            fi
+
+            echo "===== BACKEND ====="
+            cd "$APP/backend"
+            npm ci --omit=dev
+            node -c server.js
             pm2 restart codovate-backend --update-env
 
-            echo "===== NGINX CHECK ====="
+            echo "===== NGINX ====="
             sudo nginx -t
             sudo systemctl reload nginx
 
-            echo "===== DEPLOYMENT HEALTH CHECK ====="
+            echo "===== HEALTH CHECK ====="
             sleep 5
 
-            test -f /var/www/codovate/Codovate_Prod/frontend/dist/index.html
-
-            curl -fsS \
-              --max-time 15 \
-              http://127.0.0.1:5000/socket.io/?EIO=4&transport=polling \
-              > /dev/null
-
-            curl -fsS \
-              --max-time 15 \
-              --resolve codovate.in:80:127.0.0.1 \
-              http://codovate.in/ \
-              > /dev/null
-
-            echo "===== PM2 STATUS ====="
-            pm2 status
+            curl -fsS --max-time 15 http://127.0.0.1:5000/ > /dev/null
+            curl -fsS --max-time 15 https://codovate.in/ > /dev/null
+            curl -fsS --max-time 15 https://codovate.in/api/public/stats > /dev/null
 
             echo "===== DEPLOYMENT SUCCESSFUL ====="
           REMOTE

@@ -20,7 +20,6 @@ export const SocketProvider = ({ children }) => {
       }
       if (!url) url = '';
 
-      // Fix domain names with underscores (e.g. codovate_prod.onrender.com -> codovate-prod.onrender.com)
       return url.replace(/([a-zA-Z0-9]+)_([a-zA-Z0-9-]+\.onrender\.com)/g, '$1-$2');
     };
     
