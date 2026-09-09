@@ -1,6 +1,8 @@
 console.log("🔥 CODOVATE SERVER STARTING...");
 
 const express = require("express");
+const requestContext = require("./middleware/requestContext");
+const errorHandler = require("./middleware/errorHandler");
 const cors = require("cors");
 const http = require("http");
 const { Server } = require("socket.io");
@@ -17,6 +19,7 @@ if (!process.env.JWT_SECRET) {
 }
 
 const app = express();
+app.use(requestContext);
 app.set("trust proxy", 1);
 const server = http.createServer(app);
 
@@ -63,6 +66,7 @@ const authLimiter = rateLimit({
 // ═══════════════════════════════════════════════════════════════
 //  AUTH ROUTES (No RBAC — public endpoints)
 // ═══════════════════════════════════════════════════════════════
+app.use("/api/system", require("./routes/system"));
 app.use("/api/auth", authLimiter, require("./routes/auth"));
 app.use("/api/mentor-auth", require("./routes/mentorAuth"));
 app.use("/api/public", require("./routes/publicStats"));
@@ -83,8 +87,10 @@ app.use("/api/policies", require("./routes/policies"));
 // ═══════════════════════════════════════════════════════════════
 //  SUPER ADMIN ROUTES
 // ═══════════════════════════════════════════════════════════════
-app.use("/api/admin",              authenticate, requireRole(['super_admin', 'admin']), require("./routes/admin"));
-app.use("/api/admin/users",        authenticate, requireRole(['super_admin', 'admin']), require("./routes/enterpriseUsers"));
+// LEGACY FIRESTORE ADMIN ROUTE DISABLED: PostgreSQL admin route is authoritative.
+app.use("/api/core",            authenticate, require("./routes/coreCrudPostgres"));
+// Legacy /api/admin/users route disabled.
+// PostgreSQL admin users API is now served by /api/admin -> adminSecurityPostgres.
 app.use("/api/admin/organizations",authenticate, requireRole(['super_admin', 'admin']), require("./routes/enterpriseOrganizations"));
 app.use("/api/admin/colleges",     authenticate, requireRole(['super_admin', 'admin', 'college_admin']), require("./routes/enterpriseColleges"));
 app.use("/api/admin/academic",     authenticate, requireRole(['super_admin', 'admin', 'college_admin']), require("./routes/enterpriseAcademic"));
@@ -134,15 +140,15 @@ app.use("/api/admin/company/dashboard",      authenticate, requireRole(['company
 // ═══════════════════════════════════════════════════════════════
 //  AUTHENTICATED USER ROUTES (All roles with valid JWT)
 // ═══════════════════════════════════════════════════════════════
-app.use("/api/students",           authenticate, require("./routes/students"));
-app.use("/api/teams",              authenticate, require("./routes/teams"));
+app.use("/api/students",           authenticate, require("./routes/studentProfile.postgres"));
+app.use("/api/teams",              authenticate, require("./routes/teamProjectPostgres"));
 app.use("/api/connections",        authenticate, require("./routes/connections"));
 app.use("/api/teams-chat",         authenticate, require("./routes/teamMessages"));
 app.use("/api/admin/chat-audit",   authenticate, require("./routes/adminChatAudit"));
 app.use("/api/workspace",          authenticate, require("./routes/teamWorkspace"));
-app.use("/api/opportunities",      authenticate, require("./routes/opportunities"));
-app.use("/api/applications",       authenticate, require("./routes/applications"));
-app.use("/api/onboarding",         authenticate, require("./routes/onboarding"));
+app.use("/api/opportunities",      authenticate, require("./routes/opportunitiesPostgres"));
+app.use("/api/applications",       authenticate, require("./routes/applicationsPostgres"));
+app.use("/api/onboarding",         authenticate, require("./routes/onboardingPostgres"));
 app.use("/api/notifications",      authenticate, require("./routes/notifications"));
 app.use("/api/mentors",            authenticate, require("./routes/mentors"));
 app.use("/api/mentor-interactions", authenticate, require("./routes/mentorInteractions"));
@@ -151,24 +157,39 @@ app.use("/api/mentor-queries",     authenticate, require("./routes/mentorQueries
 app.use("/api/mentor-reviews",     authenticate, require("./routes/mentor-reviews"));
 app.use("/api/project-mentorships", authenticate, require("./routes/project-mentorships"));
 app.use("/api/networking",         authenticate, require("./routes/networking"));
+app.use("/api/mentorship",       authenticate, require("./routes/mentorPostgres"));
+app.use("/api/learning",        authenticate, require("./routes/learningPostgres"));
+app.use("/api/career",          authenticate, require("./routes/assessmentRoadmapPostgres"));
+app.use("/api/showcase",        authenticate, require("./routes/showcasePostgres"));
+app.use("/api/events",           authenticate, require("./routes/eventsCommunityPostgres"));
+app.use("/api/recruiter",        authenticate, require("./routes/recruiterTalentPostgres"));
+app.use("/api/college",          authenticate, require("./routes/collegePlacementPostgres"));
+app.use("/api/incubation",       authenticate, require("./routes/incubationStartupPostgres"));
+app.use("/api/engagement",       authenticate, require("./routes/notificationCalendarPostgres"));
+app.use("/api/gamification",     authenticate, require("./routes/gamificationPostgres"));
+app.use("/api/ai",             authenticate, require("./routes/aiCareerPostgres"));
+app.use("/api/practice",        authenticate, require("./routes/codingMockInterviewPostgres"));
+app.use("/api/platform",        authenticate, require("./routes/searchAnalyticsPostgres"));
+app.use("/api/admin",           authenticate, require("./routes/adminSecurityPostgres"));
 app.use("/api/leaderboard",        authenticate, require("./routes/leaderboard"));
 app.use("/api/chat",               authenticate, require("./routes/chat"));
-app.use("/api/roadmap",            authenticate, require("./routes/roadmap"));
+app.use("/api/roadmap",            authenticate, require("./routes/assessmentRoadmapPostgres"));
 app.use("/api/ai",                 authenticate, require("./routes/ai"));
-app.use("/api/resume",             authenticate, require("./routes/resume"));
+app.use("/api/resume",             authenticate, require("./routes/resumePostgres"));
 app.use("/api/colleges",           authenticate, require("./routes/colleges"));
 app.use("/api/companies",          authenticate, require("./routes/companies"));
-app.use("/api/projects",           authenticate, require("./routes/projects"));
-app.use("/api/portfolio",          authenticate, require("./routes/portfolio"));
-app.use("/api/certificates",       authenticate, require("./routes/certificates"));
-app.use("/api/skills",             authenticate, require("./routes/skills"));
-app.use("/api/achievements",       authenticate, require("./routes/achievements"));
+app.use("/api/projects",           authenticate, require("./routes/teamProjectPostgres"));
+app.use("/api/networking",       authenticate, require("./routes/networkingMessagingPostgres"));
+app.use("/api/portfolio",          authenticate, require("./routes/showcasePostgres"));
+app.use("/api/certificates",       authenticate, require("./routes/certificatesPostgres"));
+app.use("/api",                   authenticate, require("./routes/studentCorePostgres"));
 app.use("/api/activity",           authenticate, require("./routes/activity"));
 app.use("/api/gamification",       authenticate, require("./routes/gamification"));
-app.use("/api/dashboard",          authenticate, require("./routes/dashboard"));
+app.use("/api/dashboard",          authenticate, require("./routes/dashboardPostgres"));
+app.use("/api/student-core",       authenticate, require("./routes/studentCorePostgres"));
 app.use("/api/coding",             authenticate, require("./routes/coding"));
 app.use("/api/assessments",        authenticate, require("./routes/assessments"));
-app.use("/api/interviews",         authenticate, require("./routes/interviews"));
+app.use("/api/interviews",         authenticate, require("./routes/hiringPostgres"));
 app.use("/api/events",             authenticate, require("./routes/events"));
 app.use("/api/community",          authenticate, require("./routes/community"));
 app.use("/api/calendar",           authenticate, require("./routes/calendar"));
@@ -297,6 +318,10 @@ io.on("connection", (socket) => {
 
 const PORT = process.env.PORT || 5000;
 const { startAutomationJobs } = require('./jobs/automation');
+
+app.use("/api/identity", authenticate, require("./routes/userIdentityPostgres"));
+app.use("/api/realtime", authenticate, require("./routes/realtimePostgres"));
+app.use(errorHandler);
 
 server.listen(PORT, "127.0.0.1", () => {
   console.log(`✅ Server running on http://localhost:${PORT}`);
