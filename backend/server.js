@@ -156,7 +156,6 @@ app.use("/api/mentor-resources",   authenticate, require("./routes/mentorResourc
 app.use("/api/mentor-queries",     authenticate, require("./routes/mentorQueries"));
 app.use("/api/mentor-reviews",     authenticate, require("./routes/mentor-reviews"));
 app.use("/api/project-mentorships", authenticate, require("./routes/project-mentorships"));
-app.use("/api/networking",         authenticate, require("./routes/networking"));
 app.use("/api/mentorship",       authenticate, require("./routes/mentorPostgres"));
 app.use("/api/learning",        authenticate, require("./routes/learningPostgres"));
 app.use("/api/career",          authenticate, require("./routes/assessmentRoadmapPostgres"));
