@@ -1,4 +1,5 @@
-const { db, admin } = require("../config/firebase");
+const { db, FieldValue, admin } = require("../config/firebase");
+const { query } = require("../config/postgres");
 
 const {
   mapDoc: mapDoc,
@@ -87,73 +88,17 @@ async function syncDashboard(uid) {
 /**
  * Calculates overall placement readiness based on coding stats, assessments, resume, and interviews.
  */
-async function syncPlacementReadiness(uid) {
+async function syncPlacementReadiness(uid, data = {}) {
   try {
-    const [
-      codingStatsDoc,
-      assessmentsSnap,
-      resumeReviewsSnap,
-      mockInterviewsSnap
-    ] = await Promise.all([
-      db.collection("codingStats").doc(uid).get(),
-      db.collection("skillAssessments").where("uid", "==", uid).get(),
-      db.collection("resumeReviews").where("uid", "==", uid).orderBy("createdAt", "desc").limit(1).get(),
-      db.collection("mockInterviews").where("uid", "==", uid).orderBy("createdAt", "desc").limit(5).get()
-    ]);
-
-    let readinessScore = 0;
-    const details = {
-      codingScore: 0,
-      assessmentScore: 0,
-      resumeScore: 0,
-      interviewScore: 0
-    };
-
-    // 1. Coding Score (max 25)
-    if (codingStatsDoc.exists) {
-      const stats = mapDoc(codingStatsDoc);
-      details.codingScore = Math.min(25, (stats.completedCount || 0) * 0.5 + (stats.streak || 0) * 1);
-    }
-
-    // 2. Assessment Score (max 25)
-    if (!assessmentsSnap.empty) {
-      let totalAssessment = 0;
-      assessmentsSnap.forEach(doc => {
-        totalAssessment += (mapDoc(doc).score || 0);
-      });
-      const avg = totalAssessment / assessmentsSnap.size;
-      details.assessmentScore = Math.min(25, (avg / 100) * 25);
-    }
-
-    // 3. Resume Score (max 25)
-    if (!resumeReviewsSnap.empty) {
-      const latestResume = mapDoc(resumeReviewsSnap.docs[0]);
-      details.resumeScore = Math.min(25, ((latestResume.atsScore || 0) / 100) * 25);
-    }
-
-    // 4. Interview Score (max 25)
-    if (!mockInterviewsSnap.empty) {
-      let totalInt = 0;
-      mockInterviewsSnap.forEach(doc => {
-        const data = mapDoc(doc);
-        const avgScore = ((data.confidenceScore || 0) + (data.communicationScore || 0) + (data.technicalAccuracy || 0)) / 3;
-        totalInt += avgScore;
-      });
-      const avg = totalInt / mockInterviewsSnap.size;
-      details.interviewScore = Math.min(25, (avg / 100) * 25);
-    }
-
-    readinessScore = Math.round(details.codingScore + details.assessmentScore + details.resumeScore + details.interviewScore);
-
-    await db.collection("placementReadiness").doc(uid).set({
-      uid,
-      readinessScore,
-      details,
-      lastCalculated: admin.firestore.FieldValue.serverTimestamp()
-    }, { merge: true });
-
+    const userId = uid;
+    const score = data.score ?? null;
+    const details = data.details ?? {};
+    const improvements = data.improvements ?? [];
+    await query(`INSERT INTO app.placement_readiness (user_id, score, details, improvements, calculated_at) VALUES ($1,$2,$3::jsonb,$4::jsonb,now()) ON CONFLICT (user_id) DO UPDATE SET score=EXCLUDED.score, details=EXCLUDED.details, improvements=EXCLUDED.improvements, calculated_at=now()`, [userId, score, JSON.stringify(details), JSON.stringify(improvements)]);
+    return true;
   } catch (err) {
     console.error(`Failed to sync placementReadiness for ${uid}:`, err);
+    return false;
   }
 }
 
