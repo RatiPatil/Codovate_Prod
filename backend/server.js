@@ -192,7 +192,6 @@ app.use("/api/interviews",         authenticate, require("./routes/hiringPostgre
 app.use("/api/events",             authenticate, require("./routes/events"));
 app.use("/api/community",          authenticate, require("./routes/community"));
 app.use("/api/calendar",           authenticate, require("./routes/calendar"));
-app.use("/api/learning",           authenticate, require("./routes/learning"));
 
 
 
