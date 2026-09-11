@@ -173,7 +173,7 @@ app.use("/api/admin",           authenticate, require("./routes/adminSecurityPos
 app.use("/api/leaderboard",        authenticate, require("./routes/leaderboard"));
 app.use("/api/chat",               authenticate, require("./routes/chat"));
 app.use("/api/roadmap",            authenticate, require("./routes/assessmentRoadmapPostgres"));
-app.use("/api/ai",                 authenticate, require("./routes/ai"));
+
 app.use("/api/resume",             authenticate, require("./routes/resumePostgres"));
 app.use("/api/colleges",           authenticate, require("./routes/colleges"));
 app.use("/api/companies",          authenticate, require("./routes/companies"));
@@ -187,7 +187,7 @@ app.use("/api/gamification",       authenticate, require("./routes/gamification"
 app.use("/api/dashboard",          authenticate, require("./routes/dashboardPostgres"));
 app.use("/api/student-core",       authenticate, require("./routes/studentCorePostgres"));
 app.use("/api/coding",             authenticate, require("./routes/coding"));
-app.use("/api/assessments",        authenticate, require("./routes/assessments"));
+app.use("/api/assessments",        authenticate, require("./routes/assessmentsPostgres"));
 app.use("/api/interviews",         authenticate, require("./routes/hiringPostgres"));
 app.use("/api/events",             authenticate, require("./routes/events"));
 app.use("/api/community",          authenticate, require("./routes/community"));
