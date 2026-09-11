@@ -1,4 +1,4 @@
-const { db } = require('../config/firebase');
+const { query } = require("../config/postgres");
 
 const {
   mapDoc: mapDoc,
@@ -10,7 +10,8 @@ async function getCommunityUpdates(uid) {
     const updates = [];
 
     // 1. Teams
-    const teamsSnap = await db.collection("teams").where("members", "array-contains", uid).limit(3).get();
+    const teamsResult = await query(`SELECT t.* FROM app.teams t JOIN app.team_members tm ON tm.team_id = t.id WHERE tm.user_id = $1 LIMIT 3`, [uid]);
+    const teamsSnap = { docs: teamsResult.rows.map(row => ({ data: () => row })) };
     if (!teamsSnap.empty) {
       teamsSnap.forEach(doc => {
         updates.push({
@@ -29,7 +30,8 @@ async function getCommunityUpdates(uid) {
     // We assume events are stored in students -> savedEvents or we just fetch general active events
     // For now, let's fetch a general active event or if we have an RSVP collection.
     // In our architecture, events are saved in `students -> saved_events`, but let's mock the "next event" for dashboard.
-    const eventsSnap = await db.collection("events").orderBy("date", "asc").limit(1).get();
+    const eventsResult = await query(`SELECT * FROM app.events ORDER BY COALESCE(start_at, created_at) ASC LIMIT 1`);
+    const eventsSnap = { docs: eventsResult.rows.map(row => ({ data: () => row })) };
     if (!eventsSnap.empty) {
       const ev = mapDoc(eventsSnap.docs[0]);
       updates.push({
