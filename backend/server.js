@@ -189,8 +189,8 @@ app.use("/api/student-core",       authenticate, require("./routes/studentCorePo
 app.use("/api/coding",             authenticate, require("./routes/coding"));
 app.use("/api/assessments",        authenticate, require("./routes/assessmentsPostgres"));
 app.use("/api/interviews",         authenticate, require("./routes/hiringPostgres"));
-app.use("/api/events",             authenticate, require("./routes/events"));
-app.use("/api/community",          authenticate, require("./routes/community"));
+
+
 app.use("/api/calendar",           authenticate, require("./routes/calendar"));
 
 
