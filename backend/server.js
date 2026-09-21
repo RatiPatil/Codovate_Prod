@@ -142,7 +142,7 @@ app.use("/api/admin/company/dashboard",      authenticate, requireRole(['company
 // ═══════════════════════════════════════════════════════════════
 app.use("/api/students",           authenticate, require("./routes/studentProfile.postgres"));
 app.use("/api/teams",              authenticate, require("./routes/teamProjectPostgres"));
-app.use("/api/connections",        authenticate, require("./routes/connections"));
+app.use("/api/connections",        authenticate, require("./routes/networkingMessagingPostgres"));
 app.use("/api/teams-chat",         authenticate, require("./routes/teamMessages"));
 app.use("/api/admin/chat-audit",   authenticate, require("./routes/adminChatAudit"));
 app.use("/api/workspace",          authenticate, require("./routes/teamWorkspace"));
@@ -150,7 +150,7 @@ app.use("/api/opportunities",      authenticate, require("./routes/opportunities
 app.use("/api/applications",       authenticate, require("./routes/applicationsPostgres"));
 app.use("/api/onboarding",         authenticate, require("./routes/onboardingPostgres"));
 app.use("/api/notifications",      authenticate, require("./routes/notifications"));
-app.use("/api/mentors",            authenticate, require("./routes/mentors"));
+app.use("/api/mentors",            authenticate, require("./routes/mentorPostgres"));
 app.use("/api/mentor-interactions", authenticate, require("./routes/mentorInteractions"));
 app.use("/api/mentor-resources",   authenticate, require("./routes/mentorResources"));
 app.use("/api/mentor-queries",     authenticate, require("./routes/mentorQueries"));
