@@ -50,7 +50,7 @@ async function getStudentContext(userId){
   };
 
   const user=await query(`
-    SELECT id,email,full_name,first_name,last_name
+    SELECT id,email,full_name,full_name
     FROM app.users
     WHERE id=$1
     LIMIT 1
