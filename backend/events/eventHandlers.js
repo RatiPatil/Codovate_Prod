@@ -1,129 +1,74 @@
-const eventBus = require("./eventBus");
-const { db, admin } = require("../config/firebase");
-const { syncDashboard } = require("../services/dashboardService");
+const { query } = require('../config/postgres');
 
-const {
-  mapDoc: mapDoc,
-  mapDocs: mapDocs
-} = require('../utils/firestoreMapper');
-
-/**
- * Log an activity
- */
-async function logActivity(uid, type, title, description = "") {
+async function recordEvent(eventType, userId = null, payload = {}) {
   try {
-    const logRef = db.collection("activityLogs").doc();
-    await logRef.set({
-      activityId: logRef.id,
-      uid,
-      type,
-      title,
-      description,
-      createdAt: admin.firestore.FieldValue.serverTimestamp()
-    });
+    const candidates = [
+      ['analytics_events', 'user_id'],
+      ['audit_logs', 'user_id']
+    ];
+
+    for (const [table, userColumn] of candidates) {
+      try {
+        if (table === 'analytics_events') {
+          await query(
+            `INSERT INTO app.analytics_events (user_id, event_type, metadata, created_at)
+             VALUES ($1, $2, $3::jsonb, NOW())`,
+            [userId, eventType, JSON.stringify(payload)]
+          );
+          return true;
+        }
+
+        if (table === 'audit_logs') {
+          await query(
+            `INSERT INTO app.audit_logs (user_id, action, details, created_at)
+             VALUES ($1, $2, $3::jsonb, NOW())`,
+            [userId, eventType, JSON.stringify(payload)]
+          );
+          return true;
+        }
+      } catch (err) {
+        continue;
+      }
+    }
+
+    return false;
   } catch (err) {
-    console.error("Failed to log activity:", err);
+    console.error('❌ Event recording error:', err.message);
+    return false;
   }
 }
 
-/**
- * Handle PROFILE_UPDATED
- * 1. Calculate Profile Completion
- * 2. Merge data to resume
- * 3. Sync Dashboard
- * 4. Log activity
- */
-eventBus.on("PROFILE_UPDATED", async ({ uid, profileData }) => {
-  try {
-    // 2. Merge basic identity data into Resume
-    const resumeRef = db.collection("resumes").doc(uid);
-    const resumeDoc = await resumeRef.get();
-    
-    if (resumeDoc.exists) {
-      await resumeRef.set({
-        personalInfo: {
-          name: profileData.personalInfo?.name || "",
-          email: profileData.personalInfo?.email || "",
-          github: profileData.socialLinks?.github || "",
-          linkedin: profileData.socialLinks?.linkedin || "",
-          portfolio: profileData.socialLinks?.portfolio || ""
-        },
-        targetRole: profileData.headline || mapDoc(resumeDoc).targetRole
-      }, { merge: true });
-    }
+async function initializeEventHandlers(io) {
+  console.log('✅ PostgreSQL event handlers initialized');
 
-    // 3. Sync dashboard
-    await syncDashboard(uid);
+  if (!io) return;
 
-    // 4. Log activity
-    await logActivity(uid, "profile_update", "Updated Profile", "You updated your profile information.");
-    
-  } catch (err) {
-    console.error("Error handling PROFILE_UPDATED:", err);
-  }
-});
+  io.on('connection', socket => {
+    socket.on('codovate:event', async event => {
+      try {
+        const userId = socket.user?.id || socket.user?.uid || null;
+        const type = event?.type || 'unknown';
+        const payload = event?.payload || {};
 
-/**
- * Handle PROJECT_ADDED
- * 1. Sync tech stack to skills
- * 2. Sync dashboard
- * 3. Milestone check (5 projects)
- * 4. Log activity
- */
-eventBus.on("PROJECT_ADDED", async ({ uid, projectData }) => {
-  try {
-    // 1. Sync tech stack to skills
-    if (projectData.techStack && projectData.techStack.length > 0) {
-      const skillsRef = db.collection("skills").doc(uid);
-      await skillsRef.set({
-        technical: admin.firestore.FieldValue.arrayUnion(...projectData.techStack),
-        updatedAt: admin.firestore.FieldValue.serverTimestamp()
-      }, { merge: true });
-    }
+        await recordEvent(type, userId, payload);
 
-    // 2. Sync Dashboard
-    await syncDashboard(uid);
+        socket.emit('codovate:event:ack', {
+          success: true,
+          type,
+          timestamp: new Date().toISOString()
+        });
+      } catch (err) {
+        console.error('❌ Realtime event error:', err.message);
+        socket.emit('codovate:event:ack', {
+          success: false,
+          error: 'Event processing failed'
+        });
+      }
+    });
+  });
+}
 
-    // 3. Log Activity
-    await logActivity(uid, "project_added", `Published Project: ${projectData.title}`);
-
-    // 4. Milestone Check
-    const projectsSnap = await db.collection("projects").where("uid", "==", uid).get();
-    if (projectsSnap.size === 5) {
-      // Create a milestone notification in dashboard or logs
-      await logActivity(uid, "milestone", "Achievement Unlocked: 5 Projects!", "You have successfully published 5 projects.");
-    }
-
-  } catch (err) {
-    console.error("Error handling PROJECT_ADDED:", err);
-  }
-});
-
-/**
- * Handle CERTIFICATE_ADDED
- * 1. Sync skills
- * 2. Sync dashboard
- * 3. Log activity
- */
-eventBus.on("CERTIFICATE_ADDED", async ({ uid, certificateData }) => {
-  try {
-    // 1. Sync skills
-    if (certificateData.skills && certificateData.skills.length > 0) {
-      const skillsRef = db.collection("skills").doc(uid);
-      await skillsRef.set({
-        technical: admin.firestore.FieldValue.arrayUnion(...certificateData.skills),
-        updatedAt: admin.firestore.FieldValue.serverTimestamp()
-      }, { merge: true });
-    }
-
-    // 2. Sync Dashboard
-    await syncDashboard(uid);
-
-    // 3. Log Activity
-    await logActivity(uid, "certificate_added", `Earned Certificate: ${certificateData.title}`);
-  } catch (err) {
-    console.error("Error handling CERTIFICATE_ADDED:", err);
-  }
-});
-
-module.exports = eventBus;
+module.exports = {
+  initializeEventHandlers,
+  recordEvent
+};
