@@ -66,7 +66,7 @@ async function getCompanyProfiles(userId){
     SELECT cp.*
     FROM app."${table}" cp
     ${where.length?`WHERE ${where.join(' AND ')}`:''}
-    ORDER BY cp.created_at DESC NULLS LAST,cp.id DESC
+    ORDER BY cp.id DESC
     LIMIT 100
   `,params);
 

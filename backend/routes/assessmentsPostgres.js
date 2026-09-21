@@ -1,5 +1,13 @@
 const express = require('express');
 const router = express.Router();
+
+async function resolveUserId(firebaseUid) {
+  const result = await query(
+    `SELECT id FROM app.users WHERE firebase_uid = $1 LIMIT 1`,
+    [firebaseUid]
+  );
+  return result.rows[0]?.id || null;
+}
 const { query } = require('../config/postgres');
 
 const getUserId = (req) => req.user?.uid || req.user?.id || req.auth?.uid;

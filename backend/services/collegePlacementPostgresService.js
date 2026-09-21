@@ -116,7 +116,7 @@ async function listPlacementDrives(filters={}){
     FROM app.placement_drives pd
     ${where.length?`WHERE ${where.join(' AND ')}`:''}
     ORDER BY pd.start_date ASC NULLS LAST,
-             pd.created_at DESC NULLS LAST,
+             pd.id DESC,
              pd.id DESC
     LIMIT 200
   `,params);
