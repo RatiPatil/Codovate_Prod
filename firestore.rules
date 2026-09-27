@@ -1,0 +1,210 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isStudent() {
+      // Assuming a custom claim or looking up user role isn't straightforward without a read,
+      // but typically we can assume if they are authenticated they have basic student rights.
+      // Better to check auth token custom claims if they exist:
+      return isAuthenticated() && request.auth.token.role == 'student';
+    }
+    
+    function isMentor() {
+      return isAuthenticated() && request.auth.token.role == 'mentor';
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && (request.auth.token.role == 'admin' || request.auth.token.role == 'super_admin');
+    }
+
+    // 1. Users collection: Protect private data
+    match /users/{userId} {
+      allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      allow write: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+    }
+    
+    // New Collections
+    match /profiles/{userId} {
+      allow read: if isAuthenticated(); // Publicly readable by other students for teams, leaderboard
+      allow write: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+    }
+    match /careerProfiles/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+    }
+    match /preferences/{userId} {
+      allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      allow write: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+    }
+    match /analytics/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+    }
+    match /activityLogs/{logId} {
+      allow read: if isAuthenticated() && (resource.data.user_id == request.auth.uid || isAdmin());
+      allow write: if isAuthenticated();
+    }
+    
+    // Final Student Modules (Opportunities, Applications, Teams & Chat, Learning, Resumes)
+    match /opportunities/{oppId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    match /events/{eventId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    match /projects/{projectId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && (request.resource.data.userId == request.auth.uid || isAdmin());
+      allow update, delete: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+    }
+
+    match /certificates/{certId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && (request.resource.data.userId == request.auth.uid || isAdmin());
+      allow update, delete: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+    }
+
+    match /achievements/{achId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && (request.resource.data.userId == request.auth.uid || isAdmin());
+      allow update, delete: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+    }
+
+    match /bookmarks/{bookmarkId} {
+      allow read: if isAuthenticated() && (resource.data.user_id == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated() && (request.resource.data.user_id == request.auth.uid || isAdmin());
+      allow update, delete: if isAuthenticated() && (resource.data.user_id == request.auth.uid || isAdmin());
+    }
+
+    match /applications/{appId} {
+      allow read: if isAuthenticated() && (resource.data.user_id == request.auth.uid || resource.data.student_id == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated();
+      allow update, delete: if isAuthenticated() && (resource.data.user_id == request.auth.uid || isAdmin());
+    }
+
+    match /teams/{teamId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+
+      match /messages/{messageId} {
+        allow read: if isAuthenticated();
+        allow create: if isAuthenticated() && (request.resource.data.senderId == request.auth.uid || request.resource.data.sender_id == request.auth.uid);
+        allow update, delete: if isAuthenticated() && (resource.data.senderId == request.auth.uid || resource.data.sender_id == request.auth.uid || isAdmin());
+      }
+    }
+
+    match /learningProgress/{progressId} {
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow write: if isAuthenticated() && (request.resource.data.userId == request.auth.uid || isAdmin());
+    }
+
+    match /resumes/{userId} {
+      allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      allow write: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+    }
+    
+    // Legacy Students Collection
+    match /students/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+    }
+
+    // 2. Mentors collection: Students can read mentor profiles
+    match /mentors/{mentorId} {
+      allow read: if isAuthenticated(); // Students and anyone authenticated can read mentor profiles
+      allow write: if isAdmin() || (isAuthenticated() && request.auth.uid == resource.data.user_id);
+    }
+
+    // 3. mentorSessions: Mentors can access only assigned sessions. Students can read/create their own.
+    match /mentorSessions/{sessionId} {
+      // Create bookings
+      allow create: if isAuthenticated();
+      
+      // Read access: Mentors can read if assigned, students can read if they created it
+      allow read, update: if isAdmin() 
+        || (isAuthenticated() && resource.data.student_id == request.auth.uid)
+        || (isMentor() && resource.data.mentor_id == request.auth.uid);
+        
+      allow delete: if isAdmin();
+    }
+
+    // 4. mentorQueries: Mentors can access only assigned queries. Students can read/create their own.
+    match /mentorQueries/{queryId} {
+      // Create queries
+      allow create: if isAuthenticated();
+      
+      // Read/Update access: Mentors can read if assigned, students can read if they created it
+      allow read, update: if isAdmin() 
+        || (isAuthenticated() && resource.data.student_id == request.auth.uid)
+        || (isMentor() && resource.data.mentor_id == request.auth.uid);
+        
+      allow delete: if isAdmin();
+    }
+    
+    // 5. Notifications
+    match /notifications/{notificationId} {
+      allow read: if isAuthenticated() && resource.data.user_id == request.auth.uid;
+      allow create: if isAuthenticated();
+      allow update, delete: if isAuthenticated() && resource.data.user_id == request.auth.uid;
+    }
+
+    // 6. RBAC System Collections
+    match /roles/{roleId} {
+      allow read: if isAuthenticated(); // Frontend needs to read role permissions
+      allow write: if false; // Only backend admin API can modify roles
+    }
+    
+    match /featureFlags/{flagId} {
+      allow read: if isAuthenticated(); // Frontend needs to read feature flags
+      allow write: if false; // Only backend admin API can modify flags
+    }
+    
+    match /auditLogs/{logId} {
+      allow read, write: if false; // Only backend has access
+    }
+    
+    match /loginHistory/{logId} {
+      allow read, write: if false; // Only backend has access
+    }
+
+    // Enterprise IAM Collections
+    match /system_config/{configId} {
+      allow read, write: if false; // Only backend
+    }
+    match /adminInvitations/{inviteId} {
+      allow read, write: if false; // Only backend
+    }
+    match /sessions/{sessionId} {
+      // Users can only read their own session data
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow write: if false; // Created/Updated by backend
+    }
+    match /securityPolicies/{policyId} {
+      // Anyone authenticated can read global or their org's policy
+      allow read: if isAuthenticated();
+      allow write: if false; // Managed by backend
+    }
+    match /organizations/{orgId} {
+      allow read: if isAuthenticated(); // Frontend needs to read org names
+      allow write: if false; // Managed by backend
+    }
+    match /departments/{deptId} {
+      allow read: if isAuthenticated();
+      allow write: if false;
+    }
+
+    // Default deny for everything else
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

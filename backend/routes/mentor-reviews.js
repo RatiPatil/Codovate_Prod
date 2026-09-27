@@ -1,0 +1,137 @@
+const express = require("express");
+const router = express.Router();
+const { db } = require("../config/firebase");
+const auth = require("../middleware/auth");
+
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
+// Add a portfolio/resume review
+router.post("/:student_id", auth, async (req, res) => {
+  try {
+    if (req.user.role !== 'mentor') {
+      return res.status(403).json({ message: "Only mentors can leave reviews." });
+    }
+
+    const { rating, feedback } = req.body;
+    if (!rating || !feedback) {
+      return res.status(400).json({ message: "Rating and feedback are required." });
+    }
+
+    const reviewRef = db.collection("mentor_reviews").doc();
+    const reviewData = {
+      id: reviewRef.id,
+      mentor_id: req.user.id,
+      mentor_name: req.user.name,
+      student_id: req.params.student_id,
+      rating: parseFloat(rating),
+      feedback,
+      created_at: new Date()
+    };
+
+    await reviewRef.set(reviewData);
+
+    // Update mentor stats (add 1 to total reviews)
+    const mentorDocs = await db.collection("mentors").where("user_id", "==", req.user.id).get();
+    if (!mentorDocs.empty) {
+      const mentorRef = db.collection("mentors").doc(mentorDocs.docs[0].id);
+      const mData = mapDoc(mentorDocs.docs[0]);
+      await mentorRef.update({
+        total_reviews: (mData.total_reviews || 0) + 1
+      });
+    }
+
+    res.status(201).json(reviewData);
+  } catch (err) {
+    console.error("Add review error:", err);
+    res.status(500).json({ message: "Server error." });
+  }
+});
+
+// Get reviews for a student
+router.get("/student/:student_id", async (req, res) => {
+  try {
+    const snapshot = await db.collection("mentor_reviews")
+      .where("student_id", "==", req.params.student_id)
+      .orderBy("created_at", "desc")
+      .get();
+      
+    const reviews = mapDocs(snapshot);
+    res.json(reviews);
+  } catch (err) {
+    console.error("Get reviews error:", err);
+    res.status(500).json({ message: "Server error." });
+  }
+});
+
+module.exports = router;
+
+// Add a review for a mentor (by a student)
+router.post("/mentor/:mentor_id", auth, async (req, res) => {
+  try {
+    const { rating, feedback } = req.body;
+    if (!rating || !feedback) {
+      return res.status(400).json({ message: "Rating and feedback are required." });
+    }
+
+    const reviewRef = db.collection("student_mentor_reviews").doc();
+    const reviewData = {
+      id: reviewRef.id,
+      student_id: req.user.id,
+      student_name: req.user.name || 'Student',
+      mentor_id: req.params.mentor_id,
+      rating: parseFloat(rating),
+      feedback,
+      created_at: new Date()
+    };
+
+    await reviewRef.set(reviewData);
+
+    // Update mentor average rating
+    const mentorRef = db.collection("mentors").doc(req.params.mentor_id);
+    const mentorDoc = await mentorRef.get();
+    
+    if (mentorDoc.exists) {
+      const mData = mapDoc(mentorDoc);
+      const currentTotalReviews = mData.total_reviews_received || 0;
+      const currentAvg = mData.rating || 0;
+      
+      const newTotal = currentTotalReviews + 1;
+      const newAvg = ((currentAvg * currentTotalReviews) + parseFloat(rating)) / newTotal;
+      
+      await mentorRef.update({
+        total_reviews_received: newTotal,
+        rating: Math.round(newAvg * 10) / 10
+      });
+    }
+
+    res.status(201).json(reviewData);
+  } catch (err) {
+    console.error("Add mentor review error:", err);
+    res.status(500).json({ message: "Server error." });
+  }
+});
+
+// Get reviews for a mentor
+router.get("/mentor/:mentor_id", async (req, res) => {
+  try {
+    const snapshot = await db.collection("student_mentor_reviews")
+      .where("mentor_id", "==", req.params.mentor_id)
+      .orderBy("created_at", "desc")
+      .get();
+      
+    const reviews = snapshot.docs.map(doc => {
+      const data = mapDoc(doc);
+      return {
+        ...data,
+        created_at: data.created_at?.toDate ? data.created_at.toDate().toISOString() : data.created_at
+      }
+    });
+    res.json(reviews);
+  } catch (err) {
+    console.error("Get mentor reviews error:", err);
+    res.status(500).json({ message: "Server error." });
+  }
+});

@@ -1,0 +1,264 @@
+const express = require('express');
+const router = express.Router();
+const { db, admin, FieldValue } = require('../config/firebase');
+const { body, validationResult, checkExact, matchedData } = require('express-validator');
+
+const {
+  mapDoc: mapDoc,
+  mapDocs: mapDocs
+} = require('../utils/firestoreMapper');
+
+// Middleware to ensure super_admin
+const superAdminOnly = (req, res, next) => {
+  if (req.user.role !== 'super_admin' && req.user.role !== 'admin') {
+    return res.status(403).json({ message: 'Super Admin access required.' });
+  }
+  next();
+};
+
+// GET all users
+router.get('/', async (req, res) => {
+  try {
+    const usersSnapshot = await db.collection('users').get();
+    const studentsSnapshot = await db.collection('students').get();
+    const users = [];
+    
+    usersSnapshot.forEach(doc => {
+      const u = mapDoc(doc);
+      users.push({
+        id: doc.id,
+        name: u.name,
+        email: u.email,
+        role: u.role,
+        status: u.status || (u.recordStatus === 'ACTIVE' ? 'active' : 'inactive'),
+        college_id: u.college_id,
+        company_id: u.company_id,
+        created_at: u.created_at
+      });
+    });
+
+    studentsSnapshot.forEach(doc => {
+      const s = mapDoc(doc);
+      const sp = s.profile_data || {};
+      users.push({
+        id: doc.id,
+        name: sp.name || s.name || 'Anonymous',
+        email: s.email,
+        role: s.role || 'student',
+        status: s.status || (s.recordStatus === 'ACTIVE' ? 'active' : 'inactive'),
+        college_id: s.college_id,
+        company_id: s.company_id,
+        created_at: s.created_at
+      });
+    });
+
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// POST new user
+router.post('/', superAdminOnly, [
+  body('name').trim().notEmpty().withMessage('Name is required').escape(),
+  body('email').trim().isEmail().withMessage('Valid email is required').normalizeEmail(),
+  body('role').isIn(['student', 'mentor', 'college_admin', 'company_admin', 'admin', 'super_admin']).withMessage('Invalid role'),
+  body('status').isIn(['active', 'pending', 'banned', 'suspended', 'inactive']).withMessage('Invalid status'),
+  body('college_id').optional({ nullable: true }).trim().escape(),
+  body('company_id').optional({ nullable: true }).trim().escape()
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+
+  try {
+    const data = matchedData(req, { includeOptionals: true });
+    const { name, email, role, status, college_id, company_id } = data;
+    
+    const targetCollection = role === 'student' ? 'students' : 'users';
+    
+    // Check if user already exists
+    const existing = await db.collection(targetCollection).where('email', '==', email).get();
+    if (!existing.empty) return res.status(400).json({ message: 'Email already exists' });
+
+    const newUserRef = db.collection(targetCollection).doc();
+    let newUser = {
+      id: newUserRef.id,
+      email,
+      role,
+      status,
+      recordStatus: status === 'active' ? 'ACTIVE' : (status === 'inactive' ? 'DISABLED' : 'SUSPENDED'),
+      college_id: college_id || null,
+      company_id: company_id || null,
+      created_at: FieldValue.serverTimestamp(),
+      updated_at: FieldValue.serverTimestamp()
+    };
+    
+    if (role === 'student') {
+      newUser.profile_data = { name };
+    } else {
+      newUser.name = name;
+    }
+
+    await newUserRef.set(newUser);
+    res.status(201).json(newUser);
+  } catch (error) {
+    console.error("User POST error:", error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// PUT update user
+router.put('/:id', superAdminOnly, [
+  body('name').optional().trim().notEmpty().withMessage('Name cannot be empty').escape(),
+  body('email').optional().trim().isEmail().withMessage('Valid email is required').normalizeEmail(),
+  body('role').optional().isIn(['student', 'mentor', 'college_admin', 'company_admin', 'admin', 'super_admin']).withMessage('Invalid role'),
+  body('status').optional().isIn(['active', 'pending', 'banned', 'suspended', 'inactive']).withMessage('Invalid status'),
+  body('college_id').optional({ nullable: true }).trim().escape(),
+  body('company_id').optional({ nullable: true }).trim().escape()
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+
+  try {
+    let userRef = db.collection('users').doc(req.params.id);
+    let doc = await userRef.get();
+    if (!doc.exists) {
+      userRef = db.collection('students').doc(req.params.id);
+      doc = await userRef.get();
+      if (!doc.exists) return res.status(404).json({ message: 'User not found' });
+    }
+
+    const updateData = matchedData(req, { includeOptionals: true });
+    
+    if (Object.keys(updateData).length === 0) {
+      return res.status(400).json({ message: 'No valid fields provided for update' });
+    }
+
+    if (updateData.status) {
+      updateData.recordStatus = updateData.status === 'active' ? 'ACTIVE' : (updateData.status === 'inactive' ? 'DISABLED' : 'SUSPENDED');
+    }
+
+    updateData.updated_at = FieldValue.serverTimestamp();
+
+    await userRef.update(updateData);
+    const updated = await userRef.get();
+    res.json(mapDoc(updated));
+  } catch (error) {
+    console.error("User PUT error:", error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// PUT suspend user
+router.put('/:id/suspend', superAdminOnly, async (req, res) => {
+  try {
+    let userRef = db.collection('users').doc(req.params.id);
+    let doc = await userRef.get();
+    let targetCollection = 'users';
+    
+    if (!doc.exists) {
+      userRef = db.collection('students').doc(req.params.id);
+      doc = await userRef.get();
+      targetCollection = 'students';
+      if (!doc.exists) return res.status(404).json({ message: 'User not found' });
+    }
+
+    const userData = mapDoc(doc);
+
+    const batch = db.batch();
+    batch.update(userRef, { 
+      status: 'suspended', 
+      recordStatus: 'SUSPENDED',
+      updated_at: FieldValue.serverTimestamp()
+    });
+
+    batch.set(db.collection('audit_logs').doc(), {
+      actor_id: req.user.id,
+      actor_name: req.user.name || 'Admin',
+      actor_email: req.user.email,
+      target_user_id: req.params.id,
+      target_user_name: userData.name || userData.profile_data?.name || 'Unknown',
+      action: 'Suspend',
+      module: 'adminUsers',
+      created_at: FieldValue.serverTimestamp()
+    });
+
+    await batch.commit();
+    res.json({ message: 'User suspended successfully' });
+  } catch (error) {
+    console.error("User SUSPEND error:", error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// PUT unsuspend user
+router.put('/:id/unsuspend', superAdminOnly, async (req, res) => {
+  try {
+    let userRef = db.collection('users').doc(req.params.id);
+    let doc = await userRef.get();
+    let targetCollection = 'users';
+    
+    if (!doc.exists) {
+      userRef = db.collection('students').doc(req.params.id);
+      doc = await userRef.get();
+      targetCollection = 'students';
+      if (!doc.exists) return res.status(404).json({ message: 'User not found' });
+    }
+
+    const userData = mapDoc(doc);
+
+    const batch = db.batch();
+    batch.update(userRef, { 
+      status: 'active', 
+      recordStatus: 'ACTIVE',
+      updated_at: FieldValue.serverTimestamp()
+    });
+
+    batch.set(db.collection('audit_logs').doc(), {
+      actor_id: req.user.id,
+      actor_name: req.user.name || 'Admin',
+      actor_email: req.user.email,
+      target_user_id: req.params.id,
+      target_user_name: userData.name || userData.profile_data?.name || 'Unknown',
+      action: 'Unsuspend',
+      module: 'adminUsers',
+      created_at: FieldValue.serverTimestamp()
+    });
+
+    await batch.commit();
+    res.json({ message: 'User unsuspended successfully' });
+  } catch (error) {
+    console.error("User UNSUSPEND error:", error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// PUT status (used by the existing table)
+router.put('/:id/status', superAdminOnly, [
+  body('status').isIn(['active', 'pending', 'banned', 'suspended', 'inactive']).withMessage('Invalid status')
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+
+  try {
+    let userRef = db.collection('users').doc(req.params.id);
+    let doc = await userRef.get();
+    if (!doc.exists) {
+      userRef = db.collection('students').doc(req.params.id);
+      doc = await userRef.get();
+      if (!doc.exists) return res.status(404).json({ message: 'User not found' });
+    }
+    const { status } = matchedData(req);
+    await userRef.update({ 
+      status, 
+      recordStatus: status === 'active' ? 'ACTIVE' : (status === 'inactive' ? 'DISABLED' : 'SUSPENDED'),
+      updated_at: FieldValue.serverTimestamp()
+    });
+    res.json({ message: 'Status updated' });
+  } catch (error) {
+    console.error("User STATUS error:", error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+module.exports = router;
