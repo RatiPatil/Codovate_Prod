@@ -13,6 +13,7 @@ import {
   eventsApi,
   engagementApi,
   aiApi,
+  networkingApi,
 } from './api';
 import LoadingState from './components/ui/LoadingState';
 import ErrorState from './components/ui/ErrorState';
@@ -22,12 +23,19 @@ import StatCard from './components/ui/StatCard';
 import PrimaryButton from './components/ui/PrimaryButton';
 import SecondaryButton from './components/ui/SecondaryButton';
 import Login from './pages/Login';
+import Signup from './pages/Signup';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
+import Onboarding from './pages/Onboarding';
+import OnboardingSuccess from './pages/OnboardingSuccess';
 import Home from './pages/Home';
 import AdminLogin from './pages/AdminLogin';
 import SuperAdminDashboard from './pages/SuperAdminDashboard';
 import MentorLogin from './pages/MentorLogin';
 import RecruiterLogin from './pages/RecruiterLogin';
+import ProtectedRoute from './components/ProtectedRoute';
 import AuthGate from './components/auth/AuthGate';
+import { useAuth } from './context/AuthContext';
 
 const navItems = [
   ['dashboard', 'Dashboard'],
@@ -87,6 +95,8 @@ function useData(loader) {
 }
 
 function AppShell({ active, setActive, children }) {
+  const { user, logout } = useAuth();
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-950">
       <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
@@ -104,10 +114,27 @@ function AppShell({ active, setActive, children }) {
             </span>
           </button>
 
-          <div className="hidden items-center gap-2 md:flex">
-            <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
-              Learn · Build · Compete · Grow
-            </span>
+          <div className="flex items-center gap-4">
+            <div className="hidden items-center gap-2 md:flex">
+              <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
+                Learn · Build · Compete · Grow
+              </span>
+            </div>
+
+            {user && (
+              <div className="flex items-center gap-3">
+                <span className="hidden text-xs font-semibold text-slate-600 sm:inline-block">
+                  {user.name || user.displayName || user.email}
+                </span>
+                <button
+                  type="button"
+                  onClick={logout}
+                  className="rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
+                >
+                  Sign out
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </header>
@@ -424,6 +451,7 @@ function GenericListPage({ title, description, loader, emptyTitle }) {
 }
 
 function ProtectedApp() {
+  const { user } = useAuth();
   const [active, setActive] = useState('dashboard');
 
   const page = useMemo(() => {
@@ -524,6 +552,10 @@ function ProtectedApp() {
     }
   }, [active]);
 
+  if (user?.role === 'student' && user?.onboardingCompleted === false) {
+    return <Navigate to="/onboarding" replace />;
+  }
+
   return (
     <AuthGate>
       <AppShell active={active} setActive={setActive}>
@@ -536,13 +568,47 @@ function ProtectedApp() {
 function App() {
   return (
     <Routes>
+      <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/signup" element={<Signup />} />
+      <Route path="/register" element={<Navigate to="/signup" replace />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route
+        path="/onboarding"
+        element={
+          <ProtectedRoute>
+            <Onboarding />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/onboarding/success"
+        element={
+          <ProtectedRoute>
+            <OnboardingSuccess />
+          </ProtectedRoute>
+        }
+      />
       <Route path="/admin-login" element={<AdminLogin />} />
-      <Route path="/admin" element={<SuperAdminDashboard />} />
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute requiredRole={['admin', 'super_admin']}>
+            <SuperAdminDashboard />
+          </ProtectedRoute>
+        }
+      />
       <Route path="/mentor-login" element={<MentorLogin />} />
       <Route path="/recruiter-login" element={<RecruiterLogin />} />
-      <Route path="/" element={<Home />} />
-      <Route path="/dashboard" element={<ProtectedApp />} />
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <ProtectedApp />
+          </ProtectedRoute>
+        }
+      />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

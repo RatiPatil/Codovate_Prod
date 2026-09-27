@@ -314,9 +314,8 @@ router.post("/signup", async (req, res) => {
         return res.status(409).json({ message: "Username is already taken." });
     }
     const hash = await bcrypt.hash(password, 12);
-    const newUserRef = usersRef.doc();
-    // ─── AUTH-001 FIX: Also create the user in Firebase Auth ───
-    // This ensures sendPasswordResetEmail() works for local users.
+
+    // Create the user in Firebase Auth first to obtain canonical UID
     let firebaseAuthUid = null;
     try {
       const fbUser = await getAuth().createUser({
@@ -326,22 +325,27 @@ router.post("/signup", async (req, res) => {
       });
       firebaseAuthUid = fbUser.uid;
     } catch (fbErr) {
-      // If user already exists in Firebase Auth (e.g. via Google), link instead
       if (fbErr.code === 'auth/email-already-exists') {
         try {
           const existingFbUser = await getAuth().getUserByEmail(email.toLowerCase());
           firebaseAuthUid = existingFbUser.uid;
-          // Update their password so local login works
           await getAuth().updateUser(existingFbUser.uid, { password: password });
         } catch (linkErr) {
           console.warn("Could not link existing Firebase Auth user:", linkErr.message);
         }
       } else {
-        console.warn("Firebase Auth user creation failed (non-blocking):", fbErr.message);
+        console.warn("Firebase Auth user creation warning:", fbErr.message);
       }
     }
+
+    // Canonical UID is the Firebase Auth UID
+    const finalUid = firebaseAuthUid || usersRef.doc().id;
+    const userDocRef = usersRef.doc(finalUid);
+    const profileDocRef = db.collection('profiles').doc(finalUid);
+
     const userData = {
-      id: newUserRef.id,
+      id: finalUid,
+      authUid: finalUid,
       name: name.trim().toUpperCase(),
       username: cleanUsername || null,
       email: email.toLowerCase(),
@@ -349,15 +353,14 @@ router.post("/signup", async (req, res) => {
       role: 'student',
       is_verified: false,
       recordStatus: 'ACTIVE',
-      authUid: firebaseAuthUid,
       providers: ['local'],
       onboardingCompleted: false,
+      profileCompleted: 0,
       createdAt: new Date(),
       updatedAt: new Date(),
       lastLogin: new Date()
     };
-    const batch = db.batch();
-    batch.set(newUserRef, userData);
+
     const profileData = {
       personalInfo: {
         name: name.trim().toUpperCase(),
@@ -376,32 +379,166 @@ router.post("/signup", async (req, res) => {
       createdAt: new Date(),
       updatedAt: new Date()
     };
-    batch.set(db.collection('profiles').doc(newUserRef.id), profileData);
-    // Log platform event
+
+    const batch = db.batch();
+    batch.set(userDocRef, userData);
+    batch.set(profileDocRef, profileData);
     batch.set(db.collection('activityLogs').doc(), {
-      actor_id: newUserRef.id,
+      actor_id: finalUid,
       event_type: 'user_signup',
       entity_type: 'user',
-      entity_id: newUserRef.id,
+      entity_id: finalUid,
       metadata: { email: userData.email },
       created_at: new Date()
     });
-    // Fire and forget
-    batch.commit().catch(e => console.error('Background batch commit failed:', e));
-    // 🔴 REAL-TIME: Notify Admin
+    await batch.commit();
+
+    if (finalUid) {
+      await setCustomClaims(finalUid, 'student').catch(e => console.warn('Custom claims warning:', e.message));
+    }
+
     if (req.io) req.io.to("admin_room").emit("admin_new_student", userData);
-    const tokenPayload = { id: userData.id, role: userData.role, name: userData.name, email: userData.email };
-    if (userData.college_id) tokenPayload.college_id = userData.college_id;
-    if (userData.company_id) tokenPayload.company_id = userData.company_id;
-    const token = jwt.sign(
-      tokenPayload,
-      process.env.JWT_SECRET,
-      { expiresIn: "7d" }
-    );
-    console.log("✅ New user registered:", email);
-    res.status(201).json({ token, user: { id: userData.id, name: userData.name, email: userData.email, role: userData.role } });
+
+    const tokenPayload = { id: finalUid, role: 'student', name: userData.name, email: userData.email };
+    const token = jwt.sign(tokenPayload, process.env.JWT_SECRET, { expiresIn: "7d" });
+
+    console.log("✅ New user registered with canonical UID " + finalUid + ":", email);
+    res.status(201).json({
+      token,
+      user: {
+        id: finalUid,
+        name: userData.name,
+        email: userData.email,
+        role: 'student',
+        onboardingCompleted: false
+      },
+      redirect: '/onboarding'
+    });
   } catch (err) {
     console.error("Signup error:", err.message);
+    res.status(500).json({ message: "Server error: " + err.message });
+  }
+});
+
+// ─── Register Sync (for users registered on client via Firebase Auth) ───
+router.post("/register-sync", async (req, res) => {
+  const { idToken, name } = req.body;
+  const token = idToken || (req.headers.authorization && req.headers.authorization.split(' ')[1]);
+  if (!token) return res.status(400).json({ message: "No ID token provided." });
+
+  try {
+    const decodedToken = await getAuth().verifyIdToken(token);
+    const { uid, email } = decodedToken;
+    const usersRef = db.collection('users');
+    const userDoc = await usersRef.doc(uid).get();
+
+    let user;
+    if (!userDoc.exists) {
+      const displayName = (name || decodedToken.name || 'STUDENT').trim().toUpperCase();
+      user = {
+        id: uid,
+        authUid: uid,
+        name: displayName,
+        email: (email || '').toLowerCase(),
+        role: 'student',
+        recordStatus: 'ACTIVE',
+        providers: ['local'],
+        onboardingCompleted: false,
+        profileCompleted: 0,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        lastLogin: new Date()
+      };
+
+      const profileData = {
+        personalInfo: {
+          name: displayName,
+          email: (email || '').toLowerCase(),
+          phone: null
+        },
+        education: { college: null, degree: null, branch: null, year: null },
+        socialLinks: { github: null, linkedin: null, portfolio: null, resume: null },
+        careerGoal: null,
+        experienceLevel: null,
+        profileImage: '',
+        headline: null,
+        bio: null,
+        profileCompletion: 0,
+        visibility: 'public',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+
+      const batch = db.batch();
+      batch.set(usersRef.doc(uid), user);
+      batch.set(db.collection('profiles').doc(uid), profileData);
+      batch.set(db.collection('activityLogs').doc(), {
+        actor_id: uid,
+        event_type: 'user_signup',
+        entity_type: 'user',
+        entity_id: uid,
+        metadata: { email: user.email },
+        created_at: new Date()
+      });
+      await batch.commit();
+      await setCustomClaims(uid, 'student').catch(e => console.warn('Custom claims warning:', e.message));
+      console.log("✅ Synced new client-registered user users/" + uid + ":", email);
+    } else {
+      user = mapDoc(userDoc);
+    }
+
+    const tokenPayload = { id: user.id, role: user.role, name: user.name, email: user.email };
+    const backendToken = jwt.sign(tokenPayload, process.env.JWT_SECRET, { expiresIn: "7d" });
+
+    res.json({
+      token: backendToken,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        onboardingCompleted: Boolean(user.onboardingCompleted)
+      },
+      redirect: '/onboarding'
+    });
+  } catch (err) {
+    console.error("Register sync error:", err.message);
+    res.status(500).json({ message: "Registration sync failed: " + err.message });
+  }
+});
+
+// ─── Current User Info (Session check) ────────────────────────
+router.get("/me", authMiddleware, async (req, res) => {
+  try {
+    const userDoc = await db.collection('users').doc(req.user.id).get();
+    if (!userDoc.exists) {
+      return res.status(404).json({ message: "User not found." });
+    }
+    const userData = mapDoc(userDoc);
+    const profileDoc = await db.collection('profiles').doc(req.user.id).get();
+    const profileData = profileDoc.exists ? mapDoc(profileDoc) : {};
+
+    const onboardingCompleted = Boolean(
+      userData.onboardingCompleted ?? 
+      userData.onboarding_completed ?? 
+      (userData.role !== 'student')
+    );
+    const profileCompletion = userData.profileCompleted ?? profileData.profileCompletion ?? 0;
+
+    res.json({
+      id: userData.id,
+      uid: userData.id,
+      name: profileData.personalInfo?.name || userData.name || '',
+      email: userData.email,
+      role: userData.role || 'student',
+      avatar: profileData.profileImage || userData.avatar || userData.photoURL || '',
+      onboardingCompleted,
+      profileCompletion,
+      college_id: userData.college_id || null,
+      company_id: userData.company_id || null,
+    });
+  } catch (err) {
+    console.error("Auth me error:", err.message);
     res.status(500).json({ message: "Server error: " + err.message });
   }
 });
@@ -512,26 +649,7 @@ router.post("/admin-login", async (req, res) => {
   const ADMIN_ROLES = ['super_admin', 'admin', 'college_admin', 'company_admin'];
   try {
     const usersRef = db.collection('users');
-    let snapshot = await usersRef.where('email', '==', email.toLowerCase()).get();
-    /* Auto-seed default Super Admin if database record does not exist yet */
-    if (snapshot.empty && email.toLowerCase() === 'admin@codovate.in') {
-      const hash = await bcrypt.hash('Admin@12345', 12);
-      const newAdminRef = usersRef.doc();
-      const adminData = {
-        id: newAdminRef.id,
-        name: 'SUPER ADMIN',
-        email: 'admin@codovate.in',
-        password_hash: hash,
-        role: 'super_admin',
-        recordStatus: 'ACTIVE',
-        providers: ['local'],
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        lastLogin: new Date(),
-      };
-      await newAdminRef.set(adminData);
-      snapshot = await usersRef.where('email', '==', 'admin@codovate.in').get();
-    }
+    const snapshot = await usersRef.where('email', '==', email.toLowerCase()).get();
     if (snapshot.empty)
       return res.status(401).json({ message: "Invalid email or password." });
     if (snapshot.size > 1) {
