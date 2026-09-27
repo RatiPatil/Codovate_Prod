@@ -110,7 +110,7 @@ export const uploadProfilePhoto = async (file, userId, onProgress) => {
   try {
     const fileName = file?.name || 'photo.jpg';
     const extension = fileName.includes('.') ? fileName.split('.').pop() : 'jpg';
-    const path = profiles//avatar_.;
+    const path = `profiles/${userId}/avatar_${Date.now()}.${extension}`;
     return await uploadFileToStorage(file, path, onProgress);
   } catch (err) {
     console.warn("Warning: Client Firebase Storage upload failed, trying server fallback:", err.message);
@@ -137,6 +137,6 @@ export const uploadProfilePhoto = async (file, userId, onProgress) => {
 export const uploadResume = async (file, userId, onProgress) => {
   const fileName = file?.name || 'resume.pdf';
   const extension = fileName.includes('.') ? fileName.split('.').pop() : 'pdf';
-  const path = esumes//resume_.;
+  const path = `resumes/${userId}/resume_${Date.now()}.${extension}`;
   return uploadFileToStorage(file, path, onProgress);
 };

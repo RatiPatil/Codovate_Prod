@@ -1,39 +1,87 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
-    
-    // Profile photo uploads
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && (request.auth.token.role == 'admin' || request.auth.token.role == 'super_admin');
+    }
+
+    function isImage() {
+      return request.resource.contentType.matches('image/.*');
+    }
+
+    function isPdf() {
+      return request.resource.contentType == 'application/pdf';
+    }
+
+    function isDocument() {
+      return isPdf() || 
+        request.resource.contentType == 'application/msword' ||
+        request.resource.contentType == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+    }
+
+    // 1. Profile photos: Public read, owner write, images <= 5MB
     match /profiles/{userId}/{allPaths=**} {
       allow read: if true;
-      allow write: if request.auth != null && request.auth.uid == userId;
+      allow write: if isOwner(userId)
+        && isImage()
+        && request.resource.size < 5 * 1024 * 1024;
     }
 
-    // Resumes uploads
+    // 2. Resumes: Authenticated read, owner write, PDF <= 10MB
     match /resumes/{userId}/{allPaths=**} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null && request.auth.uid == userId;
+      allow read: if isAuthenticated();
+      allow write: if isOwner(userId)
+        && isPdf()
+        && request.resource.size < 10 * 1024 * 1024;
     }
 
-    // Certificates uploads
+    // 3. Certificates: Authenticated read, authenticated user write (scoped or root), PDF/Image <= 10MB
+    match /certificates/{userId}/{allPaths=**} {
+      allow read: if isAuthenticated();
+      allow write: if (isOwner(userId) || isAdmin())
+        && (isPdf() || isImage())
+        && request.resource.size < 10 * 1024 * 1024;
+    }
     match /certificates/{allPaths=**} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null;
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated()
+        && (isPdf() || isImage())
+        && request.resource.size < 10 * 1024 * 1024;
     }
 
-    // Mentor learning resources
+    // 4. Project thumbnails and assets: Authenticated or public read, authenticated write, images <= 10MB
+    match /projects/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAuthenticated()
+        && isImage()
+        && request.resource.size < 10 * 1024 * 1024;
+    }
+
+    // 5. Mentor resources: Authenticated read, authenticated write, docs/images <= 25MB
     match /resources/{allPaths=**} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null;
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated()
+        && request.resource.size < 25 * 1024 * 1024;
     }
 
-    // Diagnostic uploads
+    // 6. Diagnostics (admin only)
     match /diagnostics/{allPaths=**} {
-      allow read, write: if request.auth != null;
+      allow read, write: if isAdmin();
     }
 
     // Default deny-all for unspecified root paths
     match /{allPaths=**} {
-      allow read: if request.auth != null;
+      allow read: if isAuthenticated();
       allow write: if false;
     }
   }

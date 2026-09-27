@@ -75,7 +75,7 @@ function clearPermissionCache(roleId) {
  * 2. Loads role permissions from Firestore (cached)
  * 3. Attaches full user context to req.user
  */
-function authenticate(req, res, next) {
+async function authenticate(req, res, next) {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 
@@ -86,6 +86,7 @@ function authenticate(req, res, next) {
     });
   }
 
+  // 1. First attempt: Verify as backend JWT
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     
@@ -102,29 +103,61 @@ function authenticate(req, res, next) {
       company_id: decoded.company_id || decoded.orgId || null,
     };
 
-    // Load permissions asynchronously (cached)
-    loadPermissions(decoded.role)
-      .then(permissions => {
-        req.user.permissions = permissions;
-        next();
-      })
-      .catch(err => {
-        console.error('[RBAC] Permission loading failed, proceeding with empty permissions:', err.message);
-        req.user.permissions = [];
-        next();
-      });
+    try {
+      req.user.permissions = await loadPermissions(decoded.role);
+    } catch (permErr) {
+      console.error('[RBAC] Permission loading failed, proceeding with empty permissions:', permErr.message);
+      req.user.permissions = [];
+    }
+    return next();
 
-  } catch (err) {
-    if (err.name === 'TokenExpiredError') {
+  } catch (jwtErr) {
+    // 2. Second attempt: Check if it is a valid Firebase ID token
+    try {
+      const { getAuth } = require('firebase-admin/auth');
+      const decodedFb = await getAuth().verifyIdToken(token);
+      
+      let userData = {};
+      try {
+        const userDoc = await db.collection('users').doc(decodedFb.uid).get();
+        if (userDoc.exists) {
+          userData = userDoc.data() || {};
+        }
+      } catch (dbErr) {
+        console.warn('[AUTH] Could not fetch user doc for Firebase UID:', decodedFb.uid, dbErr.message);
+      }
+
+      req.user = {
+        id: decodedFb.uid,
+        uid: decodedFb.uid,
+        role: decodedFb.role || userData.role || 'student',
+        name: decodedFb.name || userData.name || 'User',
+        email: decodedFb.email || userData.email || '',
+        orgId: userData.orgId || null,
+        deptId: userData.deptId || null,
+        college_id: userData.college_id || null,
+        company_id: userData.company_id || null,
+      };
+
+      try {
+        req.user.permissions = await loadPermissions(req.user.role);
+      } catch (permErr) {
+        req.user.permissions = [];
+      }
+      return next();
+
+    } catch (fbErr) {
+      if (jwtErr.name === 'TokenExpiredError' || fbErr.code === 'auth/id-token-expired') {
+        return res.status(401).json({ 
+          message: 'Token has expired. Please log in again.',
+          code: 'AUTH_TOKEN_EXPIRED' 
+        });
+      }
       return res.status(401).json({ 
-        message: 'Token has expired. Please log in again.',
-        code: 'AUTH_TOKEN_EXPIRED' 
+        message: 'Invalid or expired token.',
+        code: 'AUTH_TOKEN_INVALID'
       });
     }
-    return res.status(401).json({ 
-      message: 'Invalid or expired token.',
-      code: 'AUTH_TOKEN_INVALID'
-    });
   }
 }
 
