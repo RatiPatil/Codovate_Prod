@@ -137,8 +137,7 @@ app.use("/api/admin/company/dashboard",      authenticate, requireRole(['company
 // ═══════════════════════════════════════════════════════════════
 //  AUTHENTICATED USER ROUTES — ALL FIRESTORE (Firebase-only architecture)
 //
-//  ALL *Postgres.js routes have been replaced with their Firestore-native
-//  equivalents. No postgres.js dependency exists in this file.
+//  All user routes are backed natively by Cloud Firestore repositories.
 // ═══════════════════════════════════════════════════════════════
 app.use("/api/students",            authenticate, require("./routes/students"));            // Firestore: studentProfiles, users
 app.use("/api/teams",               authenticate, require("./routes/teams"));               // Firestore: teams, teamMembers
@@ -193,7 +192,7 @@ app.get("/", (req, res) => {
   res.json({ message: "Codovate API running 🚀", realtime: true });
 });
 
-// ─── Realtime health (replaces realtimePostgres.js) ───────────
+// ─── Realtime health check (Cloud Firestore) ────────────────
 app.get("/api/realtime/health", authenticate, async (req, res) => {
   try {
     const { db } = require('./config/firebase');

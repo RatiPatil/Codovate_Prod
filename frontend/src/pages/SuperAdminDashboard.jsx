@@ -164,7 +164,7 @@ export default function SuperAdminDashboard() {
               Platform Overview
             </h2>
             <p className="text-sm text-slate-500">
-              Live PostgreSQL-backed platform statistics.
+              Live Cloud Firestore-backed platform statistics.
             </p>
           </div>
 
