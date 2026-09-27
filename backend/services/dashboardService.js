@@ -1,86 +1,163 @@
-const { query } = require('../config/postgres');
+/**
+ * dashboardService.js — Firebase/Firestore implementation
+ *
+ * Replaces the PostgreSQL-based dashboard service.
+ * All data is read from Firestore collections that are already
+ * written by the other Firestore-native route files.
+ *
+ * Collections used:
+ *   users, profiles, userGoals, userPreferences, achievements,
+ *   roadmaps, userRoadmaps, enrollments, courses, applications,
+ *   notifications, resumes, portfolios, certificates,
+ *   placementReadiness, dashboard
+ */
 
+const { db, FieldValue } = require('../config/firebase');
+
+/**
+ * Helper: safely get documents from a collection with a where clause.
+ * Returns an array (empty on error).
+ */
+async function safeDocs(collection, field, value, opts = {}) {
+  try {
+    let q = db.collection(collection).where(field, '==', value);
+    if (opts.orderBy) q = q.orderBy(opts.orderBy, opts.dir || 'desc');
+    if (opts.limit) q = q.limit(opts.limit);
+    const snap = await q.get();
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch (err) {
+    console.warn(`[dashboardService] safeDocs(${collection}) warn:`, err.message);
+    return [];
+  }
+}
+
+/**
+ * Helper: safely get a single document by ID.
+ * Returns null on error/not-found.
+ */
+async function safeDoc(collection, id) {
+  try {
+    const doc = await db.collection(collection).doc(id).get();
+    return doc.exists ? { id: doc.id, ...doc.data() } : null;
+  } catch (err) {
+    console.warn(`[dashboardService] safeDoc(${collection}/${id}) warn:`, err.message);
+    return null;
+  }
+}
+
+/**
+ * Sync (or create) the dashboard snapshot document for a user.
+ * Aggregates data from Firestore collections and writes to
+ * the `dashboard` collection under the user's UID.
+ *
+ * Called by route files after mutations that affect the dashboard.
+ * Does NOT throw — failures are logged and swallowed so they
+ * never break the calling request.
+ */
+async function syncDashboard(uid) {
+  if (!uid) return;
+
+  try {
+    const [
+      user,
+      profile,
+      goals,
+      preferences,
+      achievements,
+      roadmaps,
+      learning,
+      applications,
+      notifications,
+      resumes,
+      portfolios,
+      certificates,
+      placementReadiness
+    ] = await Promise.all([
+      safeDoc('users', uid),
+      safeDoc('profiles', uid),
+      safeDoc('userGoals', uid),
+      safeDoc('userPreferences', uid),
+      safeDocs('achievements', 'uid', uid,      { orderBy: 'achievementDate', dir: 'desc', limit: 20 }),
+      safeDocs('userRoadmaps', 'uid', uid,      { orderBy: 'createdAt', dir: 'desc', limit: 10 }),
+      safeDocs('enrollments', 'uid', uid,       { orderBy: 'updatedAt', dir: 'desc', limit: 10 }),
+      safeDocs('applications', 'applicantId', uid, { orderBy: 'createdAt', dir: 'desc', limit: 10 }),
+      safeDocs('notifications', 'uid', uid,     { orderBy: 'createdAt', dir: 'desc', limit: 20 }),
+      safeDocs('resumes', 'ownerUid', uid,      { orderBy: 'updatedAt', dir: 'desc', limit: 10 }),
+      safeDocs('portfolios', 'ownerUid', uid,   { orderBy: 'updatedAt', dir: 'desc' }),
+      safeDocs('certificates', 'ownerUid', uid, { orderBy: 'createdAt', dir: 'desc' }),
+      safeDoc('placementReadiness', uid)
+    ]);
+
+    const dashboardData = {
+      uid,
+      user,
+      profile,
+      goals,
+      preferences,
+      achievements,
+      roadmap: roadmaps,
+      learning,
+      applications,
+      notifications,
+      resumes,
+      portfolio: portfolios,
+      certificates,
+      placementReadiness,
+      syncedAt: FieldValue.serverTimestamp(),
+      generatedAt: new Date().toISOString()
+    };
+
+    await db.collection('dashboard').doc(uid).set(dashboardData, { merge: true });
+
+    return dashboardData;
+  } catch (err) {
+    console.error('[dashboardService] syncDashboard error:', err.message);
+    // Never throw — callers treat this as fire-and-forget
+  }
+}
+
+/**
+ * Sync placement readiness score to Firestore.
+ * Replaces the PostgreSQL placement_readiness upsert.
+ */
 async function syncPlacementReadiness(uid, data = {}) {
   try {
     const score = data.score ?? null;
     const details = data.details ?? {};
     const improvements = data.improvements ?? [];
 
-    await query(
-      `INSERT INTO app.placement_readiness
-        (user_id, score, details, improvements, calculated_at)
-       VALUES ($1, $2, $3::jsonb, $4::jsonb, NOW())
-       ON CONFLICT (user_id)
-       DO UPDATE SET
-         score = EXCLUDED.score,
-         details = EXCLUDED.details,
-         improvements = EXCLUDED.improvements,
-         calculated_at = NOW()`,
-      [
-        uid,
-        score,
-        JSON.stringify(details),
-        JSON.stringify(improvements)
-      ]
-    );
+    await db.collection('placementReadiness').doc(uid).set({
+      uid,
+      score,
+      details,
+      improvements,
+      calculatedAt: FieldValue.serverTimestamp()
+    }, { merge: true });
 
     return true;
   } catch (err) {
-    console.error('❌ syncPlacementReadiness PostgreSQL error:', err.message);
+    console.error('[dashboardService] syncPlacementReadiness error:', err.message);
     return false;
   }
 }
 
+/**
+ * Get full dashboard data for a user.
+ * Returns the Firestore dashboard document if it exists,
+ * otherwise triggers a sync first.
+ */
 async function getDashboardData(uid) {
-  const [
-    userResult,
-    profileResult,
-    goalsResult,
-    preferencesResult,
-    skillsResult,
-    achievementsResult,
-    roadmapResult,
-    learningResult,
-    applicationsResult,
-    notificationsResult,
-    resumesResult,
-    portfolioResult,
-    certificatesResult,
-    readinessResult
-  ] = await Promise.all([
-    query(`SELECT * FROM app.users WHERE id = $1 LIMIT 1`, [uid]),
-    query(`SELECT * FROM app.student_profiles WHERE user_id = $1 LIMIT 1`, [uid]),
-    query(`SELECT * FROM app.user_goals WHERE user_id = $1 LIMIT 1`, [uid]),
-    query(`SELECT * FROM app.user_preferences WHERE user_id = $1 LIMIT 1`, [uid]),
-    query(`SELECT s.* FROM app.skills s JOIN app.student_skills ss ON ss.skill_id = s.id WHERE ss.user_id = $1 ORDER BY s.name`, [uid]),
-    query(`SELECT * FROM app.achievements WHERE user_id = $1 ORDER BY achievement_date DESC NULLS LAST, created_at DESC`, [uid]),
-    query(`SELECT ur.*, r.* FROM app.user_roadmaps ur LEFT JOIN app.roadmaps r ON r.id = ur.roadmap_id WHERE ur.user_id = $1 ORDER BY ur.created_at DESC LIMIT 10`, [uid]),
-    query(`SELECT lp.*, c.* FROM app.learning_progress lp LEFT JOIN app.courses c ON c.id = lp.course_id WHERE lp.user_id = $1 ORDER BY lp.updated_at DESC LIMIT 10`, [uid]),
-    query(`SELECT a.* FROM app.applications a WHERE a.student_id = $1 ORDER BY a.created_at DESC LIMIT 10`, [uid]),
-    query(`SELECT * FROM app.notifications WHERE user_id = $1 ORDER BY created_at DESC LIMIT 20`, [uid]),
-    query(`SELECT * FROM app.resumes WHERE user_id = $1 ORDER BY updated_at DESC LIMIT 10`, [uid]),
-    query(`SELECT p.*, pp.* FROM app.portfolios p LEFT JOIN app.portfolio_projects pp ON pp.portfolio_id = p.id WHERE p.user_id = $1 ORDER BY p.updated_at DESC`, [uid]),
-    query(`SELECT * FROM app.certificates WHERE user_id = $1 ORDER BY issue_date DESC NULLS LAST, created_at DESC`, [uid]),
-    query(`SELECT * FROM app.placement_readiness WHERE user_id = $1 LIMIT 1`, [uid])
-  ]);
-
-  return {
-    user: userResult.rows[0] || null,
-    profile: profileResult.rows[0] || null,
-    goals: goalsResult.rows[0] || null,
-    preferences: preferencesResult.rows[0] || null,
-    skills: skillsResult.rows,
-    achievements: achievementsResult.rows,
-    roadmap: roadmapResult.rows,
-    learning: learningResult.rows,
-    applications: applicationsResult.rows,
-    notifications: notificationsResult.rows,
-    resumes: resumesResult.rows,
-    portfolio: portfolioResult.rows,
-    certificates: certificatesResult.rows,
-    placementReadiness: readinessResult.rows[0] || null,
-    generatedAt: new Date().toISOString()
-  };
+  try {
+    const doc = await db.collection('dashboard').doc(uid).get();
+    if (doc.exists) {
+      return { id: doc.id, ...doc.data() };
+    }
+    // First-time: generate it
+    return await syncDashboard(uid);
+  } catch (err) {
+    console.error('[dashboardService] getDashboardData error:', err.message);
+    return { uid, generatedAt: new Date().toISOString() };
+  }
 }
 
 async function getDashboard(uid) {
@@ -88,6 +165,7 @@ async function getDashboard(uid) {
 }
 
 module.exports = {
+  syncDashboard,
   syncPlacementReadiness,
   getDashboardData,
   getDashboard

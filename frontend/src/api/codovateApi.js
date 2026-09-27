@@ -3,7 +3,7 @@ import {
   apiPost,
   apiPut,
   apiDelete,
-} from './postgresApi';
+} from './baseApi';
 
 export const dashboardApi = {
   get: () => apiGet('/dashboard'),

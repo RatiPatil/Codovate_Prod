@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import api from '../api/axios';
-import { Mail, User, ExternalLink, MapPin, Briefcase, GraduationCap, Award, CheckCircle, Code, ChevronRight, MessageSquare, Star } from 'lucide-react';
+import { Mail, User, ExternalLink, MapPin, Briefcase, GraduationCap, Award, CheckCircle, Code, ChevronRight, MessageSquare, Star, Github } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-hot-toast';
 

@@ -1,10 +1,9 @@
 const { admin, getStorage } = require('./config/firebase');
 
+// Bucket is driven by FIREBASE_STORAGE_BUCKET env var (set in backend/config/firebase.js)
 const bucketsToTest = [
-  "codovate-784ab.firebasestorage.app",
-  "codovate-784ab.appspot.com",
-  "codovate-784ab"
-];
+  process.env.FIREBASE_STORAGE_BUCKET
+].filter(Boolean);
 
 async function run() {
   console.log("=== CODOVATE FIREBASE STORAGE CORS & DIAGNOSTIC INSPECTOR ===");

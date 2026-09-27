@@ -78,41 +78,38 @@ app.use("/api/rbac", authenticate, require("./routes/rbac"));
 app.use("/api/iam", require("./routes/iam")); // Some IAM routes (like bootstrap) are public
 
 // ═══════════════════════════════════════════════════════════════
-//  STUDENT ROUTES
+//  POLICIES
 // ═══════════════════════════════════════════════════════════════
-app.use("/api/student/ai", authenticate, requireRole(['student', 'admin', 'super_admin']), require("./routes/aiRecommendations"));
-
 app.use("/api/policies", require("./routes/policies"));
 
 // ═══════════════════════════════════════════════════════════════
-//  SUPER ADMIN ROUTES
+//  SUPER ADMIN / ENTERPRISE ROUTES — FIRESTORE-BACKED
 // ═══════════════════════════════════════════════════════════════
-// LEGACY FIRESTORE ADMIN ROUTE DISABLED: PostgreSQL admin route is authoritative.
-app.use("/api/core",            authenticate, require("./routes/coreCrudPostgres"));
-// Legacy /api/admin/users route disabled.
-// PostgreSQL admin users API is now served by /api/admin -> adminSecurityPostgres.
-app.use("/api/admin/organizations",authenticate, requireRole(['super_admin', 'admin']), require("./routes/enterpriseOrganizations"));
-app.use("/api/admin/colleges",     authenticate, requireRole(['super_admin', 'admin', 'college_admin']), require("./routes/enterpriseColleges"));
-app.use("/api/admin/academic",     authenticate, requireRole(['super_admin', 'admin', 'college_admin']), require("./routes/enterpriseAcademic"));
-app.use("/api/admin/students",     authenticate, requireRole(['super_admin', 'admin', 'college_admin']), require("./routes/enterpriseStudents"));
-app.use("/api/admin/faculty",      authenticate, requireRole(['super_admin', 'admin', 'college_admin']), require("./routes/enterpriseFaculty"));
-app.use("/api/admin/mentors",      authenticate, requireRole(['super_admin', 'admin', 'college_admin']), require("./routes/enterpriseMentors"));
-app.use("/api/admin/placements",   authenticate, requireRole(['super_admin', 'admin', 'college_admin', 'tpo']), require("./routes/enterprisePlacements"));
-app.use("/api/admin/companies",    authenticate, requireRole(['super_admin', 'admin', 'company_admin', 'tpo']), require("./routes/enterpriseCompanies"));
-app.use("/api/admin/recruiters",   authenticate, requireRole(['super_admin', 'admin', 'company_admin', 'tpo']), require("./routes/enterpriseRecruiters"));
-app.use("/api/admin/jobs",         authenticate, requireRole(['super_admin', 'admin', 'company_admin', 'tpo']), require("./routes/enterpriseJobs"));
-app.use("/api/admin/applications", authenticate, requireRole(['super_admin', 'admin', 'company_admin', 'tpo', 'recruiter', 'college_admin']), require("./routes/enterpriseApplications"));
-app.use("/api/admin/interviews",   authenticate, requireRole(['super_admin', 'admin', 'company_admin', 'tpo', 'recruiter', 'college_admin']), require("./routes/enterpriseInterviews"));
-app.use("/api/admin/offers",       authenticate, requireRole(['super_admin', 'admin', 'company_admin', 'tpo', 'recruiter', 'college_admin']), require("./routes/enterpriseOffers"));
+app.use("/api/core",            authenticate, require("./routes/admin"));  // Firestore admin CRUD
+app.use("/api/admin/organizations", authenticate, requireRole(['super_admin', 'admin']), require("./routes/enterpriseOrganizations"));
+app.use("/api/admin/colleges",      authenticate, requireRole(['super_admin', 'admin', 'college_admin']), require("./routes/enterpriseColleges"));
+app.use("/api/admin/academic",      authenticate, requireRole(['super_admin', 'admin', 'college_admin']), require("./routes/enterpriseAcademic"));
+app.use("/api/admin/students",      authenticate, requireRole(['super_admin', 'admin', 'college_admin']), require("./routes/enterpriseStudents"));
+app.use("/api/admin/faculty",       authenticate, requireRole(['super_admin', 'admin', 'college_admin']), require("./routes/enterpriseFaculty"));
+app.use("/api/admin/mentors",       authenticate, requireRole(['super_admin', 'admin', 'college_admin']), require("./routes/enterpriseMentors"));
+app.use("/api/admin/placements",    authenticate, requireRole(['super_admin', 'admin', 'college_admin', 'tpo']), require("./routes/enterprisePlacements"));
+app.use("/api/admin/companies",     authenticate, requireRole(['super_admin', 'admin', 'company_admin', 'tpo']), require("./routes/enterpriseCompanies"));
+app.use("/api/admin/recruiters",    authenticate, requireRole(['super_admin', 'admin', 'company_admin', 'tpo']), require("./routes/enterpriseRecruiters"));
+app.use("/api/admin/jobs",          authenticate, requireRole(['super_admin', 'admin', 'company_admin', 'tpo']), require("./routes/enterpriseJobs"));
+app.use("/api/admin/applications",  authenticate, requireRole(['super_admin', 'admin', 'company_admin', 'tpo', 'recruiter', 'college_admin']), require("./routes/enterpriseApplications"));
+app.use("/api/admin/interviews",    authenticate, requireRole(['super_admin', 'admin', 'company_admin', 'tpo', 'recruiter', 'college_admin']), require("./routes/enterpriseInterviews"));
+app.use("/api/admin/offers",        authenticate, requireRole(['super_admin', 'admin', 'company_admin', 'tpo', 'recruiter', 'college_admin']), require("./routes/enterpriseOffers"));
 app.use("/api/admin/placement-records", authenticate, requireRole(['super_admin', 'admin', 'company_admin', 'tpo', 'recruiter', 'college_admin']), require("./routes/enterprisePlacementRecords"));
-app.use("/api/analytics",          authenticate, requireRole(['super_admin', 'admin', 'company_admin', 'tpo', 'recruiter', 'college_admin']), require("./routes/enterpriseAnalytics"));
-app.use("/api/admin/opportunities",authenticate, requireRole(['super_admin', 'admin', 'company_admin']), require("./routes/adminOpportunities"));
-app.use("/api/admin/projects",     authenticate, requireRole(['super_admin', 'admin', 'college_admin']), require("./routes/adminProjects"));
-app.use("/api/admin/certificates", authenticate, requireRole(['super_admin', 'admin', 'college_admin']), require("./routes/adminCertificates"));
-app.use("/api/admin/notifications",authenticate, requireRole(['super_admin', 'admin']), require("./routes/adminNotifications"));
-app.use("/api/admin/health",       authenticate, requireRole(['super_admin', 'admin', 'support_admin']), require("./routes/adminHealth"));
-app.use("/api/admin/settings",     authenticate, requireRole(['super_admin', 'admin', 'support_admin']), require("./routes/adminSettings"));
+app.use("/api/analytics",           authenticate, requireRole(['super_admin', 'admin', 'company_admin', 'tpo', 'recruiter', 'college_admin']), require("./routes/enterpriseAnalytics"));
+app.use("/api/admin/opportunities", authenticate, requireRole(['super_admin', 'admin', 'company_admin']), require("./routes/adminOpportunities"));
+app.use("/api/admin/projects",      authenticate, requireRole(['super_admin', 'admin', 'college_admin']), require("./routes/adminProjects"));
+app.use("/api/admin/certificates",  authenticate, requireRole(['super_admin', 'admin', 'college_admin']), require("./routes/adminCertificates"));
+app.use("/api/admin/notifications", authenticate, requireRole(['super_admin', 'admin']), require("./routes/adminNotifications"));
+app.use("/api/admin/health",        authenticate, requireRole(['super_admin', 'admin', 'support_admin']), require("./routes/adminHealth"));
+app.use("/api/admin/settings",      authenticate, requireRole(['super_admin', 'admin', 'support_admin']), require("./routes/adminSettings"));
 app.use("/api/dashboard/super-admin", authenticate, requireRole(['super_admin']), require("./routes/superAdminDashboard"));
+// Catch-all admin route (Firestore)
+app.use("/api/admin",               authenticate, require("./routes/admin"));
 
 // ═══════════════════════════════════════════════════════════════
 //  COLLEGE ADMIN SCOPED ROUTES
@@ -138,67 +135,80 @@ app.use("/api/company-admin/talent",         authenticate, requireRole(['company
 app.use("/api/admin/company/dashboard",      authenticate, requireRole(['company_admin', 'recruiter', 'super_admin', 'admin']), require("./routes/companyAdminDashboard"));
 
 // ═══════════════════════════════════════════════════════════════
-//  AUTHENTICATED USER ROUTES (All roles with valid JWT)
+//  AUTHENTICATED USER ROUTES — ALL FIRESTORE (Firebase-only architecture)
+//
+//  All user routes are backed natively by Cloud Firestore repositories.
 // ═══════════════════════════════════════════════════════════════
-app.use("/api/students",           authenticate, require("./routes/studentProfile.postgres"));
-app.use("/api/teams",              authenticate, require("./routes/teamProjectPostgres"));
-app.use("/api/connections",        authenticate, require("./routes/networkingMessagingPostgres"));
-app.use("/api/teams-chat",         authenticate, require("./routes/teamMessages"));
-app.use("/api/admin/chat-audit",   authenticate, require("./routes/adminChatAudit"));
-app.use("/api/workspace",          authenticate, require("./routes/teamWorkspace"));
-app.use("/api/opportunities",      authenticate, require("./routes/opportunitiesPostgres"));
-app.use("/api/applications",       authenticate, require("./routes/applicationsPostgres"));
-app.use("/api/onboarding",         authenticate, require("./routes/onboardingPostgres"));
-app.use("/api/notifications",      authenticate, require("./routes/notifications"));
-app.use("/api/mentors",            authenticate, require("./routes/mentorPostgres"));
-app.use("/api/mentor-interactions", authenticate, require("./routes/mentorInteractions"));
-app.use("/api/mentor-resources",   authenticate, require("./routes/mentorResources"));
-app.use("/api/mentor-queries",     authenticate, require("./routes/mentorQueries"));
-app.use("/api/mentor-reviews",     authenticate, require("./routes/mentor-reviews"));
-app.use("/api/project-mentorships", authenticate, require("./routes/project-mentorships"));
-app.use("/api/mentorship",       authenticate, require("./routes/mentorPostgres"));
-app.use("/api/learning",        authenticate, require("./routes/learningPostgres"));
-app.use("/api/career",          authenticate, require("./routes/assessmentRoadmapPostgres"));
-app.use("/api/showcase",        authenticate, require("./routes/showcasePostgres"));
-app.use("/api/events",           authenticate, require("./routes/eventsCommunityPostgres"));
-app.use("/api/recruiter",        authenticate, require("./routes/recruiterTalentPostgres"));
-app.use("/api/college",          authenticate, require("./routes/collegePlacementPostgres"));
-app.use("/api/incubation",       authenticate, require("./routes/incubationStartupPostgres"));
-app.use("/api/engagement",       authenticate, require("./routes/notificationCalendarPostgres"));
-app.use("/api/gamification",     authenticate, require("./routes/gamificationPostgres"));
-app.use("/api/ai",             authenticate, require("./routes/aiCareerPostgres"));
-app.use("/api/practice",        authenticate, require("./routes/codingMockInterviewPostgres"));
-app.use("/api/platform",        authenticate, require("./routes/searchAnalyticsPostgres"));
-app.use("/api/admin",           authenticate, require("./routes/adminSecurityPostgres"));
-app.use("/api/leaderboard",        authenticate, require("./routes/leaderboard"));
-app.use("/api/chat",               authenticate, require("./routes/chat"));
-app.use("/api/roadmap",            authenticate, require("./routes/assessmentRoadmapPostgres"));
+app.use("/api/students",            authenticate, require("./routes/students"));            // Firestore: studentProfiles, users
+app.use("/api/teams",               authenticate, require("./routes/teams"));               // Firestore: teams, teamMembers
+app.use("/api/projects",            authenticate, require("./routes/projects"));            // Firestore: projects
+app.use("/api/connections",         authenticate, require("./routes/connections"));         // Firestore: connections
+app.use("/api/networking",          authenticate, require("./routes/networking"));          // Firestore: networking
+app.use("/api/teams-chat",          authenticate, require("./routes/teamMessages"));        // Firestore: teamMessages
+app.use("/api/admin/chat-audit",    authenticate, require("./routes/adminChatAudit"));     // Firestore: chatMessages
+app.use("/api/workspace",           authenticate, require("./routes/teamWorkspace"));       // Firestore: teamWorkspace
+app.use("/api/opportunities",       authenticate, require("./routes/opportunities"));       // Firestore: opportunities
+app.use("/api/applications",        authenticate, require("./routes/applications"));        // Firestore: applications
+app.use("/api/onboarding",          authenticate, require("./routes/onboarding"));          // Firestore: users (onboarding status)
+app.use("/api/notifications",       authenticate, require("./routes/notifications"));       // Firestore: notifications
+app.use("/api/mentors",             authenticate, require("./routes/mentors"));             // Firestore: mentors
+app.use("/api/mentor-interactions", authenticate, require("./routes/mentorInteractions"));  // Firestore: mentorInteractions
+app.use("/api/mentor-resources",    authenticate, require("./routes/mentorResources"));     // Firestore: mentorResources
+app.use("/api/mentor-queries",      authenticate, require("./routes/mentorQueries"));       // Firestore: mentorQueries
+app.use("/api/mentor-reviews",      authenticate, require("./routes/mentor-reviews"));      // Firestore: mentorReviews
+app.use("/api/project-mentorships", authenticate, require("./routes/project-mentorships")); // Firestore: projectMentorships
+app.use("/api/mentorship",          authenticate, require("./routes/mentors"));             // alias → mentors
+app.use("/api/learning",            authenticate, require("./routes/learning"));            // Firestore: courses, enrollments
+app.use("/api/career",              authenticate, require("./routes/roadmap"));             // Firestore: roadmaps
+app.use("/api/roadmap",             authenticate, require("./routes/roadmap"));             // Firestore: roadmaps
+app.use("/api/showcase",            authenticate, require("./routes/portfolio"));           // Firestore: portfolios
+app.use("/api/portfolio",           authenticate, require("./routes/portfolio"));           // Firestore: portfolios
+app.use("/api/events",              authenticate, require("./routes/events"));              // Firestore: events
+app.use("/api/recruiter",           authenticate, require("./routes/community"));           // Firestore: community (recruiter view)
+app.use("/api/college",             authenticate, require("./routes/colleges"));            // Firestore: colleges
+app.use("/api/incubation",          authenticate, require("./routes/community"));           // Firestore: community (startups)
+app.use("/api/engagement",          authenticate, require("./routes/notifications"));       // Firestore: notifications (engagement)
+app.use("/api/gamification",        authenticate, require("./routes/gamification"));        // Firestore: gamification (single mount — duplicate removed)
+app.use("/api/ai",                  authenticate, require("./routes/ai"));                  // Firestore: aiRecommendations
+app.use("/api/practice",            authenticate, require("./routes/coding"));              // Firestore: codingProblems
+app.use("/api/platform",            authenticate, require("./routes/community"));           // Firestore: community (search/analytics)
+app.use("/api/leaderboard",         authenticate, require("./routes/leaderboard"));         // Firestore: leaderboard
+app.use("/api/chat",                authenticate, require("./routes/chat"));                // Firestore: chatMessages
+app.use("/api/resume",              authenticate, require("./routes/resume"));              // Firestore: resumes
+app.use("/api/colleges",            authenticate, require("./routes/colleges"));            // Firestore: colleges
+app.use("/api/companies",           authenticate, require("./routes/companies"));           // Firestore: companies
+app.use("/api/activity",            authenticate, require("./routes/activity"));            // Firestore: activity
+app.use("/api/dashboard",           authenticate, require("./routes/dashboard"));           // Firestore: dashboard
+app.use("/api/student-core",        authenticate, require("./routes/students"));            // alias → students
+app.use("/api/coding",              authenticate, require("./routes/coding"));              // Firestore: codingProblems
+app.use("/api/assessments",         authenticate, require("./routes/assessments"));         // Firestore: skillAssessments, assessmentAttempts
+app.use("/api/interviews",          authenticate, require("./routes/interviews"));          // Firestore: interviews
+app.use("/api/calendar",            authenticate, require("./routes/calendar"));            // Firestore: calendarEvents
+app.use("/api/certificates",        authenticate, require("./routes/certificates"));        // Firestore: certificates
+app.use("/api/student/ai",          authenticate, requireRole(['student', 'admin', 'super_admin']), require("./routes/aiRecommendations")); // Firestore: aiRecommendations
 
-app.use("/api/resume",             authenticate, require("./routes/resumePostgres"));
-app.use("/api/colleges",           authenticate, require("./routes/colleges"));
-app.use("/api/companies",          authenticate, require("./routes/companies"));
-app.use("/api/projects",           authenticate, require("./routes/teamProjectPostgres"));
-app.use("/api/networking",       authenticate, require("./routes/networkingMessagingPostgres"));
-app.use("/api/portfolio",          authenticate, require("./routes/showcasePostgres"));
-app.use("/api/certificates",       authenticate, require("./routes/certificatesPostgres"));
-app.use("/api",                   authenticate, require("./routes/studentCorePostgres"));
-app.use("/api/activity",           authenticate, require("./routes/activity"));
-app.use("/api/gamification",       authenticate, require("./routes/gamification"));
-app.use("/api/dashboard",          authenticate, require("./routes/dashboardPostgres"));
-app.use("/api/student-core",       authenticate, require("./routes/studentCorePostgres"));
-app.use("/api/coding",             authenticate, require("./routes/coding"));
-app.use("/api/assessments",        authenticate, require("./routes/assessmentsPostgres"));
-app.use("/api/interviews",         authenticate, require("./routes/hiringPostgres"));
-
-
-app.use("/api/calendar",           authenticate, require("./routes/calendar"));
-
-
-
+// ─── Root health check ─────────────────────────────────────────
 app.get("/", (req, res) => {
   res.json({ message: "Codovate API running 🚀", realtime: true });
 });
 
+// ─── Realtime health check (Cloud Firestore) ────────────────
+app.get("/api/realtime/health", authenticate, async (req, res) => {
+  try {
+    const { db } = require('./config/firebase');
+    await db.collection('_health').limit(1).get();
+    res.json({ success: true, service: 'realtime', database: 'firestore' });
+  } catch (err) {
+    res.status(503).json({ success: false, service: 'realtime', error: err.message });
+  }
+});
+app.get("/api/realtime/me", authenticate, (req, res) => {
+  res.json({ success: true, data: req.user });
+});
+
+// ═══════════════════════════════════════════════════════════════
+//  SOCKET.IO — REAL-TIME EVENTS
+// ═══════════════════════════════════════════════════════════════
 const onlineUsers = new Map();
 
 io.on("connection", (socket) => {
@@ -314,12 +324,13 @@ io.on("connection", (socket) => {
   });
 });
 
+// ═══════════════════════════════════════════════════════════════
+//  ERROR HANDLER & SERVER START
+// ═══════════════════════════════════════════════════════════════
+app.use(errorHandler);
+
 const PORT = process.env.PORT || 5000;
 const { startAutomationJobs } = require('./jobs/automation');
-
-app.use("/api/identity", authenticate, require("./routes/userIdentityPostgres"));
-app.use("/api/realtime", authenticate, require("./routes/realtimePostgres"));
-app.use(errorHandler);
 
 server.listen(PORT, "127.0.0.1", () => {
   console.log(`✅ Server running on http://localhost:${PORT}`);

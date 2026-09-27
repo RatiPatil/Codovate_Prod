@@ -1,65 +1,82 @@
-const { query } = require("../config/postgres");
+/**
+ * communityService.js — Firebase/Firestore implementation
+ *
+ * Replaces the PostgreSQL-based community service.
+ * Fetches community updates (teams, events, etc.) from Firestore.
+ */
 
-const {
-  mapDoc: mapDoc,
-  mapDocs: mapDocs
-} = require('../utils/firestoreMapper');
+const { db } = require('../config/firebase');
 
 async function getCommunityUpdates(uid) {
-  try {
-    const updates = [];
+  const updates = [];
 
-    // 1. Teams
-    const teamsResult = await query(`SELECT t.* FROM app.teams t JOIN app.team_members tm ON tm.team_id = t.id WHERE tm.user_id = $1 LIMIT 3`, [uid]);
-    const teamsSnap = { docs: teamsResult.rows.map(row => ({ data: () => row })) };
-    if (!teamsSnap.empty) {
+  try {
+    // 1. Teams the user is a member of
+    try {
+      const teamsSnap = await db.collection('teams')
+        .where('memberIds', 'array-contains', uid)
+        .limit(3)
+        .get();
+
       teamsSnap.forEach(doc => {
+        const data = doc.data();
         updates.push({
           id: `team_${doc.id}`,
           type: 'team',
-          title: mapDoc(doc).name || 'Team Update',
+          title: data.name || 'Team Update',
           description: 'New activity in your team workspace.',
           linkUrl: '/teams',
           icon: '👥',
-          timestamp: new Date()
+          timestamp: data.updatedAt?.toDate() || new Date()
         });
       });
+    } catch (err) {
+      console.warn('[communityService] teams fetch warn:', err.message);
     }
 
-    // 2. Next Event
-    // We assume events are stored in students -> savedEvents or we just fetch general active events
-    // For now, let's fetch a general active event or if we have an RSVP collection.
-    // In our architecture, events are saved in `students -> saved_events`, but let's mock the "next event" for dashboard.
-    const eventsResult = await query(`SELECT * FROM app.events ORDER BY COALESCE(start_at, created_at) ASC LIMIT 1`);
-    const eventsSnap = { docs: eventsResult.rows.map(row => ({ data: () => row })) };
-    if (!eventsSnap.empty) {
-      const ev = mapDoc(eventsSnap.docs[0]);
-      updates.push({
-        id: `event_${eventsSnap.docs[0].id}`,
-        type: 'event',
-        title: ev.title || 'Upcoming Event',
-        description: ev.date ? `Scheduled for ${new Date(ev.date).toLocaleDateString()}` : 'Check out the details.',
-        linkUrl: '/events',
-        icon: '📅',
-        timestamp: new Date(ev.date || Date.now())
+    // 2. Next upcoming event
+    try {
+      const now = new Date();
+      const eventsSnap = await db.collection('events')
+        .where('startDate', '>=', now)
+        .orderBy('startDate', 'asc')
+        .limit(1)
+        .get();
+
+      eventsSnap.forEach(doc => {
+        const data = doc.data();
+        const eventDate = data.startDate?.toDate?.() || data.date || null;
+        updates.push({
+          id: `event_${doc.id}`,
+          type: 'event',
+          title: data.title || 'Upcoming Event',
+          description: eventDate
+            ? `Scheduled for ${new Date(eventDate).toLocaleDateString()}`
+            : 'Check out the details.',
+          linkUrl: '/events',
+          icon: '📅',
+          timestamp: eventDate ? new Date(eventDate) : new Date()
+        });
       });
+    } catch (err) {
+      // events collection may not have an index yet — that's okay
+      console.warn('[communityService] events fetch warn:', err.message);
     }
 
-    // 3. Mentors
-    // Mock upcoming session if we don't have a robust bookings table
+    // 3. Mentor session placeholder (real data would come from mentorSessions collection)
     updates.push({
-      id: `mentor_upcoming`,
+      id: 'mentor_upcoming',
       type: 'mentor',
       title: 'Mentor Session: System Design',
-      description: 'Scheduled with Jane Doe tomorrow.',
+      description: 'Scheduled with your mentor tomorrow.',
       linkUrl: '/mentors',
       icon: '🎓',
       timestamp: new Date(Date.now() + 86400000)
     });
 
-    // 4. Community Challenge
+    // 4. Community challenge placeholder
     updates.push({
-      id: `challenge_weekly`,
+      id: 'challenge_weekly',
       type: 'challenge',
       title: 'Weekly Challenge: Fix 5 Bugs',
       description: 'You are 2/5 bugs away from the Code Warrior badge!',
@@ -68,23 +85,55 @@ async function getCommunityUpdates(uid) {
       timestamp: new Date()
     });
 
-    // 5. Recent Message
-    updates.push({
-      id: `msg_recent`,
-      type: 'message',
-      title: 'Alex (Frontend Dev)',
-      description: '"Hey, did you finish the API integration?"',
-      linkUrl: '/chat',
-      icon: '💬',
-      timestamp: new Date(Date.now() - 3600000)
-    });
+    // 5. Recent message placeholder
+    try {
+      const msgSnap = await db.collection('student_chat_messages')
+        .where('receiver_id', '==', uid)
+        .orderBy('created_at', 'desc')
+        .limit(1)
+        .get();
+
+      if (!msgSnap.empty) {
+        const msg = msgSnap.docs[0].data();
+        updates.push({
+          id: `msg_${msgSnap.docs[0].id}`,
+          type: 'message',
+          title: msg.sender_name || 'A connection',
+          description: `"${(msg.content || msg.message || '').slice(0, 80)}"`,
+          linkUrl: '/chat',
+          icon: '💬',
+          timestamp: msg.created_at?.toDate?.() || new Date(Date.now() - 3600000)
+        });
+      } else {
+        updates.push({
+          id: 'msg_recent',
+          type: 'message',
+          title: 'Your connections',
+          description: 'Start a conversation with your network.',
+          linkUrl: '/chat',
+          icon: '💬',
+          timestamp: new Date(Date.now() - 3600000)
+        });
+      }
+    } catch (err) {
+      console.warn('[communityService] messages fetch warn:', err.message);
+      updates.push({
+        id: 'msg_recent',
+        type: 'message',
+        title: 'Your connections',
+        description: 'Start a conversation with your network.',
+        linkUrl: '/chat',
+        icon: '💬',
+        timestamp: new Date(Date.now() - 3600000)
+      });
+    }
 
     // Sort by timestamp DESC
     updates.sort((a, b) => b.timestamp - a.timestamp);
-
     return updates;
+
   } catch (err) {
-    console.error("Error in getCommunityUpdates:", err);
+    console.error('[communityService] getCommunityUpdates error:', err);
     return [];
   }
 }

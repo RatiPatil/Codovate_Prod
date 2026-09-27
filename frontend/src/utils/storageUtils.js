@@ -16,10 +16,6 @@ export const blobToBase64 = (blob) => {
 
 /**
  * Uploads a file to Firebase Storage and returns the download URL
- * @param {File} file - The file to upload
- * @param {string} path - The path in Firebase Storage (e.g., 'profiles/userid/photo.jpg')
- * @param {function} onProgress - Optional callback for upload progress (0-100)
- * @returns {Promise<string>} The download URL of the uploaded file
  */
 export const uploadFileToStorage = async (file, path, onProgress = null) => {
   return new Promise((resolve, reject) => {
@@ -56,11 +52,18 @@ export const uploadFileToStorage = async (file, path, onProgress = null) => {
 };
 
 /**
- * Uploads a file directly to Cloudinary using unsigned upload preset
+ * Uploads to Cloudinary. Requires VITE_CLOUDINARY_CLOUD_NAME and
+ * VITE_CLOUDINARY_UPLOAD_PRESET env vars — no hardcoded fallbacks.
  */
 export const uploadToCloudinary = async (file) => {
-  const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || "f6fnf7ah";
-  const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || "chattingapp";
+  const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+  const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+
+  if (!cloudName || !uploadPreset) {
+    throw new Error(
+      "Cloudinary is not configured: VITE_CLOUDINARY_CLOUD_NAME and VITE_CLOUDINARY_UPLOAD_PRESET env vars are required."
+    );
+  }
 
   const formData = new FormData();
   formData.append("file", file);
@@ -80,28 +83,37 @@ export const uploadToCloudinary = async (file) => {
   return data.secure_url;
 };
 
+/** Returns true only when both Cloudinary env vars are explicitly set. */
+const isCloudinaryConfigured = () =>
+  Boolean(import.meta.env.VITE_CLOUDINARY_CLOUD_NAME && import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET);
+
 /**
- * Convenience method for profile photos with Cloudinary unsigned upload and fallback
+ * Uploads a profile photo.
+ * Tier 1: Cloudinary (only when VITE_CLOUDINARY_* env vars are configured)
+ * Tier 2: Firebase Storage direct from client
+ * Tier 3: Server-side base64 upload fallback
  */
 export const uploadProfilePhoto = async (file, userId, onProgress) => {
-  // Tier 1: Cloudinary Direct Unsigned Upload (Instant & 100% CORS-free)
-  try {
-    const cloudinaryUrl = await uploadToCloudinary(file);
-    if (cloudinaryUrl) {
-      return cloudinaryUrl;
+  // Tier 1: Cloudinary — only if configured via env vars, no hardcoded fallback
+  if (isCloudinaryConfigured()) {
+    try {
+      const cloudinaryUrl = await uploadToCloudinary(file);
+      if (cloudinaryUrl) {
+        return cloudinaryUrl;
+      }
+    } catch (cloudinaryErr) {
+      console.warn("Warning: Cloudinary upload failed, falling back to Firebase Storage:", cloudinaryErr.message);
     }
-  } catch (cloudinaryErr) {
-    console.warn("⚠️ Cloudinary upload failed, falling back to Firebase Storage:", cloudinaryErr.message);
   }
 
   // Tier 2: Firebase Storage Direct
   try {
     const fileName = file?.name || 'photo.jpg';
     const extension = fileName.includes('.') ? fileName.split('.').pop() : 'jpg';
-    const path = `profiles/${userId}/avatar_${Date.now()}.${extension}`;
+    const path = profiles//avatar_.;
     return await uploadFileToStorage(file, path, onProgress);
   } catch (err) {
-    console.warn("⚠️ Client Firebase Storage upload failed/CORS blocked, executing server-side avatar upload fallback:", err.message);
+    console.warn("Warning: Client Firebase Storage upload failed, trying server fallback:", err.message);
     try {
       let base64String = file.dataUrl;
       if (!base64String) {
@@ -125,6 +137,6 @@ export const uploadProfilePhoto = async (file, userId, onProgress) => {
 export const uploadResume = async (file, userId, onProgress) => {
   const fileName = file?.name || 'resume.pdf';
   const extension = fileName.includes('.') ? fileName.split('.').pop() : 'pdf';
-  const path = `resumes/${userId}/resume_${Date.now()}.${extension}`;
+  const path = esumes//resume_.;
   return uploadFileToStorage(file, path, onProgress);
 };

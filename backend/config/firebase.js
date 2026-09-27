@@ -40,7 +40,11 @@ if (fs.existsSync('/var/www/codovate/secrets/serviceAccountKey.json')) {
 let db;
 let storage;
 if (serviceAccount) {
-  const bucketName = process.env.FIREBASE_STORAGE_BUCKET || 'codovate-784ab.firebasestorage.app';
+  const bucketName = process.env.FIREBASE_STORAGE_BUCKET;
+  if (!bucketName) {
+    console.error("❌ FATAL: FIREBASE_STORAGE_BUCKET environment variable is required but not set.");
+    process.exit(1);
+  }
   admin.initializeApp({
     credential: admin.credential ? admin.credential.cert(serviceAccount) : require('firebase-admin/app').cert(serviceAccount),
     storageBucket: bucketName

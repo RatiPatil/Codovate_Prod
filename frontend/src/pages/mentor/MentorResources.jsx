@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
-import { Upload, FileText, Download, Trash2, Link as LinkIcon, FileVideo } from 'lucide-react';
+import { Upload, FileText, Download, Trash2, Link as LinkIcon, FileVideo, FolderOpen } from 'lucide-react';
 import { showAlert, showConfirm } from '../../utils/uiUtils';
 import { format } from 'date-fns';
 

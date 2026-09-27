@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import api from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
-import { Search, Send, FileText, MoreVertical, Check, CheckCircle } from 'lucide-react';
+import { Search, Send, FileText, MoreVertical, Check, CheckCircle, MessageSquare } from 'lucide-react';
 import { format } from 'date-fns';
 
 const MentorChat = () => {
