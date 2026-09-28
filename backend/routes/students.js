@@ -99,19 +99,29 @@ router.get("/profile", auth, async (req, res) => {
       providers: u.providers,
       name: p.personalInfo?.name || u.name || '',
       college: p.education?.college || p.college || null,
+      degree: p.education?.degree || p.degree || null,
       branch: p.education?.branch || p.branch || null,
       year: p.education?.year || p.year || null,
+      graduation_year: p.education?.graduation_year || p.education?.year || p.graduation_year || p.year || null,
       bio: p.bio || null,
       city: p.personalInfo?.city || p.city || null,
       state: p.personalInfo?.state || p.state || null,
-      country: p.personalInfo?.country || p.country || null,
+      country: p.personalInfo?.country || p.country || 'India',
       resume_url: p.socialLinks?.resume || p.resume_url || null,
       github_url: p.socialLinks?.github || p.github_url || null,
       linkedin_url: p.socialLinks?.linkedin || p.linkedin_url || null,
       portfolio_url: p.socialLinks?.portfolio || p.portfolio_url || null,
-      avatar_url: p.profileImage || u.photoURL || u.avatar_url || p.avatar_url || null,
+      avatar_url: p.personalInfo?.profile_photo || p.profileImage || u.photoURL || u.avatar_url || p.avatar_url || null,
+      profile_photo: p.personalInfo?.profile_photo || p.profileImage || u.photoURL || null,
       skills: p.skills || [],
       desired_roles: p.careerGoal ? [p.careerGoal] : (p.desired_roles || []),
+      career_goal: p.careerGoal || p.career_goal || (Array.isArray(p.desired_roles) && p.desired_roles.length ? p.desired_roles[0] : '') || '',
+      desired_role: p.careerGoal || p.career_goal || (Array.isArray(p.desired_roles) && p.desired_roles.length ? p.desired_roles[0] : '') || '',
+      domain_interests: p.interests || p.domain_interests || [],
+      interests: p.interests || p.domain_interests || [],
+      experience_level: p.experienceLevel || p.experience_level || '',
+      experience: p.experience || [],
+      education: p.education || {},
       achievements: p.achievements || [],
       seeking: p.seeking || [],
       passionate_about: p.passionate_about || [],
@@ -130,9 +140,10 @@ router.get("/profile", auth, async (req, res) => {
 
 router.put("/profile", auth, async (req, res) => {
   const { 
-    name, college, branch, year, bio, city, state, country, phone,
-    resume_url, github_url, linkedin_url, portfolio_url, avatar_url,
-    skills, desired_roles, achievements, seeking, passionate_about, projects, certificates,
+    name, college, degree, branch, year, graduation_year, bio, city, state, country, phone,
+    resume_url, github_url, linkedin_url, portfolio_url, avatar_url, profile_photo,
+    skills, desired_roles, career_goal, desired_role, domain_interests, interests,
+    experience_level, experience, achievements, seeking, passionate_about, projects, certificates,
     open_to_work, available_for_internship, full_time
   } = req.body;
 
@@ -146,6 +157,10 @@ router.put("/profile", auth, async (req, res) => {
     const userDoc = await userRef.get();
     const currentUser = userDoc.exists ? mapDoc(userDoc) : {};
 
+    const resolvedPhoto = profile_photo !== undefined ? profile_photo : (avatar_url !== undefined ? avatar_url : (currentProfile.personalInfo?.profile_photo || currentProfile.profileImage || currentUser.photoURL));
+    const resolvedCareerGoal = career_goal || desired_role || (desired_roles && desired_roles.length > 0 ? desired_roles[0] : currentProfile.careerGoal);
+    const resolvedInterests = domain_interests || interests || currentProfile.interests;
+
     // Group fields for Phase 3 Profile Schema
     const profileUpdates = {
       personalInfo: {
@@ -154,13 +169,16 @@ router.put("/profile", auth, async (req, res) => {
         phone: phone !== undefined ? phone.trim() : (currentProfile.personalInfo?.phone || currentUser.phone),
         city: city !== undefined ? city.trim() : (currentProfile.personalInfo?.city || currentProfile.city),
         state: state !== undefined ? state.trim() : (currentProfile.personalInfo?.state || currentProfile.state),
-        country: country !== undefined ? country.trim() : (currentProfile.personalInfo?.country || currentProfile.country),
+        country: country !== undefined ? country.trim() : (currentProfile.personalInfo?.country || currentProfile.country || 'India'),
+        profile_photo: resolvedPhoto,
       },
       education: {
         ...(currentProfile.education || {}),
         college: college !== undefined ? college : (currentProfile.education?.college || currentProfile.college),
+        degree: degree !== undefined ? degree : (currentProfile.education?.degree || currentProfile.degree),
         branch: branch !== undefined ? branch : (currentProfile.education?.branch || currentProfile.branch),
         year: year !== undefined ? year : (currentProfile.education?.year || currentProfile.year),
+        graduation_year: graduation_year !== undefined ? graduation_year : (currentProfile.education?.graduation_year || currentProfile.graduation_year || year),
       },
       socialLinks: {
         ...(currentProfile.socialLinks || {}),
@@ -169,19 +187,29 @@ router.put("/profile", auth, async (req, res) => {
         linkedin: linkedin_url !== undefined ? linkedin_url : (currentProfile.socialLinks?.linkedin || currentProfile.linkedin_url),
         portfolio: portfolio_url !== undefined ? portfolio_url : (currentProfile.socialLinks?.portfolio || currentProfile.portfolio_url),
       },
+      college: college !== undefined ? college : (currentProfile.college || currentProfile.education?.college),
+      degree: degree !== undefined ? degree : (currentProfile.degree || currentProfile.education?.degree),
+      branch: branch !== undefined ? branch : (currentProfile.branch || currentProfile.education?.branch),
+      graduation_year: graduation_year !== undefined ? graduation_year : (currentProfile.graduation_year || currentProfile.education?.graduation_year || year),
+      career_goal: resolvedCareerGoal,
+      desired_role: resolvedCareerGoal,
+      domain_interests: resolvedInterests,
       bio: bio !== undefined ? bio : currentProfile.bio,
       city: city !== undefined ? city.trim() : currentProfile.city,
       state: state !== undefined ? state.trim() : currentProfile.state,
       country: country !== undefined ? country.trim() : currentProfile.country,
       phone: phone !== undefined ? phone.trim() : currentProfile.phone,
-      profileImage: avatar_url !== undefined ? avatar_url : (currentProfile.profileImage || currentUser.photoURL),
+      profileImage: resolvedPhoto,
       skills: skills !== undefined ? skills : currentProfile.skills,
       projects: projects !== undefined ? projects : currentProfile.projects,
       certificates: certificates !== undefined ? certificates : currentProfile.certificates,
       achievements: achievements !== undefined ? achievements : currentProfile.achievements,
       seeking: seeking !== undefined ? seeking : currentProfile.seeking,
       passionate_about: passionate_about !== undefined ? passionate_about : currentProfile.passionate_about,
-      careerGoal: desired_roles && desired_roles.length > 0 ? desired_roles[0] : currentProfile.careerGoal,
+      careerGoal: resolvedCareerGoal,
+      interests: resolvedInterests,
+      experienceLevel: experience_level !== undefined ? experience_level : currentProfile.experienceLevel,
+      experience: experience !== undefined ? experience : currentProfile.experience,
       open_to_work: open_to_work !== undefined ? open_to_work : (currentProfile.open_to_work ?? true),
       available_for_internship: available_for_internship !== undefined ? available_for_internship : (currentProfile.available_for_internship ?? true),
       full_time: full_time !== undefined ? full_time : (currentProfile.full_time ?? true),
@@ -203,12 +231,12 @@ router.put("/profile", auth, async (req, res) => {
     let completedFields = 0;
     const totalFields = 10;
     if (profileUpdates.personalInfo?.name) completedFields++;
-    if (profileUpdates.education?.college) completedFields++;
-    if (profileUpdates.education?.branch) completedFields++;
-    if (profileUpdates.education?.year) completedFields++;
+    if (profileUpdates.education?.college || profileUpdates.college) completedFields++;
+    if (profileUpdates.education?.branch || profileUpdates.education?.degree || profileUpdates.branch || profileUpdates.degree) completedFields++;
+    if (profileUpdates.education?.year || profileUpdates.education?.graduation_year || profileUpdates.graduation_year) completedFields++;
     if (profileUpdates.skills && profileUpdates.skills.length > 0) completedFields++;
-    if (profileUpdates.bio) completedFields++;
-    if (profileUpdates.socialLinks?.resume) completedFields++;
+    if (profileUpdates.bio || profileUpdates.careerGoal) completedFields++;
+    if (profileUpdates.socialLinks?.resume || profileUpdates.socialLinks?.portfolio) completedFields++;
     if (profileUpdates.socialLinks?.github || profileUpdates.socialLinks?.linkedin) completedFields++;
     if (profileUpdates.personalInfo?.phone || profileUpdates.phone) completedFields++;
     if (profileUpdates.personalInfo?.city || profileUpdates.city) completedFields++;
@@ -229,13 +257,23 @@ router.put("/profile", auth, async (req, res) => {
     if (phone !== undefined) {
       userUpdates.phone = phone.trim();
     }
-    if (avatar_url !== undefined) {
-      userUpdates.photoURL = avatar_url;
-      userUpdates.avatar_url = avatar_url;
+    if (college !== undefined) {
+      userUpdates.college = college;
+    }
+    if (skills !== undefined) {
+      userUpdates.skills = skills;
+    }
+    if (resolvedPhoto) {
+      userUpdates.photoURL = resolvedPhoto;
+      userUpdates.avatar_url = resolvedPhoto;
     }
     batch.set(userRef, userUpdates, { merge: true });
     
     await batch.commit();
+
+    // Sync dashboard
+    const { syncDashboard } = require("../services/dashboardService");
+    syncDashboard(uid).catch(() => {});
 
     // Scoring Engine Integration
     if (profile_completion === 100) {
@@ -260,6 +298,16 @@ router.put("/profile", auth, async (req, res) => {
     console.error("Update profile error:", err.message);
     res.status(500).json({ message: "Server error." });
   }
+});
+
+// Alias endpoints for frontend client consistency
+router.get("/me", auth, async (req, res, next) => {
+  req.url = "/profile";
+  return router.handle(req, res, next);
+});
+router.put("/me", auth, async (req, res, next) => {
+  req.url = "/profile";
+  return router.handle(req, res, next);
 });
 
 // ─── Upload Avatar (Base64 Fallback Endpoint - Bypass CORS) ─────────────

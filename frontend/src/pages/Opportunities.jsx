@@ -28,6 +28,7 @@ import {
   Gift,
   Award,
   UserCheck,
+  CheckCircle2,
 } from 'lucide-react';
 
 /* ─── Internships Category Tabs ─── */
@@ -126,9 +127,7 @@ const StatusBadge = ({ isOpen }) =>
   );
 
 /* ─── OPPORTUNITY / COMPETITION CARD COMPONENT ─── */
-const OpportunityCard = ({ opp, isCompetition, onSave, saved }) => {
-  const navigate = useNavigate();
-
+const OpportunityCard = ({ opp, isCompetition, onSave, saved, onSelect, hasApplied }) => {
   const title          = opp.title || 'Untitled Challenge';
   const company        = opp.company || opp.organization || 'Organization';
   const logo           = opp.company_logo_url || opp.logo;
@@ -149,7 +148,7 @@ const OpportunityCard = ({ opp, isCompetition, onSave, saved }) => {
 
   return (
     <article
-      onClick={() => navigate(`/opportunities/${opp.id}`)}
+      onClick={() => onSelect && onSelect(opp)}
       className="group bg-white rounded-[24px] border border-slate-200/80 p-5 sm:p-6 hover:border-[#0066FF]/40 hover:shadow-md transition-all duration-200 cursor-pointer space-y-3.5"
     >
       {/* Header Row */}
@@ -266,8 +265,13 @@ const OpportunityCard = ({ opp, isCompetition, onSave, saved }) => {
 
       {/* Footer Row */}
       <div className="flex items-center justify-between pt-2 border-t border-slate-100">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <StatusBadge isOpen={isOpen} />
+          {hasApplied && (
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[11px] font-bold">
+              ✓ Applied
+            </span>
+          )}
           {postedDate && (
             <span className="text-xs text-slate-400 font-medium">
               Posted {postedDate}
@@ -281,6 +285,12 @@ const OpportunityCard = ({ opp, isCompetition, onSave, saved }) => {
         </div>
 
         <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+          <button
+            onClick={() => onSelect && onSelect(opp)}
+            className="px-3 py-1.5 rounded-xl text-xs font-bold bg-[#EBF3FF] text-[#0066FF] hover:bg-blue-100 transition-colors"
+          >
+            {hasApplied ? 'View Details' : 'View & Apply'}
+          </button>
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -306,6 +316,207 @@ const OpportunityCard = ({ opp, isCompetition, onSave, saved }) => {
         </div>
       </div>
     </article>
+  );
+};
+
+/* ─── OPPORTUNITY DETAILS MODAL WITH APPLY FLOW ─── */
+const OpportunityDetailsModal = ({
+  opp,
+  onClose,
+  hasApplied,
+  onApply,
+  applying,
+  applyMessage,
+  onSave,
+  saved
+}) => {
+  if (!opp) return null;
+
+  const isOpen = opp.is_active !== false && !['closed', 'inactive'].includes((opp.status || '').toLowerCase());
+  const daysLeft = getDaysLeft(opp.deadline);
+  const isExpired = daysLeft === 'Ended';
+  const company = opp.company || opp.organization || 'Organization';
+  const workMode = opp.mode || opp.workMode || (opp.is_remote ? 'Online' : opp.location || 'Online');
+  const requiredSkills = opp.required_skills || opp.skills || [];
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-xs animate-in fade-in duration-200">
+      <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl bg-white p-6 sm:p-8 shadow-2xl border border-slate-100 space-y-5">
+        <button
+          onClick={onClose}
+          className="absolute right-5 top-5 rounded-full p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+        >
+          <X size={18} />
+        </button>
+
+        {/* Message Banner */}
+        {applyMessage && (
+          <div
+            className={`p-3.5 rounded-2xl text-xs font-bold border flex items-center gap-2 ${
+              applyMessage.type === 'success'
+                ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                : applyMessage.type === 'info'
+                ? 'bg-blue-50 text-blue-800 border-blue-200'
+                : 'bg-red-50 text-red-800 border-red-200'
+            }`}
+          >
+            {applyMessage.type === 'success' ? (
+              <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
+            ) : applyMessage.type === 'info' ? (
+              <AlertCircle size={16} className="text-blue-600 shrink-0" />
+            ) : (
+              <AlertCircle size={16} className="text-red-600 shrink-0" />
+            )}
+            <span>{applyMessage.text}</span>
+          </div>
+        )}
+
+        {/* Header */}
+        <div className="flex items-start gap-4">
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#EBF3FF] border border-blue-100 text-xl font-black text-[#0066FF] overflow-hidden">
+            {opp.company_logo_url || opp.logo ? (
+              <img src={opp.company_logo_url || opp.logo} alt={company} className="w-full h-full object-contain p-1" />
+            ) : (
+              company.charAt(0).toUpperCase()
+            )}
+          </div>
+          <div className="min-w-0 pr-6">
+            <h2 className="text-xl font-extrabold text-slate-900 leading-snug">{opp.title}</h2>
+            <p className="text-sm font-semibold text-slate-500 mt-0.5">{company}</p>
+          </div>
+        </div>
+
+        {/* Key Info Grid */}
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 rounded-2xl bg-slate-50 p-4 text-xs">
+          <div>
+            <span className="font-semibold text-slate-400 uppercase tracking-wider text-[10px]">Type</span>
+            <p className="font-bold text-slate-800 mt-0.5">{opp.type || 'Opportunity'}</p>
+          </div>
+          <div>
+            <span className="font-semibold text-slate-400 uppercase tracking-wider text-[10px]">Mode / Location</span>
+            <p className="font-bold text-slate-800 mt-0.5">{workMode}</p>
+          </div>
+          <div>
+            <span className="font-semibold text-slate-400 uppercase tracking-wider text-[10px]">Stipend / Salary</span>
+            <p className="font-bold text-emerald-700 mt-0.5">
+              {opp.stipend ? `₹${opp.stipend}` : opp.salary || 'Competitive'}
+            </p>
+          </div>
+          <div>
+            <span className="font-semibold text-slate-400 uppercase tracking-wider text-[10px]">Deadline</span>
+            <p className="font-bold text-slate-800 mt-0.5">
+              {formatDate(opp.deadline) || 'Ongoing'}
+              {daysLeft && ` (${daysLeft})`}
+            </p>
+          </div>
+        </div>
+
+        {/* Description */}
+        <div>
+          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+            About the Opportunity
+          </h4>
+          <p className="text-sm leading-relaxed text-slate-700 whitespace-pre-line">
+            {opp.description || 'No detailed description provided for this opportunity.'}
+          </p>
+        </div>
+
+        {/* Required Skills */}
+        {requiredSkills.length > 0 && (
+          <div>
+            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+              Skills Required
+            </h4>
+            <div className="flex flex-wrap gap-1.5">
+              {requiredSkills.map((skill) => (
+                <span key={skill} className="rounded-lg bg-blue-50 px-2.5 py-1 text-xs font-bold text-[#0066FF] border border-blue-100">
+                  {skill}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Requirements / Eligibility */}
+        {opp.eligibility && (
+          <div>
+            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
+              Eligibility
+            </h4>
+            <p className="text-xs text-slate-600">{opp.eligibility}</p>
+          </div>
+        )}
+
+        {/* Action Footer */}
+        <div className="pt-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => onSave && onSave(opp.id)}
+              className={`p-2.5 rounded-xl border border-slate-200 text-xs font-bold flex items-center gap-1.5 ${
+                saved ? 'text-red-500 bg-red-50 border-red-200' : 'text-slate-600 hover:bg-slate-50'
+              }`}
+            >
+              <Heart size={16} fill={saved ? 'currentColor' : 'none'} />
+              <span>{saved ? 'Saved' : 'Save'}</span>
+            </button>
+            <button
+              onClick={() => {
+                navigator.clipboard?.writeText(window.location.origin + `/opportunities/${opp.id}`);
+                alert('Opportunity link copied to clipboard!');
+              }}
+              className="p-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 flex items-center gap-1.5"
+            >
+              <Share2 size={16} />
+              <span>Share</span>
+            </button>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={onClose}
+              className="rounded-xl border border-slate-200 px-4 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-50"
+            >
+              Close
+            </button>
+
+            {hasApplied ? (
+              <button
+                disabled
+                className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-500 px-6 py-2.5 text-xs font-bold text-white opacity-95 cursor-not-allowed shadow-sm"
+              >
+                <CheckCircle2 size={15} />
+                Applied
+              </button>
+            ) : !isOpen || isExpired ? (
+              <button
+                disabled
+                className="rounded-xl bg-slate-200 px-6 py-2.5 text-xs font-bold text-slate-500 cursor-not-allowed"
+              >
+                Application Closed
+              </button>
+            ) : (
+              <button
+                onClick={() => onApply(opp.id)}
+                disabled={applying}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-[#0066FF] px-6 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-blue-700 disabled:opacity-50 transition"
+              >
+                {applying ? (
+                  <>
+                    <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  <>
+                    <Briefcase size={15} />
+                    Apply Now
+                  </>
+                )}
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 
@@ -347,6 +558,10 @@ const Opportunities = () => {
   const [loading, setLoading]               = useState(true);
   const [error, setError]                   = useState(null);
   const [savedIds, setSavedIds]             = useState(new Set());
+  const [selectedOpp, setSelectedOpp]       = useState(null);
+  const [appliedOppIds, setAppliedOppIds]   = useState(new Set());
+  const [applying, setApplying]             = useState(false);
+  const [applyMessage, setApplyMessage]     = useState(null);
 
   useEffect(() => {
     if (urlType && urlType !== activeType) {
@@ -360,6 +575,50 @@ const Opportunities = () => {
 
   const isCompetition = activeType === 'competition' || activeType === 'hackathon';
   const categoryTabs  = isCompetition ? COMPETITION_DOMAINS : INTERNSHIP_DOMAINS;
+
+  /* Fetch applications submitted by student to show status and prevent duplicates */
+  const fetchMyApplications = useCallback(async () => {
+    try {
+      const res = await api.get('/applications/my');
+      const list = Array.isArray(res.data) ? res.data : (Array.isArray(res) ? res : []);
+      setAppliedOppIds(new Set(list.map(a => a.opportunity_id).filter(Boolean)));
+    } catch {
+      // Ignore if student is unauthenticated or endpoint returns error
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchMyApplications();
+    const handleAppSubmitted = () => fetchMyApplications();
+    window.addEventListener('codovate:application-submitted', handleAppSubmitted);
+    return () => {
+      window.removeEventListener('codovate:application-submitted', handleAppSubmitted);
+    };
+  }, [fetchMyApplications]);
+
+  const handleApply = async (oppId) => {
+    try {
+      setApplying(true);
+      setApplyMessage(null);
+      await api.post('/applications', { opportunity_id: oppId });
+      setAppliedOppIds(prev => new Set(prev).add(oppId));
+      setSelectedOpp(prev => prev ? { ...prev, has_applied: true } : null);
+      setApplyMessage({ type: 'success', text: 'Application submitted successfully! Track it in My Applications.' });
+      window.dispatchEvent(new Event('codovate:application-submitted'));
+    } catch (err) {
+      const status = err.response?.status;
+      const msg = err.response?.data?.message || 'Failed to submit application.';
+      if (status === 409 || msg.toLowerCase().includes('already applied')) {
+        setAppliedOppIds(prev => new Set(prev).add(oppId));
+        setSelectedOpp(prev => prev ? { ...prev, has_applied: true } : null);
+        setApplyMessage({ type: 'info', text: 'You have already applied to this opportunity.' });
+      } else {
+        setApplyMessage({ type: 'error', text: msg });
+      }
+    } finally {
+      setApplying(false);
+    }
+  };
 
   /* Fetch strictly from backend Firestore API */
   const fetchOpportunities = useCallback(async () => {
@@ -588,6 +847,11 @@ const Opportunities = () => {
               key={opp.id}
               opp={opp}
               isCompetition={isCompetition}
+              hasApplied={appliedOppIds.has(opp.id)}
+              onSelect={(selected) => {
+                setSelectedOpp(selected);
+                setApplyMessage(null);
+              }}
               onSave={(id) =>
                 setSavedIds((prev) => {
                   const next = new Set(prev);
@@ -600,6 +864,29 @@ const Opportunities = () => {
           ))
         )}
       </div>
+
+      {/* ── Opportunity Details Modal ── */}
+      {selectedOpp && (
+        <OpportunityDetailsModal
+          opp={selectedOpp}
+          onClose={() => {
+            setSelectedOpp(null);
+            setApplyMessage(null);
+          }}
+          hasApplied={appliedOppIds.has(selectedOpp.id) || selectedOpp.has_applied}
+          onApply={handleApply}
+          applying={applying}
+          applyMessage={applyMessage}
+          onSave={(id) =>
+            setSavedIds((prev) => {
+              const next = new Set(prev);
+              if (next.has(id)) next.delete(id); else next.add(id);
+              return next;
+            })
+          }
+          saved={savedIds.has(selectedOpp.id)}
+        />
+      )}
 
     </div>
   );

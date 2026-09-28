@@ -80,8 +80,16 @@ async function syncDashboard(uid) {
       safeDocs('achievements', 'uid', uid,      { orderBy: 'achievementDate', dir: 'desc', limit: 20 }),
       safeDocs('userRoadmaps', 'uid', uid,      { orderBy: 'createdAt', dir: 'desc', limit: 10 }),
       safeDocs('enrollments', 'uid', uid,       { orderBy: 'updatedAt', dir: 'desc', limit: 10 }),
-      safeDocs('applications', 'applicantId', uid, { orderBy: 'createdAt', dir: 'desc', limit: 10 }),
-      safeDocs('notifications', 'uid', uid,     { orderBy: 'createdAt', dir: 'desc', limit: 20 }),
+      // Applications: check user_id first, then applicantId fallback
+      safeDocs('applications', 'user_id', uid, { limit: 10 }).then(async (apps) => {
+        if (apps && apps.length) return apps;
+        return safeDocs('applications', 'applicantId', uid, { limit: 10 });
+      }),
+      // Notifications: check user_id first, then uid fallback
+      safeDocs('notifications', 'user_id', uid, { limit: 20 }).then(async (notifs) => {
+        if (notifs && notifs.length) return notifs;
+        return safeDocs('notifications', 'uid', uid, { limit: 20 });
+      }),
       safeDocs('resumes', 'ownerUid', uid,      { orderBy: 'updatedAt', dir: 'desc', limit: 10 }),
       safeDocs('portfolios', 'ownerUid', uid,   { orderBy: 'updatedAt', dir: 'desc' }),
       safeDocs('certificates', 'ownerUid', uid, { orderBy: 'createdAt', dir: 'desc' }),

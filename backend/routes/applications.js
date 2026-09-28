@@ -3,10 +3,21 @@ const { mapDoc, mapDocs } = require('../utils/firestoreMapper');
 const router = express.Router();
 const { db } = require("../config/firebase");
 const auth = require("../middleware/auth");
-// Get all applications (admin only)
+// Get all applications (admin sees all, student sees their own)
 router.get("/", auth, async (req, res) => {
-  if (!["admin", "super_admin", "college_admin", "company_admin"].includes(req.user.role)) return res.status(403).json({ message: "Admin only." });
   try {
+    const isStaff = ["admin", "super_admin", "college_admin", "company_admin"].includes(req.user.role);
+    if (!isStaff) {
+      const [userAppsSnap, studentAppsSnap] = await Promise.all([
+        db.collection("applications").where("user_id", "==", req.user.id).get(),
+        db.collection("applications").where("student_id", "==", req.user.id).get()
+      ]);
+      const appsMap = new Map();
+      userAppsSnap.docs.forEach(doc => appsMap.set(doc.id, { id: doc.id, ...mapDoc(doc) }));
+      studentAppsSnap.docs.forEach(doc => appsMap.set(doc.id, { id: doc.id, ...mapDoc(doc) }));
+      return res.json(Array.from(appsMap.values()));
+    }
+
     const appsSnapshot = await db.collection("applications").get();
     let applications = [];
     for (const doc of appsSnapshot.docs) {
@@ -37,61 +48,72 @@ router.get("/", auth, async (req, res) => {
     res.status(500).json({ message: "Server error." });
   }
 });
-// Apply to opportunity
-router.post("/", auth, async (req, res) => {
-  const { opportunity_id } = req.body;
+// Apply to opportunity handler
+const applyHandler = async (req, res) => {
+  const opportunity_id = req.body.opportunity_id || req.body.opportunityId || req.params.opportunity_id || req.params.id;
   if (!opportunity_id)
-    return res.status(400).json({ message: "Opportunity ID is required." });
+    return res.status(400).json({ message: "Opportunity ID is required.", code: "MISSING_OPPORTUNITY_ID" });
   try {
     // Check opportunity exists and is active
     const oppRef = db.collection("opportunities").doc(opportunity_id);
     const oppDoc = await oppRef.get();
     if (!oppDoc.exists)
-      return res.status(404).json({ message: "Opportunity not found." });
+      return res.status(404).json({ message: "Opportunity not found.", code: "OPPORTUNITY_NOT_FOUND" });
     const opp = mapDoc(oppDoc);
-    if (opp.is_active === false || opp.status === 'Inactive')
-      return res.status(400).json({ message: "Opportunity is closed." });
+    if (opp.is_active === false || opp.status === 'Inactive' || opp.status === 'Closed')
+      return res.status(400).json({ message: "Opportunity is closed.", code: "OPPORTUNITY_CLOSED" });
     // Check deadline
     if (opp.deadline && new Date(opp.deadline) < new Date())
-      return res.status(400).json({ message: "Application deadline has passed." });
+      return res.status(400).json({ message: "Application deadline has passed.", code: "DEADLINE_PASSED" });
     // Check if already applied (check both user_id and student_id compatibility fields)
     const [userAppsSnap, studentAppsSnap] = await Promise.all([
       db.collection("applications").where("user_id", "==", req.user.id).where("opportunity_id", "==", opportunity_id).get(),
       db.collection("applications").where("student_id", "==", req.user.id).where("opportunity_id", "==", opportunity_id).get()
     ]);
     if (!userAppsSnap.empty || !studentAppsSnap.empty)
-      return res.status(409).json({ message: "You already applied to this opportunity." });
+      return res.status(409).json({ message: "You already applied to this opportunity.", code: "ALREADY_APPLIED" });
     // Get student details
     const studentDoc = await db.collection("profiles").doc(req.user.id).get();
     const student = studentDoc.exists ? mapDoc(studentDoc) : {};
+    const userDoc = await db.collection("users").doc(req.user.id).get();
+    const user = userDoc.exists ? mapDoc(userDoc) : {};
     // Create application
     const newAppRef = db.collection("applications").doc();
     const application = {
       id: newAppRef.id,
       user_id: req.user.id,
       student_id: req.user.id,
+      student_name: student.personalInfo?.name || user.name || 'Student',
+      student_email: user.email || '',
       opportunity_id: opportunity_id,
       company_id: opp.company_id || '',
+      company: opp.company || 'Tech Company',
       company_name: opp.company || 'Tech Company',
       opportunity_title: opp.title || 'Position',
       role: opp.title || 'Position',
+      type: opp.type || 'Job',
       status: 'Applied',
-      applied_at: new Date()
+      applied_at: new Date(),
+      created_at: new Date(),
+      updated_at: new Date()
     };
     await newAppRef.set(application);
     // Scoring Engine Integration
     const { awardPoints, updatePlacementScore } = require("../utils/scoring");
-    await awardPoints(req.user.id, `apply_internship_${opportunity_id}`, 20, true);
-    await updatePlacementScore(req.user.id);
+    await awardPoints(req.user.id, `apply_internship_${opportunity_id}`, 20, true).catch(() => {});
+    await updatePlacementScore(req.user.id).catch(() => {});
+    // Sync dashboard
+    const { syncDashboard } = require("../services/dashboardService");
+    syncDashboard(req.user.id).catch(() => {});
     // Log platform event
     await db.collection('platform_events').add({
       actor_id: req.user.id,
       event_type: 'application_submitted',
       entity_type: 'opportunity',
       entity_id: opportunity_id,
-      metadata: { status: 'Applied' },
+      metadata: { status: 'Applied', application_id: application.id },
       created_at: new Date()
-    });
+    }).catch(() => {});
     // Create notification for user
     const notifRef = db.collection("notifications").doc();
     await notifRef.set({
@@ -105,37 +127,47 @@ router.post("/", auth, async (req, res) => {
       created_at: new Date()
     });
     // 🔴 REAL-TIME: Emit to user
-    req.io.to(`user_${req.user.id}`).emit("application_update", {
-      type: "new_application",
-      application: {
+    if (req.io) {
+      req.io.to(`user_${req.user.id}`).emit("application_update", {
+        type: "new_application",
+        application: {
+          ...application,
+          title: opp.title,
+          company: opp.company,
+          type: opp.type,
+          deadline: opp.deadline,
+        },
+      });
+      // 🔴 REAL-TIME: Emit stats to global
+      req.io.to("global").emit("stats_update", {
+        type: "new_application",
+        user: student.personalInfo?.name || user.name || 'Anonymous',
+        opportunity: opp.title,
+      });
+      // 🔴 REAL-TIME: Emit full application to Admin Room
+      req.io.to("admin_room").emit("admin_new_application", {
         ...application,
-        title: opp.title,
-        company: opp.company,
-        type: opp.type,
-        deadline: opp.deadline,
-      },
-    });
-    // 🔴 REAL-TIME: Emit stats to global
-    req.io.to("global").emit("stats_update", {
-      type: "new_application",
-      user: student.personalInfo?.name || 'Anonymous',
-      opportunity: opp.title,
-    });
-    // 🔴 REAL-TIME: Emit full application to Admin Room
-    req.io.to("admin_room").emit("admin_new_application", {
+        student_name: student.personalInfo?.name || user.name || "Unknown",
+        student_email: user.email || "Unknown",
+        opportunity_title: opp.title || "Unknown",
+        company: opp.company || "Unknown"
+      });
+    }
+    console.log(`✅ ${student.personalInfo?.name || user.name || 'Student'} applied to ${opp.title}`);
+    const responsePayload = {
       ...application,
-      student_name: student.personalInfo?.name || "Unknown",
-      student_email: student.personalInfo?.email || "Unknown",
-      opportunity_title: opp.title || "Unknown",
-      company: opp.company || "Unknown"
-    });
-    console.log(`✅ ${student.personalInfo?.name || 'Student'} applied to ${opp.title}`);
-    res.status(201).json(application);
+      message: "Application submitted successfully",
+      application: { ...application }
+    };
+    res.status(201).json(responsePayload);
   } catch (err) {
     console.error("Apply error:", err.message);
     res.status(500).json({ message: "Server error." });
   }
-});
+};
+
+router.post("/", auth, applyHandler);
+router.post("/:opportunity_id", auth, applyHandler);
 // Track external application click
 router.post("/external", auth, async (req, res) => {
   const { opportunity_id } = req.body;
@@ -236,12 +268,56 @@ router.get("/my", auth, async (req, res) => {
     res.status(500).json({ message: "Server error." });
   }
 });
+
+// Get single application by ID (applicant or authorized admin only)
+router.get("/:id", auth, async (req, res) => {
+  try {
+    const appRef = db.collection("applications").doc(req.params.id);
+    const appDoc = await appRef.get();
+    if (!appDoc.exists) {
+      return res.status(404).json({ message: "Application not found.", code: "NOT_FOUND" });
+    }
+    const app = mapDoc(appDoc);
+    app.id = appDoc.id;
+
+    // Security check: Only applicant or authorized admins can read
+    const isOwner = app.user_id === req.user.id || app.student_id === req.user.id;
+    const isAdmin = ["admin", "super_admin", "college_admin", "company_admin", "recruiter"].includes(req.user.role);
+    if (!isOwner && !isAdmin) {
+      return res.status(403).json({ message: "Access denied. You can only view your own applications.", code: "FORBIDDEN" });
+    }
+
+    if (app.opportunity_id) {
+      const oppDoc = await db.collection("opportunities").doc(app.opportunity_id).get();
+      if (oppDoc.exists) {
+        const o = mapDoc(oppDoc);
+        app.opportunity = {
+          id: oppDoc.id,
+          title: o.title,
+          company: o.company,
+          type: o.type,
+          location: o.location,
+          deadline: o.deadline,
+          stipend: o.stipend || o.salary,
+          mode: o.mode,
+          description: o.description
+        };
+      }
+    }
+
+    res.json(app);
+  } catch (err) {
+    console.error("Get application by ID error:", err.message);
+    res.status(500).json({ message: "Server error." });
+  }
+});
+
 // Update application status (admin only) — real-time notification
 router.put("/:id/status", auth, async (req, res) => {
   if (!["admin", "super_admin", "college_admin", "company_admin"].includes(req.user.role))
-    return res.status(403).json({ message: "Admin only." });
+    return res.status(403).json({ message: "Admin only. Students cannot update application status.", code: "ROLE_FORBIDDEN" });
   const { status } = req.body;
-  const validStatuses = ["Applied", "Under Review", "Selected", "Rejected"];
+  const validStatuses = ["Applied", "Under Review", "Shortlisted", "Interview", "Selected", "Rejected"];
   if (!validStatuses.includes(status))
     return res.status(400).json({ message: "Invalid status." });
   try {
@@ -274,17 +350,20 @@ router.put("/:id/status", auth, async (req, res) => {
       created_at: new Date()
     });
     // 🔴 REAL-TIME: Notify the student instantly
-    req.io.to(`user_${app.user_id}`).emit("application_update", {
-      type: "status_change",
-      application_id: app.id,
-      status: status,
-      opportunity: opp.title || 'Unknown',
-    });
-    req.io.to(`user_${app.user_id}`).emit("new_notification", {
-      title: `Application ${status}`,
-      body: `Your application to ${opp.title || 'a company'} is now ${status}`,
-    });
-    res.json({ ...app, status });
+    if (req.io) {
+      req.io.to(`user_${app.user_id}`).emit("application_update", {
+        type: "status_change",
+        application_id: app.id,
+        status: status,
+        opportunity: opp.title || 'Unknown',
+      });
+      req.io.to(`user_${app.user_id}`).emit("new_notification", {
+        title: `Application ${status}`,
+        body: `Your application to ${opp.title || 'a company'} is now ${status}`,
+      });
+    }
+    res.json({ ...app, status, message: "Application status updated successfully" });
+
   } catch (err) {
     console.error("Update status error:", err.message);
     res.status(500).json({ message: "Server error." });

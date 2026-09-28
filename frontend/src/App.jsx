@@ -1,9 +1,7 @@
-import { Navigate, Route, Routes, useNavigate, useLocation } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
 import { useEffect, useMemo, useState } from 'react';
 import {
   dashboardApi,
-  opportunitiesApi,
-  applicationsApi,
   teamsApi,
   projectsApi,
   mentorshipApi,
@@ -11,8 +9,6 @@ import {
   careerApi,
   showcaseApi,
   eventsApi,
-  engagementApi,
-  aiApi,
   networkingApi,
 } from './api';
 import LoadingState from './components/ui/LoadingState';
@@ -33,20 +29,24 @@ import AdminLogin from './pages/AdminLogin';
 import SuperAdminDashboard from './pages/SuperAdminDashboard';
 import MentorLogin from './pages/MentorLogin';
 import RecruiterLogin from './pages/RecruiterLogin';
+import Profile from './pages/Profile';
+import Opportunities from './pages/Opportunities';
+import Applications from './pages/Applications';
 import ProtectedRoute from './components/ProtectedRoute';
 import AuthGate from './components/auth/AuthGate';
 import { useAuth } from './context/AuthContext';
 
 const navItems = [
   ['dashboard', 'Dashboard'],
+  ['profile', 'My Profile'],
   ['opportunities', 'Opportunities'],
-  ['applications', 'Applications'],
+  ['applications', 'My Applications'],
   ['teams', 'Teams'],
   ['projects', 'Projects'],
   ['mentors', 'Mentors'],
   ['learning', 'Learning'],
   ['career', 'Career'],
-  ['showcase', 'Profile & Portfolio'],
+  ['showcase', 'Portfolio & Resumes'],
   ['events', 'Events'],
   ['messages', 'Messages'],
 ];
@@ -123,9 +123,13 @@ function AppShell({ active, setActive, children }) {
 
             {user && (
               <div className="flex items-center gap-3">
-                <span className="hidden text-xs font-semibold text-slate-600 sm:inline-block">
+                <button
+                  type="button"
+                  onClick={() => setActive('profile')}
+                  className="hidden text-xs font-semibold text-slate-600 sm:inline-block hover:text-[#2015ff] transition cursor-pointer"
+                >
                   {user.name || user.displayName || user.email}
-                </span>
+                </button>
                 <button
                   type="button"
                   onClick={logout}
@@ -186,7 +190,7 @@ function AppShell({ active, setActive, children }) {
   );
 }
 
-function DashboardPage() {
+function DashboardPage({ onNavigate }) {
   const state = useData(dashboardApi.get);
 
   if (state.loading) return <LoadingState label="Loading your dashboard..." />;
@@ -214,12 +218,40 @@ function DashboardPage() {
         </div>
       </section>
 
+      {/* Quick Actions Row */}
+      <section className="flex flex-wrap items-center gap-2.5 rounded-2xl bg-white p-4 border border-slate-200 shadow-2xs">
+        <span className="text-xs font-bold text-slate-400 uppercase tracking-wider mr-1">Quick Actions:</span>
+        <button
+          type="button"
+          onClick={() => onNavigate && onNavigate('opportunities')}
+          className="rounded-xl bg-[#2015ff] text-white px-3.5 py-1.5 text-xs font-bold hover:bg-blue-700 transition"
+        >
+          Explore Opportunities →
+        </button>
+        <button
+          type="button"
+          onClick={() => onNavigate && onNavigate('applications')}
+          className="rounded-xl border border-slate-200 text-slate-700 px-3.5 py-1.5 text-xs font-bold hover:bg-slate-50 transition"
+        >
+          My Applications
+        </button>
+        <button
+          type="button"
+          onClick={() => onNavigate && onNavigate('profile')}
+          className="rounded-xl border border-slate-200 text-slate-700 px-3.5 py-1.5 text-xs font-bold hover:bg-slate-50 transition"
+        >
+          Edit Profile
+        </button>
+      </section>
+
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard
-          label="Profile completion"
-          value={`${profile.profile_completion || 0}%`}
-          icon="◉"
-        />
+        <div onClick={() => onNavigate && onNavigate('profile')} className="cursor-pointer transition hover:opacity-90">
+          <StatCard
+            label="Profile completion"
+            value={`${profile.profile_completion || 0}%`}
+            icon="◉"
+          />
+        </div>
         <StatCard
           label="Placement readiness"
           value={readiness.score ?? 0}
@@ -300,105 +332,7 @@ function DashboardPage() {
   );
 }
 
-function OpportunitiesPage() {
-  const state = useData(() => opportunitiesApi.list({ limit: 50 }));
 
-  if (state.loading) return <LoadingState label="Finding opportunities..." />;
-  if (state.error) return <ErrorState description={state.error} onRetry={state.reload} />;
-
-  const rows = Array.isArray(state.data)
-    ? state.data
-    : state.data?.items || [];
-
-  return (
-    <div>
-      <SectionHeader
-        title="Opportunities"
-        description="Find internships, jobs, challenges and career opportunities."
-      />
-
-      {!rows.length ? (
-        <EmptyState
-          title="No opportunities available"
-          description="New opportunities will appear here when they are available."
-        />
-      ) : (
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {rows.map(item => (
-            <article
-              key={item.id}
-              className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
-            >
-              <div className="text-xs font-semibold uppercase tracking-wide text-[#2015ff]">
-                {item.type || 'Opportunity'}
-              </div>
-              <h3 className="mt-2 text-lg font-semibold">
-                {item.title || 'Untitled opportunity'}
-              </h3>
-              <p className="mt-2 line-clamp-3 text-sm leading-6 text-slate-500">
-                {item.description || 'Explore this opportunity on Codovate.'}
-              </p>
-
-              <div className="mt-5 flex gap-2">
-                <PrimaryButton>View</PrimaryButton>
-                <SecondaryButton>Save</SecondaryButton>
-              </div>
-            </article>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function ApplicationsPage() {
-  const state = useData(applicationsApi.list);
-
-  if (state.loading) return <LoadingState label="Loading applications..." />;
-  if (state.error) return <ErrorState description={state.error} onRetry={state.reload} />;
-
-  const rows = Array.isArray(state.data)
-    ? state.data
-    : state.data?.items || [];
-
-  return (
-    <div>
-      <SectionHeader
-        title="Applications"
-        description="Track every application from submission to outcome."
-      />
-
-      {!rows.length ? (
-        <EmptyState
-          title="No applications yet"
-          description="Applications you submit will appear here."
-        />
-      ) : (
-        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <div className="divide-y divide-slate-100">
-            {rows.map(item => (
-              <div
-                key={item.id}
-                className="flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between"
-              >
-                <div>
-                  <h3 className="font-semibold">
-                    {item.title || item.opportunity_title || 'Application'}
-                  </h3>
-                  <p className="mt-1 text-sm text-slate-500">
-                    {item.status || 'submitted'}
-                  </p>
-                </div>
-
-                <SecondaryButton>View application</SecondaryButton>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
 
 function GenericListPage({ title, description, loader, emptyTitle }) {
   const state = useData(loader);
@@ -450,22 +384,29 @@ function GenericListPage({ title, description, loader, emptyTitle }) {
   );
 }
 
-function ProtectedApp() {
+function ProtectedApp({ initialTab = 'dashboard' }) {
   const { user } = useAuth();
-  const [active, setActive] = useState('dashboard');
+  const [active, setActive] = useState(initialTab);
+
+  useEffect(() => {
+    if (initialTab && initialTab !== active) {
+      setActive(initialTab);
+    }
+  }, [initialTab]);
 
   const page = useMemo(() => {
     switch (active) {
       case 'dashboard':
-        return <DashboardPage />;
+        return <DashboardPage onNavigate={setActive} />;
+
+      case 'profile':
+        return <Profile />;
 
       case 'opportunities':
-        return (
-          <OpportunitiesPage />
-        );
+        return <Opportunities />;
 
       case 'applications':
-        return <ApplicationsPage />;
+        return <Applications onNavigateToOpportunities={() => setActive('opportunities')} />;
 
       case 'teams':
         return (
@@ -605,7 +546,39 @@ function App() {
         path="/dashboard"
         element={
           <ProtectedRoute>
-            <ProtectedApp />
+            <ProtectedApp initialTab="dashboard" />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute>
+            <ProtectedApp initialTab="profile" />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/opportunities"
+        element={
+          <ProtectedRoute>
+            <ProtectedApp initialTab="opportunities" />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/opportunities/:id"
+        element={
+          <ProtectedRoute>
+            <ProtectedApp initialTab="opportunities" />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/applications"
+        element={
+          <ProtectedRoute>
+            <ProtectedApp initialTab="applications" />
           </ProtectedRoute>
         }
       />

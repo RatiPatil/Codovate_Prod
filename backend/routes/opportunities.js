@@ -105,15 +105,52 @@ router.get("/:id", auth, async (req, res) => {
     const docRef = db.collection("opportunities").doc(req.params.id);
     const doc = await docRef.get();
     if (!doc.exists)
-      return res.status(404).json({ message: "Not found." });
+      return res.status(404).json({ message: "Opportunity not found.", code: "NOT_FOUND" });
     const opp = mapDoc(doc);
     opp.id = doc.id;
     // Increment view count
     await docRef.update({
       view_count: (opp.view_count || 0) + 1
-    });
-    const appsSnapshot = await db.collection("applications").where("opportunity_id", "==", opp.id).get();
+    }).catch(() => {});
+
+    // Check if user has applied
+    const userAppSnap = await db.collection("applications")
+      .where("opportunity_id", "==", opp.id)
+      .where("user_id", "==", req.user.id)
+      .limit(1)
+      .get()
+      .catch(() => ({ empty: true, docs: [] }));
+    
+    opp.has_applied = !userAppSnap.empty;
+    if (!userAppSnap.empty) {
+      const appData = mapDoc(userAppSnap.docs[0]);
+      opp.application_status = appData.status || 'Applied';
+      opp.applied_at = appData.applied_at;
+      opp.application_id = userAppSnap.docs[0].id;
+    }
+
+    // Check if user bookmarked
+    const bookmarkSnap = await db.collection("bookmarks")
+      .where("opportunity_id", "==", opp.id)
+      .where("user_id", "==", req.user.id)
+      .limit(1)
+      .get()
+      .catch(() => ({ empty: true, docs: [] }));
+    opp.is_bookmarked = !bookmarkSnap.empty;
+
+    const appsSnapshot = await db.collection("applications").where("opportunity_id", "==", opp.id).get().catch(() => ({ size: 0 }));
     opp.application_count = appsSnapshot.size;
+
+    // Sanitize private recruiter info for non-admins / regular students
+    if (!["admin", "super_admin", "company_admin", "recruiter"].includes(req.user?.role)) {
+      delete opp.recruiter_email;
+      delete opp.recruiter_phone;
+      delete opp.recruiter_id;
+      delete opp.internal_notes;
+      delete opp.admin_notes;
+      delete opp.budget;
+    }
+
     res.json(opp);
   } catch (err) {
     console.error("Get opportunity error:", err.message);

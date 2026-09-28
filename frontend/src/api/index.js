@@ -11,28 +11,34 @@ export const dashboardApi = {
 };
 
 export const profileApi = {
-  get: () => get('/students/me'),
-  update: data => put('/students/me', data),
+  get: () => get('/students/profile'),
+  update: data => put('/students/profile', data),
 };
 
 export const onboardingApi = {
-  get: () => get('/onboarding/me'),
-  save: data => post('/onboarding/me', data),
-  update: data => put('/onboarding/me', data),
+  get: () => get('/onboarding/status'),
+  save: data => post('/onboarding/save', data),
+  update: data => post('/onboarding/save', data),
 };
 
 export const opportunitiesApi = {
   list: params => get('/opportunities', { params }),
   get: id => get(`/opportunities/${id}`),
+  bookmark: id => post(`/opportunities/${id}/bookmark`, {}),
 };
 
 export const applicationsApi = {
   list: () => get('/applications/my'),
   get: id => get(`/applications/${id}`),
-  apply: opportunityId =>
-    post(`/applications/${opportunityId}`, {}),
-  updateStatus: (id, data) =>
-    put(`/applications/${id}/status`, data),
+  apply: opportunityId => post('/applications', { opportunity_id: opportunityId }),
+  withdraw: id => del(`/applications/${id}`),
+  updateStatus: (id, data) => put(`/applications/${id}/status`, data),
+};
+
+export const notificationsApi = {
+  list: () => get('/notifications'),
+  markAllRead: () => put('/notifications/read/all', {}),
+  markRead: id => put(`/notifications/${id}/read`, {}),
 };
 
 export const teamsApi = {
