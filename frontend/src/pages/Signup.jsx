@@ -31,7 +31,13 @@ const Signup = () => {
 
   // Auto-redirect if already authenticated
   useEffect(() => {
-    if (user) navigate('/dashboard');
+    if (user) {
+      if (user.role === 'student' && user.onboardingCompleted === false) {
+        navigate('/onboarding', { replace: true });
+      } else {
+        navigate('/dashboard', { replace: true });
+      }
+    }
   }, [user, navigate]);
 
   // Entrance animation for Auth Card
@@ -98,7 +104,7 @@ const Signup = () => {
         title: 'Account Created!',
         message: 'Welcome to Codovate!',
       });
-      navigate('/dashboard', { replace: true });
+      navigate('/onboarding', { replace: true });
     } catch (err) {
       const msg = getFirebaseErrorMessage(err);
       setErrors({ form: msg });

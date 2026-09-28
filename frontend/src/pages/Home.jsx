@@ -30,6 +30,8 @@ const Home = () => {
       const adminRoles = ['super_admin', 'admin', 'college_admin', 'company_admin', 'mentor'];
       if (adminRoles.includes(user.role)) {
         navigate('/admin');
+      } else if (user.role === 'student' && user.onboardingCompleted === false) {
+        navigate('/onboarding');
       } else {
         navigate('/dashboard');
       }

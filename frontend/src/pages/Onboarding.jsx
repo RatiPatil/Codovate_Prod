@@ -16,12 +16,19 @@ import { Step10AIGeneration, Step11Success } from '../components/onboarding/Onbo
 const TOTAL_STEPS = 8; // Steps 1-8 are form steps, 9 is processing, 10 is success
 
 export default function Onboarding() {
-  const { completeOnboarding } = useAuth();
+  const { user, completeOnboarding } = useAuth();
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [saving, setSaving] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
+
+  // If user has already completed onboarding, redirect directly to dashboard
+  useEffect(() => {
+    if (user?.onboardingCompleted === true) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [user, navigate]);
   
   const [data, setData] = useState({
     full_name: '', college: '', degree: '', branch: '', year: '', city: '', state: '', country: 'India', profile_photo: null,
@@ -47,15 +54,25 @@ export default function Onboarding() {
   // Load saved state
   useEffect(() => {
     const saved = localStorage.getItem('codovate_onboarding');
+    let hasLoadedData = false;
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (parsed.data) setData(parsed.data);
+        if (parsed.data) {
+          setData(parsed.data);
+          hasLoadedData = true;
+        }
         if (parsed.step && parsed.step > 1 && parsed.step <= TOTAL_STEPS) setStep(parsed.step);
       } catch (e) {}
     }
+    if (!hasLoadedData && user) {
+      const initialName = user.name || user.displayName || user.full_name || '';
+      if (initialName) {
+        setData(prev => ({ ...prev, full_name: prev.full_name || initialName }));
+      }
+    }
     setIsLoaded(true);
-  }, []);
+  }, [user]);
 
   // Auto save
   useEffect(() => {
