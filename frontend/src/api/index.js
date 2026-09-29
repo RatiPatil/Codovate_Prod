@@ -30,7 +30,7 @@ export const opportunitiesApi = {
 export const applicationsApi = {
   list: () => get('/applications/my'),
   get: id => get(`/applications/${id}`),
-  apply: opportunityId => post('/applications', { opportunity_id: opportunityId }),
+  apply: (opportunityId, data = {}) => post('/applications', { opportunity_id: opportunityId, ...data }),
   withdraw: id => del(`/applications/${id}`),
   updateStatus: (id, data) => put(`/applications/${id}/status`, data),
 };

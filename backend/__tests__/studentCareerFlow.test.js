@@ -459,9 +459,14 @@ describe('PHASE 7: Student End-to-End Career Flow Tests', () => {
       const apps = Array.from(collections.applications.values());
       expect(apps.length).toBe(1);
       expect(apps[0].user_id).toBe('student_A');
+      expect(apps[0].studentId).toBe('student_A');
+      expect(apps[0].studentUid).toBe('student_A');
       expect(apps[0].opportunity_id).toBe('opp_react_dev');
+      expect(apps[0].opportunityId).toBe('opp_react_dev');
       expect(apps[0].company).toBe('Tech Corp');
       expect(apps[0].status).toBe('Applied');
+      expect(apps[0].createdAt).toBeDefined();
+      expect(apps[0].updatedAt).toBeDefined();
 
       // Verify notification document was created for student
       const notifs = Array.from(collections.notifications.values());

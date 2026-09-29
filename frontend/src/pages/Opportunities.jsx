@@ -24,9 +24,7 @@ import {
   HelpCircle,
   GraduationCap,
   Mic,
-  Calendar,
   Gift,
-  Award,
   UserCheck,
   CheckCircle2,
 } from 'lucide-react';
@@ -328,8 +326,28 @@ const OpportunityDetailsModal = ({
   applying,
   applyMessage,
   onSave,
-  saved
+  saved,
+  studentProfile,
+  onNavigateToApplications
 }) => {
+  const [step, setStep] = useState('details'); // 'details' | 'form' | 'confirmation'
+  const [resumeUrl, setResumeUrl] = useState(studentProfile?.resume_url || '');
+  const [portfolioUrl, setPortfolioUrl] = useState(studentProfile?.portfolio_url || '');
+  const [coverNote, setCoverNote] = useState('');
+
+  useEffect(() => {
+    if (studentProfile) {
+      if (!resumeUrl && studentProfile.resume_url) setResumeUrl(studentProfile.resume_url);
+      if (!portfolioUrl && studentProfile.portfolio_url) setPortfolioUrl(studentProfile.portfolio_url);
+    }
+  }, [studentProfile, resumeUrl, portfolioUrl]);
+
+  useEffect(() => {
+    if (applyMessage?.type === 'success') {
+      setStep('confirmation');
+    }
+  }, [applyMessage]);
+
   if (!opp) return null;
 
   const isOpen = opp.is_active !== false && !['closed', 'inactive'].includes((opp.status || '').toLowerCase());
@@ -350,7 +368,7 @@ const OpportunityDetailsModal = ({
         </button>
 
         {/* Message Banner */}
-        {applyMessage && (
+        {applyMessage && step !== 'confirmation' && (
           <div
             className={`p-3.5 rounded-2xl text-xs font-bold border flex items-center gap-2 ${
               applyMessage.type === 'success'
@@ -371,150 +389,303 @@ const OpportunityDetailsModal = ({
           </div>
         )}
 
-        {/* Header */}
-        <div className="flex items-start gap-4">
-          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#EBF3FF] border border-blue-100 text-xl font-black text-[#0066FF] overflow-hidden">
-            {opp.company_logo_url || opp.logo ? (
-              <img src={opp.company_logo_url || opp.logo} alt={company} className="w-full h-full object-contain p-1" />
-            ) : (
-              company.charAt(0).toUpperCase()
-            )}
-          </div>
-          <div className="min-w-0 pr-6">
-            <h2 className="text-xl font-extrabold text-slate-900 leading-snug">{opp.title}</h2>
-            <p className="text-sm font-semibold text-slate-500 mt-0.5">{company}</p>
-          </div>
-        </div>
-
-        {/* Key Info Grid */}
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 rounded-2xl bg-slate-50 p-4 text-xs">
-          <div>
-            <span className="font-semibold text-slate-400 uppercase tracking-wider text-[10px]">Type</span>
-            <p className="font-bold text-slate-800 mt-0.5">{opp.type || 'Opportunity'}</p>
-          </div>
-          <div>
-            <span className="font-semibold text-slate-400 uppercase tracking-wider text-[10px]">Mode / Location</span>
-            <p className="font-bold text-slate-800 mt-0.5">{workMode}</p>
-          </div>
-          <div>
-            <span className="font-semibold text-slate-400 uppercase tracking-wider text-[10px]">Stipend / Salary</span>
-            <p className="font-bold text-emerald-700 mt-0.5">
-              {opp.stipend ? `₹${opp.stipend}` : opp.salary || 'Competitive'}
-            </p>
-          </div>
-          <div>
-            <span className="font-semibold text-slate-400 uppercase tracking-wider text-[10px]">Deadline</span>
-            <p className="font-bold text-slate-800 mt-0.5">
-              {formatDate(opp.deadline) || 'Ongoing'}
-              {daysLeft && ` (${daysLeft})`}
-            </p>
-          </div>
-        </div>
-
-        {/* Description */}
-        <div>
-          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
-            About the Opportunity
-          </h4>
-          <p className="text-sm leading-relaxed text-slate-700 whitespace-pre-line">
-            {opp.description || 'No detailed description provided for this opportunity.'}
-          </p>
-        </div>
-
-        {/* Required Skills */}
-        {requiredSkills.length > 0 && (
-          <div>
-            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
-              Skills Required
-            </h4>
-            <div className="flex flex-wrap gap-1.5">
-              {requiredSkills.map((skill) => (
-                <span key={skill} className="rounded-lg bg-blue-50 px-2.5 py-1 text-xs font-bold text-[#0066FF] border border-blue-100">
-                  {skill}
-                </span>
-              ))}
+        {/* ── STEP 1: OPPORTUNITY DETAILS ── */}
+        {step === 'details' && (
+          <>
+            {/* Header */}
+            <div className="flex items-start gap-4">
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#EBF3FF] border border-blue-100 text-xl font-black text-[#0066FF] overflow-hidden">
+                {opp.company_logo_url || opp.logo ? (
+                  <img src={opp.company_logo_url || opp.logo} alt={company} className="w-full h-full object-contain p-1" />
+                ) : (
+                  company.charAt(0).toUpperCase()
+                )}
+              </div>
+              <div className="min-w-0 pr-6">
+                <h2 className="text-xl font-extrabold text-slate-900 leading-snug">{opp.title}</h2>
+                <p className="text-sm font-semibold text-slate-500 mt-0.5">{company}</p>
+              </div>
             </div>
-          </div>
+
+            {/* Key Info Grid */}
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 rounded-2xl bg-slate-50 p-4 text-xs">
+              <div>
+                <span className="font-semibold text-slate-400 uppercase tracking-wider text-[10px]">Type</span>
+                <p className="font-bold text-slate-800 mt-0.5">{opp.type || 'Opportunity'}</p>
+              </div>
+              <div>
+                <span className="font-semibold text-slate-400 uppercase tracking-wider text-[10px]">Mode / Location</span>
+                <p className="font-bold text-slate-800 mt-0.5">{workMode}</p>
+              </div>
+              <div>
+                <span className="font-semibold text-slate-400 uppercase tracking-wider text-[10px]">Stipend / Salary</span>
+                <p className="font-bold text-emerald-700 mt-0.5">
+                  {opp.stipend ? `₹${opp.stipend}` : opp.salary || 'Competitive'}
+                </p>
+              </div>
+              <div>
+                <span className="font-semibold text-slate-400 uppercase tracking-wider text-[10px]">Deadline</span>
+                <p className="font-bold text-slate-800 mt-0.5">
+                  {formatDate(opp.deadline) || 'Ongoing'}
+                  {daysLeft && ` (${daysLeft})`}
+                </p>
+              </div>
+            </div>
+
+            {/* Description */}
+            <div>
+              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+                About the Opportunity
+              </h4>
+              <p className="text-sm leading-relaxed text-slate-700 whitespace-pre-line">
+                {opp.description || 'No detailed description provided for this opportunity.'}
+              </p>
+            </div>
+
+            {/* Required Skills */}
+            {requiredSkills.length > 0 && (
+              <div>
+                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+                  Skills Required
+                </h4>
+                <div className="flex flex-wrap gap-1.5">
+                  {requiredSkills.map((skill) => (
+                    <span key={skill} className="rounded-lg bg-blue-50 px-2.5 py-1 text-xs font-bold text-[#0066FF] border border-blue-100">
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Requirements / Eligibility */}
+            {opp.eligibility && (
+              <div>
+                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
+                  Eligibility
+                </h4>
+                <p className="text-xs text-slate-600">{opp.eligibility}</p>
+              </div>
+            )}
+
+            {/* Action Footer */}
+            <div className="pt-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => onSave && onSave(opp.id)}
+                  className={`p-2.5 rounded-xl border border-slate-200 text-xs font-bold flex items-center gap-1.5 ${
+                    saved ? 'text-red-500 bg-red-50 border-red-200' : 'text-slate-600 hover:bg-slate-50'
+                  }`}
+                >
+                  <Heart size={16} fill={saved ? 'currentColor' : 'none'} />
+                  <span>{saved ? 'Saved' : 'Save'}</span>
+                </button>
+                <button
+                  onClick={() => {
+                    navigator.clipboard?.writeText(window.location.origin + `/opportunities/${opp.id}`);
+                    alert('Opportunity link copied to clipboard!');
+                  }}
+                  className="p-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 flex items-center gap-1.5"
+                >
+                  <Share2 size={16} />
+                  <span>Share</span>
+                </button>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={onClose}
+                  className="rounded-xl border border-slate-200 px-4 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-50"
+                >
+                  Close
+                </button>
+
+                {hasApplied ? (
+                  <button
+                    disabled
+                    className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-500 px-6 py-2.5 text-xs font-bold text-white opacity-95 cursor-not-allowed shadow-sm"
+                  >
+                    <CheckCircle2 size={15} />
+                    Applied
+                  </button>
+                ) : !isOpen || isExpired ? (
+                  <button
+                    disabled
+                    className="rounded-xl bg-slate-200 px-6 py-2.5 text-xs font-bold text-slate-500 cursor-not-allowed"
+                  >
+                    Application Closed
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => setStep('form')}
+                    className="inline-flex items-center gap-1.5 rounded-xl bg-[#0066FF] px-6 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-blue-700 transition"
+                  >
+                    <Briefcase size={15} />
+                    Apply Now
+                  </button>
+                )}
+              </div>
+            </div>
+          </>
         )}
 
-        {/* Requirements / Eligibility */}
-        {opp.eligibility && (
-          <div>
-            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
-              Eligibility
-            </h4>
-            <p className="text-xs text-slate-600">{opp.eligibility}</p>
-          </div>
-        )}
+        {/* ── STEP 2: APPLICATION FORM ── */}
+        {step === 'form' && (
+          <div className="space-y-4">
+            <div>
+              <span className="text-xs font-bold text-[#0066FF] uppercase tracking-wider">Application Form</span>
+              <h2 className="text-xl font-extrabold text-slate-900 mt-0.5">
+                Apply for {opp.title}
+              </h2>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Submitting application directly to <span className="font-semibold text-slate-700">{company}</span>
+              </p>
+            </div>
 
-        {/* Action Footer */}
-        <div className="pt-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => onSave && onSave(opp.id)}
-              className={`p-2.5 rounded-xl border border-slate-200 text-xs font-bold flex items-center gap-1.5 ${
-                saved ? 'text-red-500 bg-red-50 border-red-200' : 'text-slate-600 hover:bg-slate-50'
-              }`}
-            >
-              <Heart size={16} fill={saved ? 'currentColor' : 'none'} />
-              <span>{saved ? 'Saved' : 'Save'}</span>
-            </button>
-            <button
-              onClick={() => {
-                navigator.clipboard?.writeText(window.location.origin + `/opportunities/${opp.id}`);
-                alert('Opportunity link copied to clipboard!');
-              }}
-              className="p-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 flex items-center gap-1.5"
-            >
-              <Share2 size={16} />
-              <span>Share</span>
-            </button>
-          </div>
+            {/* Profile Overview Card */}
+            <div className="rounded-2xl border border-slate-200/80 bg-slate-50 p-4 space-y-2">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Applicant Details</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                <div>
+                  <span className="text-slate-500">Name:</span>{' '}
+                  <span className="font-bold text-slate-800">{studentProfile?.name || 'Student Applicant'}</span>
+                </div>
+                <div>
+                  <span className="text-slate-500">Email:</span>{' '}
+                  <span className="font-bold text-slate-800">{studentProfile?.email || 'Authenticated Email'}</span>
+                </div>
+                {studentProfile?.college && (
+                  <div className="sm:col-span-2">
+                    <span className="text-slate-500">College:</span>{' '}
+                    <span className="font-semibold text-slate-800">{studentProfile.college}</span>
+                  </div>
+                )}
+              </div>
+            </div>
 
-          <div className="flex items-center gap-2">
-            <button
-              onClick={onClose}
-              className="rounded-xl border border-slate-200 px-4 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-50"
-            >
-              Close
-            </button>
+            {/* Input: Resume URL */}
+            <div className="space-y-1">
+              <label className="block text-xs font-bold text-slate-700">
+                Resume / CV Link <span className="text-slate-400 font-normal">(PDF or Cloud Storage URL)</span>
+              </label>
+              <input
+                type="url"
+                value={resumeUrl}
+                onChange={(e) => setResumeUrl(e.target.value)}
+                placeholder="https://drive.google.com/... or PDF link"
+                className="w-full h-10 px-3.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#0066FF]"
+              />
+            </div>
 
-            {hasApplied ? (
+            {/* Input: Portfolio or GitHub */}
+            <div className="space-y-1">
+              <label className="block text-xs font-bold text-slate-700">
+                Portfolio or GitHub URL <span className="text-slate-400 font-normal">(Optional)</span>
+              </label>
+              <input
+                type="url"
+                value={portfolioUrl}
+                onChange={(e) => setPortfolioUrl(e.target.value)}
+                placeholder="https://github.com/your-username or portfolio URL"
+                className="w-full h-10 px-3.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#0066FF]"
+              />
+            </div>
+
+            {/* Input: Cover Note */}
+            <div className="space-y-1">
+              <label className="block text-xs font-bold text-slate-700">
+                Cover Note / Why are you interested in this role? <span className="text-slate-400 font-normal">(Optional)</span>
+              </label>
+              <textarea
+                rows={3}
+                value={coverNote}
+                onChange={(e) => setCoverNote(e.target.value)}
+                placeholder="Highlight your key skills, projects or motivation for this position..."
+                className="w-full p-3 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#0066FF]"
+              />
+            </div>
+
+            {/* Footer Buttons */}
+            <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-3">
               <button
-                disabled
-                className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-500 px-6 py-2.5 text-xs font-bold text-white opacity-95 cursor-not-allowed shadow-sm"
+                type="button"
+                onClick={() => setStep('details')}
+                disabled={applying}
+                className="rounded-xl border border-slate-200 px-4 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50"
               >
-                <CheckCircle2 size={15} />
-                Applied
+                Back to Details
               </button>
-            ) : !isOpen || isExpired ? (
+
               <button
-                disabled
-                className="rounded-xl bg-slate-200 px-6 py-2.5 text-xs font-bold text-slate-500 cursor-not-allowed"
-              >
-                Application Closed
-              </button>
-            ) : (
-              <button
-                onClick={() => onApply(opp.id)}
+                type="button"
+                onClick={() => onApply(opp.id, { resume_url: resumeUrl, portfolio_url: portfolioUrl, cover_note: coverNote })}
                 disabled={applying}
                 className="inline-flex items-center gap-1.5 rounded-xl bg-[#0066FF] px-6 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-blue-700 disabled:opacity-50 transition"
               >
                 {applying ? (
                   <>
                     <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    Submitting...
+                    Submitting Application...
                   </>
                 ) : (
                   <>
-                    <Briefcase size={15} />
-                    Apply Now
+                    <CheckCircle2 size={15} />
+                    Confirm & Submit
                   </>
                 )}
               </button>
-            )}
+            </div>
           </div>
-        </div>
+        )}
+
+        {/* ── STEP 3: APPLICATION CONFIRMATION ── */}
+        {step === 'confirmation' && (
+          <div className="py-6 text-center space-y-4">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-200 shadow-sm animate-in zoom-in duration-300">
+              <CheckCircle2 size={36} />
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-black text-slate-900 tracking-tight">
+                Application Submitted!
+              </h2>
+              <p className="text-xs text-slate-500 max-w-md mx-auto mt-1">
+                Your application for <span className="font-bold text-slate-800">{opp.title}</span> at <span className="font-bold text-slate-800">{company}</span> has been securely saved to Firestore.
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-emerald-200 bg-emerald-50/70 p-4 max-w-md mx-auto text-left text-xs space-y-1 text-emerald-900">
+              <p className="font-bold flex items-center gap-1.5">
+                <span className="h-2 w-2 rounded-full bg-emerald-500 inline-block" />
+                Status: Applied
+              </p>
+              <p className="text-emerald-700">
+                You can track this application, review notifications, and check status updates in real time.
+              </p>
+            </div>
+
+            <div className="pt-4 flex flex-wrap items-center justify-center gap-3">
+              <button
+                onClick={() => {
+                  onClose();
+                  if (onNavigateToApplications) onNavigateToApplications();
+                }}
+                className="inline-flex items-center gap-2 rounded-xl bg-[#0066FF] px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-blue-700 transition"
+              >
+                <Briefcase size={14} />
+                View in My Applications
+              </button>
+
+              <button
+                onClick={onClose}
+                className="rounded-xl border border-slate-200 px-5 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-50"
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
   );
@@ -545,7 +716,9 @@ const CardSkeleton = () => (
    MAIN OPPORTUNITIES PAGE (Supports /internship, /job, /competition)
 ═══════════════════════════════════════════════════════════ */
 const Opportunities = () => {
-  const { type: urlType } = useParams();
+  const navigate = useNavigate();
+  const { id: paramId, type: urlType } = useParams();
+  const directOppId = paramId && !['internship', 'job', 'competition', 'hackathon', 'all'].includes(paramId) ? paramId : null;
 
   const [activeType, setActiveType]         = useState(urlType || 'internship');
   const [activeDomain, setActiveDomain]     = useState('all');
@@ -562,6 +735,27 @@ const Opportunities = () => {
   const [appliedOppIds, setAppliedOppIds]   = useState(new Set());
   const [applying, setApplying]             = useState(false);
   const [applyMessage, setApplyMessage]     = useState(null);
+  const [studentProfile, setStudentProfile] = useState(null);
+
+  // Load student profile for pre-filling application form
+  useEffect(() => {
+    api.get('/students/profile').then(res => {
+      const data = res?.data || res;
+      if (data) setStudentProfile(data);
+    }).catch(() => {});
+  }, []);
+
+  // Handle direct opportunity links like /opportunities/:id
+  useEffect(() => {
+    if (directOppId) {
+      api.get(`/opportunities/${directOppId}`).then(res => {
+        const oppData = res?.data || res;
+        if (oppData && oppData.id) {
+          setSelectedOpp(oppData);
+        }
+      }).catch(() => {});
+    }
+  }, [directOppId]);
 
   useEffect(() => {
     if (urlType && urlType !== activeType) {
@@ -581,7 +775,7 @@ const Opportunities = () => {
     try {
       const res = await api.get('/applications/my');
       const list = Array.isArray(res.data) ? res.data : (Array.isArray(res) ? res : []);
-      setAppliedOppIds(new Set(list.map(a => a.opportunity_id).filter(Boolean)));
+      setAppliedOppIds(new Set(list.map(a => a.opportunity_id || a.opportunityId).filter(Boolean)));
     } catch {
       // Ignore if student is unauthenticated or endpoint returns error
     }
@@ -596,11 +790,16 @@ const Opportunities = () => {
     };
   }, [fetchMyApplications]);
 
-  const handleApply = async (oppId) => {
+  const handleApply = async (oppId, formData = {}) => {
     try {
       setApplying(true);
       setApplyMessage(null);
-      await api.post('/applications', { opportunity_id: oppId });
+      await api.post('/applications', {
+        opportunity_id: oppId,
+        resume_url: formData.resume_url,
+        portfolio_url: formData.portfolio_url,
+        cover_note: formData.cover_note
+      });
       setAppliedOppIds(prev => new Set(prev).add(oppId));
       setSelectedOpp(prev => prev ? { ...prev, has_applied: true } : null);
       setApplyMessage({ type: 'success', text: 'Application submitted successfully! Track it in My Applications.' });
@@ -877,6 +1076,8 @@ const Opportunities = () => {
           onApply={handleApply}
           applying={applying}
           applyMessage={applyMessage}
+          studentProfile={studentProfile}
+          onNavigateToApplications={() => navigate('/applications')}
           onSave={(id) =>
             setSavedIds((prev) => {
               const next = new Set(prev);

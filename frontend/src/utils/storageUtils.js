@@ -52,61 +52,16 @@ export const uploadFileToStorage = async (file, path, onProgress = null) => {
 };
 
 /**
- * Uploads to Cloudinary. Requires VITE_CLOUDINARY_CLOUD_NAME and
- * VITE_CLOUDINARY_UPLOAD_PRESET env vars — no hardcoded fallbacks.
- */
-export const uploadToCloudinary = async (file) => {
-  const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
-  const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
-
-  if (!cloudName || !uploadPreset) {
-    throw new Error(
-      "Cloudinary is not configured: VITE_CLOUDINARY_CLOUD_NAME and VITE_CLOUDINARY_UPLOAD_PRESET env vars are required."
-    );
-  }
-
-  const formData = new FormData();
-  formData.append("file", file);
-  formData.append("upload_preset", uploadPreset);
-
-  const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
-    method: "POST",
-    body: formData
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.error?.message || "Cloudinary upload failed");
-  }
-
-  const data = await response.json();
-  return data.secure_url;
-};
-
-/** Returns true only when both Cloudinary env vars are explicitly set. */
-const isCloudinaryConfigured = () =>
-  Boolean(import.meta.env.VITE_CLOUDINARY_CLOUD_NAME && import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET);
-
-/**
- * Uploads a profile photo.
- * Tier 1: Cloudinary (only when VITE_CLOUDINARY_* env vars are configured)
- * Tier 2: Firebase Storage direct from client
- * Tier 3: Server-side base64 upload fallback
+ * Uploads a profile photo to Firebase Storage.
+ * Primary: Firebase Storage direct from client
+ * Fallback: Server-side base64 upload to Firebase Admin Storage
  */
 export const uploadProfilePhoto = async (file, userId, onProgress) => {
-  // Tier 1: Cloudinary — only if configured via env vars, no hardcoded fallback
-  if (isCloudinaryConfigured()) {
-    try {
-      const cloudinaryUrl = await uploadToCloudinary(file);
-      if (cloudinaryUrl) {
-        return cloudinaryUrl;
-      }
-    } catch (cloudinaryErr) {
-      console.warn("Warning: Cloudinary upload failed, falling back to Firebase Storage:", cloudinaryErr.message);
-    }
+  if (!file) {
+    throw new Error("No file provided");
   }
 
-  // Tier 2: Firebase Storage Direct
+  // Primary: Firebase Storage Direct
   try {
     const fileName = file?.name || 'photo.jpg';
     const extension = fileName.includes('.') ? fileName.split('.').pop() : 'jpg';

@@ -8,13 +8,15 @@ router.get("/", auth, async (req, res) => {
   try {
     const isStaff = ["admin", "super_admin", "college_admin", "company_admin"].includes(req.user.role);
     if (!isStaff) {
-      const [userAppsSnap, studentAppsSnap] = await Promise.all([
+      const [userAppsSnap, studentAppsSnap, studentUidSnap] = await Promise.all([
         db.collection("applications").where("user_id", "==", req.user.id).get(),
-        db.collection("applications").where("student_id", "==", req.user.id).get()
+        db.collection("applications").where("student_id", "==", req.user.id).get(),
+        db.collection("applications").where("studentUid", "==", req.user.id).get()
       ]);
       const appsMap = new Map();
       userAppsSnap.docs.forEach(doc => appsMap.set(doc.id, { id: doc.id, ...mapDoc(doc) }));
       studentAppsSnap.docs.forEach(doc => appsMap.set(doc.id, { id: doc.id, ...mapDoc(doc) }));
+      studentUidSnap.docs.forEach(doc => appsMap.set(doc.id, { id: doc.id, ...mapDoc(doc) }));
       return res.json(Array.from(appsMap.values()));
     }
 
@@ -65,27 +67,40 @@ const applyHandler = async (req, res) => {
     // Check deadline
     if (opp.deadline && new Date(opp.deadline) < new Date())
       return res.status(400).json({ message: "Application deadline has passed.", code: "DEADLINE_PASSED" });
-    // Check if already applied (check both user_id and student_id compatibility fields)
-    const [userAppsSnap, studentAppsSnap] = await Promise.all([
+    // Check if already applied (check user_id, student_id, studentUid against opportunity_id and opportunityId)
+    const [userAppsSnap1, userAppsSnap2, studentAppsSnap1, studentAppsSnap2] = await Promise.all([
       db.collection("applications").where("user_id", "==", req.user.id).where("opportunity_id", "==", opportunity_id).get(),
-      db.collection("applications").where("student_id", "==", req.user.id).where("opportunity_id", "==", opportunity_id).get()
+      db.collection("applications").where("user_id", "==", req.user.id).where("opportunityId", "==", opportunity_id).get(),
+      db.collection("applications").where("student_id", "==", req.user.id).where("opportunity_id", "==", opportunity_id).get(),
+      db.collection("applications").where("studentUid", "==", req.user.id).where("opportunityId", "==", opportunity_id).get()
     ]);
-    if (!userAppsSnap.empty || !studentAppsSnap.empty)
+    if (!userAppsSnap1.empty || !userAppsSnap2.empty || !studentAppsSnap1.empty || !studentAppsSnap2.empty)
       return res.status(409).json({ message: "You already applied to this opportunity.", code: "ALREADY_APPLIED" });
     // Get student details
     const studentDoc = await db.collection("profiles").doc(req.user.id).get();
     const student = studentDoc.exists ? mapDoc(studentDoc) : {};
     const userDoc = await db.collection("users").doc(req.user.id).get();
     const user = userDoc.exists ? mapDoc(userDoc) : {};
+
+    const resumeUrl = req.body.resume_url || req.body.resumeUrl || student.socialLinks?.resume || student.resume_url || user.resume_url || '';
+    const portfolioUrl = req.body.portfolio_url || req.body.portfolioUrl || student.socialLinks?.portfolio || student.portfolio_url || '';
+    const coverNote = req.body.cover_note || req.body.coverNote || '';
+    const studentName = student.personalInfo?.name || user.name || 'Student';
+    const studentEmail = user.email || '';
+    const now = new Date();
+
     // Create application
     const newAppRef = db.collection("applications").doc();
     const application = {
       id: newAppRef.id,
       user_id: req.user.id,
       student_id: req.user.id,
-      student_name: student.personalInfo?.name || user.name || 'Student',
-      student_email: user.email || '',
+      studentId: req.user.id,
+      studentUid: req.user.id,
+      student_name: studentName,
+      student_email: studentEmail,
       opportunity_id: opportunity_id,
+      opportunityId: opportunity_id,
       company_id: opp.company_id || '',
       company: opp.company || 'Tech Company',
       company_name: opp.company || 'Tech Company',
@@ -93,9 +108,19 @@ const applyHandler = async (req, res) => {
       role: opp.title || 'Position',
       type: opp.type || 'Job',
       status: 'Applied',
-      applied_at: new Date(),
-      created_at: new Date(),
-      updated_at: new Date()
+      resume_url: resumeUrl,
+      resumeUrl: resumeUrl,
+      cover_note: coverNote,
+      coverNote: coverNote,
+      portfolio_url: portfolioUrl,
+      portfolioUrl: portfolioUrl,
+      skills: req.body.skills || student.skills || [],
+      education: student.education || {},
+      applied_at: now,
+      created_at: now,
+      updated_at: now,
+      createdAt: now,
+      updatedAt: now
     };
     await newAppRef.set(application);
     // Scoring Engine Integration
@@ -220,21 +245,26 @@ router.post("/external", auth, async (req, res) => {
 // Get my applications
 router.get("/my", auth, async (req, res) => {
   try {
-    const [userAppsSnap, studentAppsSnap] = await Promise.all([
+    const [userAppsSnap, studentAppsSnap, studentUidSnap] = await Promise.all([
       db.collection("applications").where("user_id", "==", req.user.id).get(),
-      db.collection("applications").where("student_id", "==", req.user.id).get()
+      db.collection("applications").where("student_id", "==", req.user.id).get(),
+      db.collection("applications").where("studentUid", "==", req.user.id).get()
     ]);
     const appsMap = new Map();
     userAppsSnap.docs.forEach(doc => appsMap.set(doc.id, { id: doc.id, ...mapDoc(doc) }));
     studentAppsSnap.docs.forEach(doc => appsMap.set(doc.id, { id: doc.id, ...mapDoc(doc) }));
+    studentUidSnap.docs.forEach(doc => appsMap.set(doc.id, { id: doc.id, ...mapDoc(doc) }));
     const appsList = Array.from(appsMap.values());
     const applications = await Promise.all(appsList.map(async (app) => {
-      if (app.opportunity_id) {
-        const oppDoc = await db.collection("opportunities").doc(app.opportunity_id).get();
+      const oppId = app.opportunity_id || app.opportunityId;
+      if (oppId) {
+        const oppDoc = await db.collection("opportunities").doc(oppId).get();
         if (oppDoc.exists) {
           const o = mapDoc(oppDoc);
           return {
             ...app,
+            opportunity_id: oppId,
+            opportunityId: oppId,
             company: app.company_name || app.company || o.company || 'Tech Company',
             title: app.opportunity_title || app.role || app.internship_title || o.title || 'Position',
             type: app.type || o.type || 'Job',
@@ -281,14 +311,15 @@ router.get("/:id", auth, async (req, res) => {
     app.id = appDoc.id;
 
     // Security check: Only applicant or authorized admins can read
-    const isOwner = app.user_id === req.user.id || app.student_id === req.user.id;
+    const isOwner = app.user_id === req.user.id || app.student_id === req.user.id || app.studentUid === req.user.id || app.studentId === req.user.id;
     const isAdmin = ["admin", "super_admin", "college_admin", "company_admin", "recruiter"].includes(req.user.role);
     if (!isOwner && !isAdmin) {
       return res.status(403).json({ message: "Access denied. You can only view your own applications.", code: "FORBIDDEN" });
     }
 
-    if (app.opportunity_id) {
-      const oppDoc = await db.collection("opportunities").doc(app.opportunity_id).get();
+    const oppId = app.opportunity_id || app.opportunityId;
+    if (oppId) {
+      const oppDoc = await db.collection("opportunities").doc(oppId).get();
       if (oppDoc.exists) {
         const o = mapDoc(oppDoc);
         app.opportunity = {
@@ -376,13 +407,16 @@ router.delete("/:id", auth, async (req, res) => {
     const appDoc = await appRef.get();
     if (!appDoc.exists)
       return res.status(404).json({ message: "Application not found." });
-    const app = mapDoc(appDoc);
-    if (app.user_id !== req.user.id)
+    const isOwner = app.user_id === req.user.id || app.student_id === req.user.id || app.studentUid === req.user.id || app.studentId === req.user.id;
+    if (!isOwner)
       return res.status(403).json({ message: "Not authorized." });
-    if (app.status !== 'Applied')
+    const currentStatus = (app.status || '').toLowerCase();
+    if (currentStatus !== 'applied')
       return res.status(400).json({ message: "Cannot withdraw — application is already under review or decided." });
     await appRef.delete();
-    req.io.to(`user_${req.user.id}`).emit("application_withdrawn", { application_id: req.params.id });
+    if (req.io) {
+      req.io.to(`user_${req.user.id}`).emit("application_withdrawn", { application_id: req.params.id });
+    }
     console.log(`✅ Application ${req.params.id} withdrawn.`);
     res.json({ message: "Application withdrawn successfully." });
   } catch (err) {
