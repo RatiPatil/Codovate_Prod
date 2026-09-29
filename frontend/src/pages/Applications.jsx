@@ -52,11 +52,30 @@ const STATUS_CONFIG = {
     className: 'bg-slate-100 text-slate-600 border-slate-200',
     dotColor: 'bg-slate-400',
   },
+  Withdrawn: {
+    label: 'Withdrawn',
+    className: 'bg-slate-100 text-slate-500 border-slate-200',
+    dotColor: 'bg-slate-400',
+  },
   'External Link Opened': {
     label: 'External Link Opened',
     className: 'bg-slate-100 text-slate-700 border-slate-200',
     dotColor: 'bg-slate-400',
   }
+};
+
+export const getStatusConfig = (status) => {
+  if (!status) return STATUS_CONFIG['Applied'];
+  if (STATUS_CONFIG[status]) return STATUS_CONFIG[status];
+  const s = String(status).toLowerCase().replace(/_/g, ' ').trim();
+  if (s === 'applied') return STATUS_CONFIG['Applied'];
+  if (s === 'under review') return STATUS_CONFIG['Under Review'];
+  if (s === 'shortlisted') return STATUS_CONFIG['Shortlisted'];
+  if (s === 'interview') return STATUS_CONFIG['Interview'];
+  if (s === 'selected') return STATUS_CONFIG['Selected'];
+  if (s === 'rejected' || s === 'not selected') return STATUS_CONFIG['Rejected'];
+  if (s === 'withdrawn') return STATUS_CONFIG['Withdrawn'];
+  return { label: status, className: 'bg-blue-50 text-[#0066FF] border-blue-200', dotColor: 'bg-[#0066FF]' };
 };
 
 const formatDate = (val) => {
@@ -132,20 +151,22 @@ export default function Applications({ onNavigateToOpportunities }) {
 
   // Metrics
   const totalCount = applications.length;
-  const underReviewCount = applications.filter(a => a.status === 'Under Review').length;
-  const shortlistedCount = applications.filter(a => ['Shortlisted', 'Interview'].includes(a.status)).length;
-  const selectedCount = applications.filter(a => a.status === 'Selected').length;
+  const underReviewCount = applications.filter(a => ['under review', 'under_review'].includes((a.status || '').toLowerCase())).length;
+  const shortlistedCount = applications.filter(a => ['shortlisted', 'interview'].includes((a.status || '').toLowerCase())).length;
+  const selectedCount = applications.filter(a => (a.status || '').toLowerCase() === 'selected').length;
 
   // Filtered List
   const filteredApplications = applications.filter(app => {
+    const s = (app.status || '').toLowerCase().replace(/_/g, ' ');
     if (filterStatus === 'Active') {
-      if (['Selected', 'Rejected', 'External Link Opened'].includes(app.status)) return false;
+      if (['selected', 'rejected', 'not selected', 'withdrawn', 'external link opened'].includes(s)) return false;
     } else if (filterStatus !== 'All') {
-      if (app.status !== filterStatus) return false;
+      const target = filterStatus.toLowerCase();
+      if (s !== target) return false;
     }
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
-      const title = (app.title || app.opportunity_title || '').toLowerCase();
+      const title = (app.title || app.opportunity_title || app.role || '').toLowerCase();
       const company = (app.company || app.company_name || '').toLowerCase();
       if (!title.includes(q) && !company.includes(q)) return false;
     }
@@ -206,7 +227,7 @@ export default function Applications({ onNavigateToOpportunities }) {
       <div className="flex flex-col gap-3 rounded-2xl border border-slate-200/80 bg-white p-3.5 shadow-2xs sm:flex-row sm:items-center sm:justify-between">
         {/* Tabs */}
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 hide-scrollbar">
-          {['All', 'Active', 'Applied', 'Under Review', 'Selected', 'Rejected'].map(status => (
+          {['All', 'Active', 'Applied', 'Under Review', 'Shortlisted', 'Interview', 'Selected', 'Rejected'].map(status => (
             <button
               key={status}
               onClick={() => setFilterStatus(status)}
@@ -292,11 +313,12 @@ export default function Applications({ onNavigateToOpportunities }) {
       ) : (
         <div className="space-y-3">
           {filteredApplications.map((app) => {
-            const statusConfig = STATUS_CONFIG[app.status] || STATUS_CONFIG['Applied'];
+            const statusConfig = getStatusConfig(app.status);
             const companyName = app.company || app.company_name || 'Organization';
             const oppTitle = app.title || app.opportunity_title || app.role || 'Position';
-            const appliedDate = formatDate(app.applied_at || app.created_at);
-            const canWithdraw = app.status === 'Applied';
+            const appliedDate = formatDate(app.applied_at || app.created_at || app.createdAt);
+            const canWithdraw = (app.status || '').toLowerCase() === 'applied';
+            const oppId = app.opportunity_id || app.opportunityId;
 
             return (
               <div
@@ -366,9 +388,9 @@ export default function Applications({ onNavigateToOpportunities }) {
                     </span>
 
                     {/* View Details Button */}
-                    {app.opportunity_id && (
+                    {oppId && (
                       <button
-                        onClick={() => handleViewDetails(app.opportunity_id)}
+                        onClick={() => handleViewDetails(oppId)}
                         className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition"
                       >
                         Details

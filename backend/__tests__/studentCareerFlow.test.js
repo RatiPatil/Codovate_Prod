@@ -57,7 +57,19 @@ function createQuery(collectionName, filters = []) {
             id,
             data: () => ({ ...data }),
             exists: true,
-            ref: { id },
+            ref: {
+              id,
+              async update(d) {
+                const existing = col.get(id) || {};
+                col.set(id, { ...existing, ...d });
+              },
+              async set(d) {
+                col.set(id, { ...d });
+              },
+              async delete() {
+                col.delete(id);
+              },
+            },
           });
         }
       }
@@ -208,10 +220,10 @@ jest.mock('../config/firebase', () => ({
   }),
 }));
 
-// Build Express test application with student, opportunities, applications routes
 const studentRouter = require('../routes/students');
 const opportunityRouter = require('../routes/opportunities');
 const applicationRouter = require('../routes/applications');
+const notificationRouter = require('../routes/notifications');
 
 const app = express();
 app.use(express.json());
@@ -228,6 +240,7 @@ app.use((req, res, next) => {
 app.use('/api/students', studentRouter);
 app.use('/api/opportunities', opportunityRouter);
 app.use('/api/applications', applicationRouter);
+app.use('/api/notifications', notificationRouter);
 
 // Generate tokens for testing
 function generateToken(payload) {
@@ -602,6 +615,135 @@ describe('PHASE 7: Student End-to-End Career Flow Tests', () => {
 
       const appDoc = collections.applications.get(appId);
       expect(appDoc.status).toBe('Interview');
+    });
+  });
+
+  // ─────────────────────────────────────────────────────────────
+  // 8. My Applications Endpoint (/api/applications/my)
+  // ─────────────────────────────────────────────────────────────
+  describe('8. My Applications Endpoint (/api/applications/my)', () => {
+    beforeEach(async () => {
+      // Seed application for Student A
+      await request(app)
+        .post('/api/applications')
+        .set('Authorization', `Bearer ${studentAToken}`)
+        .send({ opportunity_id: 'opp_react_dev' });
+    });
+
+    it('returns list of applications populated with opportunity info for Student A', async () => {
+      const res = await request(app)
+        .get('/api/applications/my')
+        .set('Authorization', `Bearer ${studentAToken}`);
+
+      expect(res.status).toBe(200);
+      expect(Array.isArray(res.body)).toBe(true);
+      expect(res.body.length).toBe(1);
+      expect(res.body[0].opportunity_title).toBe('Frontend React Developer');
+      expect(res.body[0].company).toBe('Tech Corp');
+      expect(res.body[0].status).toBe('Applied');
+    });
+
+    it('returns empty list for Student B who has not applied yet', async () => {
+      const res = await request(app)
+        .get('/api/applications/my')
+        .set('Authorization', `Bearer ${studentBToken}`);
+
+      expect(res.status).toBe(200);
+      expect(Array.isArray(res.body)).toBe(true);
+      expect(res.body.length).toBe(0);
+    });
+  });
+
+  // ─────────────────────────────────────────────────────────────
+  // 9. Application Withdrawal Flow & Status Guard
+  // ─────────────────────────────────────────────────────────────
+  describe('9. Application Withdrawal Flow & Status Guard', () => {
+    let appId;
+
+    beforeEach(async () => {
+      const createRes = await request(app)
+        .post('/api/applications')
+        .set('Authorization', `Bearer ${studentAToken}`)
+        .send({ opportunity_id: 'opp_react_dev' });
+
+      appId = createRes.body.application.id;
+    });
+
+    it('allows student to withdraw their own application when status is Applied', async () => {
+      const res = await request(app)
+        .delete(`/api/applications/${appId}`)
+        .set('Authorization', `Bearer ${studentAToken}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.message).toContain('withdrawn successfully');
+
+      // Verify removed from Firestore collection
+      expect(collections.applications.has(appId)).toBe(false);
+    });
+
+    it('prevents Student B from withdrawing Student A application (403 Forbidden)', async () => {
+      const res = await request(app)
+        .delete(`/api/applications/${appId}`)
+        .set('Authorization', `Bearer ${studentBToken}`);
+
+      expect(res.status).toBe(403);
+      expect(res.body.message).toContain('Not authorized');
+
+      // Verify application still exists in Firestore
+      expect(collections.applications.has(appId)).toBe(true);
+    });
+
+    it('prevents student from withdrawing when status is no longer Applied', async () => {
+      // Admin updates status to Under Review
+      await request(app)
+        .put(`/api/applications/${appId}/status`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ status: 'Under Review' });
+
+      // Student tries to withdraw
+      const res = await request(app)
+        .delete(`/api/applications/${appId}`)
+        .set('Authorization', `Bearer ${studentAToken}`);
+
+      expect(res.status).toBe(400);
+      expect(res.body.message).toContain('Cannot withdraw');
+
+      // Application still exists
+      expect(collections.applications.has(appId)).toBe(true);
+    });
+  });
+
+  // ─────────────────────────────────────────────────────────────
+  // 10. Application Notification Dispatch & Isolation
+  // ─────────────────────────────────────────────────────────────
+  describe('10. Application Notification Dispatch & Isolation', () => {
+    it('creates notification for student on application submission and preserves isolation', async () => {
+      // Student A applies
+      await request(app)
+        .post('/api/applications')
+        .set('Authorization', `Bearer ${studentAToken}`)
+        .send({ opportunity_id: 'opp_react_dev' });
+
+      // Student A checks notifications
+      const notifResA = await request(app)
+        .get('/api/notifications')
+        .set('Authorization', `Bearer ${studentAToken}`);
+
+      expect(notifResA.status).toBe(200);
+      expect(Array.isArray(notifResA.body)).toBe(true);
+      expect(notifResA.body.length).toBeGreaterThanOrEqual(1);
+      const appNotif = notifResA.body.find(n => n.user_id === 'student_A');
+      expect(appNotif).toBeDefined();
+      expect(appNotif.title).toContain('Applied to Frontend React Developer');
+
+      // Student B checks notifications: should NOT see Student A's notification
+      const notifResB = await request(app)
+        .get('/api/notifications')
+        .set('Authorization', `Bearer ${studentBToken}`);
+
+      expect(notifResB.status).toBe(200);
+      const studentBSeeA = notifResB.body.some(n => n.user_id === 'student_A');
+      expect(studentBSeeA).toBe(false);
     });
   });
 });

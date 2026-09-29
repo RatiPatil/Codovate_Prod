@@ -66,7 +66,7 @@ describe('Applications Page Component', () => {
     const appliedBadges = await screen.findAllByText('Applied');
     expect(appliedBadges.length).toBeGreaterThan(0);
 
-    const interviewBadge = await screen.findByText('Interview');
-    expect(interviewBadge).toBeDefined();
+    const interviewBadges = await screen.findAllByText('Interview');
+    expect(interviewBadges.length).toBeGreaterThan(0);
   });
 });

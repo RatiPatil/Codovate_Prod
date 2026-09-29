@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../api/axios';
 import {
@@ -847,15 +847,66 @@ const Opportunities = () => {
     fetchOpportunities();
   }, [fetchOpportunities]);
 
-  /* Filtering */
-  const visibleOpportunities = opportunities.filter((o) => {
-    if (workModeFilter !== 'All') {
-      const mode = (o.mode || o.workMode || (o.is_remote ? 'Online' : 'On-site')).toLowerCase();
-      const target = workModeFilter.toLowerCase();
-      if (!mode.includes(target)) return false;
-    }
-    return true;
-  });
+  /* Filtering & Sorting */
+  const visibleOpportunities = useMemo(() => {
+    let list = opportunities.filter((o) => {
+      if (activeDomain !== 'all') {
+        const domain = (o.domain || o.category || o.field || '').toLowerCase();
+        const title = (o.title || '').toLowerCase();
+        const desc = (o.description || '').toLowerCase();
+        const skills = Array.isArray(o.required_skills)
+          ? o.required_skills.join(' ').toLowerCase()
+          : (Array.isArray(o.skills) ? o.skills.join(' ').toLowerCase() : '');
+        const domainMap = {
+          data: ['data', 'analytics', 'sql', 'bi'],
+          dataSci: ['data science', 'machine learning', 'ai', 'python'],
+          software: ['software', 'developer', 'frontend', 'backend', 'fullstack', 'react', 'node', 'web', 'dev'],
+          marketing: ['marketing', 'seo', 'growth', 'content', 'social media'],
+          sales: ['sales', 'business development', 'bd'],
+          design: ['ui', 'ux', 'design', 'figma', 'product design'],
+          finance: ['finance', 'accounting', 'audit'],
+          coding: ['coding', 'hackathon', 'competitive', 'algo'],
+          hackathon: ['hackathon', 'build', 'prototype'],
+          caseStudy: ['case study', 'consulting', 'strategy'],
+          quiz: ['quiz', 'trivia', 'assessment']
+        };
+        const targets = domainMap[activeDomain] || [activeDomain.toLowerCase()];
+        const matches = targets.some(t => domain.includes(t) || title.includes(t) || desc.includes(t) || skills.includes(t));
+        if (!matches) return false;
+      }
+      if (workModeFilter !== 'All') {
+        const mode = (o.mode || o.workMode || (o.is_remote ? 'Remote' : 'On-site')).toLowerCase();
+        const target = workModeFilter.toLowerCase();
+        if (!mode.includes(target)) return false;
+      }
+      if (teamSizeFilter !== 'All') {
+        const isTeam = o.is_team || (o.team_size && o.team_size > 1) || (o.mode && o.mode.toLowerCase().includes('team'));
+        if (teamSizeFilter === 'Team' && !isTeam) return false;
+        if (teamSizeFilter === 'Individual' && isTeam) return false;
+      }
+      return true;
+    });
+
+    return [...list].sort((a, b) => {
+      if (sortBy === 'deadline') {
+        const dateA = a.deadline ? new Date(a.deadline).getTime() : Infinity;
+        const dateB = b.deadline ? new Date(b.deadline).getTime() : Infinity;
+        return dateA - dateB;
+      }
+      if (sortBy === 'match') {
+        return (b.match_score || 0) - (a.match_score || 0);
+      }
+      if (sortBy === 'stipend') {
+        const numA = parseInt(String(a.stipend || a.salary || '0').replace(/\D/g, ''), 10) || 0;
+        const numB = parseInt(String(b.stipend || b.salary || '0').replace(/\D/g, ''), 10) || 0;
+        return numB - numA;
+      }
+      // default: newest
+      const timeA = a.created_at?.toMillis ? a.created_at.toMillis() : new Date(a.created_at || 0).getTime();
+      const timeB = b.created_at?.toMillis ? b.created_at.toMillis() : new Date(b.created_at || 0).getTime();
+      return timeB - timeA;
+    });
+  }, [opportunities, activeDomain, workModeFilter, teamSizeFilter, sortBy]);
 
   const pageTitle = isCompetition ? 'Competitions' :
                     activeType === 'job' ? 'Jobs' :
@@ -988,6 +1039,8 @@ const Opportunities = () => {
           >
             <option value="newest">Sort By: Newest</option>
             <option value="deadline">Sort By: Deadline</option>
+            <option value="match">Sort By: Best Match</option>
+            <option value="stipend">Sort By: Highest Stipend</option>
           </select>
         </div>
 

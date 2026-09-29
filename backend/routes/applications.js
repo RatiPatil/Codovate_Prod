@@ -407,6 +407,7 @@ router.delete("/:id", auth, async (req, res) => {
     const appDoc = await appRef.get();
     if (!appDoc.exists)
       return res.status(404).json({ message: "Application not found." });
+    const app = mapDoc(appDoc);
     const isOwner = app.user_id === req.user.id || app.student_id === req.user.id || app.studentUid === req.user.id || app.studentId === req.user.id;
     if (!isOwner)
       return res.status(403).json({ message: "Not authorized." });

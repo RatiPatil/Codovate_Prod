@@ -114,18 +114,35 @@ router.get("/:id", auth, async (req, res) => {
     }).catch(() => {});
 
     // Check if user has applied
-    const userAppSnap = await db.collection("applications")
+    let userAppSnap = await db.collection("applications")
       .where("opportunity_id", "==", opp.id)
       .where("user_id", "==", req.user.id)
       .limit(1)
       .get()
       .catch(() => ({ empty: true, docs: [] }));
+
+    if (userAppSnap.empty) {
+      userAppSnap = await db.collection("applications")
+        .where("opportunity_id", "==", opp.id)
+        .where("student_id", "==", req.user.id)
+        .limit(1)
+        .get()
+        .catch(() => ({ empty: true, docs: [] }));
+    }
+    if (userAppSnap.empty) {
+      userAppSnap = await db.collection("applications")
+        .where("opportunityId", "==", opp.id)
+        .where("studentUid", "==", req.user.id)
+        .limit(1)
+        .get()
+        .catch(() => ({ empty: true, docs: [] }));
+    }
     
     opp.has_applied = !userAppSnap.empty;
     if (!userAppSnap.empty) {
       const appData = mapDoc(userAppSnap.docs[0]);
       opp.application_status = appData.status || 'Applied';
-      opp.applied_at = appData.applied_at;
+      opp.applied_at = appData.applied_at || appData.createdAt;
       opp.application_id = userAppSnap.docs[0].id;
     }
 

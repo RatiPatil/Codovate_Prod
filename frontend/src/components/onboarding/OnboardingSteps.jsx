@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
-import { uploadProfilePhoto, uploadResume } from '../../utils/storageUtils';
+import { uploadProfilePhoto } from '../../utils/storageUtils';
 import { auth } from '../../lib/firebase';
 
 // Shared Input Field with Floating Label & Glowing Focus
