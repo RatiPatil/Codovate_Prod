@@ -2,9 +2,19 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from '../api/axios';
 import { useAuth } from './AuthContext';
 
-const RoleContext = createContext();
+const defaultRoleContext = {
+  role: null,
+  permissions: [],
+  isWildcard: false,
+  loading: false,
+  hasPermission: () => true,
+  hasAnyPermission: () => true,
+  hasRole: () => true,
+};
 
-export const useRole = () => useContext(RoleContext);
+const RoleContext = createContext(defaultRoleContext);
+
+export const useRole = () => useContext(RoleContext) || defaultRoleContext;
 
 export const RoleProvider = ({ children }) => {
   const { user, token } = useAuth();

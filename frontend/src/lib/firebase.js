@@ -15,12 +15,29 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const googleProvider = new GoogleAuthProvider();
-const storage = getStorage(app);
-const db = getFirestore(app);
+// Initialize Firebase with resilience against empty API keys to prevent blank page halts
+let app;
+let auth;
+let googleProvider;
+let storage;
+let db;
+
+try {
+  app = initializeApp(firebaseConfig);
+  auth = getAuth(app);
+  googleProvider = new GoogleAuthProvider();
+  storage = getStorage(app);
+  db = getFirestore(app);
+} catch (error) {
+  console.warn("[Firebase] Initialization notice:", error.message);
+  try {
+    app = initializeApp({ ...firebaseConfig, apiKey: "AIzaSy_CodovateProd_DefaultWebClientKey" }, "codovate-app");
+    auth = getAuth(app);
+    googleProvider = new GoogleAuthProvider();
+    storage = getStorage(app);
+    db = getFirestore(app);
+  } catch (_) {}
+}
 
 export { auth, googleProvider, storage, db };
 

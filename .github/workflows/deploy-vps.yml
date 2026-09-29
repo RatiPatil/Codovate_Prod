@@ -92,6 +92,14 @@ jobs:
             echo "ERROR: Firebase API key missing from production build"
             exit 1
           fi
+          if grep -RqiE 'apiKey:""|apiKey:'"''" dist/assets; then
+            echo "ERROR: Firebase API key is empty string in production build"
+            exit 1
+          fi
+          if grep -Rq 'REPLACE_WITH_' dist/assets; then
+            echo "ERROR: Placeholder credentials detected in production build"
+            exit 1
+          fi
           echo "Frontend build verified"
 
       - name: Upload frontend artifact
