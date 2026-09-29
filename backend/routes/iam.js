@@ -1,8 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const crypto = require("crypto");
-const { db } = require("../config/firebase");
-const { getAuth } = require("firebase-admin/auth");
+const { db, getAuth } = require("../config/firebase");
 const { authenticate, authorize } = require("../middleware");
 const { logLoginHistory, getClientIP } = require("../middleware/auditLog");
 

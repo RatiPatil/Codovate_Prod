@@ -16,6 +16,17 @@ const initializeAdminRealtime = (io) => {
   isInitialized = true;
   console.log('⚡ Initializing Admin Real-time Streams...');
 
+  try {
+    const usersCol = db.collection('users');
+    if (!usersCol || typeof usersCol.onSnapshot !== 'function') {
+      console.log('ℹ️ Admin Real-time Streams skipped: onSnapshot is not available on db.');
+      return;
+    }
+  } catch (err) {
+    console.log('ℹ️ Admin Real-time Streams skipped:', err.message);
+    return;
+  }
+
   // 1. Super Admin Global Listeners
   // Listen to Users collection
   db.collection('users').onSnapshot(async (snapshot) => {

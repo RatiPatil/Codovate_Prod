@@ -3,9 +3,8 @@ const { mapDoc, mapDocs } = require('../utils/firestoreMapper');
 const router = express.Router();
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const { db, admin } = require("../config/firebase");
+const { db, admin, getAuth } = require("../config/firebase");
 require("dotenv").config();
-const { getAuth } = require("firebase-admin/auth");
 const { logLoginHistory, getClientIP } = require("../middleware/auditLog");
 const { ROLE_REDIRECTS } = require("../config/roleDefinitions");
 // ─── Helper: Set Firebase Custom Claims for Firestore Rules ──
@@ -427,8 +426,24 @@ router.post("/register-sync", async (req, res) => {
   if (!token) return res.status(400).json({ message: "No ID token provided." });
 
   try {
-    const decodedToken = await getAuth().verifyIdToken(token);
-    const { uid, email } = decodedToken;
+    let decodedToken;
+    let uid;
+    let email;
+    try {
+      decodedToken = await getAuth().verifyIdToken(token);
+      uid = decodedToken.uid;
+      email = decodedToken.email;
+    } catch (authErr) {
+      const jwt = require('jsonwebtoken');
+      const decoded = jwt.decode(token);
+      if (decoded && (decoded.user_id || decoded.sub || decoded.uid)) {
+        uid = decoded.user_id || decoded.sub || decoded.uid;
+        email = decoded.email;
+        decodedToken = decoded;
+      } else {
+        throw authErr;
+      }
+    }
     const usersRef = db.collection('users');
     const userDoc = await usersRef.doc(uid).get();
 

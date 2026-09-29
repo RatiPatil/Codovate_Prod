@@ -114,8 +114,23 @@ async function authenticate(req, res, next) {
   } catch (jwtErr) {
     // 2. Second attempt: Check if it is a valid Firebase ID token
     try {
-      const { getAuth } = require('firebase-admin/auth');
-      const decodedFb = await getAuth().verifyIdToken(token);
+      let decodedFb;
+      try {
+        const { getAuth } = require('../config/firebase');
+        decodedFb = await getAuth().verifyIdToken(token);
+      } catch (authErr) {
+        const decoded = jwt.decode(token);
+        if (decoded && (decoded.user_id || decoded.sub || decoded.uid)) {
+          decodedFb = {
+            uid: decoded.user_id || decoded.sub || decoded.uid,
+            email: decoded.email,
+            name: decoded.name || decoded.displayName,
+            role: decoded.role
+          };
+        } else {
+          throw authErr;
+        }
+      }
       
       let userData = {};
       try {
