@@ -28,7 +28,7 @@ Firestore is schemaless; the schema below is enforced by `firestore.rules`, form
 
 ### Application integrity
 
-A transaction reads the application ID and authoritative listing, checks duplicates and expiry, then writes a single record. Rules independently enforce owner ID, published status, server-time deadline, immutable listing title/organization, and a nonempty owner name/college/résumé path matching the profile. Deterministic IDs plus create-only access prevent repeated applications even in concurrent tabs. Applications store snapshots of student name/college and listing title/organization, retaining context when a profile/listing changes.
+A transaction reads the application ID and authoritative listing, checks duplicates and expiry, then writes a single record. Rules independently enforce owner ID, published status, server-time deadline, immutable listing title/organization, and a nonempty owner name/college plus an owner résumé path or HTTPS résumé link matching the profile. Deterministic IDs plus create-only access prevent repeated applications even in concurrent tabs. Applications store snapshots of student name/college and listing title/organization, retaining context when a profile/listing changes.
 
 Statuses: submitted → under_review → shortlisted → selected / rejected. Administrators can correct a status; updates cannot rewrite the owner, opportunity, résumé path or submission. Students cannot update application status. Cover notes have a 2000 character maximum. No applicant email or résumé is placed in a public listing.
 
@@ -40,7 +40,7 @@ Student lists use `where(studentId, ==, uid)`; rules reject unrestricted cross-s
 
 ## Provisioning and lifecycle
 
-1. Enable Auth/Firestore/Storage in the new project and deploy rules/indexes before real use.
+1. Enable Auth and Firestore in the new project; Storage is optional when using résumé links and deploy rules/indexes before real use.
 2. Auth registration is followed by profile creation. If profile creation is interrupted, the profile page can initialize it on the next successful save. No account is silently granted elevated access.
 3. Use `scripts/set-admin.mjs` from a trusted workstation to grant/revoke the admin custom claim.
 4. Admin publishes a listing → student saves/applies → admin reviews and updates status → student observes live state via Firestore listeners.
@@ -50,7 +50,7 @@ Rules default-deny all unknown collections/paths. Profile/application deletion a
 
 ## Executable schema and read-only audit
 
-`database/firestore.schema.json` defines all nine document shapes using JSON Schema 2020-12, with required fields, enums, numeric ranges, lengths and unknown-field rejection. `database/examples.json` contains one example of each collection; these records are documentation fixtures and are never imported into Firebase.
+`database/firestore.schema.json` defines all twelve document shapes using JSON Schema 2020-12, with required fields, enums, numeric ranges, lengths and unknown-field rejection. `database/examples.json` contains one example of each collection; these records are documentation fixtures and are never imported into Firebase.
 
 The validator normalizes Firestore timestamps to ISO 8601 strings. It also checks relationships that JSON Schema cannot express: matching `deadline`/`closesAt`, deterministic application/bookmark IDs, and owner-specific résumé paths. Security Rules remain the authority for live Firebase access; the JSON Schema is a separate read-only validation and review tool, not a native Firestore schema migration.
 
@@ -64,7 +64,7 @@ node scripts/validate-schema.mjs --file export.json
 node scripts/validate-schema.mjs --project YOUR_NEW_PROJECT_ID
 ```
 
-The cloud audit reads every document in the four named collections. It makes no writes and prints only record paths and validation failures. Run it deliberately on an appropriately sized project, as Firestore reads are billable.
+The cloud audit reads every document in the twelve named collections. It makes no writes and prints only record paths and validation failures. Run it deliberately on an appropriately sized project, as Firestore reads are billable.
 
 Live rules now require unique string skills, each 1–60 characters, with at most 20 skills. Graduation year must be empty for an incomplete profile or a four-digit year from 2000 through 2100. Profile and publishing forms explain skill-limit violations before submitting to Firebase. Existing data is not rewritten; use the read-only audit to identify any records requiring manual correction before deploying stricter rules.
 
@@ -74,7 +74,7 @@ Live rules now require unique string skills, each 1–60 characters, with at mos
 
 `resources/{autoId}` stores curated external learning links: `title` (1–120), `description` (1–1000), `url` (HTTPS, up to 1000), `category` (`Interview prep`, `Resume & portfolio`, `Technical skills`, `Career guidance`), `status` (`draft` or `published`), `createdBy`, `createdAt`, `updatedAt`. Only a custom-claim admin can create, edit, publish, unpublish or delete. Creator and creation time are immutable. The public library can only query published records. Links open in a new tab with `noopener noreferrer`.
 
-All nine collections have executable contracts in `database/firestore.schema.json` and documentation-only records in `database/examples.json`. These records are not seeded automatically. Firebase creates collections on their first authorized write; there is no SQL migration or second database.
+All twelve collections have executable contracts in `database/firestore.schema.json` and documentation-only records in `database/examples.json`. These records are not seeded automatically. Firebase creates collections on their first authorized write; there is no SQL migration or second database.
 
 ## Query catalog and pagination
 
@@ -98,6 +98,12 @@ Admin claims must be provisioned with `scripts/set-admin.mjs` using trusted cred
 
 ## Student projects and team discovery
 
-The projects, teams and teamRequests collections add private/public portfolios, signed-in team discovery and private introductions. See [COMMUNITY.md](COMMUNITY.md) for complete fields, constraints, query/index mappings, state transitions and access policy. The executable schema and read-only validator now cover all nine collections. Request IDs must match studentId_teamId; self-requests are invalid. Public project queries constrain both visibility=public and moderation=visible. Owner inboxes constrain teamId and ownerId.
+The projects, teams and teamRequests collections add private/public portfolios, signed-in team discovery and private introductions. See [COMMUNITY.md](COMMUNITY.md) for complete fields, constraints, query/index mappings, state transitions and access policy. The executable schema and read-only validator now cover all twelve collections. Request IDs must match studentId_teamId; self-requests are invalid. Public project queries constrain both visibility=public and moderation=visible. Owner inboxes constrain teamId and ownerId.
 
 All new queries use bounded cursor pages. Query/account changes immediately clear old rows and ignore stale responses. Successful project/team saves open the owner view; successful introductions open My requests. Identity fields snapshot the creator profile at creation and remain immutable. Team ownership cannot transfer, teams cannot be deleted, and applicants/owners cannot rewrite an introduction after submission. Only custom-claim admins can hide/restore content; students cannot reverse moderation.
+
+## Mentoring and updates
+
+See [GROWTH.md](GROWTH.md) for the mentoring request state machine, private meeting links, announcements, query/index contracts and release steps. `mentorSessions`, `mentorBookings` and `announcements` bring the executable schema to twelve collections.
+
+Profiles may include optional `resumeUrl` (empty or HTTPS, maximum 500 characters). Applications snapshot that private link and/or the existing owner PDF path. At least one is required, and each submitted value must match the current profile. Résumé links allow applications without provisioning Storage. External file permissions remain the student's responsibility; links are readable only by the student and administrators through Firestore rules.

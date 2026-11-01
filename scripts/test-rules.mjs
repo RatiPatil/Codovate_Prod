@@ -869,6 +869,349 @@ try {
       }),
     ),
   );
+  const ms = {
+    title: "Interview practice",
+    mentorName: "Mentor",
+    topic: "Interview practice",
+    description: "Practice a project introduction.",
+    startsAt: Timestamp.fromDate(new Date("2099-01-01")),
+    durationMinutes: 30,
+    format: "Online",
+    location: "Online — link shared after confirmation",
+    status: "draft",
+    createdBy: "operator",
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  };
+  const msRef = doc(admin.firestore(), "mentorSessions", "m1");
+  await check(
+    "admin creates mentor session draft",
+    assertSucceeds(setDoc(msRef, ms)),
+  );
+  await check(
+    "mentor session draft private to admin",
+    assertFails(getDoc(doc(guest.firestore(), "mentorSessions", "m1"))),
+  );
+  await check(
+    "student cannot publish a mentor session",
+    assertFails(
+      setDoc(doc(alice.firestore(), "mentorSessions", "m2"), {
+        ...ms,
+        createdBy: "alice",
+      }),
+    ),
+  );
+  await check(
+    "admin publishes a mentor session",
+    assertSucceeds(
+      updateDoc(msRef, { status: "published", updatedAt: serverTimestamp() }),
+    ),
+  );
+  await check(
+    "public can browse published mentor sessions",
+    assertSucceeds(
+      getDocs(
+        query(
+          collection(guest.firestore(), "mentorSessions"),
+          where("status", "==", "published"),
+        ),
+      ),
+    ),
+  );
+  await check(
+    "public cannot browse unpublished mentor sessions",
+    assertFails(getDocs(collection(guest.firestore(), "mentorSessions"))),
+  );
+  const booking = {
+    studentId: "alice",
+    studentName: "Alice",
+    sessionId: "m1",
+    sessionTitle: ms.title,
+    mentorName: ms.mentorName,
+    startsAt: ms.startsAt,
+    durationMinutes: 30,
+    format: "Online",
+    location: ms.location,
+    note: "Help me explain my project.",
+    status: "pending",
+    meetingUrl: "",
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  };
+  const bookRef = doc(alice.firestore(), "mentorBookings", "alice_m1"),
+    adminBook = doc(admin.firestore(), "mentorBookings", "alice_m1");
+  await check(
+    "student requests published future session",
+    assertSucceeds(setDoc(bookRef, booking)),
+  );
+  await check(
+    "duplicate mentoring request rejected",
+    assertFails(setDoc(bookRef, booking)),
+  );
+  await check(
+    "other student cannot read private booking",
+    assertFails(getDoc(doc(bob.firestore(), "mentorBookings", "alice_m1"))),
+  );
+  await check(
+    "guest cannot read private booking",
+    assertFails(getDoc(doc(guest.firestore(), "mentorBookings", "alice_m1"))),
+  );
+  await check(
+    "owner can query own bookings",
+    assertSucceeds(
+      getDocs(
+        query(
+          collection(alice.firestore(), "mentorBookings"),
+          where("studentId", "==", "alice"),
+        ),
+      ),
+    ),
+  );
+  await check(
+    "student cannot query all bookings",
+    assertFails(getDocs(collection(alice.firestore(), "mentorBookings"))),
+  );
+  await check(
+    "student cannot confirm their own booking",
+    assertFails(
+      updateDoc(bookRef, {
+        status: "confirmed",
+        meetingUrl: "https://example.com/meeting",
+        updatedAt: serverTimestamp(),
+      }),
+    ),
+  );
+  await check(
+    "online confirmation requires a private HTTPS link",
+    assertFails(
+      updateDoc(adminBook, {
+        status: "confirmed",
+        updatedAt: serverTimestamp(),
+      }),
+    ),
+  );
+  await check(
+    "non HTTPS meeting link rejected",
+    assertFails(
+      updateDoc(adminBook, {
+        status: "confirmed",
+        meetingUrl: "javascript:alert(1)",
+        updatedAt: serverTimestamp(),
+      }),
+    ),
+  );
+  await check(
+    "admin confirms with private meeting link",
+    assertSucceeds(
+      updateDoc(adminBook, {
+        status: "confirmed",
+        meetingUrl: "https://example.com/meeting",
+        updatedAt: serverTimestamp(),
+      }),
+    ),
+  );
+  await check(
+    "early completion rejected by server time",
+    assertFails(
+      updateDoc(adminBook, {
+        status: "completed",
+        updatedAt: serverTimestamp(),
+      }),
+    ),
+  );
+  await check(
+    "session cannot be rescheduled behind confirmed booking",
+    assertFails(
+      updateDoc(msRef, {
+        startsAt: Timestamp.fromDate(new Date("2099-02-01")),
+        updatedAt: serverTimestamp(),
+      }),
+    ),
+  );
+  await check(
+    "student cancels confirmed booking",
+    assertSucceeds(
+      updateDoc(bookRef, { status: "cancelled", updatedAt: serverTimestamp() }),
+    ),
+  );
+  await check(
+    "stale admin cannot confirm cancelled booking",
+    assertFails(
+      updateDoc(adminBook, {
+        status: "confirmed",
+        meetingUrl: "https://example.com/meeting",
+        updatedAt: serverTimestamp(),
+      }),
+    ),
+  );
+  await check(
+    "mentor session closed to new requests",
+    assertSucceeds(
+      updateDoc(msRef, { status: "closed", updatedAt: serverTimestamp() }),
+    ),
+  );
+  await check(
+    "closed mentor session rejects new student request",
+    assertFails(
+      setDoc(doc(bob.firestore(), "mentorBookings", "bob_m1"), {
+        ...booking,
+        studentId: "bob",
+        studentName: "Bob",
+      }),
+    ),
+  );
+  await check(
+    "mentoring history cannot be deleted",
+    assertFails(deleteDoc(adminBook)),
+  );
+  const news = {
+    title: "New learning resources",
+    body: "Find new resources in the learning library.",
+    category: "Learning",
+    status: "draft",
+    link: "https://example.com/learn",
+    createdBy: "operator",
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  };
+  const newsRef = doc(admin.firestore(), "announcements", "n1");
+  await check(
+    "admin creates announcement draft",
+    assertSucceeds(setDoc(newsRef, news)),
+  );
+  await check(
+    "guest cannot read draft announcement",
+    assertFails(getDoc(doc(guest.firestore(), "announcements", "n1"))),
+  );
+  await check(
+    "student cannot publish announcements",
+    assertFails(
+      setDoc(doc(alice.firestore(), "announcements", "n2"), {
+        ...news,
+        createdBy: "alice",
+      }),
+    ),
+  );
+  await check(
+    "admin publishes announcement",
+    assertSucceeds(
+      updateDoc(newsRef, { status: "published", updatedAt: serverTimestamp() }),
+    ),
+  );
+  await check(
+    "public published announcement query accepted",
+    assertSucceeds(
+      getDocs(
+        query(
+          collection(guest.firestore(), "announcements"),
+          where("status", "==", "published"),
+        ),
+      ),
+    ),
+  );
+  await check(
+    "announcement creator cannot be changed",
+    assertFails(
+      updateDoc(newsRef, { createdBy: "alice", updatedAt: serverTimestamp() }),
+    ),
+  );
+  await check(
+    "admin can unpublish announcement",
+    assertSucceeds(
+      updateDoc(newsRef, { status: "draft", updatedAt: serverTimestamp() }),
+    ),
+  );
+  await check(
+    "unpublished announcement becomes private",
+    assertFails(getDoc(doc(guest.firestore(), "announcements", "n1"))),
+  );
+  await check(
+    "owner can use HTTPS resume link without Storage",
+    assertSucceeds(
+      updateDoc(doc(alice.firestore(), "users", "alice"), {
+        resumePath: "",
+        resumeUrl: "https://example.com/resume.pdf",
+        updatedAt: serverTimestamp(),
+      }),
+    ),
+  );
+  await check(
+    "unsafe resume link rejected",
+    assertFails(
+      updateDoc(doc(alice.firestore(), "users", "alice"), {
+        resumeUrl: "http://example.com/resume.pdf",
+        updatedAt: serverTimestamp(),
+      }),
+    ),
+  );
+  await check(
+    "admin publishes listing for linked resume",
+    assertSucceeds(
+      setDoc(doc(admin.firestore(), "opportunities", "link-opp"), listing),
+    ),
+  );
+  await check(
+    "linked resume application accepted without uploaded file",
+    assertSucceeds(
+      setDoc(doc(alice.firestore(), "applications", "alice_link-opp"), {
+        ...application,
+        opportunityId: "link-opp",
+        resumePath: "",
+        resumeUrl: "https://example.com/resume.pdf",
+      }),
+    ),
+  );
+  await check(
+    "admin publishes second listing for link tamper test",
+    assertSucceeds(
+      setDoc(doc(admin.firestore(), "opportunities", "link-tamper"), listing),
+    ),
+  );
+  await check(
+    "application cannot substitute a different resume link",
+    assertFails(
+      setDoc(doc(alice.firestore(), "applications", "alice_link-tamper"), {
+        ...application,
+        opportunityId: "link-tamper",
+        resumePath: "",
+        resumeUrl: "https://example.com/another-resume.pdf",
+      }),
+    ),
+  );
+  await env.withSecurityRulesDisabled(async (context) => {
+    const past = Timestamp.fromDate(new Date("2020-01-01"));
+    await setDoc(doc(context.firestore(), "mentorSessions", "m-past"), {
+      ...ms,
+      startsAt: past,
+      status: "published",
+    });
+    await setDoc(doc(context.firestore(), "mentorBookings", "alice_m-ended"), {
+      ...booking,
+      sessionId: "m-ended",
+      startsAt: past,
+      status: "confirmed",
+      meetingUrl: "https://example.com/meeting",
+    });
+  });
+  await check(
+    "expired session refuses new mentoring request",
+    assertFails(
+      setDoc(doc(alice.firestore(), "mentorBookings", "alice_m-past"), {
+        ...booking,
+        sessionId: "m-past",
+        startsAt: Timestamp.fromDate(new Date("2020-01-01")),
+      }),
+    ),
+  );
+  await check(
+    "admin can complete a confirmed session after its end time",
+    assertSucceeds(
+      updateDoc(doc(admin.firestore(), "mentorBookings", "alice_m-ended"), {
+        status: "completed",
+        updatedAt: serverTimestamp(),
+      }),
+    ),
+  );
   console.log(`${checks} Firebase security checks passed.`);
 } finally {
   await env.cleanup();

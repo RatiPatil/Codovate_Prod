@@ -3445,3 +3445,162 @@ button:disabled:hover {
 .project-detail .detail-main > .multiline {
   overflow-wrap: anywhere;
 }
+
+/* New feature layouts reuse the current theme tokens. */
+.mentoring-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+.mentor-card {
+  padding: 25px;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.mentor-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  gap: 15px;
+}
+.mentor-avatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background: var(--border);
+  color: var(--blue);
+  font-size: 22px;
+}
+.mentor-card h2,
+.update-card h2 {
+  font-size: 21px;
+  line-height: 1.35;
+  margin: 12px 0;
+  overflow-wrap: anywhere;
+}
+.mentor-name {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 18px;
+}
+.mentor-facts {
+  display: grid;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--muted);
+  padding: 15px 0;
+  margin-bottom: 13px;
+  border-block: 1px solid var(--border);
+}
+.mentor-facts > span {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.mentor-facts svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.mentor-card > .button {
+  align-self: flex-start;
+  margin-top: auto;
+}
+.community-form fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+.mentor-card select,
+.booking-review select,
+.booking-review input {
+  width: 100%;
+  font: inherit;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  background: white;
+  color: var(--navy);
+}
+.booking-review {
+  display: grid;
+  grid-template-columns: 1fr 2fr auto;
+  gap: 14px;
+  align-items: end;
+  padding-top: 17px;
+  border-top: 1px solid var(--border);
+}
+.booking-review label {
+  display: grid;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.updates-list {
+  display: grid;
+  gap: 18px;
+}
+.update-card {
+  display: flex;
+  gap: 20px;
+  padding: 25px;
+  min-width: 0;
+}
+.update-card > div {
+  min-width: 0;
+  flex: 1;
+}
+.update-symbol {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  background: var(--border);
+  color: var(--blue);
+  border-radius: 14px;
+  flex-shrink: 0;
+}
+.growth-tabs {
+  margin: 24px 0;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.community-form fieldset:disabled input,
+.community-form fieldset:disabled select,
+.community-form fieldset:disabled textarea {
+  opacity: 0.65;
+}
+.mentor-card .career-controls {
+  margin-bottom: 0;
+}
+.mentor-card .career-controls > label {
+  display: grid;
+  gap: 8px;
+  font-size: 13px;
+  width: 100%;
+}
+@media (max-width: 1000px) {
+  .booking-review {
+    grid-template-columns: 1fr 1fr;
+  }
+  .booking-review > .button {
+    justify-self: start;
+  }
+}
+@media (max-width: 760px) {
+  .mentoring-grid,
+  .booking-review {
+    grid-template-columns: 1fr;
+  }
+  .mentor-card,
+  .update-card {
+    padding: 23px;
+  }
+  .update-card {
+    gap: 14px;
+  }
+}

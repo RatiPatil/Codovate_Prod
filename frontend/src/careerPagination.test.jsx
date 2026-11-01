@@ -27,6 +27,29 @@ beforeEach(() => {
 });
 afterEach(cleanup);
 describe("Firestore cursor pages", () => {
+  it("filters mentoring bookings by owner and announcements by publication", async () => {
+    fake.read.mockResolvedValue({ docs: [], size: 0 });
+    const { result, unmount } = renderHook(() =>
+      useCareerPage("mentorBookings", "alice", false, "mine"),
+    );
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(fake.query.mock.calls.at(-1)).toContainEqual([
+      "where",
+      "studentId",
+      "==",
+      "alice",
+    ]);
+    unmount();
+    const news = renderHook(() => useCareerPage("announcements", null, false));
+    await waitFor(() => expect(news.result.current.loading).toBe(false));
+    expect(fake.query.mock.calls.at(-1)).toContainEqual([
+      "where",
+      "status",
+      "==",
+      "published",
+    ]);
+  });
+
   it("clears private rows immediately when the account changes", async () => {
     let finish;
     fake.read

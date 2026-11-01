@@ -54,7 +54,7 @@ node scripts/set-admin.mjs YOUR_NEW_PROJECT_ID USER_UID revoke
 
 ## Database and access design
 
-See [docs/DATABASE.md](docs/DATABASE.md) for the complete collection schema, ownership, constraints and query indexes. Firebase Auth is the only identity provider, Cloud Firestore is the only database, and Firebase Storage holds private PDF résumés. No SQL, MongoDB, custom JWT, API server or browser database is used.
+See [docs/DATABASE.md](docs/DATABASE.md) for the complete collection schema, ownership, constraints and query indexes. Firebase Auth is the only identity provider, Cloud Firestore is the only database, and optional Firebase Storage holds private PDF résumés; students can instead provide a private HTTPS résumé link. No SQL, MongoDB, custom JWT, API server or browser database is used.
 
 ## Local emulator testing (optional)
 
@@ -81,7 +81,7 @@ In `frontend/.env.local`, set `VITE_USE_EMULATORS=true` plus web config for a lo
 
 ## Scope and limits
 
-This rebuild implements the opportunity-to-application workflow. It does not claim full feature parity with Internshala or Unstop: paid courses, employer onboarding, payments, team submissions, assessments, event scoring and notifications are not implemented. Admins currently publish on behalf of organizations. Competition/hackathon applications are individual expressions of interest, with no team or multi-round scoring engine. Discovery, admin lists, the learning library and career planner use bounded cursor pagination. Search/filter controls operate on loaded records; refresh retrieves new catalog entries. Owner application/bookmark subscriptions remain unpaginated. Live Firebase acceptance requires your new configuration and deployed rules. The résumé path is stable: replacing a résumé also changes the file an administrator sees for earlier applications.
+This rebuild implements the opportunity-to-application workflow. It does not claim full feature parity with Internshala or Unstop: paid courses, employer onboarding, payments, team submissions, assessments, event scoring and email/push notifications are not implemented. Admins currently publish on behalf of organizations. Competition/hackathon applications are individual expressions of interest, with no team or multi-round scoring engine. Discovery, admin lists, the learning library and career planner use bounded cursor pagination. Search/filter controls operate on loaded records; refresh retrieves new catalog entries. Owner application/bookmark subscriptions remain unpaginated. Live Firebase acceptance requires your new configuration and deployed rules. The résumé path is stable: replacing a résumé also changes the file an administrator sees for earlier applications.
 
 CI runs tests and builds. **There is no automatic deployment**; changes on main are for local review. Optional Firebase Hosting configuration is included for a later explicit deployment. The old implementation remains available in Git history.
 
@@ -120,3 +120,9 @@ For Antigravity, copy [docs/ANTIGRAVITY_DEPLOYMENT_PROMPT.md](docs/ANTIGRAVITY_D
 /projects provides a public showcase and a private-by-default portfolio editor. /teams lets signed-in students start a team, discover recruiting teams, send a private introduction and track owner decisions. Owners have an inbox; admins can moderate projects and teams. Acceptance records an introduction, not a chat workspace or challenge team submission.
 
 See [docs/COMMUNITY.md](docs/COMMUNITY.md) for functionality, database contracts, privacy and acceptance checks. This release also improves navigation overflow, clears private rows on account changes, prevents duplicate form submissions, preserves failed drafts and adds render-error recovery. Firebase cloud setup remains separate from emulator verification.
+
+### Mentoring, updates and résumé links
+
+Students can discover mentor sessions, request a place, track admin decisions, cancel and download confirmed appointments as calendar events. Administrators manage sessions, private booking decisions/meeting links and categorized platform announcements. The new screens reuse the existing theme and layout, with clear empty/error states. See [docs/GROWTH.md](docs/GROWTH.md) for schemas, permissions, limitations and release instructions.
+
+**No-billing résumé workflow:** add an HTTPS résumé link in My profile instead of uploading a PDF. Firestore and Authentication are required; Cloud Storage is optional. `npm run firebase:configure` only writes local configuration. Deploy Firestore rules/indexes separately when Storage is unavailable; the full `firebase:setup` script also attempts Storage deployment.

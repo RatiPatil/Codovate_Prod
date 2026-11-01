@@ -80,6 +80,7 @@ import {
   skillInputError,
 } from "./domain";
 
+import { httpsLink } from "./communityData";
 import { useCareerPage } from "./careerData";
 import {
   CareerPlanner,
@@ -89,6 +90,8 @@ import {
 } from "./Career";
 
 import { Projects, Teams, ProjectDetails } from "./Community";
+
+import { Mentoring, BookingAdmin, Updates } from "./Growth";
 
 const categoryIcons = {
   internship: BriefcaseBusiness,
@@ -236,6 +239,7 @@ function Footer() {
         <Link to="/profile">Your profile</Link>
         <Link to="/learn">Learning library</Link>
         <Link to="/projects">Project showcase</Link>
+        <Link to="/updates">Updates</Link>
         {!configured && <Link to="/setup">Setup guide</Link>}
       </div>
       <small>© {new Date().getFullYear()} Codovate</small>
@@ -849,12 +853,14 @@ function Details({ catalog }) {
                   placeholder="What excites you about this opportunity?"
                 />
               </label>
-              {user && (!profile?.resumePath || !profile?.college) && (
-                <p className="hint">
-                  Add your college and résumé to{" "}
-                  <Link to="/profile">your profile</Link> before applying.
-                </p>
-              )}
+              {user &&
+                (!(profile?.resumePath || profile?.resumeUrl) ||
+                  !profile?.college) && (
+                  <p className="hint">
+                    Add your college and résumé to{" "}
+                    <Link to="/profile">your profile</Link> before applying.
+                  </p>
+                )}
               <button
                 className="button full"
                 disabled={!configured || busy || !isOpen(item)}
@@ -1212,6 +1218,8 @@ function Workspace({ children, title, subtitle }) {
           ["/learn", "Learning library", GraduationCap],
           ["/projects?view=mine", "My projects", Code2],
           ["/teams", "Find a team", Building2],
+          ["/mentoring", "Mentor sessions", GraduationCap],
+          ["/updates", "Platform updates", Sparkles],
           ["/profile", "My profile", UserRound],
           ...(admin ? [["/admin", "Administration", ShieldCheck]] : []),
         ].map(([to, label, Icon]) => (
@@ -1290,7 +1298,11 @@ function Dashboard({ catalog }) {
             !!profile?.college && !!profile?.skills?.length,
             "/profile",
           ],
-          ["Upload your résumé", !!profile?.resumePath, "/profile"],
+          [
+            "Add your résumé",
+            !!(profile?.resumePath || profile?.resumeUrl),
+            "/profile",
+          ],
           ["Send your first application", apps.items.length > 0, "/explore"],
         ].map(([title, done, to]) => (
           <Link key={title} to={to}>
@@ -1332,6 +1344,14 @@ function Dashboard({ catalog }) {
           <ArrowUpRight size={18} />
         </Link>
       </section>
+      <div className="career-controls">
+        <Link className="button secondary" to="/mentoring">
+          Find mentor guidance <GraduationCap size={16} />
+        </Link>
+        <Link className="button secondary" to="/updates">
+          What’s new at Codovate <Sparkles size={16} />
+        </Link>
+      </div>
       {profile?.skills?.length > 0 && (
         <section className="section">
           <div className="section-heading">
@@ -1506,6 +1526,7 @@ function Profile() {
     setError("");
     setMessage("");
     try {
+      data.resumeUrl = httpsLink(data.resumeUrl);
       let resumePath = profile?.resumePath || "";
       if (file) {
         if (file.type !== "application/pdf" || file.size > 5 * 1024 * 1024)
@@ -1533,7 +1554,9 @@ function Profile() {
     setError("");
     try {
       window.open(
-        await getDownloadURL(ref(storage, profile.resumePath)),
+        profile.resumeUrl
+          ? httpsLink(profile.resumeUrl, true)
+          : await getDownloadURL(ref(storage, profile.resumePath)),
         "_blank",
         "noopener,noreferrer",
       );
@@ -1647,7 +1670,24 @@ function Profile() {
         </label>
         <h2>Your résumé</h2>
         <p className="hint">
-          PDF only, up to 5 MB. Stored privately in Firebase Storage.
+          Use an HTTPS résumé link if file uploads are unavailable. PDF uploads
+          require Firebase Storage and are limited to 5 MB.
+        </p>
+        <label>
+          HTTPS résumé link (no upload required)
+          <input
+            name="resumeUrl"
+            type="url"
+            pattern="https://.*"
+            maxLength={500}
+            defaultValue={profile?.resumeUrl || ""}
+            placeholder="https://…"
+          />
+        </label>
+        <p className="hint">
+          Allow reviewers to open this link. It is stored in your private
+          profile and shared with administrators when you apply. Access to the
+          external file is controlled by its provider.
         </p>
         <label className="upload-zone">
           <Upload size={22} />
@@ -1665,7 +1705,20 @@ function Profile() {
             onChange={(e) => setFile(e.target.files?.[0] || null)}
           />
         </label>
-        {profile?.resumePath && (
+        {file && (
+          <button
+            type="button"
+            className="text-link"
+            onClick={(e) => {
+              setFile(null);
+              const input = e.currentTarget.form.elements.namedItem("resume");
+              if (input) input.value = "";
+            }}
+          >
+            Clear selected PDF
+          </button>
+        )}
+        {(profile?.resumePath || profile?.resumeUrl) && (
           <button type="button" className="text-link" onClick={openResume}>
             View current résumé <ArrowUpRight size={15} />
           </button>
@@ -1760,10 +1813,10 @@ function Admin() {
       setBusy(false);
     }
   }
-  async function resume(path) {
+  async function resume(path, url) {
     try {
       window.open(
-        await getDownloadURL(ref(storage, path)),
+        url ? httpsLink(url, true) : await getDownloadURL(ref(storage, path)),
         "_blank",
         "noopener,noreferrer",
       );
@@ -1785,6 +1838,9 @@ function Admin() {
           ["students", "Student directory"],
           ["projects", "Project moderation"],
           ["teams", "Team moderation"],
+          ["mentoring", "Mentor sessions"],
+          ["bookings", "Mentor bookings"],
+          ["updates", "Platform updates"],
         ].map(([key, label]) => (
           <button
             key={key}
@@ -1805,6 +1861,12 @@ function Admin() {
         <Projects manage />
       ) : tab === "teams" ? (
         <Teams manage />
+      ) : tab === "mentoring" ? (
+        <Mentoring manage />
+      ) : tab === "bookings" ? (
+        <BookingAdmin />
+      ) : tab === "updates" ? (
+        <Updates manage />
       ) : tab === "publish" ? (
         <form
           key={editing?.id || "new-listing"}
@@ -2013,7 +2075,7 @@ function Admin() {
                 {a.coverNote && <p className="multiline">{a.coverNote}</p>}
                 <button
                   className="text-link"
-                  onClick={() => resume(a.resumePath)}
+                  onClick={() => resume(a.resumePath, a.resumeUrl)}
                 >
                   View résumé <ArrowUpRight size={15} />
                 </button>
@@ -2276,6 +2338,28 @@ export default function App() {
             }
           />
           <Route path="/projects/:id" element={<ProjectDetails />} />
+          <Route
+            path="/mentoring"
+            element={
+              <Workspace
+                title="Mentor sessions"
+                subtitle="Guidance for the next step in your career."
+              >
+                <Mentoring />
+              </Workspace>
+            }
+          />
+          <Route
+            path="/updates"
+            element={
+              <Workspace
+                title="What’s new at Codovate"
+                subtitle="Useful news, without the noise."
+              >
+                <Updates />
+              </Workspace>
+            }
+          />
           <Route path="/setup" element={<Setup />} />
           <Route
             path="*"

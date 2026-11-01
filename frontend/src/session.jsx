@@ -130,6 +130,7 @@ export function SessionProvider({ children }) {
             skills: [],
             portfolio: "",
             resumePath: "",
+            resumeUrl: "",
             createdAt: serverTimestamp(),
             updatedAt: serverTimestamp(),
           });

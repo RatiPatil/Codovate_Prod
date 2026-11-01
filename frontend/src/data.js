@@ -12,6 +12,7 @@ import {
 } from "firebase/firestore";
 import { db, configured } from "./firebase";
 import { samples } from "./sample";
+import { httpsLink } from "./communityData";
 import { isOpen } from "./domain";
 import { useCareerPage } from "./careerData";
 export function useOpportunities() {
@@ -56,10 +57,15 @@ export async function applyToOpportunity(
   coverNote,
 ) {
   if (!db || !user) throw new Error("Sign in first.");
-  if (!profile?.name || !profile?.college || !profile?.resumePath)
+  if (
+    !profile?.name ||
+    !profile?.college ||
+    !(profile?.resumePath || profile?.resumeUrl)
+  )
     throw new Error(
       "Complete your name, college and résumé in your profile first.",
     );
+  const resumeUrl = httpsLink(profile.resumeUrl || "");
   const ref = doc(db, "applications", user.uid + "_" + opportunity.id);
   await runTransaction(db, async (transaction) => {
     const [existing, listing] = await Promise.all([
@@ -77,7 +83,8 @@ export async function applyToOpportunity(
       organization: listing.data().organization,
       studentName: profile.name,
       college: profile.college,
-      resumePath: profile.resumePath,
+      resumePath: profile.resumePath || "",
+      resumeUrl,
       coverNote,
       status: "submitted",
       createdAt: serverTimestamp(),

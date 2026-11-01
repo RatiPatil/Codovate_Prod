@@ -119,3 +119,21 @@ describe("authoritative application deadline", () => {
     ).toBe(true);
   });
 });
+
+it("a resume link contributes to profile completion like a PDF path", () => {
+  const core = {
+    name: "Alice",
+    college: "College",
+    degree: "B.Tech",
+    graduationYear: "2028",
+    city: "Pune",
+    bio: "Student",
+    skills: ["React"],
+  };
+  expect(completion({ ...core, resumeUrl: "https://example.com/resume" })).toBe(
+    100,
+  );
+  expect(completion({ ...core, resumePath: "resumes/alice/resume.pdf" })).toBe(
+    100,
+  );
+});
