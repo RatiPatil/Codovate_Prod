@@ -96,6 +96,10 @@ const application = {
 try {
   await env.clearFirestore();
   await check(
+    "owner can read an absent profile before transactional creation",
+    assertSucceeds(getDoc(doc(alice.firestore(), "users", "alice"))),
+  );
+  await check(
     "student creates own profile",
     assertSucceeds(setDoc(doc(alice.firestore(), "users", "alice"), profile)),
   );

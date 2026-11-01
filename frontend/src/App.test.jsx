@@ -87,6 +87,16 @@ describe("disconnected local preview", () => {
       screen.getByRole("button", { name: "Sign in", exact: true }),
     ).toBeDisabled();
   });
+  it("shows precise Firebase status without claiming a live connection", () => {
+    renderAt("/setup");
+    expect(
+      screen.getByRole("button", { name: "Check live Firestore" }),
+    ).toBeDisabled();
+    expect(
+      screen.getByText(/Local configuration is not loaded/),
+    ).toBeInTheDocument();
+    expect(screen.getByText("npm run firebase:setup")).toBeInTheDocument();
+  });
   it("protects disconnected student and admin workspaces", () => {
     renderAt("/admin");
     expect(

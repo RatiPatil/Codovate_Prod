@@ -1,6 +1,11 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { doc, onSnapshot, setDoc, serverTimestamp } from "firebase/firestore";
+import {
+  doc,
+  onSnapshot,
+  runTransaction,
+  serverTimestamp,
+} from "firebase/firestore";
 import { auth, db, configured } from "./firebase";
 const Context = createContext(null);
 export function SessionProvider({ children }) {
@@ -26,6 +31,7 @@ export function SessionProvider({ children }) {
           setLoading(false);
           return;
         }
+        setLoading(true);
         try {
           const token = await next.getIdTokenResult();
           if (current !== generation) return;
@@ -60,19 +66,24 @@ export function SessionProvider({ children }) {
     };
   }, []);
   async function createProfile(current, name) {
-    await setDoc(doc(db, "users", current.uid), {
-      name: name || current.displayName || "",
-      email: current.email || "",
-      college: "",
-      degree: "",
-      graduationYear: "",
-      city: "",
-      bio: "",
-      skills: [],
-      portfolio: "",
-      resumePath: "",
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
+    const profileRef = doc(db, "users", current.uid);
+    await runTransaction(db, async (transaction) => {
+      const existing = await transaction.get(profileRef);
+      if (existing.exists()) return;
+      transaction.set(profileRef, {
+        name: name || current.displayName || "",
+        email: current.email || "",
+        college: "",
+        degree: "",
+        graduationYear: "",
+        city: "",
+        bio: "",
+        skills: [],
+        portfolio: "",
+        resumePath: "",
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
     });
   }
   return (

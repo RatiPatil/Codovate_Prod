@@ -5,11 +5,16 @@ export const typeLabel = {
   competition: "Competitions",
   hackathon: "Hackathons",
 };
+export function deadlineMillis(item) {
+  const value = item.closesAt ?? item.deadline;
+  if (typeof value?.toMillis === "function") return value.toMillis();
+  if (typeof value?.seconds === "number") return value.seconds * 1000;
+  return Date.parse(value);
+}
 export function isOpen(item, now = Date.now()) {
+  const deadline = deadlineMillis(item);
   return (
-    item.status === "published" &&
-    Number.isFinite(Date.parse(item.deadline)) &&
-    Date.parse(item.deadline) > now
+    item.status === "published" && Number.isFinite(deadline) && deadline > now
   );
 }
 export function filterOpportunities(
@@ -38,7 +43,7 @@ export function filterOpportunities(
     )
     .sort((a, b) =>
       sort === "deadline"
-        ? Date.parse(a.deadline) - Date.parse(b.deadline)
+        ? deadlineMillis(a) - deadlineMillis(b)
         : sort === "stipend"
           ? b.stipend - a.stipend
           : (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0),
@@ -84,6 +89,12 @@ export function dateLabel(value) {
 export function errorMessage(e) {
   return (
     {
+      "app/check-timeout":
+        "Firebase did not respond in time. Check your connection and the project setup, then retry.",
+      "failed-precondition":
+        "Firestore needs its indexes or database setup completed. Run npm run firebase:setup and check Firebase Console.",
+      unavailable:
+        "Firestore is unavailable. Check your internet connection and that the database exists in this project.",
       "auth/invalid-credential": "The email or password is incorrect.",
       "auth/email-already-in-use":
         "An account already exists with this email. Please sign in.",

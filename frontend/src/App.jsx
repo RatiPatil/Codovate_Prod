@@ -49,6 +49,7 @@ import {
   collection,
   doc,
   getDoc,
+  getDocsFromServer,
   setDoc,
   updateDoc,
   serverTimestamp,
@@ -895,10 +896,9 @@ function AuthPage({ signup = false }) {
     loc.state?.from?.startsWith("/") && !loc.state.from.startsWith("//")
       ? loc.state.from
       : "/dashboard";
-  if (user) return <Navigate to={from} replace />;
+  if (user && !busy && !error) return <Navigate to={from} replace />;
   async function ensureProfile(u, name) {
-    const snapshot = await getDoc(doc(db, "users", u.uid));
-    if (!snapshot.exists()) await createProfile(u, name);
+    await createProfile(u, name);
   }
   async function submit(e) {
     e.preventDefault();
@@ -984,7 +984,12 @@ function AuthPage({ signup = false }) {
             <Link to="/setup">See what to configure.</Link>
           </Notice>
         )}
-        {error && <Notice>{error}</Notice>}
+        {error && (
+          <Notice>
+            {error}
+            {user && <Link to="/profile"> Open profile setup</Link>}
+          </Notice>
+        )}
         {message && <Notice kind="success">{message}</Notice>}
         <button
           className="button secondary full google-button"
@@ -1759,46 +1764,103 @@ function Admin() {
   );
 }
 function Setup() {
+  const [checking, setChecking] = useState(false);
+  const [result, setResult] = useState(null);
+  const projectId = auth?.app?.options?.projectId || "codovate-dev";
+  async function checkDatabase() {
+    setChecking(true);
+    setResult(null);
+    let timer;
+    try {
+      await Promise.race([
+        getDocsFromServer(
+          query(
+            collection(db, "opportunities"),
+            where("status", "==", "published"),
+            limit(1),
+          ),
+        ),
+        new Promise((_, reject) => {
+          timer = setTimeout(
+            () =>
+              reject(
+                Object.assign(new Error("Connection timed out"), {
+                  code: "app/check-timeout",
+                }),
+              ),
+            12000,
+          );
+        }),
+      ]);
+      setResult({
+        ok: true,
+        message:
+          "Live Firestore read succeeded for " +
+          projectId +
+          ". No data was written.",
+      });
+    } catch (e) {
+      setResult({ ok: false, message: errorMessage(e) });
+    } finally {
+      clearTimeout(timer);
+      setChecking(false);
+    }
+  }
   return (
     <div className="container section setup-page">
-      <span className="eyebrow blue">A FRESH FIREBASE FOUNDATION</span>
-      <h1>Connect your new project.</h1>
+      <span className="eyebrow blue">FIREBASE CONNECTION</span>
+      <h1>Project setup.</h1>
       <p>
-        The old Firebase project connection has been removed. The public preview
-        runs now; real accounts and saved data need the following setup.
+        Project: <strong>{projectId}</strong>. Authentication, Firestore and
+        private résumé storage.
       </p>
       <div className="panel">
-        <h2>1. Register a web app</h2>
+        <h2>Connection status</h2>
+        <Notice kind={configured ? "success" : "info"}>
+          {configured
+            ? "Web configuration loaded. Verify the live database below."
+            : "Local configuration is not loaded yet. Run the setup command below, then restart the app."}
+        </Notice>
+        <button
+          className="button secondary"
+          disabled={!configured || checking}
+          onClick={checkDatabase}
+        >
+          {checking ? "Checking Firestore…" : "Check live Firestore"}
+          <ShieldCheck size={16} />
+        </button>
+        {result && (
+          <Notice kind={result.ok ? "success" : "error"}>
+            {result.message}
+          </Notice>
+        )}
+        <h2>1. Connect and deploy database protections</h2>
+        <p>From the repository folder, run:</p>
+        <pre>npm run firebase:setup</pre>
         <p>
-          Firebase Console → Project settings → General → Your apps → Web app.
-          Copy its configuration into <code>frontend/.env.local</code> using{" "}
-          <code>frontend/.env.example</code>.
+          Sign in with the Google account that owns {projectId}. Setup fetches
+          the correct web configuration, saves the ignored local environment
+          file, and deploys the included Firestore rules, indexes and Storage
+          rules. It does not import sample data or deploy the website.
         </p>
-        <pre>
-          apiKey{"\n"}authDomain{"\n"}projectId{"\n"}storageBucket{"\n"}
-          messagingSenderId{"\n"}appId
-        </pre>
-        <h2>2. Enable Firebase services</h2>
+        <h2>2. Enable the Firebase services</h2>
         <p>
-          Enable Authentication with Google and Email/Password. Add{" "}
-          <code>localhost</code> to authorized domains. Create Cloud Firestore
-          and Firebase Storage in the new project.
+          In Firebase Console, create the Firestore database and Storage bucket
+          if needed. Enable Google and Email/Password in Authentication. Use{" "}
+          <code>localhost</code> as an authorized domain.
         </p>
-        <h2>3. Deploy the access rules and indexes</h2>
+        <h2>3. Start and verify</h2>
+        <pre>npm run dev</pre>
         <p>
-          Use the Firebase CLI with an explicit new project ID. See the README
-          for commands. These rules protect profiles, résumés, bookmarks,
-          applications and administrator operations.
-        </p>
-        <h2>4. Restart and verify</h2>
-        <p>
-          Run <code>npm run dev</code>. Create a student account, complete your
-          profile, upload a résumé, and test an application. An administrator
-          account is granted using the documented custom-claim script.
+          Open <code>http://localhost:5173</code>. Create your account, save
+          your profile and upload a résumé. Administrators publish opportunities
+          and review applications; roles are assigned with the documented
+          trusted operator tool.
         </p>
         <Notice kind="info">
-          The web app configuration is sufficient for the browser. Never paste a
-          service-account private key into chat, frontend files or GitHub.
+          A loaded configuration is not proof that services, rules and login
+          providers are ready. The live check verifies a server read only. Never
+          put service-account private keys in this app or GitHub.
         </Notice>
       </div>
     </div>
