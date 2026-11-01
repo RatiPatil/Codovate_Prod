@@ -973,6 +973,7 @@ function AuthPage({ signup = false }) {
     const data = new FormData(e.currentTarget);
     setBusy(true);
     setError("");
+    let authenticatedUser = null;
     try {
       const result = await withTimeout(
         signup
@@ -989,10 +990,14 @@ function AuthPage({ signup = false }) {
         "app/auth-timeout",
         25000,
       );
+      authenticatedUser = result.user;
       await ensureProfile(result.user, data.get("name"));
       navigate(from, { replace: true });
     } catch (e) {
-      if (auth.currentUser) {
+      if (
+        authenticatedUser &&
+        auth.currentUser?.uid === authenticatedUser.uid
+      ) {
         navigate(from, { replace: true });
       } else setError(errorMessage(e));
     } finally {
@@ -1003,12 +1008,17 @@ function AuthPage({ signup = false }) {
     if (!configured || busy) return;
     setBusy(true);
     setError("");
+    let authenticatedUser = null;
     try {
       const result = await signInWithPopup(auth, new GoogleAuthProvider());
+      authenticatedUser = result.user;
       await ensureProfile(result.user);
       navigate(from, { replace: true });
     } catch (e) {
-      if (auth.currentUser) {
+      if (
+        authenticatedUser &&
+        auth.currentUser?.uid === authenticatedUser.uid
+      ) {
         navigate(from, { replace: true });
       } else setError(errorMessage(e));
     } finally {

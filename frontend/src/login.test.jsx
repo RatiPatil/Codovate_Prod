@@ -132,6 +132,19 @@ describe("login regressions", () => {
     fireEvent.click(screen.getByRole("button", { name: "Try again" }));
     expect(state.session.retrySession).toHaveBeenCalledOnce();
   });
+  it("does not treat a failed credential attempt as success because another user is cached", async () => {
+    state.auth.currentUser = { uid: "cached-other-user" };
+    state.login.mockRejectedValue({ code: "auth/invalid-credential" });
+    open();
+    credentials();
+    fireEvent.click(
+      screen.getByRole("button", { name: "Sign in", exact: true }),
+    );
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "email or password is incorrect",
+    );
+    expect(state.session.createProfile).not.toHaveBeenCalled();
+  });
   it("explains a blocked Google popup", async () => {
     state.google.mockRejectedValue({ code: "auth/popup-blocked" });
     open();

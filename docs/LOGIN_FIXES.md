@@ -8,6 +8,7 @@
 - A missing cached profile could be mistaken for a completed server read. The listener waits for server confirmation or a timeout, and includes metadata updates.
 - Stale callbacks after retry/account changes are ignored. Retry establishes a fresh session subscription.
 - Auth-page return destinations could send users back to an authentication route. Return paths reject authentication loops, external URLs and backslash/newline variants.
+- A rejected login attempt is not treated as successful merely because an unrelated user is still cached by the SDK.
 - Popup blocking, disabled accounts, invalid email, provider conflicts and password-policy errors now have explicit messages. Local IP users are directed to the authorized localhost address for Google sign-in.
 
 ## What this does not change
@@ -18,7 +19,7 @@ A signed-in user whose database is inaccessible should see **You're signed in** 
 
 ## Verification
 
-- 30 frontend tests pass: password requirements, incorrect credentials, denied profile setup, popup blocking, recovery/retry, stale callbacks, missing-cache handling, bounded waits, safe return paths and the existing application checks.
+- 31 frontend tests pass: password requirements, incorrect credentials, denied profile setup, popup blocking, recovery/retry, stale callbacks, missing-cache handling, bounded waits, safe return paths and the existing application checks.
 - Production build passes.
 - Five Firebase Auth/Firestore emulator integration checks pass: an existing six-character password signs in, the owner profile can be created transactionally, repeated setup preserves it, global profile access remains denied, and incorrect credentials are rejected.
 
