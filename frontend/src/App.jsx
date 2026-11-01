@@ -77,6 +77,7 @@ import {
   dateLabel,
   errorMessage,
   validWebLink,
+  skillInputError,
 } from "./domain";
 
 const categoryIcons = {
@@ -151,7 +152,8 @@ function Header() {
               key={label}
               className={
                 loc.pathname === "/explore" &&
-                loc.search === to.split("/explore")[1]
+                new URLSearchParams(loc.search).get("type") ===
+                  new URLSearchParams(to.split("?")[1]).get("type")
                   ? "selected"
                   : ""
               }
@@ -218,15 +220,13 @@ function Footer() {
   return (
     <footer className="footer">
       <Logo />
-      <p>Potential has no postcode. Your next chapter starts here.</p>
+      <p>Made for your next move.</p>
       <div>
         <Link to="/explore">Explore</Link>
         <Link to="/profile">Your profile</Link>
-        <Link to="/setup">Firebase setup</Link>
+        {!configured && <Link to="/setup">Setup guide</Link>}
       </div>
-      <small>
-        © {new Date().getFullYear()} Codovate · Built for your next step
-      </small>
+      <small>© {new Date().getFullYear()} Codovate</small>
     </footer>
   );
 }
@@ -235,11 +235,10 @@ function PreviewBanner() {
     !configured && (
       <div className="preview-banner">
         <span>
-          <Sparkles size={14} /> Local preview · Sample listings · Sign-in and
-          saving require your new Firebase project.
+          <Sparkles size={14} /> Local preview · Sample listings
         </span>
         <Link to="/setup">
-          Connect Firebase <ArrowRight size={14} />
+          Setup <ArrowRight size={14} />
         </Link>
       </div>
     )
@@ -255,7 +254,14 @@ function Card({ item, saved = false, onSave }) {
         </span>
         <span className="eyebrow">
           <Icon size={13} />
-          {typeLabel[item.type]?.replace(/s$/, "") || item.type}
+          {
+            {
+              internship: "Internship",
+              job: "Fresher job",
+              competition: "Competition",
+              hackathon: "Hackathon",
+            }[item.type]
+          }
         </span>
         {onSave && (
           <button
@@ -287,6 +293,9 @@ function Card({ item, saved = false, onSave }) {
           <span key={s}>{s}</span>
         ))}
       </div>
+      <div className="card-deadline">
+        <span className="availability-dot" /> Applications open
+      </div>
       <div className="card-bottom">
         <div>
           <strong>{money(item.stipend)}</strong>
@@ -300,7 +309,7 @@ function Card({ item, saved = false, onSave }) {
           to={"/opportunities/" + item.id}
           aria-label={"View " + item.title}
         >
-          <ArrowUpRight size={21} />
+          View details <ArrowUpRight size={15} />
         </Link>
       </div>
     </article>
@@ -308,25 +317,29 @@ function Card({ item, saved = false, onSave }) {
 }
 function Home({ catalog }) {
   const [search, setSearch] = useState("");
+  const [activeType, setActiveType] = useState("all");
   const navigate = useNavigate();
-  const featured = catalog.items.filter((o) => isOpen(o)).slice(0, 3);
+  const open = catalog.items.filter((o) => isOpen(o));
+  const featured = filterOpportunities(open, { type: activeType }).slice(0, 6);
   return (
-    <>
-      <section className="hero container">
-        <div className="hero-copy">
-          <span className="pill">
-            <span className="green-dot" /> Big ambitions. Every college.
+    <div className="landing">
+      <section className="intro container">
+        <div className="intro-copy">
+          <span className="intro-label">
+            <span className="green-dot" /> FOR EVERY COLLEGE. FOR YOU.
           </span>
           <h1>
-            Your college is
-            <br />a starting point.
+            Find your next
             <br />
-            <em>Not your limit.</em>
+            <em>big move.</em>
+            <span className="heading-spark" aria-hidden="true">
+              ✳
+            </span>
           </h1>
           <p>
-            Find your first internship. Take on a challenge.
-            <br className="desktop-break" /> Build a career that’s yours,
-            wherever you begin.
+            Internships, fresher jobs and challenges.
+            <br />
+            One place to get started.
           </p>
           <form
             className="hero-search"
@@ -335,91 +348,83 @@ function Home({ catalog }) {
               navigate("/explore?search=" + encodeURIComponent(search));
             }}
           >
-            <Search size={20} />
+            <Search size={21} />
             <input
               aria-label="Search opportunities"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Try “React”, “design” or “remote”"
+              placeholder="Role, skill or company"
             />
             <button className="button" type="submit">
-              Explore <ArrowRight size={17} />
+              Search <ArrowRight size={17} />
             </button>
           </form>
-          <div className="hero-note">
-            <CheckCircle2 size={16} /> Open to students from every college{" "}
-            <span>·</span> Free to get started
+          <div className="quick-search">
+            <span>Try</span>
+            {["Remote", "React", "Design"].map((term) => (
+              <Link
+                key={term}
+                to={
+                  term === "Remote"
+                    ? "/explore?mode=Remote"
+                    : "/explore?search=" + term
+                }
+              >
+                {term}
+                <ArrowUpRight size={12} />
+              </Link>
+            ))}
           </div>
         </div>
-        <div
-          className="hero-art"
-          aria-label="Learn, build and discover your next opportunity"
-        >
-          <div className="orbit orbit-one" />
-          <div className="orbit orbit-two" />
-          <span className="art-star">✦</span>
-          <div className="art-card art-career">
-            <span className="eyebrow">YOUR NEXT CHAPTER</span>
-            <div className="art-title">
-              A little courage.
-              <br />A lot of possibility.
+        <div className="launch-board" aria-label="Explore your next step">
+          <Link
+            className="launch-tile launch-intern"
+            to="/explore?type=internship"
+          >
+            <div className="tile-top">
+              <span>01 / GET EXPERIENCE</span>
+              <ArrowUpRight size={23} />
             </div>
-            <div className="path-line">
-              <span>01</span>
-              <p>Discover your direction</p>
-              <Check size={16} />
+            <div className="tile-art briefcase-art" aria-hidden="true">
+              <BriefcaseBusiness size={92} strokeWidth={1.2} />
+              <span className="art-dot" />
             </div>
-            <div className="path-line">
-              <span>02</span>
-              <p>Build something real</p>
-              <Check size={16} />
+            <div className="tile-bottom">
+              <h2>Internships</h2>
+              <span>Start doing.</span>
             </div>
-            <div className="path-line active">
-              <span>03</span>
-              <p>Make your next move</p>
-              <ArrowUpRight size={17} />
+          </Link>
+          <Link
+            className="launch-tile launch-compete"
+            to="/explore?type=competition"
+          >
+            <div className="tile-top">
+              <span>02 / STAND OUT</span>
+              <ArrowUpRight size={22} />
             </div>
-            <div className="art-progress">
-              <i />
-              <i />
-              <i />
+            <div className="tile-art trophy-art" aria-hidden="true">
+              <Trophy size={65} strokeWidth={1.3} />
+              <span>✦</span>
             </div>
-            <p className="art-caption">Small steps. Real progress.</p>
-          </div>
-          <div className="art-float art-float-one">
-            <span className="float-icon">
-              <BriefcaseBusiness size={21} />
-            </span>
-            <div>
-              <strong>Your first internship</strong>
-              <small>Closer than you think</small>
+            <div className="tile-bottom">
+              <h2>Competitions</h2>
             </div>
-            <ArrowUpRight size={18} />
-          </div>
-          <div className="art-float art-float-two">
-            <span className="float-icon gold">
-              <Trophy size={22} />
-            </span>
-            <div>
-              <strong>Ideas worth building.</strong>
-              <small>Compete. Collaborate. Grow.</small>
-            </div>
-          </div>
-          <div className="art-tag">
-            <span className="avatar-stack">
-              <b>A</b>
-              <b>R</b>
-              <b>S</b>
-            </span>{" "}
-            Your ambition belongs here.
-          </div>
+          </Link>
+          <Link
+            className="launch-tile launch-build"
+            to="/explore?type=hackathon"
+          >
+            <Code2 size={34} strokeWidth={1.4} />
+            <h2>Build. Solve. Repeat.</h2>
+            <ArrowUpRight size={22} />
+          </Link>
         </div>
       </section>
       <section
-        className="paths container"
+        className="category-strip container"
         aria-label="Explore by opportunity type"
       >
-        {types.map((type, i) => {
+        {types.map((type) => {
           const Icon = categoryIcons[type];
           return (
             <Link
@@ -428,40 +433,52 @@ function Home({ catalog }) {
               to={"/explore?type=" + type}
             >
               <span className="path-icon">
-                <Icon size={25} />
+                <Icon size={20} />
               </span>
-              <div>
-                <h2>{typeLabel[type]}</h2>
-                <p>
-                  {
-                    [
-                      "Get your first real experience",
-                      "Take the next step forward",
-                      "Let your ideas stand out",
-                      "Build something that matters",
-                    ][i]
-                  }
-                </p>
-              </div>
-              <ArrowUpRight size={20} />
+              <h2>{typeLabel[type]}</h2>
+              <span className="category-count">
+                {open.filter((o) => o.type === type).length}
+              </span>
+              <ArrowUpRight size={16} />
             </Link>
           );
         })}
       </section>
-      <section className="section container">
+      <section className="opportunities-section container">
         <div className="section-heading">
           <div>
-            <span className="eyebrow blue">DISCOVER YOUR NEXT MOVE</span>
-            <h2>Small beginnings. Big possibilities.</h2>
-            <p>
-              {configured
-                ? "Explore the latest opportunities published on Codovate."
-                : "A glimpse of the opportunities your platform can bring together."}
-            </p>
+            <span className="eyebrow">THE OPPORTUNITY BOARD</span>
+            <h2>Worth a closer look.</h2>
           </div>
           <Link className="text-link" to="/explore">
-            View all opportunities <ArrowRight size={17} />
+            Explore all <ArrowRight size={16} />
           </Link>
+        </div>
+        <div className="board-toolbar">
+          <div
+            className="board-tabs"
+            aria-label="Featured opportunity categories"
+          >
+            {[
+              ["all", "All"],
+              ["internship", "Internships"],
+              ["job", "Jobs"],
+              ["competition", "Competitions"],
+              ["hackathon", "Hackathons"],
+            ].map(([value, label]) => (
+              <button
+                key={value}
+                onClick={() => setActiveType(value)}
+                aria-pressed={activeType === value}
+                className={activeType === value ? "active" : ""}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          <span className="board-note">
+            {configured ? "Recently added" : "Preview listings"}
+          </span>
         </div>
         {catalog.loading ? (
           <Loading />
@@ -477,53 +494,24 @@ function Home({ catalog }) {
             ))}
           </div>
         ) : (
-          <Empty title="Your opportunity board is ready">
-            An administrator can publish your first internship, job or
-            challenge.
+          <Empty title="Nothing here just yet">
+            Try another category or check back for new listings.
           </Empty>
         )}
       </section>
-      <section className="student-banner container">
+      <section className="profile-invite container">
+        <span className="invite-icon">
+          <UserRound size={29} />
+        </span>
         <div>
-          <span className="eyebrow">FOR THE AMBITION IN EVERY CLASSROOM</span>
-          <h2>
-            Skills over labels.
-            <br />
-            Potential over postcodes.
-          </h2>
-          <p>
-            Your college name shouldn’t decide your future. Put your work,
-            curiosity and ambition in the spotlight.
-          </p>
-          <Link className="button" to="/signup">
-            Build your student profile <ArrowRight size={17} />
-          </Link>
+          <h2>Your skills deserve a spotlight.</h2>
+          <p>Build your profile. Be ready for what’s next.</p>
         </div>
-        <div className="steps">
-          <div>
-            <span>01</span>
-            <p>
-              <strong>Show what makes you, you.</strong>
-              <small>Add your skills, projects and résumé.</small>
-            </p>
-          </div>
-          <div>
-            <span>02</span>
-            <p>
-              <strong>Find something that fits.</strong>
-              <small>Search by interest, location and work mode.</small>
-            </p>
-          </div>
-          <div>
-            <span>03</span>
-            <p>
-              <strong>Take your next step.</strong>
-              <small>Apply and follow your application in one place.</small>
-            </p>
-          </div>
-        </div>
+        <Link className="button" to="/signup">
+          Create your profile <ArrowRight size={16} />
+        </Link>
       </section>
-    </>
+    </div>
   );
 }
 function Explore({ catalog }) {
@@ -562,11 +550,9 @@ function Explore({ catalog }) {
   return (
     <div className="container section">
       <div className="page-intro">
-        <span className="eyebrow blue">OPPORTUNITIES, WITHOUT LIMITS</span>
-        <h1>{typeLabel[type] || "Find your next opportunity."}</h1>
-        <p>
-          A first experience, a fresh start, or a challenge worth taking on.
-        </p>
+        <span className="eyebrow blue">EXPLORE</span>
+        <h1>{typeLabel[type] || "Explore opportunities."}</h1>
+        <p>Find something that fits you.</p>
       </div>
       <div className="type-tabs">
         <button
@@ -617,14 +603,6 @@ function Explore({ catalog }) {
           <button className="text-link" onClick={() => setParams({})}>
             Clear all filters
           </button>
-          <div className="filter-tip">
-            <GraduationCap size={26} />
-            <h3>Your potential matters.</h3>
-            <p>
-              Explore opportunities open to students from every college. Check
-              each listing for eligibility.
-            </p>
-          </div>
         </aside>
         <div>
           <div className="results-toolbar">
@@ -648,8 +626,7 @@ function Explore({ catalog }) {
             </select>
           </div>
           <p className="result-count">
-            {rows.length} {configured ? "" : "sample "}opportunities · Showing
-            up to 200 latest listings
+            {rows.length} {configured ? "" : "sample "}opportunities
           </p>
           {notice && (
             <Notice kind="info">
@@ -785,8 +762,7 @@ function Details({ catalog }) {
           </div>
           {!configured && (
             <Notice kind="info">
-              Sample listing for preview only. Applications are disabled until
-              your new Firebase project is connected.
+              Preview listing. Connect Firebase to enable applications.
             </Notice>
           )}
           <h2>About the opportunity</h2>
@@ -805,9 +781,7 @@ function Details({ catalog }) {
         <aside className="panel apply-panel">
           <span className="eyebrow blue">YOUR NEXT STEP</span>
           <h2>
-            {applied || success
-              ? "You’re in the running."
-              : "Ready to give it a go?"}
+            {applied || success ? "You’re in the running." : "Make your move."}
           </h2>
           <p>
             Applications close
@@ -986,35 +960,23 @@ function AuthPage({ signup = false }) {
   return (
     <div className="auth-layout container">
       <div className="auth-story">
-        <span className="eyebrow blue">YOUR AMBITION BELONGS HERE</span>
+        <span className="eyebrow">YOUR NEXT CHAPTER</span>
         <h1>
-          Every big career
+          A little ambition.
           <br />
-          starts with
-          <br />
-          <em>one small step.</em>
+          <em>A world of possibility.</em>
         </h1>
-        <p>
-          Your skills. Your ideas. Your next chapter.
-          <br />
-          Let’s build something worth starting.
-        </p>
-        <div className="story-feature">
-          <BriefcaseBusiness /> Discover opportunities that fit you.
+        <div className="auth-symbol" aria-hidden="true">
+          ✳
         </div>
-        <div className="story-feature">
-          <Trophy /> Turn your ideas into real experience.
-        </div>
-        <div className="story-feature">
-          <GraduationCap /> Grow, wherever you study.
-        </div>
+        <p>Where you study is just the beginning.</p>
       </div>
       <div className="auth-card panel">
-        <h2>{signup ? "Start your next chapter." : "Welcome back."}</h2>
+        <h2>{signup ? "Create your account." : "Welcome back."}</h2>
         <p>
           {signup
             ? "Create your free student account."
-            : "Your next opportunity is waiting."}
+            : "Good to see you again."}
         </p>
         {!configured && (
           <Notice kind="info">
@@ -1029,7 +991,10 @@ function AuthPage({ signup = false }) {
           disabled={!configured || busy}
           onClick={google}
         >
-          <span className="google-g" aria-hidden="true">G</span> Continue with Google
+          <span className="google-g" aria-hidden="true">
+            G
+          </span>{" "}
+          Continue with Google
         </button>
         <div className="divider">
           <span>or continue with email</span>
@@ -1132,18 +1097,14 @@ function Dashboard({ catalog }) {
     saved = useOwned("bookmarks", user.uid);
   return (
     <Workspace
-      title={
-        "Hey " +
-        (profile?.name?.split(" ")[0] || "there") +
-        ", let’s move forward."
-      }
-      subtitle="One place for your profile, opportunities and next steps."
+      title={"Hi, " + (profile?.name?.split(" ")[0] || "there") + "."}
+      subtitle="Your activity at a glance."
     >
       <section className="dashboard-callout">
         <div>
-          <span className="eyebrow">YOUR JOURNEY, YOUR PACE</span>
-          <h2>Make your potential visible.</h2>
-          <p>A complete profile helps you put your best foot forward.</p>
+          <span className="eyebrow">YOUR PROFILE</span>
+          <h2>Ready for your next opportunity?</h2>
+          <p>Add your skills and résumé to start applying.</p>
           <Link className="button" to="/profile">
             Complete your profile <ArrowRight size={16} />
           </Link>
@@ -1204,7 +1165,7 @@ function Applications() {
   return (
     <Workspace
       title="My applications"
-      subtitle="Your next chapter, one application at a time."
+      subtitle="Track every application in one place."
     >
       {state.loading ? (
         <Loading />
@@ -1261,7 +1222,7 @@ function Saved({ catalog }) {
   }
   return (
     <Workspace
-      title="Saved for your next move."
+      title="Saved opportunities"
       subtitle="Keep opportunities you like close by."
     >
       {error && <Notice>{error}</Notice>}
@@ -1311,6 +1272,11 @@ function Profile() {
     const values = new FormData(e.currentTarget);
     const data = Object.fromEntries(values);
     delete data.resume;
+    const skillsError = skillInputError(data.skills);
+    if (skillsError) {
+      setError(skillsError);
+      return;
+    }
     data.skills = [
       ...new Set(
         data.skills
@@ -1363,10 +1329,7 @@ function Profile() {
     }
   }
   return (
-    <Workspace
-      title="Your story. Your potential."
-      subtitle="Let your skills and ambition do the talking."
-    >
+    <Workspace title="My profile" subtitle="Keep your details up to date.">
       <div className="profile-summary panel">
         <div className="profile-avatar">
           {(profile?.name || user.email || "S")[0].toUpperCase()}
@@ -1542,6 +1505,11 @@ function Admin() {
     e.preventDefault();
     const form = e.currentTarget;
     const d = Object.fromEntries(new FormData(form));
+    const skillsError = skillInputError(d.skills);
+    if (skillsError) {
+      setError(skillsError);
+      return;
+    }
     if (Date.parse(d.deadline) <= Date.now()) {
       setError("Choose a future application deadline.");
       return;

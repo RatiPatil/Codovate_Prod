@@ -35,10 +35,25 @@ describe("disconnected local preview", () => {
       "/logo-light.png",
     );
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
-      "Not your limit.",
+      "big move.",
     );
     expect(document.querySelectorAll(".path-card")).toHaveLength(4);
     expect(screen.getByText(/Local preview/)).toBeInTheDocument();
+  });
+  it("switches homepage opportunity categories", async () => {
+    renderAt("/");
+    fireEvent.click(
+      screen.getByRole("button", { name: "Competitions", exact: true }),
+    );
+    await waitFor(() =>
+      expect(document.querySelectorAll(".opportunity-card")).toHaveLength(1),
+    );
+    expect(
+      screen.getByRole("link", {
+        name: "Design for a Better Campus",
+        exact: true,
+      }),
+    ).toBeInTheDocument();
   });
   it("filters by URL type and search, then opens a listing detail", async () => {
     renderAt("/explore?type=internship");

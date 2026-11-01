@@ -47,3 +47,23 @@ Student lists use `where(studentId, ==, uid)`; rules reject unrestricted cross-s
 5. Old cloud data is untouched. There is no migration, import or automatic database deletion.
 
 Rules default-deny all unknown collections/paths. Profile/application deletion and account deletion are not exposed in v1; define retention and deletion policy before production use.
+
+## Executable schema and read-only audit
+
+`database/firestore.schema.json` defines all four document shapes using JSON Schema 2020-12, with required fields, enums, numeric ranges, lengths and unknown-field rejection. `database/examples.json` contains one example of each collection; these records are documentation fixtures and are never imported into Firebase.
+
+The validator normalizes Firestore timestamps to ISO 8601 strings. It also checks relationships that JSON Schema cannot express: matching `deadline`/`closesAt`, deterministic application/bookmark IDs, and owner-specific résumé paths. Security Rules remain the authority for live Firebase access; the JSON Schema is a separate read-only validation and review tool, not a native Firestore schema migration.
+
+```bash
+npm --prefix scripts ci
+npm --prefix scripts run schema:check
+npm --prefix scripts run test:schema
+# Validate a JSON export shaped like database/examples.json:
+node scripts/validate-schema.mjs --file export.json
+# Optional: audit the NEW Firebase project using local application-default credentials:
+node scripts/validate-schema.mjs --project YOUR_NEW_PROJECT_ID
+```
+
+The cloud audit reads every document in the four named collections. It makes no writes and prints only record paths and validation failures. Run it deliberately on an appropriately sized project, as Firestore reads are billable.
+
+Live rules now require unique string skills, each 1–60 characters, with at most 20 skills. Graduation year must be empty for an incomplete profile or a four-digit year from 2000 through 2100. Profile and publishing forms explain skill-limit violations before submitting to Firebase. Existing data is not rewritten; use the read-only audit to identify any records requiring manual correction before deploying stricter rules.

@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   filterOpportunities,
+  skillInputError,
   isOpen,
   completion,
   validWebLink,
@@ -90,5 +91,17 @@ describe("student profile", () => {
     expect(validWebLink("https://github.com/student")).toBe(true);
     expect(validWebLink("javascript:alert(1)")).toBe(false);
     expect(validWebLink("http://example.com")).toBe(false);
+  });
+});
+
+describe("skill input validation", () => {
+  it("explains schema limits before saving", () => {
+    expect(skillInputError("React, React")).toBe("");
+    expect(skillInputError("x".repeat(61))).toMatch(/61/);
+    expect(
+      skillInputError(
+        Array.from({ length: 21 }, (_, i) => "Skill" + i).join(","),
+      ),
+    ).toMatch(/20/);
   });
 });

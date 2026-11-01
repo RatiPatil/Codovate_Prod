@@ -7,9 +7,13 @@
   },
   "devDependencies": {
     "@firebase/rules-unit-testing": "^5.0.0",
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1",
     "firebase": "^12.15.0"
   },
   "scripts": {
-    "test:rules": "node test-rules.mjs"
+    "test:rules": "node test-rules.mjs",
+    "schema:check": "node validate-schema.mjs --examples",
+    "test:schema": "node --test schema.test.mjs"
   }
 }

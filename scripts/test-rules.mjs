@@ -99,6 +99,23 @@ try {
     "student creates own profile",
     assertSucceeds(setDoc(doc(alice.firestore(), "users", "alice"), profile)),
   );
+  for (const patch of [
+    { graduationYear: "abcd" },
+    { graduationYear: "1999" },
+    { skills: [7] },
+    { skills: ["React", "React"] },
+    { skills: ["x".repeat(61)] },
+  ]) {
+    await check(
+      "invalid profile field denied: " + Object.keys(patch)[0],
+      assertFails(
+        updateDoc(doc(alice.firestore(), "users", "alice"), {
+          ...patch,
+          updatedAt: serverTimestamp(),
+        }),
+      ),
+    );
+  }
   await check(
     "student cannot grant admin through profile",
     assertFails(
