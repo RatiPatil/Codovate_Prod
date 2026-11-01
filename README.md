@@ -81,7 +81,7 @@ In `frontend/.env.local`, set `VITE_USE_EMULATORS=true` plus web config for a lo
 
 ## Scope and limits
 
-This rebuild implements the opportunity-to-application workflow. It does not claim full feature parity with Internshala or Unstop: paid courses, employer onboarding, payments, team submissions, assessments, event scoring and notifications are not implemented. Admins currently publish on behalf of organizations. Competition/hackathon applications are individual expressions of interest, with no team or multi-round scoring engine. Discovery and admin lists show the latest 200 records; pagination is a next scaling step. Live Firebase acceptance requires your new configuration and deployed rules. The résumé path is stable: replacing a résumé also changes the file an administrator sees for earlier applications.
+This rebuild implements the opportunity-to-application workflow. It does not claim full feature parity with Internshala or Unstop: paid courses, employer onboarding, payments, team submissions, assessments, event scoring and notifications are not implemented. Admins currently publish on behalf of organizations. Competition/hackathon applications are individual expressions of interest, with no team or multi-round scoring engine. Discovery, admin lists, the learning library and career planner use bounded cursor pagination. Search/filter controls operate on loaded records; refresh retrieves new catalog entries. Owner application/bookmark subscriptions remain unpaginated. Live Firebase acceptance requires your new configuration and deployed rules. The résumé path is stable: replacing a résumé also changes the file an administrator sees for earlier applications.
 
 CI runs tests and builds. **There is no automatic deployment**; changes on main are for local review. Optional Firebase Hosting configuration is included for a later explicit deployment. The old implementation remains available in Git history.
 
@@ -94,7 +94,7 @@ npm --prefix scripts ci
 npm --prefix scripts run test:rules
 ```
 
-This suite uses only the `demo-codovate` emulator project and checks allowed and denied profile, listing, application, bookmark and Storage operations. It requires the emulator suite on ports 8080 and 9199.
+This suite uses only the `demo-codovate` emulator project and checks allowed and denied profile, listing, application, bookmark, planner, learning-resource and Storage operations. It requires the emulator suite on ports 8080 and 9199.
 
 ## UI refinement and database schemas
 
@@ -107,3 +107,9 @@ Machine-readable collection contracts and example documents are in `database/`. 
 ### Login troubleshooting
 
 See [docs/LOGIN_FIXES.md](docs/LOGIN_FIXES.md) for authentication recovery behavior and the emulator login regression check. Existing passwords are submitted without an eight-character client-side restriction; new registrations still require eight characters. A successful sign-in with a failed account-data connection opens a recovery screen with retry/sign-out actions. Database permission failures require authorized cloud setup and are distinct from incorrect credentials.
+
+## Career workspace and deployment handoff
+
+The release adds a private career planner, curated public learning library, admin resource management, a searchable admin student directory, listing editing, cursor pagination and skill-based dashboard suggestions. One login serves both roles; verified admins reach administration through the default dashboard route. Original branding is preserved. See [docs/CAREER_WORKSPACE.md](docs/CAREER_WORKSPACE.md) for implemented behavior and limits.
+
+For Antigravity, copy [docs/ANTIGRAVITY_DEPLOYMENT_PROMPT.md](docs/ANTIGRAVITY_DEPLOYMENT_PROMPT.md). It covers the remaining live Firebase configuration, admin bootstrap, rules/index deployment, live acceptance checks and optional hosting. Nothing in this handoff claims those cloud steps have already succeeded.

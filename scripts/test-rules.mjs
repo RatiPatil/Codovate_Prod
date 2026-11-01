@@ -9,6 +9,7 @@ import {
   setDoc,
   getDoc,
   updateDoc,
+  deleteDoc,
   collection,
   getDocs,
   query,
@@ -311,6 +312,158 @@ try {
   await check(
     "admin résumé read accepted",
     assertSucceeds(getBytes(ref(admin.storage(), "resumes/alice/resume.pdf"))),
+  );
+  const task = {
+    studentId: "alice",
+    title: "Practice interview",
+    note: "Explain one project",
+    dueDate: "2027-01-01",
+    status: "todo",
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  };
+  const taskRef = doc(alice.firestore(), "careerTasks", "task-a");
+  await check(
+    "owner can create a career task",
+    assertSucceeds(setDoc(taskRef, task)),
+  );
+  await check(
+    "other student cannot read private task",
+    assertFails(getDoc(doc(bob.firestore(), "careerTasks", "task-a"))),
+  );
+  await check(
+    "owner task query accepted",
+    assertSucceeds(
+      getDocs(
+        query(
+          collection(alice.firestore(), "careerTasks"),
+          where("studentId", "==", "alice"),
+        ),
+      ),
+    ),
+  );
+  await check(
+    "unfiltered student task query denied",
+    assertFails(getDocs(collection(alice.firestore(), "careerTasks"))),
+  );
+  await check(
+    "student cannot transfer a task",
+    assertFails(
+      updateDoc(taskRef, { studentId: "bob", updatedAt: serverTimestamp() }),
+    ),
+  );
+  await check(
+    "owner can complete a task",
+    assertSucceeds(
+      updateDoc(taskRef, { status: "done", updatedAt: serverTimestamp() }),
+    ),
+  );
+  await check(
+    "task rejects unknown fields",
+    assertFails(
+      updateDoc(taskRef, { role: "admin", updatedAt: serverTimestamp() }),
+    ),
+  );
+  await check(
+    "admin can inspect career task",
+    assertSucceeds(getDoc(doc(admin.firestore(), "careerTasks", "task-a"))),
+  );
+  const learning = {
+    title: "Interview practice",
+    description: "Practice a focused response.",
+    url: "https://example.com/interview",
+    category: "Interview prep",
+    status: "draft",
+    createdBy: "operator",
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  };
+  const learningRef = doc(admin.firestore(), "resources", "learn-a");
+  await check(
+    "admin can create draft resource",
+    assertSucceeds(setDoc(learningRef, learning)),
+  );
+  await check(
+    "guest cannot read draft resource",
+    assertFails(getDoc(doc(guest.firestore(), "resources", "learn-a"))),
+  );
+  await check(
+    "student cannot publish resources",
+    assertFails(
+      setDoc(doc(alice.firestore(), "resources", "learn-b"), {
+        ...learning,
+        createdBy: "alice",
+      }),
+    ),
+  );
+  await check(
+    "non HTTPS resource rejected",
+    assertFails(
+      updateDoc(learningRef, {
+        url: "javascript:alert(1)",
+        updatedAt: serverTimestamp(),
+      }),
+    ),
+  );
+  await check(
+    "admin publishes resource",
+    assertSucceeds(
+      updateDoc(learningRef, {
+        status: "published",
+        updatedAt: serverTimestamp(),
+      }),
+    ),
+  );
+  await check(
+    "guest can query published resources",
+    assertSucceeds(
+      getDocs(
+        query(
+          collection(guest.firestore(), "resources"),
+          where("status", "==", "published"),
+        ),
+      ),
+    ),
+  );
+  await check(
+    "guest cannot query all resources",
+    assertFails(getDocs(collection(guest.firestore(), "resources"))),
+  );
+  await check(
+    "admin directory query accepted",
+    assertSucceeds(getDocs(collection(admin.firestore(), "users"))),
+  );
+  await check(
+    "other student cannot delete a task",
+    assertFails(deleteDoc(doc(bob.firestore(), "careerTasks", "task-a"))),
+  );
+  await check("owner can delete a task", assertSucceeds(deleteDoc(taskRef)));
+  await check(
+    "admin cannot change a resource creator",
+    assertFails(
+      updateDoc(learningRef, {
+        createdBy: "alice",
+        updatedAt: serverTimestamp(),
+      }),
+    ),
+  );
+  await check(
+    "student cannot delete a resource",
+    assertFails(deleteDoc(doc(alice.firestore(), "resources", "learn-a"))),
+  );
+  await check(
+    "admin can unpublish a resource",
+    assertSucceeds(
+      updateDoc(learningRef, { status: "draft", updatedAt: serverTimestamp() }),
+    ),
+  );
+  await check(
+    "unpublished resource becomes private",
+    assertFails(getDoc(doc(guest.firestore(), "resources", "learn-a"))),
+  );
+  await check(
+    "admin can delete a resource",
+    assertSucceeds(deleteDoc(learningRef)),
   );
   console.log(`${checks} Firebase security checks passed.`);
 } finally {

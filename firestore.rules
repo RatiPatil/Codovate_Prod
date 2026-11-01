@@ -117,6 +117,42 @@ service cloud.firestore {
    allow delete: if signedIn() && resource.data.studentId == request.auth.uid;
    allow update: if false;
   }
+  function validTask(d) {
+   return d.keys().hasAll(['studentId','title','note','dueDate','status','createdAt','updatedAt'])
+    && d.keys().hasOnly(['studentId','title','note','dueDate','status','createdAt','updatedAt'])
+    && d.studentId is string && text(d.title,120) && d.title.size()>0 && text(d.note,1000)
+    && d.dueDate is string && d.dueDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+    && d.status in ['todo','done'] && d.createdAt is timestamp && d.updatedAt is timestamp;
+  }
+  match /careerTasks/{id} {
+   allow read: if signedIn() && (resource.data.studentId == request.auth.uid || admin());
+   allow create: if signedIn() && validTask(request.resource.data)
+    && request.resource.data.studentId == request.auth.uid && request.resource.data.status == 'todo'
+    && request.resource.data.createdAt == request.time && changedTime();
+   allow update: if signedIn() && (resource.data.studentId == request.auth.uid || admin())
+    && validTask(request.resource.data) && request.resource.data.studentId == resource.data.studentId
+    && request.resource.data.createdAt == resource.data.createdAt && changedTime();
+   allow delete: if signedIn() && (resource.data.studentId == request.auth.uid || admin());
+  }
+  function validResource(d) {
+   return d.keys().hasAll(['title','description','url','category','status','createdBy','createdAt','updatedAt'])
+    && d.keys().hasOnly(['title','description','url','category','status','createdBy','createdAt','updatedAt'])
+    && text(d.title,120) && d.title.size()>0 && text(d.description,1000) && d.description.size()>0
+    && text(d.url,1000) && d.url.matches('https://[^ /]+.*')
+    && d.category in ['Interview prep','Resume & portfolio','Technical skills','Career guidance']
+    && d.status in ['draft','published'] && d.createdBy is string
+    && d.createdAt is timestamp && d.updatedAt is timestamp;
+  }
+  match /resources/{id} {
+   allow read: if resource.data.status == 'published' || admin();
+   allow create: if admin() && validResource(request.resource.data)
+    && request.resource.data.createdBy == request.auth.uid
+    && request.resource.data.createdAt == request.time && changedTime();
+   allow update: if admin() && validResource(request.resource.data)
+    && request.resource.data.createdBy == resource.data.createdBy
+    && request.resource.data.createdAt == resource.data.createdAt && changedTime();
+   allow delete: if admin();
+  }
   match /{document=**} { allow read, write: if false; }
  }
 }

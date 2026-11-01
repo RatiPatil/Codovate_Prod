@@ -91,6 +91,8 @@ export function errorMessage(e) {
     {
       "app/auth-timeout":
         "Sign-in took too long. Check your connection and retry. If your account is already signed in, reload to restore it.",
+      "app/data-timeout":
+        "The requested data did not load in time. Check your connection and refresh.",
       "app/profile-timeout":
         "Your account data did not load in time. Check your connection and retry.",
       "app/session-error":

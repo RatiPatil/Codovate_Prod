@@ -73,5 +73,34 @@
         "createdAt": "2026-11-01T00:00:00.000Z"
       }
     }
+  ],
+  "careerTasks": [
+    {
+      "id": "example-task",
+      "data": {
+        "studentId": "student-example",
+        "title": "Practice one interview question",
+        "note": "Write down the approach before coding.",
+        "dueDate": "2027-01-12",
+        "status": "todo",
+        "createdAt": "2027-01-01T00:00:00.000Z",
+        "updatedAt": "2027-01-01T00:00:00.000Z"
+      }
+    }
+  ],
+  "resources": [
+    {
+      "id": "example-resource",
+      "data": {
+        "title": "Prepare a focused resume",
+        "description": "A sample resource record; replace this example before publishing.",
+        "url": "https://example.com/resume",
+        "category": "Resume & portfolio",
+        "status": "draft",
+        "createdBy": "operator-example",
+        "createdAt": "2027-01-01T00:00:00.000Z",
+        "updatedAt": "2027-01-01T00:00:00.000Z"
+      }
+    }
   ]
 }

@@ -5,8 +5,6 @@ import {
   onSnapshot,
   query,
   where,
-  limit,
-  orderBy,
   runTransaction,
   serverTimestamp,
   setDoc,
@@ -15,33 +13,19 @@ import {
 import { db, configured } from "./firebase";
 import { samples } from "./sample";
 import { isOpen } from "./domain";
+import { useCareerPage } from "./careerData";
 export function useOpportunities() {
-  const [state, setState] = useState({
-    items: configured ? [] : samples,
-    loading: configured,
-    error: null,
-  });
-  const [retry, setRetry] = useState(0);
-  useEffect(() => {
-    if (!db) return;
-    setState((s) => ({ ...s, loading: true, error: null }));
-    return onSnapshot(
-      query(
-        collection(db, "opportunities"),
-        where("status", "==", "published"),
-        orderBy("createdAt", "desc"),
-        limit(200),
-      ),
-      (s) =>
-        setState({
-          items: s.docs.map((d) => ({ ...d.data(), id: d.id })),
-          loading: false,
-          error: null,
-        }),
-      (error) => setState({ items: [], loading: false, error }),
-    );
-  }, [retry]);
-  return { ...state, retry: () => setRetry((v) => v + 1) };
+  const page = useCareerPage("opportunities", null);
+  return configured
+    ? { ...page, retry: page.refresh }
+    : {
+        items: samples,
+        loading: false,
+        error: null,
+        more: false,
+        retry: page.refresh,
+        loadMore: page.loadMore,
+      };
 }
 export function useOwned(collectionName, uid) {
   const [state, setState] = useState({

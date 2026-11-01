@@ -69,6 +69,22 @@ function credentials() {
   });
 }
 describe("login regressions", () => {
+  it("routes a verified admin from the shared login to administration", async () => {
+    state.session.user = { uid: "operator" };
+    state.session.admin = true;
+    open();
+    expect(
+      await screen.findByRole("heading", { name: "Platform administration" }),
+    ).toBeInTheDocument();
+  });
+  it("does not admit a student to the administrator screen", () => {
+    state.session.user = { uid: "student" };
+    open("/admin");
+    expect(
+      screen.queryByRole("heading", { name: "Platform administration" }),
+    ).not.toBeInTheDocument();
+  });
+
   it("allows existing six-character passwords to reach Firebase", async () => {
     state.login.mockImplementation(async () => {
       const user = { uid: "student", email: "student@example.com" };
