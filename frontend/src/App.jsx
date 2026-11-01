@@ -1027,12 +1027,10 @@ function AuthPage({ signup = false }) {
       await ensureProfile(result.user, data.get("name"));
       navigate(from, { replace: true });
     } catch (e) {
-      if (
-        authenticatedUser &&
-        auth.currentUser?.uid === authenticatedUser.uid
-      ) {
-        navigate(from, { replace: true });
-      } else setError(errorMessage(e));
+      // Profile failures are owned by SessionProvider. Keep its recovery screen
+      // mounted here instead of navigating to another copy during the same render.
+      if (!authenticatedUser || auth.currentUser?.uid !== authenticatedUser.uid)
+        setError(errorMessage(e));
     } finally {
       setBusy(false);
     }
@@ -1048,12 +1046,10 @@ function AuthPage({ signup = false }) {
       await ensureProfile(result.user);
       navigate(from, { replace: true });
     } catch (e) {
-      if (
-        authenticatedUser &&
-        auth.currentUser?.uid === authenticatedUser.uid
-      ) {
-        navigate(from, { replace: true });
-      } else setError(errorMessage(e));
+      // Profile failures are owned by SessionProvider. Keep its recovery screen
+      // mounted here instead of navigating to another copy during the same render.
+      if (!authenticatedUser || auth.currentUser?.uid !== authenticatedUser.uid)
+        setError(errorMessage(e));
     } finally {
       setBusy(false);
     }
