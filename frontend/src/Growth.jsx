@@ -193,24 +193,6 @@ function MentoringScreen({ manage }) {
   );
   return (
     <>
-      <section className="growth-hero">
-        <div>
-          <span className="eyebrow">A LITTLE GUIDANCE GOES A LONG WAY</span>
-          <h2>
-            A clearer next step.
-            <br />
-            <em>A conversation away.</em>
-          </h2>
-          <p>
-            Interview practice, career direction and feedback from mentors.
-            Request a session and track its confirmation.
-          </p>
-        </div>
-        <div className="growth-illustration" aria-hidden="true">
-          <GraduationCap size={64} />
-          <span>Learn with direction</span>
-        </div>
-      </section>
       <div className="community-toolbar">
         <div className="type-tabs" role="group" aria-label="Mentoring views">
           {!manage && (
@@ -601,24 +583,6 @@ export function Updates({ manage = false }) {
   }
   return (
     <>
-      <section className="growth-hero updates-hero">
-        <div>
-          <span className="eyebrow">KEEP YOUR NEXT MOVE IN SIGHT</span>
-          <h2>
-            Good things.
-            <br />
-            <em>Worth knowing.</em>
-          </h2>
-          <p>
-            Platform news, community highlights and new learning opportunities
-            from Codovate.
-          </p>
-        </div>
-        <div className="growth-illustration" aria-hidden="true">
-          <Megaphone size={58} />
-          <span>Stay in the loop</span>
-        </div>
-      </section>
       <Feedback action={action} />
       {manage && (
         <button className="button" onClick={() => setEditing({})}>

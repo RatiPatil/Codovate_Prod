@@ -3446,77 +3446,14 @@ button:disabled:hover {
   overflow-wrap: anywhere;
 }
 
-/* Growth modules: calm editorial surfaces and consistent form spacing. */
-.growth-hero {
-  display: grid;
-  grid-template-columns: 1.7fr 1fr;
-  align-items: center;
-  gap: 28px;
-  padding: 33px 36px;
-  min-height: 246px;
-  background: linear-gradient(115deg, #f1ebfa, #f9f6fc);
-  border: 1px solid #e5ddec;
-  border-radius: 25px;
-  margin-bottom: 26px;
-}
-.growth-hero h2 {
-  font-size: clamp(27px, 3vw, 38px);
-  line-height: 1.2;
-  letter-spacing: -1.1px;
-  margin: 15px 0;
-}
-.growth-hero h2 em {
-  font-style: normal;
-  color: #8a759c;
-}
-.growth-hero p {
-  font-size: 13px;
-  line-height: 1.8;
-  max-width: 435px;
-  color: #82738f;
-  margin: 0;
-}
-.growth-illustration {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 17px;
-  min-height: 175px;
-  color: #8462aa;
-}
-.growth-illustration > svg {
-  box-sizing: content-box;
-  padding: 25px;
-  border-radius: 28px;
-  transform: rotate(-8deg);
-  background: white;
-  box-shadow: 0 18px 45px #79608618;
-}
-.growth-illustration > span {
-  font-size: 11px;
-  padding: 10px 15px;
-  background: #fffffff0;
-  border-radius: 12px;
-  transform: rotate(3deg);
-  border: 1px solid #eae0f1;
-}
-.updates-hero {
-  background: linear-gradient(115deg, #eaf2ee, #f5f9f6);
-  border-color: #dfebe4;
-}
-.updates-hero h2 em,
-.updates-hero .growth-illustration {
-  color: #759682;
-}
+/* New feature layouts reuse the current theme tokens. */
 .mentoring-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 20px;
+  gap: 18px;
 }
 .mentor-card {
-  padding: 26px;
+  padding: 25px;
   display: flex;
   flex-direction: column;
   min-width: 0;
@@ -3525,41 +3462,39 @@ button:disabled:hover {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 23px;
+  margin-bottom: 20px;
   gap: 15px;
 }
 .mentor-avatar {
-  width: 49px;
-  height: 49px;
-  border-radius: 16px;
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
   display: grid;
   place-items: center;
+  background: var(--border);
+  color: var(--blue);
   font-size: 22px;
-  font-weight: 650;
-  background: #eee6f6;
-  color: #8766aa;
 }
-.mentor-card h2 {
-  font-size: 22px;
+.mentor-card h2,
+.update-card h2 {
+  font-size: 21px;
   line-height: 1.35;
-  letter-spacing: -0.5px;
-  margin: 12px 0 8px;
+  margin: 12px 0;
   overflow-wrap: anywhere;
 }
 .mentor-name {
-  font-size: 12px;
-  color: #a08aaa;
-  margin: 0 0 19px;
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 18px;
 }
 .mentor-facts {
   display: grid;
   gap: 10px;
   font-size: 12px;
-  color: #7f748c;
+  color: var(--muted);
   padding: 15px 0;
   margin-bottom: 13px;
-  border-top: 1px solid #eee8f3;
-  border-bottom: 1px solid #eee8f3;
+  border-block: 1px solid var(--border);
 }
 .mentor-facts > span {
   display: flex;
@@ -3573,7 +3508,6 @@ button:disabled:hover {
 .mentor-card > .button {
   align-self: flex-start;
   margin-top: auto;
-  font-size: 12px;
 }
 .community-form fieldset {
   border: 0;
@@ -3586,11 +3520,11 @@ button:disabled:hover {
 .booking-review input {
   width: 100%;
   font: inherit;
-  padding: 11px 12px;
-  border: 1px solid #e4dce9;
-  border-radius: 10px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 11px;
   background: white;
-  color: #51435f;
+  color: var(--navy);
 }
 .booking-review {
   display: grid;
@@ -3598,17 +3532,13 @@ button:disabled:hover {
   gap: 14px;
   align-items: end;
   padding-top: 17px;
-  border-top: 1px solid #eee8f2;
+  border-top: 1px solid var(--border);
 }
 .booking-review label {
   display: grid;
   gap: 8px;
-  font-size: 11px;
-  color: #8b779a;
-}
-.booking-review > .button {
-  font-size: 12px;
-  min-height: 40px;
+  font-size: 13px;
+  color: var(--muted);
 }
 .updates-list {
   display: grid;
@@ -3616,51 +3546,32 @@ button:disabled:hover {
 }
 .update-card {
   display: flex;
-  gap: 23px;
-  padding: 29px;
+  gap: 20px;
+  padding: 25px;
   min-width: 0;
 }
 .update-card > div {
   min-width: 0;
   flex: 1;
 }
-.update-card h2 {
-  font-size: 23px;
-  line-height: 1.4;
-  letter-spacing: -0.6px;
-  margin: 12px 0 16px;
-  overflow-wrap: anywhere;
-}
 .update-symbol {
   display: grid;
   place-items: center;
-  width: 43px;
-  height: 43px;
-  background: #eaf3ed;
-  color: #739582;
-  border-radius: 13px;
+  width: 46px;
+  height: 46px;
+  background: var(--border);
+  color: var(--blue);
+  border-radius: 14px;
   flex-shrink: 0;
 }
 .growth-tabs {
-  margin: 26px 0;
+  margin: 24px 0;
   flex-wrap: wrap;
   gap: 8px;
 }
-.growth-hero + .community-toolbar .type-tabs {
-  flex-wrap: wrap;
-}
-.state-confirmed,
-.state-completed {
-  background: #e7f1e9;
-  color: #608469;
-}
-.state-cancelled {
-  background: #f3eded;
-  color: #9c7c83;
-}
-fieldset:disabled input,
-fieldset:disabled select,
-fieldset:disabled textarea {
+.community-form fieldset:disabled input,
+.community-form fieldset:disabled select,
+.community-form fieldset:disabled textarea {
   opacity: 0.65;
 }
 .mentor-card .career-controls {
@@ -3669,7 +3580,7 @@ fieldset:disabled textarea {
 .mentor-card .career-controls > label {
   display: grid;
   gap: 8px;
-  font-size: 12px;
+  font-size: 13px;
   width: 100%;
 }
 @media (max-width: 1000px) {
@@ -3679,54 +3590,17 @@ fieldset:disabled textarea {
   .booking-review > .button {
     justify-self: start;
   }
-  .growth-hero {
-    padding: 27px;
-  }
-  .growth-hero h2 {
-    font-size: 29px;
-  }
 }
 @media (max-width: 760px) {
-  .growth-hero {
-    grid-template-columns: 1fr;
-    min-height: auto;
-    padding: 25px;
-  }
-  .growth-illustration {
-    display: none;
-  }
-  .growth-hero h2 {
-    font-size: 29px;
-  }
-  .mentoring-grid {
-    grid-template-columns: 1fr;
-  }
-  .mentor-card {
-    padding: 23px;
-  }
+  .mentoring-grid,
   .booking-review {
     grid-template-columns: 1fr;
   }
+  .mentor-card,
   .update-card {
     padding: 23px;
+  }
+  .update-card {
     gap: 14px;
-  }
-  .update-card h2 {
-    font-size: 21px;
-  }
-  .update-symbol {
-    width: 34px;
-    height: 34px;
-  }
-  .growth-tabs {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    padding-bottom: 10px;
-  }
-  .growth-tabs > button {
-    white-space: nowrap;
-  }
-  .growth-hero .eyebrow {
-    font-size: 9px;
   }
 }

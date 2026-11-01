@@ -1,6 +1,6 @@
 # Mentoring and platform updates
 
-This release adds `/mentoring` and `/updates`, their navigation/dashboard entry points, and admin tabs for sessions, bookings and announcements. The logo is preserved. There is no production seed or database deletion.
+This release adds `/mentoring` and `/updates`, their navigation/dashboard entry points, and admin tabs for sessions, bookings and announcements. The existing theme, layout and logo are preserved; new modules reuse the current controls and styling. There is no production seed or database deletion.
 
 ## Firestore contracts
 

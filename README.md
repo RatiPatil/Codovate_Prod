@@ -123,6 +123,6 @@ See [docs/COMMUNITY.md](docs/COMMUNITY.md) for functionality, database contracts
 
 ### Mentoring, updates and résumé links
 
-Students can discover mentor sessions, request a place, track admin decisions, cancel and download confirmed appointments as calendar events. Administrators manage sessions, private booking decisions/meeting links and categorized platform announcements. The new screens use a calmer lavender/sage visual style and clear empty/error states. See [docs/GROWTH.md](docs/GROWTH.md) for schemas, permissions, limitations and release instructions.
+Students can discover mentor sessions, request a place, track admin decisions, cancel and download confirmed appointments as calendar events. Administrators manage sessions, private booking decisions/meeting links and categorized platform announcements. The new screens reuse the existing theme and layout, with clear empty/error states. See [docs/GROWTH.md](docs/GROWTH.md) for schemas, permissions, limitations and release instructions.
 
 **No-billing résumé workflow:** add an HTTPS résumé link in My profile instead of uploading a PDF. Firestore and Authentication are required; Cloud Storage is optional. `npm run firebase:configure` only writes local configuration. Deploy Firestore rules/indexes separately when Storage is unavailable; the full `firebase:setup` script also attempts Storage deployment.
