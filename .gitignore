@@ -1,27 +1,13 @@
-node_modules
-dist
-build
-
-# Backend env files
-backend/.env
-backend/.env.production
-backend/.env.local
-
-# Frontend env files — real credentials MUST NOT be committed
-frontend/.env
-frontend/.env.local
-frontend/.env.production
-frontend/.env.production.local
-
-# Firebase service account keys — NEVER commit these
-backend/config/serviceAccountKey.json
-serviceAccountKey.json
-*.serviceAccountKey.json
-
-# Logs
+**/node_modules
+dist/
+build/
+**/.env
+**/.env.local
+**/.env.production
+**/.env.*.local
 *.log
-
-# Deployment backups
-*.backup*
-*.backup.*
-.github/workflows/backup/
+*.serviceAccountKey.json
+serviceAccountKey.json
+.firebase/
+playwright-report/
+test-results/

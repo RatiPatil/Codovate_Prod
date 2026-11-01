@@ -1,22 +1,17 @@
-import { BrowserRouter } from 'react-router-dom';
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import App from './App.jsx';
-import ToastProvider from './components/ui/ToastProvider';
-import { AuthProvider } from './context/AuthContext';
-import { RoleProvider } from './context/RoleContext';
-import './index.css';
-
-ReactDOM.createRoot(document.getElementById('root')).render(
+import React from "react";
+import { createRoot } from "react-dom/client";
+import { BrowserRouter } from "react-router-dom";
+import App from "./App";
+import { SessionProvider } from "./session";
+import "@fontsource-variable/manrope";
+import "@fontsource-variable/dm-sans";
+import "./styles.css";
+createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <ToastProvider>
-      <AuthProvider>
-        <RoleProvider>
-          <BrowserRouter>
-            <App />
-          </BrowserRouter>
-        </RoleProvider>
-      </AuthProvider>
-    </ToastProvider>
+    <BrowserRouter>
+      <SessionProvider>
+        <App />
+      </SessionProvider>
+    </BrowserRouter>
   </React.StrictMode>,
 );
