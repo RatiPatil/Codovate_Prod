@@ -88,6 +88,8 @@ import {
   CareerSpotlight,
 } from "./Career";
 
+import { Projects, Teams, ProjectDetails } from "./Community";
+
 const categoryIcons = {
   internship: BriefcaseBusiness,
   job: GraduationCap,
@@ -233,6 +235,7 @@ function Footer() {
         <Link to="/explore">Explore</Link>
         <Link to="/profile">Your profile</Link>
         <Link to="/learn">Learning library</Link>
+        <Link to="/projects">Project showcase</Link>
         {!configured && <Link to="/setup">Setup guide</Link>}
       </div>
       <small>© {new Date().getFullYear()} Codovate</small>
@@ -1207,6 +1210,8 @@ function Workspace({ children, title, subtitle }) {
           ["/saved", "Saved opportunities", Bookmark],
           ["/planner", "Career planner", CheckCircle2],
           ["/learn", "Learning library", GraduationCap],
+          ["/projects?view=mine", "My projects", Code2],
+          ["/teams", "Find a team", Building2],
           ["/profile", "My profile", UserRound],
           ...(admin ? [["/admin", "Administration", ShieldCheck]] : []),
         ].map(([to, label, Icon]) => (
@@ -1305,6 +1310,28 @@ function Dashboard({ catalog }) {
           Build a new skill <GraduationCap size={16} />
         </Link>
       </div>
+      <section className="dashboard-paths">
+        <Link to="/projects?view=mine">
+          <span className="path-symbol">
+            <Code2 size={22} />
+          </span>
+          <div>
+            <h2>Show what you can build.</h2>
+            <p>Add a project to your portfolio.</p>
+          </div>
+          <ArrowUpRight size={18} />
+        </Link>
+        <Link to="/teams">
+          <span className="path-symbol sage">
+            <Building2 size={22} />
+          </span>
+          <div>
+            <h2>Meet your next teammates.</h2>
+            <p>Find a shared idea. Start building.</p>
+          </div>
+          <ArrowUpRight size={18} />
+        </Link>
+      </section>
       {profile?.skills?.length > 0 && (
         <section className="section">
           <div className="section-heading">
@@ -1756,6 +1783,8 @@ function Admin() {
           ["applications", "Applications"],
           ["resources", "Learning resources"],
           ["students", "Student directory"],
+          ["projects", "Project moderation"],
+          ["teams", "Team moderation"],
         ].map(([key, label]) => (
           <button
             key={key}
@@ -1772,6 +1801,10 @@ function Admin() {
         <ResourceLibrary manage />
       ) : tab === "students" ? (
         <StudentDirectory />
+      ) : tab === "projects" ? (
+        <Projects manage />
+      ) : tab === "teams" ? (
+        <Teams manage />
       ) : tab === "publish" ? (
         <form
           key={editing?.id || "new-listing"}
@@ -2218,6 +2251,31 @@ export default function App() {
               </Workspace>
             }
           />
+          <Route
+            path="/projects"
+            element={
+              <Workspace
+                title="Student projects"
+                subtitle="Build your portfolio. Discover what your peers are creating."
+              >
+                <Projects />
+              </Workspace>
+            }
+          />
+          <Route
+            path="/teams"
+            element={
+              <Guard>
+                <Workspace
+                  title="The student community"
+                  subtitle="Find teammates who share your curiosity."
+                >
+                  <Teams />
+                </Workspace>
+              </Guard>
+            }
+          />
+          <Route path="/projects/:id" element={<ProjectDetails />} />
           <Route path="/setup" element={<Setup />} />
           <Route
             path="*"

@@ -58,3 +58,36 @@ test("rejects wrong application ownership and status", () => {
     false,
   );
 });
+
+test("rejects invalid project visibility and unsafe project links", () => {
+  const p = examples.projects[0];
+  for (const patch of [
+    { visibility: "everyone" },
+    { demoUrl: "http://example.com" },
+    { moderation: "approved" },
+    { skills: [42] },
+  ])
+    assert.equal(
+      validateDocument("projects", p.id, { ...p.data, ...patch }).valid,
+      false,
+    );
+});
+test("validates team request identity and blocks self-request", () => {
+  const r = examples.teamRequests[0];
+  assert.equal(
+    validateDocument("teamRequests", "wrong-id", r.data).valid,
+    false,
+  );
+  assert.equal(
+    validateDocument("teamRequests", r.id, {
+      ...r.data,
+      ownerId: r.data.studentId,
+    }).valid,
+    false,
+  );
+  assert.equal(
+    validateDocument("teamRequests", r.id, { ...r.data, status: "approved" })
+      .valid,
+    false,
+  );
+});

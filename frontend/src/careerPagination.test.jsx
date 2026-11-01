@@ -27,6 +27,64 @@ beforeEach(() => {
 });
 afterEach(cleanup);
 describe("Firestore cursor pages", () => {
+  it("clears private rows immediately when the account changes", async () => {
+    let finish;
+    fake.read
+      .mockResolvedValueOnce({ docs: [row(1)], size: 1 })
+      .mockReturnValueOnce(
+        new Promise((resolve) => {
+          finish = resolve;
+        }),
+      );
+    const { result, rerender } = renderHook(
+      ({ uid }) => useCareerPage("projects", uid, false, "mine"),
+      { initialProps: { uid: "alice" } },
+    );
+    await waitFor(() => expect(result.current.items).toHaveLength(1));
+    rerender({ uid: "bob" });
+    expect(result.current.items).toEqual([]);
+    await act(async () => finish({ docs: [], size: 0 }));
+  });
+
+  it("showcase query excludes private and hidden projects", async () => {
+    fake.read.mockResolvedValue({ docs: [], size: 0 });
+    const { result } = renderHook(() =>
+      useCareerPage("projects", null, false, "public"),
+    );
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(fake.query.mock.calls[0]).toContainEqual([
+      "where",
+      "visibility",
+      "==",
+      "public",
+    ]);
+    expect(fake.query.mock.calls[0]).toContainEqual([
+      "where",
+      "moderation",
+      "==",
+      "visible",
+    ]);
+  });
+  it("owner inbox constrains both team and owner", async () => {
+    fake.read.mockResolvedValue({ docs: [], size: 0 });
+    const { result } = renderHook(() =>
+      useCareerPage("teamRequests", "alice", false, "incoming", "team-a"),
+    );
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(fake.query.mock.calls[0]).toContainEqual([
+      "where",
+      "teamId",
+      "==",
+      "team-a",
+    ]);
+    expect(fake.query.mock.calls[0]).toContainEqual([
+      "where",
+      "ownerId",
+      "==",
+      "alice",
+    ]);
+  });
+
   it("uses a lookahead and resumes after the last displayed snapshot, then resets on refresh", async () => {
     const docs = Array.from({ length: 25 }, (_, i) => row(i));
     fake.read

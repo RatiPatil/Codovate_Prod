@@ -36,6 +36,13 @@ export function validateDocument(collection, id, data) {
   )
     errors.push("Document ID must match studentId_opportunityId");
   if (
+    collection === "teamRequests" &&
+    id !== data.studentId + "_" + data.teamId
+  )
+    errors.push("Document ID must match studentId_teamId");
+  if (collection === "teamRequests" && data.studentId === data.ownerId)
+    errors.push("A team owner cannot request their own team");
+  if (
     ["users", "applications"].includes(collection) &&
     data.resumePath &&
     data.resumePath !==

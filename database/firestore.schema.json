@@ -418,6 +418,240 @@
         }
       },
       "additionalProperties": false
+    },
+    "projects": {
+      "type": "object",
+      "required": [
+        "studentId",
+        "studentName",
+        "title",
+        "summary",
+        "category",
+        "skills",
+        "createdAt",
+        "updatedAt",
+        "visibility",
+        "moderation",
+        "repoUrl",
+        "demoUrl"
+      ],
+      "properties": {
+        "studentId": {
+          "type": "string",
+          "maxLength": 128,
+          "minLength": 1
+        },
+        "studentName": {
+          "type": "string",
+          "maxLength": 100,
+          "minLength": 1
+        },
+        "title": {
+          "type": "string",
+          "maxLength": 120,
+          "minLength": 1
+        },
+        "summary": {
+          "type": "string",
+          "maxLength": 2000,
+          "minLength": 1
+        },
+        "category": {
+          "enum": [
+            "Web & apps",
+            "AI & data",
+            "Design",
+            "Hardware",
+            "Social impact",
+            "Other"
+          ]
+        },
+        "skills": {
+          "type": "array",
+          "maxItems": 20,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "maxLength": 60,
+            "minLength": 1
+          }
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "visibility": {
+          "enum": ["private", "public"]
+        },
+        "moderation": {
+          "enum": ["visible", "hidden"]
+        },
+        "repoUrl": {
+          "anyOf": [
+            {
+              "const": ""
+            },
+            {
+              "type": "string",
+              "maxLength": 500,
+              "minLength": 1,
+              "format": "uri",
+              "pattern": "^https://[^ /]+"
+            }
+          ]
+        },
+        "demoUrl": {
+          "anyOf": [
+            {
+              "const": ""
+            },
+            {
+              "type": "string",
+              "maxLength": 500,
+              "minLength": 1,
+              "format": "uri",
+              "pattern": "^https://[^ /]+"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "teams": {
+      "type": "object",
+      "required": [
+        "studentId",
+        "studentName",
+        "title",
+        "summary",
+        "category",
+        "skills",
+        "createdAt",
+        "updatedAt",
+        "lookingFor",
+        "status"
+      ],
+      "properties": {
+        "studentId": {
+          "type": "string",
+          "maxLength": 128,
+          "minLength": 1
+        },
+        "studentName": {
+          "type": "string",
+          "maxLength": 100,
+          "minLength": 1
+        },
+        "title": {
+          "type": "string",
+          "maxLength": 120,
+          "minLength": 1
+        },
+        "summary": {
+          "type": "string",
+          "maxLength": 2000,
+          "minLength": 1
+        },
+        "category": {
+          "enum": [
+            "Web & apps",
+            "AI & data",
+            "Design",
+            "Hardware",
+            "Social impact",
+            "Other"
+          ]
+        },
+        "skills": {
+          "type": "array",
+          "maxItems": 20,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "maxLength": 60,
+            "minLength": 1
+          }
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "lookingFor": {
+          "type": "string",
+          "maxLength": 180,
+          "minLength": 1
+        },
+        "status": {
+          "enum": ["open", "closed", "hidden"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "teamRequests": {
+      "type": "object",
+      "required": [
+        "studentId",
+        "studentName",
+        "ownerId",
+        "teamId",
+        "teamTitle",
+        "note",
+        "status",
+        "createdAt",
+        "updatedAt"
+      ],
+      "properties": {
+        "studentId": {
+          "type": "string",
+          "maxLength": 128,
+          "minLength": 1
+        },
+        "studentName": {
+          "type": "string",
+          "maxLength": 100,
+          "minLength": 1
+        },
+        "ownerId": {
+          "type": "string",
+          "maxLength": 128,
+          "minLength": 1
+        },
+        "teamId": {
+          "type": "string",
+          "maxLength": 128,
+          "minLength": 1
+        },
+        "teamTitle": {
+          "type": "string",
+          "maxLength": 120,
+          "minLength": 1
+        },
+        "note": {
+          "type": "string",
+          "maxLength": 1000,
+          "minLength": 1
+        },
+        "status": {
+          "enum": ["pending", "accepted", "declined", "withdrawn"]
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "additionalProperties": false
     }
   }
 }

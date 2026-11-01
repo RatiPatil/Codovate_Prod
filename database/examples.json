@@ -102,5 +102,57 @@
         "updatedAt": "2027-01-01T00:00:00.000Z"
       }
     }
+  ],
+  "projects": [
+    {
+      "id": "project-example",
+      "data": {
+        "studentId": "student-example",
+        "studentName": "Asha",
+        "title": "Campus energy dashboard",
+        "summary": "Visualizing electricity use to help our college reduce waste.",
+        "category": "Web & apps",
+        "skills": ["React"],
+        "createdAt": "2027-01-01T00:00:00.000Z",
+        "updatedAt": "2027-01-01T00:00:00.000Z",
+        "visibility": "private",
+        "moderation": "visible",
+        "repoUrl": "",
+        "demoUrl": ""
+      }
+    }
+  ],
+  "teams": [
+    {
+      "id": "team-example",
+      "data": {
+        "studentId": "student-example",
+        "studentName": "Asha",
+        "title": "Campus energy dashboard",
+        "summary": "Visualizing electricity use to help our college reduce waste.",
+        "category": "Web & apps",
+        "skills": ["React"],
+        "createdAt": "2027-01-01T00:00:00.000Z",
+        "updatedAt": "2027-01-01T00:00:00.000Z",
+        "lookingFor": "A designer to shape the dashboard",
+        "status": "open"
+      }
+    }
+  ],
+  "teamRequests": [
+    {
+      "id": "applicant-example_team-example",
+      "data": {
+        "studentId": "applicant-example",
+        "studentName": "Mira",
+        "ownerId": "student-example",
+        "teamId": "team-example",
+        "teamTitle": "Campus energy dashboard",
+        "note": "I can help with the dashboard design.",
+        "status": "pending",
+        "createdAt": "2027-01-01T00:00:00.000Z",
+        "updatedAt": "2027-01-01T00:00:00.000Z"
+      }
+    }
   ]
 }

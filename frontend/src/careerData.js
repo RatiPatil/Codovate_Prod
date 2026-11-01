@@ -72,8 +72,15 @@ export function resourceInput(data) {
   return value;
 }
 // Each request is bounded. The cursor is an actual Firestore snapshot, never a client offset.
-export function useCareerPage(kind, uid, admin = false) {
+export function useCareerPage(
+  kind,
+  uid,
+  admin = false,
+  scope = "default",
+  teamId = "",
+) {
   const [state, setState] = useState({
+    requestKey: "",
     items: [],
     loading: !!db,
     error: null,
@@ -82,26 +89,53 @@ export function useCareerPage(kind, uid, admin = false) {
   const [cursor, setCursor] = useState(null),
     [revision, setRevision] = useState(0);
   const [paging, setPaging] = useState({ key: "", cursor: null });
-  const key = kind + ":" + (uid || "") + ":" + admin + ":" + revision;
+  const key = [kind, uid || "", admin, scope, teamId, revision].join(":");
   const page = paging.key === key ? paging.cursor : null;
   useEffect(() => {
     let active = true;
     setState((s) => ({
       ...s,
+      requestKey: key,
       ...(page ? {} : { items: [], more: false }),
       loading: !!db,
       error: null,
     }));
-    if (!db || (kind === "careerTasks" && !uid)) {
-      setState({ items: [], loading: false, error: null, more: false });
+    if (
+      !db ||
+      ((kind === "careerTasks" ||
+        scope === "mine" ||
+        (kind === "teamRequests" && scope !== "incoming")) &&
+        !uid) ||
+      (kind === "teamRequests" && scope === "incoming" && !teamId)
+    ) {
+      setState({
+        requestKey: key,
+        items: [],
+        loading: false,
+        error: null,
+        more: false,
+      });
       return;
     }
-    const filters =
-      kind === "careerTasks"
-        ? [where("studentId", "==", uid)]
-        : ["resources", "opportunities"].includes(kind) && !admin
-          ? [where("status", "==", "published")]
-          : [];
+    const filters = [];
+    if (
+      kind === "careerTasks" ||
+      (["projects", "teams"].includes(kind) && scope === "mine") ||
+      (kind === "teamRequests" && scope !== "incoming")
+    )
+      filters.push(where("studentId", "==", uid));
+    else if (kind === "teamRequests") {
+      filters.push(where("teamId", "==", teamId));
+      if (!admin) filters.push(where("ownerId", "==", uid));
+    } else if (kind === "projects" && !admin)
+      filters.push(
+        where("visibility", "==", "public"),
+        where("moderation", "==", "visible"),
+      );
+    else if (kind === "teams" && !admin)
+      filters.push(where("status", "==", "open"));
+    else if (["resources", "opportunities"].includes(kind) && !admin)
+      filters.push(where("status", "==", "published"));
     withTimeout(
       getDocs(
         query(
@@ -119,6 +153,7 @@ export function useCareerPage(kind, uid, admin = false) {
         const docs = s.docs.slice(0, PAGE_SIZE);
         setCursor(docs.at(-1) || null);
         setState((old) => ({
+          requestKey: key,
           items: page
             ? [
                 ...old.items,
@@ -138,9 +173,13 @@ export function useCareerPage(kind, uid, admin = false) {
     return () => {
       active = false;
     };
-  }, [key, page, kind, uid, admin]);
+  }, [key, page, kind, uid, admin, scope, teamId]);
+  const visible =
+    state.requestKey === key
+      ? state
+      : { items: [], loading: !!db, error: null, more: false };
   return {
-    ...state,
+    ...visible,
     refresh: () => setRevision((n) => n + 1),
     loadMore: () => {
       if (cursor && !state.loading) setPaging({ key, cursor });
