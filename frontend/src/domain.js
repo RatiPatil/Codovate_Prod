@@ -89,6 +89,29 @@ export function dateLabel(value) {
 export function errorMessage(e) {
   return (
     {
+      "app/auth-timeout":
+        "Sign-in took too long. Check your connection and retry. If your account is already signed in, reload to restore it.",
+      "app/profile-timeout":
+        "Your account data did not load in time. Check your connection and retry.",
+      "app/session-error":
+        "Your account could not be loaded. Retry the connection or sign out.",
+      "auth/configuration-not-found":
+        "Authentication is not configured for this project. The administrator needs to enable the sign-in providers.",
+      "auth/password-does-not-meet-requirements":
+        "Choose a password that meets the project's password policy.",
+      "auth/popup-blocked":
+        "Your browser blocked Google sign-in. Allow pop-ups for this site, then try again.",
+      "auth/cancelled-popup-request":
+        "Another sign-in window was opened. Finish that window or try again.",
+      "auth/user-disabled":
+        "This account has been disabled. Contact the platform administrator.",
+      "auth/invalid-email": "Enter a valid email address.",
+      "auth/wrong-password": "The email or password is incorrect.",
+      "auth/user-not-found": "The email or password is incorrect.",
+      "auth/weak-password":
+        "Choose a password with at least 8 characters for a new account.",
+      "auth/account-exists-with-different-credential":
+        "This email already uses another sign-in method. Use the method you originally registered with.",
       "app/check-timeout":
         "Firebase did not respond in time. Check your connection and the project setup, then retry.",
       "failed-precondition":

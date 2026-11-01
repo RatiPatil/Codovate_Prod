@@ -103,3 +103,7 @@ The opportunity-first interface uses a compact search hero, visual category tile
 Machine-readable collection contracts and example documents are in `database/`. To validate them, install the operator/test dependencies with `npm --prefix scripts ci`, then run `npm --prefix scripts run schema:check` and `npm --prefix scripts run test:schema`. See `docs/DATABASE.md` for optional read-only validation against the new project.
 
 **Using a downloaded ZIP:** download the latest main-branch ZIP into a new folder, open that folder in VS Code, run `npm run setup`, then `npm run dev`. Git commands do not work in ZIP downloads. Keep your private `frontend/.env.local` outside Git and copy it to the new folder only when it contains your intended new Firebase project's configuration.
+
+### Login troubleshooting
+
+See [docs/LOGIN_FIXES.md](docs/LOGIN_FIXES.md) for authentication recovery behavior and the emulator login regression check. Existing passwords are submitted without an eight-character client-side restriction; new registrations still require eight characters. A successful sign-in with a failed account-data connection opens a recovery screen with retry/sign-out actions. Database permission failures require authorized cloud setup and are distinct from incorrect credentials.

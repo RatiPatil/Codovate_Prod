@@ -62,6 +62,7 @@ import {
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { auth, db, storage, configured } from "./firebase";
 import { useSession } from "./session";
+import { withTimeout, safeReturnPath } from "./authSupport";
 import {
   useOpportunities,
   useOwned,
@@ -844,6 +845,78 @@ function Details({ catalog }) {
     </div>
   );
 }
+function AccountRecovery() {
+  const { user, sessionError, retrySession, logout } = useSession();
+  const profileIssue = !!user && sessionError?.source === "profile";
+  const [signingOut, setSigningOut] = useState(false),
+    [signOutError, setSignOutError] = useState("");
+  async function leave() {
+    setSigningOut(true);
+    setSignOutError("");
+    try {
+      await logout();
+    } catch (e) {
+      setSignOutError(errorMessage(e));
+    } finally {
+      setSigningOut(false);
+    }
+  }
+  return (
+    <div className="container section setup-page">
+      <div className="panel account-recovery">
+        <span className="eyebrow blue">ACCOUNT CONNECTION</span>
+        <h1>
+          {profileIssue
+            ? "You’re signed in."
+            : user
+              ? "Your session needs attention."
+              : "We couldn’t restore your session."}
+        </h1>
+        <p>
+          {profileIssue
+            ? "Your account data couldn’t load. Your sign-in worked; the workspace needs its database connection restored."
+            : user
+              ? "We couldn’t verify your current session. Retry or sign out and sign in again."
+              : "Check your connection, then try again."}
+        </p>
+        <Notice>{errorMessage(sessionError)}</Notice>
+        {signOutError && <Notice>{signOutError}</Notice>}
+        <div className="recovery-actions">
+          <button className="button" onClick={retrySession}>
+            Try again <ArrowRight size={16} />
+          </button>
+          {user ? (
+            <button
+              className="button secondary"
+              onClick={leave}
+              disabled={signingOut}
+            >
+              {signingOut ? "Signing out…" : "Sign out"}
+            </button>
+          ) : (
+            <Link
+              className="button secondary"
+              to="/login"
+              onClick={retrySession}
+            >
+              Back to sign in
+            </Link>
+          )}
+          <Link className="text-link" to="/setup">
+            Connection help
+          </Link>
+        </div>
+        {profileIssue && (
+          <p className="hint">
+            If access is denied, the platform administrator must deploy the
+            Firebase rules. Re-entering your password will not fix database
+            permissions.
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
 function Guard({ children, adminOnly = false }) {
   const { user, admin, loading, sessionError } = useSession();
   const loc = useLocation();
@@ -860,6 +933,7 @@ function Guard({ children, adminOnly = false }) {
         </Link>
       </div>
     );
+  if (sessionError) return <AccountRecovery />;
   if (!user)
     return (
       <Navigate
@@ -867,12 +941,6 @@ function Guard({ children, adminOnly = false }) {
         state={{ from: loc.pathname + loc.search }}
         replace
       />
-    );
-  if (sessionError)
-    return (
-      <div className="container section">
-        <Notice>{errorMessage(sessionError)}</Notice>
-      </div>
     );
   if (adminOnly && !admin)
     return (
@@ -886,46 +954,53 @@ function Guard({ children, adminOnly = false }) {
   return children;
 }
 function AuthPage({ signup = false }) {
-  const { user, createProfile } = useSession();
+  const { user, createProfile, sessionError, loading } = useSession();
   const navigate = useNavigate();
   const loc = useLocation();
   const [error, setError] = useState(""),
     [message, setMessage] = useState(""),
     [busy, setBusy] = useState(false);
-  const from =
-    loc.state?.from?.startsWith("/") && !loc.state.from.startsWith("//")
-      ? loc.state.from
-      : "/dashboard";
+  const from = safeReturnPath(loc.state?.from);
   if (user && !busy && !error) return <Navigate to={from} replace />;
+  if (sessionError && !busy) return <AccountRecovery />;
+  if (loading && !user && !busy) return <Loading />;
   async function ensureProfile(u, name) {
     await createProfile(u, name);
   }
   async function submit(e) {
     e.preventDefault();
+    if (!configured || busy) return;
     const data = new FormData(e.currentTarget);
     setBusy(true);
     setError("");
     try {
-      const result = signup
-        ? await createUserWithEmailAndPassword(
-            auth,
-            data.get("email"),
-            data.get("password"),
-          )
-        : await signInWithEmailAndPassword(
-            auth,
-            data.get("email"),
-            data.get("password"),
-          );
+      const result = await withTimeout(
+        signup
+          ? createUserWithEmailAndPassword(
+              auth,
+              data.get("email").trim(),
+              data.get("password"),
+            )
+          : signInWithEmailAndPassword(
+              auth,
+              data.get("email").trim(),
+              data.get("password"),
+            ),
+        "app/auth-timeout",
+        25000,
+      );
       await ensureProfile(result.user, data.get("name"));
       navigate(from, { replace: true });
     } catch (e) {
-      setError(errorMessage(e));
+      if (auth.currentUser) {
+        navigate(from, { replace: true });
+      } else setError(errorMessage(e));
     } finally {
       setBusy(false);
     }
   }
   async function google() {
+    if (!configured || busy) return;
     setBusy(true);
     setError("");
     try {
@@ -933,12 +1008,15 @@ function AuthPage({ signup = false }) {
       await ensureProfile(result.user);
       navigate(from, { replace: true });
     } catch (e) {
-      setError(errorMessage(e));
+      if (auth.currentUser) {
+        navigate(from, { replace: true });
+      } else setError(errorMessage(e));
     } finally {
       setBusy(false);
     }
   }
   async function reset() {
+    if (!configured || busy) return;
     const email = document.querySelector("#auth-email")?.value;
     if (!email) {
       setError("Enter your email above first.");
@@ -947,7 +1025,11 @@ function AuthPage({ signup = false }) {
     setBusy(true);
     setError("");
     try {
-      await sendPasswordResetEmail(auth, email);
+      await withTimeout(
+        sendPasswordResetEmail(auth, email.trim()),
+        "app/auth-timeout",
+        25000,
+      );
       setMessage(
         "If this email has an account, a password reset link will be sent.",
       );
@@ -984,6 +1066,16 @@ function AuthPage({ signup = false }) {
             <Link to="/setup">See what to configure.</Link>
           </Notice>
         )}
+        {window.location.hostname === "127.0.0.1" &&
+          import.meta.env.VITE_USE_EMULATORS !== "true" && (
+            <Notice kind="info">
+              For Google sign-in, open this app on{" "}
+              <a href={window.location.href.replace("127.0.0.1", "localhost")}>
+                localhost
+              </a>
+              , the domain authorized for this project.
+            </Notice>
+          )}
         {error && (
           <Notice>
             {error}
@@ -1033,10 +1125,10 @@ function AuthPage({ signup = false }) {
             <input
               name="password"
               required
-              minLength={8}
+              minLength={signup ? 8 : undefined}
               type="password"
               autoComplete={signup ? "new-password" : "current-password"}
-              placeholder="At least 8 characters"
+              placeholder={signup ? "At least 8 characters" : "Your password"}
             />
           </label>
           {!signup && (

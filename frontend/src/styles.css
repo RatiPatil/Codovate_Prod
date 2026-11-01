@@ -2336,3 +2336,14 @@ pre {
     font-size: 10px;
   }
 }
+
+.account-recovery h1 {
+  margin: 14px 0;
+}
+.recovery-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 22px 0;
+}
