@@ -79,7 +79,7 @@ export function CareerPlanner() {
       setMessage(success);
       data.refresh();
     } catch (e) {
-      setError(errorMessage(e));
+      setError(e?.code ? errorMessage(e) : e.message);
     } finally {
       setBusy(false);
     }
@@ -251,7 +251,7 @@ export function ResourceLibrary({ manage = false }) {
       data.refresh();
       setMessage("Resource saved.");
     } catch (e) {
-      setError(errorMessage(e));
+      setError(e?.code ? errorMessage(e) : e.message);
     } finally {
       setBusy(false);
     }
@@ -262,10 +262,11 @@ export function ResourceLibrary({ manage = false }) {
     setError("");
     try {
       await removeResource(item.id);
+      if (editing?.id === item.id) setEditing(null);
       data.refresh();
       setMessage("Resource deleted.");
     } catch (e) {
-      setError(errorMessage(e));
+      setError(e?.code ? errorMessage(e) : e.message);
     } finally {
       setBusy(false);
     }

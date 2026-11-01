@@ -465,6 +465,410 @@ try {
     "admin can delete a resource",
     assertSucceeds(deleteDoc(learningRef)),
   );
+  const project = {
+    studentId: "alice",
+    studentName: "Alice",
+    title: "Campus dashboard",
+    summary: "Measure our energy use.",
+    category: "Web & apps",
+    skills: ["React"],
+    visibility: "private",
+    moderation: "visible",
+    repoUrl: "",
+    demoUrl: "",
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  };
+  const projectRef = doc(alice.firestore(), "projects", "project-a");
+  await check(
+    "owner can create private project",
+    assertSucceeds(setDoc(projectRef, project)),
+  );
+  await check(
+    "guest cannot read private project",
+    assertFails(getDoc(doc(guest.firestore(), "projects", "project-a"))),
+  );
+  await check(
+    "other student cannot read private project",
+    assertFails(getDoc(doc(bob.firestore(), "projects", "project-a"))),
+  );
+  await check(
+    "owner can list own private projects",
+    assertSucceeds(
+      getDocs(
+        query(
+          collection(alice.firestore(), "projects"),
+          where("studentId", "==", "alice"),
+        ),
+      ),
+    ),
+  );
+  await check(
+    "owner can publish project",
+    assertSucceeds(
+      updateDoc(projectRef, {
+        visibility: "public",
+        updatedAt: serverTimestamp(),
+      }),
+    ),
+  );
+  await check(
+    "public moderated showcase query allowed",
+    assertSucceeds(
+      getDocs(
+        query(
+          collection(guest.firestore(), "projects"),
+          where("visibility", "==", "public"),
+          where("moderation", "==", "visible"),
+        ),
+      ),
+    ),
+  );
+  await check(
+    "public project query without moderation filter denied",
+    assertFails(
+      getDocs(
+        query(
+          collection(guest.firestore(), "projects"),
+          where("visibility", "==", "public"),
+        ),
+      ),
+    ),
+  );
+  await check(
+    "other student cannot edit project",
+    assertFails(
+      updateDoc(doc(bob.firestore(), "projects", "project-a"), {
+        title: "Stolen",
+        updatedAt: serverTimestamp(),
+      }),
+    ),
+  );
+  await check(
+    "owner cannot transfer project ownership",
+    assertFails(
+      updateDoc(projectRef, { studentId: "bob", updatedAt: serverTimestamp() }),
+    ),
+  );
+  await check(
+    "non HTTPS project URL denied",
+    assertFails(
+      updateDoc(projectRef, {
+        demoUrl: "javascript:alert(1)",
+        updatedAt: serverTimestamp(),
+      }),
+    ),
+  );
+  await check(
+    "project identity spoof denied",
+    assertFails(
+      setDoc(doc(alice.firestore(), "projects", "spoof"), {
+        ...project,
+        studentName: "Operator",
+      }),
+    ),
+  );
+  await check(
+    "admin can hide project",
+    assertSucceeds(
+      updateDoc(doc(admin.firestore(), "projects", "project-a"), {
+        moderation: "hidden",
+        updatedAt: serverTimestamp(),
+      }),
+    ),
+  );
+  await check(
+    "hidden public project not readable by guest",
+    assertFails(getDoc(doc(guest.firestore(), "projects", "project-a"))),
+  );
+  await check(
+    "owner cannot restore moderated project",
+    assertFails(
+      updateDoc(projectRef, {
+        moderation: "visible",
+        updatedAt: serverTimestamp(),
+      }),
+    ),
+  );
+  await check(
+    "admin can restore project",
+    assertSucceeds(
+      updateDoc(doc(admin.firestore(), "projects", "project-a"), {
+        moderation: "visible",
+        updatedAt: serverTimestamp(),
+      }),
+    ),
+  );
+  await check(
+    "owner can make published project private again",
+    assertSucceeds(
+      updateDoc(projectRef, {
+        visibility: "private",
+        updatedAt: serverTimestamp(),
+      }),
+    ),
+  );
+  await check(
+    "private again project is protected",
+    assertFails(getDoc(doc(guest.firestore(), "projects", "project-a"))),
+  );
+  await check(
+    "owner can delete project",
+    assertSucceeds(deleteDoc(projectRef)),
+  );
+  await check(
+    "second student creates profile for team requests",
+    assertSucceeds(
+      setDoc(doc(bob.firestore(), "users", "bob"), {
+        ...profile,
+        name: "Bob",
+        email: "bob@example.com",
+        resumePath: "",
+      }),
+    ),
+  );
+  const team = {
+    studentId: "alice",
+    studentName: "Alice",
+    title: "Campus builders",
+    summary: "Build a greener campus.",
+    category: "Social impact",
+    skills: ["React"],
+    lookingFor: "A designer",
+    status: "open",
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  };
+  const teamRef = doc(alice.firestore(), "teams", "team-a");
+  await check(
+    "student can start a team",
+    assertSucceeds(setDoc(teamRef, team)),
+  );
+  await check(
+    "guest cannot browse team directory",
+    assertFails(
+      getDocs(
+        query(
+          collection(guest.firestore(), "teams"),
+          where("status", "==", "open"),
+        ),
+      ),
+    ),
+  );
+  await check(
+    "signed in students can discover open teams",
+    assertSucceeds(
+      getDocs(
+        query(
+          collection(bob.firestore(), "teams"),
+          where("status", "==", "open"),
+        ),
+      ),
+    ),
+  );
+  await check(
+    "other student cannot close team",
+    assertFails(
+      updateDoc(doc(bob.firestore(), "teams", "team-a"), {
+        status: "closed",
+        updatedAt: serverTimestamp(),
+      }),
+    ),
+  );
+  const joinRequest = {
+    studentId: "bob",
+    studentName: "Bob",
+    ownerId: "alice",
+    teamId: "team-a",
+    teamTitle: "Campus builders",
+    note: "I can help with design.",
+    status: "pending",
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  };
+  const requestRef = doc(bob.firestore(), "teamRequests", "bob_team-a");
+  await check(
+    "absent request can be read for duplicate transaction",
+    assertSucceeds(getDoc(requestRef)),
+  );
+  await check(
+    "student can request an open team",
+    assertSucceeds(setDoc(requestRef, joinRequest)),
+  );
+  await check(
+    "duplicate request cannot overwrite existing introduction",
+    assertFails(setDoc(requestRef, joinRequest)),
+  );
+  await check(
+    "guest cannot read team introduction",
+    assertFails(getDoc(doc(guest.firestore(), "teamRequests", "bob_team-a"))),
+  );
+  await check(
+    "unrelated student cannot read introduction",
+    assertFails(
+      getDoc(
+        doc(
+          env.authenticatedContext("outsider").firestore(),
+          "teamRequests",
+          "bob_team-a",
+        ),
+      ),
+    ),
+  );
+  await check(
+    "owner inbox query accepted",
+    assertSucceeds(
+      getDocs(
+        query(
+          collection(alice.firestore(), "teamRequests"),
+          where("teamId", "==", "team-a"),
+          where("ownerId", "==", "alice"),
+        ),
+      ),
+    ),
+  );
+  await check(
+    "teamId alone does not expose owner inbox to students",
+    assertFails(
+      getDocs(
+        query(
+          collection(alice.firestore(), "teamRequests"),
+          where("teamId", "==", "team-a"),
+        ),
+      ),
+    ),
+  );
+  await check(
+    "student can query own requests",
+    assertSucceeds(
+      getDocs(
+        query(
+          collection(bob.firestore(), "teamRequests"),
+          where("studentId", "==", "bob"),
+        ),
+      ),
+    ),
+  );
+  await check(
+    "applicant cannot accept own request",
+    assertFails(
+      updateDoc(requestRef, {
+        status: "accepted",
+        updatedAt: serverTimestamp(),
+      }),
+    ),
+  );
+  await check(
+    "owner cannot rewrite applicant note",
+    assertFails(
+      updateDoc(doc(alice.firestore(), "teamRequests", "bob_team-a"), {
+        note: "Changed",
+        updatedAt: serverTimestamp(),
+      }),
+    ),
+  );
+  await check(
+    "team owner can accept pending request",
+    assertSucceeds(
+      updateDoc(doc(alice.firestore(), "teamRequests", "bob_team-a"), {
+        status: "accepted",
+        updatedAt: serverTimestamp(),
+      }),
+    ),
+  );
+  await check(
+    "decision cannot overwrite already accepted request",
+    assertFails(
+      updateDoc(doc(alice.firestore(), "teamRequests", "bob_team-a"), {
+        status: "declined",
+        updatedAt: serverTimestamp(),
+      }),
+    ),
+  );
+  await check(
+    "applicant can withdraw accepted request",
+    assertSucceeds(
+      updateDoc(requestRef, {
+        status: "withdrawn",
+        updatedAt: serverTimestamp(),
+      }),
+    ),
+  );
+  await check(
+    "withdrawn request cannot be accepted later",
+    assertFails(
+      updateDoc(doc(alice.firestore(), "teamRequests", "bob_team-a"), {
+        status: "accepted",
+        updatedAt: serverTimestamp(),
+      }),
+    ),
+  );
+  await check(
+    "team owner cannot apply to own team",
+    assertFails(
+      setDoc(doc(alice.firestore(), "teamRequests", "alice_team-a"), {
+        ...joinRequest,
+        studentId: "alice",
+        studentName: "Alice",
+      }),
+    ),
+  );
+  await check(
+    "team owner can close recruitment",
+    assertSucceeds(
+      updateDoc(teamRef, { status: "closed", updatedAt: serverTimestamp() }),
+    ),
+  );
+  await check(
+    "owner can create a closed team",
+    assertSucceeds(
+      setDoc(doc(alice.firestore(), "teams", "closed-team"), {
+        ...team,
+        status: "closed",
+      }),
+    ),
+  );
+  await check(
+    "new request to closed team denied",
+    assertFails(
+      setDoc(doc(bob.firestore(), "teamRequests", "bob_closed-team"), {
+        ...joinRequest,
+        teamId: "closed-team",
+      }),
+    ),
+  );
+  await check(
+    "teams cannot be deleted while requests reference them",
+    assertFails(deleteDoc(teamRef)),
+  );
+  await check(
+    "admin can hide team",
+    assertSucceeds(
+      updateDoc(doc(admin.firestore(), "teams", "team-a"), {
+        status: "hidden",
+        updatedAt: serverTimestamp(),
+      }),
+    ),
+  );
+  await check(
+    "hidden team protected from other students",
+    assertFails(getDoc(doc(bob.firestore(), "teams", "team-a"))),
+  );
+  await check(
+    "owner cannot reopen a hidden team",
+    assertFails(
+      updateDoc(teamRef, { status: "open", updatedAt: serverTimestamp() }),
+    ),
+  );
+  await check(
+    "admin can restore team as closed",
+    assertSucceeds(
+      updateDoc(doc(admin.firestore(), "teams", "team-a"), {
+        status: "closed",
+        updatedAt: serverTimestamp(),
+      }),
+    ),
+  );
   console.log(`${checks} Firebase security checks passed.`);
 } finally {
   await env.cleanup();

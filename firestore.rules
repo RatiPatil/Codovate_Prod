@@ -153,6 +153,76 @@ service cloud.firestore {
     && request.resource.data.createdAt == resource.data.createdAt && changedTime();
    allow delete: if admin();
   }
+  function validCommunity(d) {
+   return text(d.studentId,128) && d.studentId.size()>0 && text(d.studentName,100) && d.studentName.size()>0
+    && text(d.title,120) && d.title.size()>0 && text(d.summary,2000) && d.summary.size()>0
+    && d.category in ['Web & apps','AI & data','Design','Hardware','Social impact','Other']
+    && validSkills(d.skills) && d.createdAt is timestamp && d.updatedAt is timestamp;
+  }
+  function optionalHttps(v) { return text(v,500) && (v == '' || v.matches('https://[^ /]+.*')); }
+  function validProject(d) {
+   return d.keys().hasAll(['studentId','studentName','title','summary','category','skills','visibility','moderation','repoUrl','demoUrl','createdAt','updatedAt'])
+    && d.keys().hasOnly(['studentId','studentName','title','summary','category','skills','visibility','moderation','repoUrl','demoUrl','createdAt','updatedAt'])
+    && validCommunity(d) && d.visibility in ['private','public'] && d.moderation in ['visible','hidden']
+    && optionalHttps(d.repoUrl) && optionalHttps(d.demoUrl);
+  }
+  match /projects/{id} {
+   allow read: if (resource.data.visibility == 'public' && resource.data.moderation == 'visible') || own(resource.data.studentId) || admin();
+   allow create: if signedIn() && validProject(request.resource.data)
+    && request.resource.data.studentId == request.auth.uid && request.resource.data.moderation == 'visible'
+    && request.resource.data.studentName == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.name
+    && request.resource.data.createdAt == request.time && changedTime();
+   allow update: if validProject(request.resource.data) && changedTime()
+    && request.resource.data.studentId == resource.data.studentId && request.resource.data.studentName == resource.data.studentName
+    && request.resource.data.createdAt == resource.data.createdAt
+    && (admin() || (own(resource.data.studentId) && resource.data.moderation == 'visible' && request.resource.data.moderation == resource.data.moderation));
+   allow delete: if own(resource.data.studentId) || admin();
+  }
+  function validTeam(d) {
+   return d.keys().hasAll(['studentId','studentName','title','summary','category','skills','lookingFor','status','createdAt','updatedAt'])
+    && d.keys().hasOnly(['studentId','studentName','title','summary','category','skills','lookingFor','status','createdAt','updatedAt'])
+    && validCommunity(d) && text(d.lookingFor,180) && d.lookingFor.size()>0 && d.status in ['open','closed','hidden'];
+  }
+  match /teams/{id} {
+   allow read: if signedIn() && (resource.data.status != 'hidden' || own(resource.data.studentId) || admin());
+   allow create: if signedIn() && validTeam(request.resource.data)
+    && request.resource.data.studentId == request.auth.uid && request.resource.data.status in ['open','closed']
+    && request.resource.data.studentName == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.name
+    && request.resource.data.createdAt == request.time && changedTime();
+   allow update: if validTeam(request.resource.data) && changedTime()
+    && request.resource.data.studentId == resource.data.studentId && request.resource.data.studentName == resource.data.studentName
+    && request.resource.data.createdAt == resource.data.createdAt
+    && (admin() || (own(resource.data.studentId) && resource.data.status != 'hidden' && request.resource.data.status in ['open','closed']));
+   // Close teams instead of deleting them: existing request references stay valid.
+   allow delete: if false;
+  }
+  function validTeamRequest(d) {
+   return d.keys().hasAll(['studentId','studentName','ownerId','teamId','teamTitle','note','status','createdAt','updatedAt'])
+    && d.keys().hasOnly(['studentId','studentName','ownerId','teamId','teamTitle','note','status','createdAt','updatedAt'])
+    && text(d.studentId,128) && text(d.studentName,100) && d.studentName.size()>0
+    && text(d.ownerId,128) && text(d.teamId,128) && d.teamId.size()>0 && text(d.teamTitle,120)
+    && text(d.note,1000) && d.note.size()>0 && d.status in ['pending','accepted','declined','withdrawn']
+    && d.createdAt is timestamp && d.updatedAt is timestamp;
+  }
+  match /teamRequests/{id} {
+   // Missing-document reads contain no private data and enable duplicate-safe transactions.
+   allow get: if signedIn() && (!exists(/databases/$(database)/documents/teamRequests/$(id)) || own(resource.data.studentId) || own(resource.data.ownerId) || admin());
+   allow list: if signedIn() && (own(resource.data.studentId) || own(resource.data.ownerId) || admin());
+   allow create: if signedIn() && validTeamRequest(request.resource.data)
+    && request.resource.data.studentId == request.auth.uid
+    && id == request.auth.uid + '_' + request.resource.data.teamId
+    && request.resource.data.studentName == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.name
+    && request.resource.data.ownerId == get(/databases/$(database)/documents/teams/$(request.resource.data.teamId)).data.studentId
+    && request.resource.data.ownerId != request.auth.uid
+    && request.resource.data.teamTitle == get(/databases/$(database)/documents/teams/$(request.resource.data.teamId)).data.title
+    && get(/databases/$(database)/documents/teams/$(request.resource.data.teamId)).data.status == 'open'
+    && request.resource.data.status == 'pending' && request.resource.data.createdAt == request.time && changedTime();
+   allow update: if signedIn() && validTeamRequest(request.resource.data) && changedTime()
+    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','updatedAt'])
+    && ((own(resource.data.studentId) && resource.data.status in ['pending','accepted'] && request.resource.data.status == 'withdrawn')
+     || ((own(resource.data.ownerId) || admin()) && resource.data.status == 'pending' && request.resource.data.status in ['accepted','declined']));
+   allow delete: if false;
+  }
   match /{document=**} { allow read, write: if false; }
  }
 }

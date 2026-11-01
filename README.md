@@ -113,3 +113,10 @@ See [docs/LOGIN_FIXES.md](docs/LOGIN_FIXES.md) for authentication recovery behav
 The release adds a private career planner, curated public learning library, admin resource management, a searchable admin student directory, listing editing, cursor pagination and skill-based dashboard suggestions. One login serves both roles; verified admins reach administration through the default dashboard route. Original branding is preserved. See [docs/CAREER_WORKSPACE.md](docs/CAREER_WORKSPACE.md) for implemented behavior and limits.
 
 For Antigravity, copy [docs/ANTIGRAVITY_DEPLOYMENT_PROMPT.md](docs/ANTIGRAVITY_DEPLOYMENT_PROMPT.md). It covers the remaining live Firebase configuration, admin bootstrap, rules/index deployment, live acceptance checks and optional hosting. Nothing in this handoff claims those cloud steps have already succeeded.
+
+
+## Student projects and team discovery
+
+/projects provides a public showcase and a private-by-default portfolio editor. /teams lets signed-in students start a team, discover recruiting teams, send a private introduction and track owner decisions. Owners have an inbox; admins can moderate projects and teams. Acceptance records an introduction, not a chat workspace or challenge team submission.
+
+See [docs/COMMUNITY.md](docs/COMMUNITY.md) for functionality, database contracts, privacy and acceptance checks. This release also improves navigation overflow, clears private rows on account changes, prevents duplicate form submissions, preserves failed drafts and adds render-error recovery. Firebase cloud setup remains separate from emulator verification.

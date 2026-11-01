@@ -1,6 +1,6 @@
 # Firebase database contract — v1
 
-Firestore is schemaless; the schema below is enforced by `firestore.rules`, form validation and deterministic document IDs. Collections are created on the first valid write, not during UI preview. There is no seed of old production data. All times except the human-readable ISO deadline use Firestore timestamps. `createdAt` and `updatedAt` use server timestamps, not the client clock.
+Firestore is schemaless; the schema below is enforced by `firestore.rules`, form validation and deterministic document IDs. Collections are created on the first valid write, not during UI preview. There is no seed of old production data. Event timestamps use Firestore timestamps; opportunity deadlines also have ISO display strings and planner due dates are date-only strings. `createdAt` and `updatedAt` use server timestamps, not the client clock.
 
 ## Collections
 
@@ -23,7 +23,7 @@ Firestore is schemaless; the schema below is enforced by `firestore.rules`, form
 - `status`: draft / published / closed. Closing preserves applications and history.
 - `stipend`: INR number, 0–10,000,000; monthly for jobs/internships, prize pool for competitions/hackathons. Zero means not specified.
 - `deadline`: ISO date string for rendering. `closesAt`: Firestore timestamp enforcing the deadline in security rules using server time. Both originate from the same admin form value. The timestamp is authoritative for accepting applications.
-- Discovery excludes closed/expired listings. Public queries must include `status == published` to satisfy rules. Discovery orders by `createdAt desc`, limited to 200.
+- Discovery excludes closed/expired listings. Public queries must include `status == published` to satisfy rules. Discovery orders by `createdAt desc`, using 24-record cursor pages plus a lookahead.
 - Text bounds: title/organization/location/duration 180; description/responsibilities/eligibility 6000 characters each.
 
 ### Application integrity
@@ -32,7 +32,7 @@ A transaction reads the application ID and authoritative listing, checks duplica
 
 Statuses: submitted → under_review → shortlisted → selected / rejected. Administrators can correct a status; updates cannot rewrite the owner, opportunity, résumé path or submission. Students cannot update application status. Cover notes have a 2000 character maximum. No applicant email or résumé is placed in a public listing.
 
-Student lists use `where(studentId, ==, uid)`; rules reject unrestricted cross-student queries. Admin lists order by createdAt and show the latest 200. The one composite index required for published listing discovery is in `firestore.indexes.json`; owner and admin queries use default single-field indexes.
+Student lists use `where(studentId, ==, uid)`; rules reject unrestricted cross-student queries. Admin lists order by createdAt with cursor pagination. Composite indexes for constrained queries are in `firestore.indexes.json`; owner and admin queries use default single-field indexes.
 
 ## Storage
 
@@ -50,7 +50,7 @@ Rules default-deny all unknown collections/paths. Profile/application deletion a
 
 ## Executable schema and read-only audit
 
-`database/firestore.schema.json` defines all four document shapes using JSON Schema 2020-12, with required fields, enums, numeric ranges, lengths and unknown-field rejection. `database/examples.json` contains one example of each collection; these records are documentation fixtures and are never imported into Firebase.
+`database/firestore.schema.json` defines all nine document shapes using JSON Schema 2020-12, with required fields, enums, numeric ranges, lengths and unknown-field rejection. `database/examples.json` contains one example of each collection; these records are documentation fixtures and are never imported into Firebase.
 
 The validator normalizes Firestore timestamps to ISO 8601 strings. It also checks relationships that JSON Schema cannot express: matching `deadline`/`closesAt`, deterministic application/bookmark IDs, and owner-specific résumé paths. Security Rules remain the authority for live Firebase access; the JSON Schema is a separate read-only validation and review tool, not a native Firestore schema migration.
 
@@ -74,7 +74,7 @@ Live rules now require unique string skills, each 1–60 characters, with at mos
 
 `resources/{autoId}` stores curated external learning links: `title` (1–120), `description` (1–1000), `url` (HTTPS, up to 1000), `category` (`Interview prep`, `Resume & portfolio`, `Technical skills`, `Career guidance`), `status` (`draft` or `published`), `createdBy`, `createdAt`, `updatedAt`. Only a custom-claim admin can create, edit, publish, unpublish or delete. Creator and creation time are immutable. The public library can only query published records. Links open in a new tab with `noopener noreferrer`.
 
-All six collections have executable contracts in `database/firestore.schema.json` and documentation-only records in `database/examples.json`. These records are not seeded automatically. Firebase creates collections on their first authorized write; there is no SQL migration or second database.
+All nine collections have executable contracts in `database/firestore.schema.json` and documentation-only records in `database/examples.json`. These records are not seeded automatically. Firebase creates collections on their first authorized write; there is no SQL migration or second database.
 
 ## Query catalog and pagination
 
@@ -94,3 +94,10 @@ New paginated queries request one lookahead record to determine whether another 
 Writes use `serverTimestamp()` and Firestore rules validate timestamps. Applications remain duplicate-safe transactions using deterministic IDs. Data errors and timeouts are surfaced to the user; failed operations are not shown as successful. Schema validation is a read-only offline/ADC tool; Security Rules remain the authority for browser writes. Date-only task input validates actual calendar dates in the client and JSON Schema; rules enforce the date string shape.
 
 Admin claims must be provisioned with `scripts/set-admin.mjs` using trusted credentials. One public login is shared by both roles. After session resolution, the default dashboard route sends claim-verified admins to `/admin`; students receive the student dashboard. No email string, environment variable or client-written profile field grants authority. Authentication account deletion, role assignment and sensitive maintenance belong in a trusted operator environment, not a browser with privileged keys.
+
+
+## Student projects and team discovery
+
+The projects, teams and teamRequests collections add private/public portfolios, signed-in team discovery and private introductions. See [COMMUNITY.md](COMMUNITY.md) for complete fields, constraints, query/index mappings, state transitions and access policy. The executable schema and read-only validator now cover all nine collections. Request IDs must match studentId_teamId; self-requests are invalid. Public project queries constrain both visibility=public and moderation=visible. Owner inboxes constrain teamId and ownerId.
+
+All new queries use bounded cursor pages. Query/account changes immediately clear old rows and ignore stale responses. Successful project/team saves open the owner view; successful introductions open My requests. Identity fields snapshot the creator profile at creation and remain immutable. Team ownership cannot transfer, teams cannot be deleted, and applicants/owners cannot rewrite an introduction after submission. Only custom-claim admins can hide/restore content; students cannot reverse moderation.
