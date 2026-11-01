@@ -1,210 +1,97 @@
 rules_version = '2';
 service cloud.firestore {
-  match /databases/{database}/documents {
-    
-    // Helper functions
-    function isAuthenticated() {
-      return request.auth != null;
-    }
-    
-    function isStudent() {
-      // Assuming a custom claim or looking up user role isn't straightforward without a read,
-      // but typically we can assume if they are authenticated they have basic student rights.
-      // Better to check auth token custom claims if they exist:
-      return isAuthenticated() && request.auth.token.role == 'student';
-    }
-    
-    function isMentor() {
-      return isAuthenticated() && request.auth.token.role == 'mentor';
-    }
-    
-    function isAdmin() {
-      return isAuthenticated() && (request.auth.token.role == 'admin' || request.auth.token.role == 'super_admin');
-    }
-
-    // 1. Users collection: Protect private data
-    match /users/{userId} {
-      allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
-      allow write: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
-    }
-    
-    // New Collections
-    match /profiles/{userId} {
-      allow read: if isAuthenticated(); // Publicly readable by other students for teams, leaderboard
-      allow write: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
-    }
-    match /careerProfiles/{userId} {
-      allow read: if isAuthenticated();
-      allow write: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
-    }
-    match /preferences/{userId} {
-      allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
-      allow write: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
-    }
-    match /analytics/{userId} {
-      allow read: if isAuthenticated();
-      allow write: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
-    }
-    match /activityLogs/{logId} {
-      allow read: if isAuthenticated() && (resource.data.user_id == request.auth.uid || isAdmin());
-      allow write: if isAuthenticated();
-    }
-    
-    // Final Student Modules (Opportunities, Applications, Teams & Chat, Learning, Resumes)
-    match /opportunities/{oppId} {
-      allow read: if isAuthenticated();
-      allow write: if isAdmin();
-    }
-
-    match /events/{eventId} {
-      allow read: if isAuthenticated();
-      allow write: if isAdmin();
-    }
-
-    match /projects/{projectId} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && (request.resource.data.userId == request.auth.uid || isAdmin());
-      allow update, delete: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
-    }
-
-    match /certificates/{certId} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && (request.resource.data.userId == request.auth.uid || isAdmin());
-      allow update, delete: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
-    }
-
-    match /achievements/{achId} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && (request.resource.data.userId == request.auth.uid || isAdmin());
-      allow update, delete: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
-    }
-
-    match /bookmarks/{bookmarkId} {
-      allow read: if isAuthenticated() && (resource.data.user_id == request.auth.uid || isAdmin());
-      allow create: if isAuthenticated() && (request.resource.data.user_id == request.auth.uid || isAdmin());
-      allow update, delete: if isAuthenticated() && (resource.data.user_id == request.auth.uid || isAdmin());
-    }
-
-    match /applications/{appId} {
-      allow read: if isAuthenticated() && (resource.data.user_id == request.auth.uid || resource.data.student_id == request.auth.uid || resource.data.studentUid == request.auth.uid || isAdmin());
-      allow create: if isAuthenticated() && (request.resource.data.user_id == request.auth.uid || request.resource.data.student_id == request.auth.uid || request.resource.data.studentUid == request.auth.uid || isAdmin());
-      allow update, delete: if isAuthenticated() && (resource.data.user_id == request.auth.uid || resource.data.student_id == request.auth.uid || resource.data.studentUid == request.auth.uid || isAdmin());
-    }
-
-    match /teams/{teamId} {
-      allow read: if isAuthenticated();
-      allow write: if isAuthenticated();
-
-      match /messages/{messageId} {
-        allow read: if isAuthenticated();
-        allow create: if isAuthenticated() && (request.resource.data.senderId == request.auth.uid || request.resource.data.sender_id == request.auth.uid);
-        allow update, delete: if isAuthenticated() && (resource.data.senderId == request.auth.uid || resource.data.sender_id == request.auth.uid || isAdmin());
-      }
-    }
-
-    match /learningProgress/{progressId} {
-      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
-      allow write: if isAuthenticated() && (request.resource.data.userId == request.auth.uid || isAdmin());
-    }
-
-    match /resumes/{userId} {
-      allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
-      allow write: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
-    }
-    
-    // Legacy Students Collection
-    match /students/{userId} {
-      allow read: if isAuthenticated();
-      allow write: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
-    }
-
-    // 2. Mentors collection: Students can read mentor profiles
-    match /mentors/{mentorId} {
-      allow read: if isAuthenticated(); // Students and anyone authenticated can read mentor profiles
-      allow write: if isAdmin() || (isAuthenticated() && request.auth.uid == resource.data.user_id);
-    }
-
-    // 3. mentorSessions: Mentors can access only assigned sessions. Students can read/create their own.
-    match /mentorSessions/{sessionId} {
-      // Create bookings
-      allow create: if isAuthenticated();
-      
-      // Read access: Mentors can read if assigned, students can read if they created it
-      allow read, update: if isAdmin() 
-        || (isAuthenticated() && resource.data.student_id == request.auth.uid)
-        || (isMentor() && resource.data.mentor_id == request.auth.uid);
-        
-      allow delete: if isAdmin();
-    }
-
-    // 4. mentorQueries: Mentors can access only assigned queries. Students can read/create their own.
-    match /mentorQueries/{queryId} {
-      // Create queries
-      allow create: if isAuthenticated();
-      
-      // Read/Update access: Mentors can read if assigned, students can read if they created it
-      allow read, update: if isAdmin() 
-        || (isAuthenticated() && resource.data.student_id == request.auth.uid)
-        || (isMentor() && resource.data.mentor_id == request.auth.uid);
-        
-      allow delete: if isAdmin();
-    }
-    
-    // 5. Notifications
-    match /notifications/{notificationId} {
-      allow read: if isAuthenticated() && resource.data.user_id == request.auth.uid;
-      allow create: if isAuthenticated();
-      allow update, delete: if isAuthenticated() && resource.data.user_id == request.auth.uid;
-    }
-
-    // 6. RBAC System Collections
-    match /roles/{roleId} {
-      allow read: if isAuthenticated(); // Frontend needs to read role permissions
-      allow write: if false; // Only backend admin API can modify roles
-    }
-    
-    match /featureFlags/{flagId} {
-      allow read: if isAuthenticated(); // Frontend needs to read feature flags
-      allow write: if false; // Only backend admin API can modify flags
-    }
-    
-    match /auditLogs/{logId} {
-      allow read, write: if false; // Only backend has access
-    }
-    
-    match /loginHistory/{logId} {
-      allow read, write: if false; // Only backend has access
-    }
-
-    // Enterprise IAM Collections
-    match /system_config/{configId} {
-      allow read, write: if false; // Only backend
-    }
-    match /adminInvitations/{inviteId} {
-      allow read, write: if false; // Only backend
-    }
-    match /sessions/{sessionId} {
-      // Users can only read their own session data
-      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
-      allow write: if false; // Created/Updated by backend
-    }
-    match /securityPolicies/{policyId} {
-      // Anyone authenticated can read global or their org's policy
-      allow read: if isAuthenticated();
-      allow write: if false; // Managed by backend
-    }
-    match /organizations/{orgId} {
-      allow read: if isAuthenticated(); // Frontend needs to read org names
-      allow write: if false; // Managed by backend
-    }
-    match /departments/{deptId} {
-      allow read: if isAuthenticated();
-      allow write: if false;
-    }
-
-    // Default deny for everything else
-    match /{document=**} {
-      allow read, write: if false;
-    }
+ match /databases/{database}/documents {
+  function signedIn() { return request.auth != null; }
+  function admin() { return signedIn() && request.auth.token.get('admin', false) == true; }
+  function own(uid) { return signedIn() && request.auth.uid == uid; }
+  function text(v, max) { return v is string && v.size() <= max; }
+  function changedTime() { return request.resource.data.updatedAt == request.time; }
+  function validProfile(d) {
+   return d.keys().hasAll(['name','email','college','degree','graduationYear','city','bio','skills','portfolio','resumePath','createdAt','updatedAt'])
+    && d.keys().hasOnly(['name','email','college','degree','graduationYear','city','bio','skills','portfolio','resumePath','createdAt','updatedAt'])
+    && text(d.name,100) && text(d.email,320) && text(d.college,180) && text(d.degree,100)
+    && text(d.graduationYear,4) && text(d.city,100) && text(d.bio,1500)
+    && d.skills is list && d.skills.size() <= 20 && text(d.portfolio,500)
+    && (d.portfolio == '' || d.portfolio.matches('https://.*'))
+    && (d.resumePath == '' || d.resumePath == 'resumes/' + request.auth.uid + '/resume.pdf')
+    && d.createdAt is timestamp && d.updatedAt is timestamp;
   }
+  match /users/{uid} {
+   allow read: if own(uid) || admin();
+   allow create: if own(uid) && validProfile(request.resource.data)
+    && request.resource.data.email == request.auth.token.email
+    && request.resource.data.createdAt == request.time && changedTime();
+   allow update: if own(uid) && validProfile(request.resource.data)
+    && request.resource.data.email == resource.data.email
+    && request.resource.data.createdAt == resource.data.createdAt && changedTime();
+   allow delete: if false;
+  }
+  function validListing(d) {
+   return d.keys().hasAll(['title','organization','type','category','mode','location','duration','stipend','skills','deadline','closesAt','description','responsibilities','eligibility','status','createdBy','createdAt','updatedAt'])
+    && d.keys().hasOnly(['title','organization','type','category','mode','location','duration','stipend','skills','deadline','closesAt','description','responsibilities','eligibility','status','createdBy','createdAt','updatedAt'])
+    && text(d.title,180) && d.title.size()>0 && text(d.organization,180) && d.organization.size()>0
+    && d.type in ['internship','job','competition','hackathon']
+    && d.category in ['Technology','Design','Marketing','Business','Finance','Other']
+    && d.mode in ['Remote','On-site','Hybrid'] && text(d.location,180) && text(d.duration,180)
+    && d.stipend is number && d.stipend>=0 && d.stipend<=10000000
+    && d.skills is list && d.skills.size()<=20 && text(d.deadline,50) && d.closesAt is timestamp
+    && text(d.description,6000) && text(d.responsibilities,6000) && text(d.eligibility,6000)
+    && d.status in ['draft','published','closed'] && d.createdBy is string
+    && d.createdAt is timestamp && d.updatedAt is timestamp;
+  }
+  match /opportunities/{id} {
+   allow read: if resource.data.status == 'published' || admin();
+   allow create: if admin() && validListing(request.resource.data)
+    && request.resource.data.createdBy == request.auth.uid
+    && request.resource.data.createdAt == request.time && changedTime()
+    && request.resource.data.closesAt > request.time;
+   allow update: if admin() && validListing(request.resource.data)
+    && request.resource.data.createdBy == resource.data.createdBy
+    && request.resource.data.createdAt == resource.data.createdAt && changedTime();
+   allow delete: if false;
+  }
+  match /applications/{id} {
+   // Owners can read their deterministic ID before creation for duplicate-safe transactions.
+   allow get: if admin() || (signedIn() && id.matches(request.auth.uid + '_.*'));
+   allow list: if signedIn() && (resource.data.studentId == request.auth.uid || admin());
+   allow create: if signedIn()
+    && request.resource.data.keys().hasOnly(['studentId','opportunityId','opportunityTitle','organization','studentName','college','resumePath','coverNote','status','createdAt','updatedAt'])
+    && request.resource.data.studentId == request.auth.uid
+    && text(request.resource.data.opportunityId,128)
+    && id == request.auth.uid + '_' + request.resource.data.opportunityId
+    && request.resource.data.status == 'submitted'
+    && request.resource.data.createdAt == request.time && changedTime()
+    && text(request.resource.data.coverNote,2000)
+    && request.resource.data.studentName == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.name
+    && request.resource.data.studentName.size()>0
+    && request.resource.data.college == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.college
+    && request.resource.data.college.size()>0
+    && request.resource.data.resumePath == 'resumes/' + request.auth.uid + '/resume.pdf'
+    && request.resource.data.resumePath == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.resumePath
+    && get(/databases/$(database)/documents/opportunities/$(request.resource.data.opportunityId)).data.status == 'published'
+    && get(/databases/$(database)/documents/opportunities/$(request.resource.data.opportunityId)).data.closesAt > request.time
+    && request.resource.data.opportunityTitle == get(/databases/$(database)/documents/opportunities/$(request.resource.data.opportunityId)).data.title
+    && request.resource.data.organization == get(/databases/$(database)/documents/opportunities/$(request.resource.data.opportunityId)).data.organization;
+   allow update: if admin()
+    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','updatedAt'])
+    && request.resource.data.status in ['submitted','under_review','shortlisted','selected','rejected'] && changedTime();
+   allow delete: if false;
+  }
+  match /bookmarks/{id} {
+   allow read: if signedIn() && resource.data.studentId == request.auth.uid;
+   allow create: if signedIn()
+    && request.resource.data.keys().hasOnly(['studentId','opportunityId','title','organization','type','createdAt'])
+    && request.resource.data.studentId == request.auth.uid
+    && text(request.resource.data.opportunityId,128)
+    && id == request.auth.uid + '_' + request.resource.data.opportunityId
+    && request.resource.data.createdAt == request.time
+    && request.resource.data.title == get(/databases/$(database)/documents/opportunities/$(request.resource.data.opportunityId)).data.title
+    && request.resource.data.organization == get(/databases/$(database)/documents/opportunities/$(request.resource.data.opportunityId)).data.organization
+    && request.resource.data.type == get(/databases/$(database)/documents/opportunities/$(request.resource.data.opportunityId)).data.type
+    && get(/databases/$(database)/documents/opportunities/$(request.resource.data.opportunityId)).data.status == 'published';
+   allow delete: if signedIn() && resource.data.studentId == request.auth.uid;
+   allow update: if false;
+  }
+  match /{document=**} { allow read, write: if false; }
+ }
 }
