@@ -10,6 +10,7 @@ import {
 const state = vi.hoisted(() => ({
   authChanged: null,
   profileChanged: null,
+  profileFailed: null,
   existing: false,
   set: vi.fn(),
 }));
@@ -24,8 +25,9 @@ vi.mock("firebase/auth", () => ({
 vi.mock("firebase/firestore", () => ({
   doc: (_db, col, id) => ({ col, id }),
   serverTimestamp: () => ({ serverTime: true }),
-  onSnapshot: vi.fn((_, callback) => {
+  onSnapshot: vi.fn((_, options, callback, failure) => {
     state.profileChanged = callback;
+    state.profileFailed = failure;
     return () => {};
   }),
   runTransaction: vi.fn(async (_db, callback) =>
@@ -41,6 +43,8 @@ function Probe() {
   return (
     <>
       <span data-testid="loading">{String(s.loading)}</span>
+      <span data-testid="error">{s.sessionError?.code || ""}</span>
+      <button onClick={s.retrySession}>Retry session</button>
       <span data-testid="role">{s.admin ? "admin" : "student"}</span>
       <button
         onClick={() =>
@@ -61,7 +65,10 @@ beforeEach(() => {
   state.authChanged = null;
   state.profileChanged = null;
 });
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  vi.useRealTimers();
+});
 describe("session and profile integrity", () => {
   it("keeps role-dependent screens loading until token and profile are resolved", async () => {
     render(
@@ -111,5 +118,91 @@ describe("session and profile integrity", () => {
     fireEvent.click(screen.getByRole("button", { name: "Create profile" }));
     await act(async () => {});
     expect(state.set).not.toHaveBeenCalled();
+  });
+});
+
+describe("failed account connection recovery", () => {
+  it("does not trust a missing cached profile as a successful server read", async () => {
+    render(
+      <SessionProvider>
+        <Probe />
+      </SessionProvider>,
+    );
+    await act(async () =>
+      state.authChanged({
+        uid: "student",
+        getIdTokenResult: async () => ({ claims: {} }),
+      }),
+    );
+    await act(async () =>
+      state.profileChanged({
+        metadata: { fromCache: true },
+        exists: () => false,
+      }),
+    );
+    expect(screen.getByTestId("loading")).toHaveTextContent("true");
+    await act(async () =>
+      state.profileChanged({
+        metadata: { fromCache: false },
+        exists: () => false,
+      }),
+    );
+    expect(screen.getByTestId("loading")).toHaveTextContent("false");
+  });
+  it("surfaces denied profile reads and retries with a fresh subscription", async () => {
+    render(
+      <SessionProvider>
+        <Probe />
+      </SessionProvider>,
+    );
+    const user = {
+      uid: "student",
+      getIdTokenResult: async () => ({ claims: {} }),
+    };
+    await act(async () => state.authChanged(user));
+    const oldFailure = state.profileFailed;
+    await act(async () => state.profileFailed({ code: "permission-denied" }));
+    expect(screen.getByTestId("error")).toHaveTextContent("permission-denied");
+    fireEvent.click(screen.getByRole("button", { name: "Retry session" }));
+    await act(async () => state.authChanged(user));
+    await act(async () =>
+      state.profileChanged({
+        exists: () => true,
+        data: () => ({ name: "Student" }),
+      }),
+    );
+    await act(async () => oldFailure({ code: "permission-denied" }));
+    expect(screen.getByTestId("error")).toBeEmptyDOMElement();
+    expect(screen.getByTestId("loading")).toHaveTextContent("false");
+  });
+  it("stops waiting when a profile listener never answers", async () => {
+    vi.useFakeTimers();
+    render(
+      <SessionProvider>
+        <Probe />
+      </SessionProvider>,
+    );
+    await act(async () =>
+      state.authChanged({
+        uid: "student",
+        getIdTokenResult: async () => ({ claims: {} }),
+      }),
+    );
+    await act(async () => vi.advanceTimersByTime(12001));
+    expect(screen.getByTestId("loading")).toHaveTextContent("false");
+    expect(screen.getByTestId("error")).toHaveTextContent(
+      "app/profile-timeout",
+    );
+  });
+  it("stops waiting when auth initialization never answers", async () => {
+    vi.useFakeTimers();
+    render(
+      <SessionProvider>
+        <Probe />
+      </SessionProvider>,
+    );
+    await act(async () => vi.advanceTimersByTime(12001));
+    expect(screen.getByTestId("loading")).toHaveTextContent("false");
+    expect(screen.getByTestId("error")).toHaveTextContent("app/auth-timeout");
   });
 });
