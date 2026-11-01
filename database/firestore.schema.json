@@ -316,6 +316,108 @@
         }
       },
       "additionalProperties": false
+    },
+    "careerTasks": {
+      "type": "object",
+      "required": [
+        "studentId",
+        "title",
+        "note",
+        "dueDate",
+        "status",
+        "createdAt",
+        "updatedAt"
+      ],
+      "properties": {
+        "studentId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "note": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 1000
+        },
+        "dueDate": {
+          "type": "string",
+          "format": "date"
+        },
+        "status": {
+          "enum": ["todo", "done"]
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "additionalProperties": false
+    },
+    "resources": {
+      "type": "object",
+      "required": [
+        "title",
+        "description",
+        "url",
+        "category",
+        "status",
+        "createdBy",
+        "createdAt",
+        "updatedAt"
+      ],
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "url": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000,
+          "format": "uri",
+          "pattern": "^https://[^ /]+"
+        },
+        "category": {
+          "enum": [
+            "Interview prep",
+            "Resume & portfolio",
+            "Technical skills",
+            "Career guidance"
+          ]
+        },
+        "status": {
+          "enum": ["draft", "published"]
+        },
+        "createdBy": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "additionalProperties": false
     }
   }
 }

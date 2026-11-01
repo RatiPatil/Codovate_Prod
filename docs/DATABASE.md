@@ -67,3 +67,30 @@ node scripts/validate-schema.mjs --project YOUR_NEW_PROJECT_ID
 The cloud audit reads every document in the four named collections. It makes no writes and prints only record paths and validation failures. Run it deliberately on an appropriately sized project, as Firestore reads are billable.
 
 Live rules now require unique string skills, each 1–60 characters, with at most 20 skills. Graduation year must be empty for an incomplete profile or a four-digit year from 2000 through 2100. Profile and publishing forms explain skill-limit violations before submitting to Firebase. Existing data is not rewritten; use the read-only audit to identify any records requiring manual correction before deploying stricter rules.
+
+## Career workspace collections
+
+`careerTasks/{autoId}` is private planning data: `studentId`, `title` (1–120), `note` (0–1000), `dueDate` (YYYY-MM-DD, date-only in the student's local calendar), `status` (`todo` or `done`), `createdAt`, `updatedAt`. Creation uses a server timestamp, authenticated owner ID and `todo`. Owners can complete, reopen and delete tasks. Owner and creation time cannot be changed. Administrators may read/update/delete for support through trusted tooling; the UI does not expose other students' private goals.
+
+`resources/{autoId}` stores curated external learning links: `title` (1–120), `description` (1–1000), `url` (HTTPS, up to 1000), `category` (`Interview prep`, `Resume & portfolio`, `Technical skills`, `Career guidance`), `status` (`draft` or `published`), `createdBy`, `createdAt`, `updatedAt`. Only a custom-claim admin can create, edit, publish, unpublish or delete. Creator and creation time are immutable. The public library can only query published records. Links open in a new tab with `noopener noreferrer`.
+
+All six collections have executable contracts in `database/firestore.schema.json` and documentation-only records in `database/examples.json`. These records are not seeded automatically. Firebase creates collections on their first authorized write; there is no SQL migration or second database.
+
+## Query catalog and pagination
+
+Implementation: `frontend/src/data.js` (owner live subscriptions and catalog adapter) and `frontend/src/careerData.js` (bounded cursor queries).
+
+| Screen | Query | Index / access |
+| --- | --- | --- |
+| Opportunity catalog | `status == published`, `createdAt desc`, 25 requested / 24 displayed | Composite index in repository; public |
+| Own applications / bookmarks | `studentId == auth.uid` | Automatic single-field index; owner only |
+| Career planner | `studentId == auth.uid`, `createdAt desc`, 25 requested / 24 displayed | Composite index; owner or admin |
+| Public library | `status == published`, `createdAt desc`, 25 / 24 | Composite index; only published |
+| Admin listings, applications, users, resources | `createdAt desc`, 25 / 24 | Automatic single-field descending index; admin only |
+| Listing detail | Exact document ID | Published listing or admin |
+
+New paginated queries request one lookahead record to determine whether another page exists, then resume with `startAfter(lastDisplayedSnapshot)`. Refresh resets the cursor; updates refresh the current list. Filtering/search within these lists applies to **loaded records**, explicitly labelled in the UI. These are not full-text search indexes. Admin lists have a Load more button, so records beyond the first page are accessible. The public opportunity catalog also uses cursor pagination with explicit refresh. New listings appear after refresh; profile and application status subscriptions remain live. No global counts are fabricated.
+
+Writes use `serverTimestamp()` and Firestore rules validate timestamps. Applications remain duplicate-safe transactions using deterministic IDs. Data errors and timeouts are surfaced to the user; failed operations are not shown as successful. Schema validation is a read-only offline/ADC tool; Security Rules remain the authority for browser writes. Date-only task input validates actual calendar dates in the client and JSON Schema; rules enforce the date string shape.
+
+Admin claims must be provisioned with `scripts/set-admin.mjs` using trusted credentials. One public login is shared by both roles. After session resolution, the default dashboard route sends claim-verified admins to `/admin`; students receive the student dashboard. No email string, environment variable or client-written profile field grants authority. Authentication account deletion, role assignment and sensitive maintenance belong in a trusted operator environment, not a browser with privileged keys.

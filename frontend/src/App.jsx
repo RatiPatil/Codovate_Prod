@@ -55,8 +55,6 @@ import {
   serverTimestamp,
   Timestamp,
   query,
-  onSnapshot,
-  orderBy,
   limit,
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
@@ -81,6 +79,14 @@ import {
   validWebLink,
   skillInputError,
 } from "./domain";
+
+import { useCareerPage } from "./careerData";
+import {
+  CareerPlanner,
+  ResourceLibrary,
+  StudentDirectory,
+  CareerSpotlight,
+} from "./Career";
 
 const categoryIcons = {
   internship: BriefcaseBusiness,
@@ -226,6 +232,7 @@ function Footer() {
       <div>
         <Link to="/explore">Explore</Link>
         <Link to="/profile">Your profile</Link>
+        <Link to="/learn">Learning library</Link>
         {!configured && <Link to="/setup">Setup guide</Link>}
       </div>
       <small>© {new Date().getFullYear()} Codovate</small>
@@ -501,6 +508,7 @@ function Home({ catalog }) {
           </Empty>
         )}
       </section>
+      <CareerSpotlight />
       <section className="profile-invite container">
         <span className="invite-icon">
           <UserRound size={29} />
@@ -628,14 +636,15 @@ function Explore({ catalog }) {
             </select>
           </div>
           <p className="result-count">
-            {rows.length} {configured ? "" : "sample "}opportunities
+            {rows.length} {configured ? "matching loaded " : "sample "}
+            opportunities
           </p>
           {notice && (
             <Notice kind="info">
               {notice} {!user && <Link to="/login">Sign in</Link>}
             </Notice>
           )}
-          {catalog.loading ? (
+          {catalog.loading && !catalog.items.length ? (
             <Loading />
           ) : catalog.error ? (
             <Notice>
@@ -658,6 +667,30 @@ function Explore({ catalog }) {
               Try another skill or remove a filter. New listings appear here
               when published.
             </Empty>
+          )}
+          {configured && (
+            <div className="career-controls">
+              <button
+                className="button secondary"
+                disabled={catalog.loading}
+                onClick={catalog.retry}
+              >
+                Refresh opportunities
+              </button>
+              {catalog.more && (
+                <button
+                  className="button"
+                  disabled={catalog.loading}
+                  onClick={catalog.loadMore}
+                >
+                  Load more opportunities
+                </button>
+              )}
+              <p className="hint">
+                Filters search loaded listings. Load more to explore older
+                opportunities.
+              </p>
+            </div>
           )}
         </div>
       </div>
@@ -961,9 +994,9 @@ function AuthPage({ signup = false }) {
     [message, setMessage] = useState(""),
     [busy, setBusy] = useState(false);
   const from = safeReturnPath(loc.state?.from);
-  if (user && !busy && !error) return <Navigate to={from} replace />;
   if (sessionError && !busy) return <AccountRecovery />;
-  if (loading && !user && !busy) return <Loading />;
+  if (loading && !busy) return <Loading />;
+  if (user && !busy && !error) return <Navigate to={from} replace />;
   async function ensureProfile(u, name) {
     await createProfile(u, name);
   }
@@ -1176,6 +1209,8 @@ function Workspace({ children, title, subtitle }) {
           ["/dashboard", "Overview", LayoutDashboard],
           ["/applications", "My applications", FileText],
           ["/saved", "Saved opportunities", Bookmark],
+          ["/planner", "Career planner", CheckCircle2],
+          ["/learn", "Learning library", GraduationCap],
           ["/profile", "My profile", UserRound],
           ...(admin ? [["/admin", "Administration", ShieldCheck]] : []),
         ].map(([to, label, Icon]) => (
@@ -1196,6 +1231,14 @@ function Workspace({ children, title, subtitle }) {
         {children}
       </div>
     </div>
+  );
+}
+function RoleHome({ catalog }) {
+  const { admin } = useSession();
+  return admin ? (
+    <Navigate to="/admin" replace />
+  ) : (
+    <Dashboard catalog={catalog} />
   );
 }
 function Dashboard({ catalog }) {
@@ -1258,6 +1301,46 @@ function Dashboard({ catalog }) {
           </Link>
         ))}
       </section>
+      <div className="career-controls">
+        <Link className="button" to="/planner">
+          Plan your next step <CheckCircle2 size={16} />
+        </Link>
+        <Link className="button secondary" to="/learn">
+          Build a new skill <GraduationCap size={16} />
+        </Link>
+      </div>
+      {profile?.skills?.length > 0 && (
+        <section className="section">
+          <div className="section-heading">
+            <div>
+              <span className="eyebrow">BASED ON YOUR SKILLS</span>
+              <h2>Worth a closer look.</h2>
+            </div>
+          </div>
+          <div className="resource-grid">
+            {catalog.items
+              .filter(isOpen)
+              .map((o) => ({
+                ...o,
+                score: o.skills.filter((skill) =>
+                  profile.skills.some(
+                    (s) => s.toLowerCase() === skill.toLowerCase(),
+                  ),
+                ).length,
+              }))
+              .filter((o) => o.score > 0)
+              .sort((a, b) => b.score - a.score)
+              .slice(0, 4)
+              .map((o) => (
+                <Card item={o} key={o.id} />
+              ))}
+          </div>
+          <p className="hint">
+            Suggestions use exact skill matches from the loaded opportunity
+            catalog. <Link to="/explore">Browse all opportunities</Link>.
+          </p>
+        </section>
+      )}
       {admin && (
         <Link className="button secondary" to="/admin">
           Open administration <ShieldCheck size={17} />
@@ -1577,37 +1660,15 @@ function Profile() {
 }
 function Admin() {
   const { user } = useSession();
+  const listingPage = useCareerPage("opportunities", null, true);
+  const appPage = useCareerPage("applications", null, true);
+  const listings = listingPage.items,
+    apps = appPage.items;
   const [tab, setTab] = useState("listings"),
-    [listings, setListings] = useState([]),
-    [apps, setApps] = useState([]),
+    [editing, setEditing] = useState(null),
     [error, setError] = useState(""),
     [message, setMessage] = useState(""),
     [busy, setBusy] = useState(false);
-  useEffect(() => {
-    const fail = (e) => setError(errorMessage(e));
-    const a = onSnapshot(
-      query(
-        collection(db, "opportunities"),
-        orderBy("createdAt", "desc"),
-        limit(200),
-      ),
-      (s) => setListings(s.docs.map((d) => ({ ...d.data(), id: d.id }))),
-      fail,
-    );
-    const b = onSnapshot(
-      query(
-        collection(db, "applications"),
-        orderBy("createdAt", "desc"),
-        limit(200),
-      ),
-      (s) => setApps(s.docs.map((d) => ({ ...d.data(), id: d.id }))),
-      fail,
-    );
-    return () => {
-      a();
-      b();
-    };
-  }, []);
   async function publish(e) {
     e.preventDefault();
     const form = e.currentTarget;
@@ -1625,7 +1686,7 @@ function Admin() {
     setError("");
     setMessage("");
     try {
-      await setDoc(doc(collection(db, "opportunities")), {
+      const payload = {
         ...d,
         skills: [
           ...new Set(
@@ -1638,13 +1699,21 @@ function Admin() {
         stipend: Number(d.stipend),
         deadline: new Date(d.deadline).toISOString(),
         closesAt: Timestamp.fromDate(new Date(d.deadline)),
-        status: "published",
-        createdBy: user.uid,
-        createdAt: serverTimestamp(),
+        status: editing?.status || "published",
         updatedAt: serverTimestamp(),
-      });
+      };
+      if (editing)
+        await updateDoc(doc(db, "opportunities", editing.id), payload);
+      else
+        await setDoc(doc(collection(db, "opportunities")), {
+          ...payload,
+          createdBy: user.uid,
+          createdAt: serverTimestamp(),
+        });
       form.reset();
-      setMessage("Opportunity published. Students can now discover and apply.");
+      setEditing(null);
+      listingPage.refresh();
+      setMessage("Opportunity saved.");
       setTab("listings");
     } catch (e) {
       setError(errorMessage(e));
@@ -1660,6 +1729,8 @@ function Admin() {
         status: value,
         updatedAt: serverTimestamp(),
       });
+      (collectionName === "opportunities" ? listingPage : appPage).refresh();
+      setMessage("Status updated.");
     } catch (e) {
       setError(errorMessage(e));
     } finally {
@@ -1687,6 +1758,8 @@ function Admin() {
           ["listings", "Listings"],
           ["publish", "Publish opportunity"],
           ["applications", "Applications"],
+          ["resources", "Learning resources"],
+          ["students", "Student directory"],
         ].map(([key, label]) => (
           <button
             key={key}
@@ -1699,9 +1772,17 @@ function Admin() {
       </div>
       {error && <Notice>{error}</Notice>}
       {message && <Notice kind="success">{message}</Notice>}
-      {tab === "publish" ? (
-        <form className="panel profile-form" onSubmit={publish}>
-          <h2>A new opportunity</h2>
+      {tab === "resources" ? (
+        <ResourceLibrary manage />
+      ) : tab === "students" ? (
+        <StudentDirectory />
+      ) : tab === "publish" ? (
+        <form
+          key={editing?.id || "new-listing"}
+          className="panel profile-form"
+          onSubmit={publish}
+        >
+          <h2>{editing ? "Edit opportunity" : "A new opportunity"}</h2>
           <div className="form-grid">
             {[
               ["title", "Opportunity title"],
@@ -1711,12 +1792,17 @@ function Admin() {
             ].map(([name, label]) => (
               <label key={name}>
                 {label}
-                <input required maxLength={180} name={name} />
+                <input
+                  required
+                  maxLength={180}
+                  name={name}
+                  defaultValue={editing?.[name]}
+                />
               </label>
             ))}
             <label>
               Type
-              <select name="type">
+              <select name="type" defaultValue={editing?.type}>
                 {types.map((t) => (
                   <option key={t} value={t}>
                     {typeLabel[t]}
@@ -1726,7 +1812,7 @@ function Admin() {
             </label>
             <label>
               Category
-              <select name="category">
+              <select name="category" defaultValue={editing?.category}>
                 {categories.map((t) => (
                   <option key={t}>{t}</option>
                 ))}
@@ -1734,7 +1820,7 @@ function Admin() {
             </label>
             <label>
               Work mode
-              <select name="mode">
+              <select name="mode" defaultValue={editing?.mode}>
                 {["Remote", "On-site", "Hybrid"].map((t) => (
                   <option key={t}>{t}</option>
                 ))}
@@ -1748,16 +1834,36 @@ function Admin() {
                 min="0"
                 max="10000000"
                 required
-                defaultValue="0"
+                defaultValue={editing?.stipend ?? 0}
               />
             </label>
             <label>
               Application deadline
-              <input required name="deadline" type="datetime-local" />
+              <input
+                required
+                name="deadline"
+                type="datetime-local"
+                defaultValue={
+                  editing
+                    ? new Date(
+                        Date.parse(editing.deadline) -
+                          new Date(editing.deadline).getTimezoneOffset() *
+                            60000,
+                      )
+                        .toISOString()
+                        .slice(0, 16)
+                    : ""
+                }
+              />
             </label>
             <label>
               Skills (comma separated)
-              <input name="skills" required maxLength={600} />
+              <input
+                name="skills"
+                required
+                maxLength={1200}
+                defaultValue={editing?.skills?.join(", ")}
+              />
             </label>
           </div>
           {[
@@ -1767,13 +1873,32 @@ function Admin() {
           ].map(([name, label]) => (
             <label key={name}>
               {label}
-              <textarea name={name} required maxLength={6000} rows={4} />
+              <textarea
+                name={name}
+                required
+                maxLength={6000}
+                rows={4}
+                defaultValue={editing?.[name]}
+              />
             </label>
           ))}
           <button disabled={busy} className="button">
-            {busy ? "Publishing…" : "Publish opportunity"}
+            {busy
+              ? "Saving…"
+              : editing
+                ? "Save changes"
+                : "Publish opportunity"}
             <Plus size={16} />
           </button>
+          {editing && (
+            <button
+              type="button"
+              className="button secondary"
+              onClick={() => setEditing(null)}
+            >
+              Cancel editing
+            </button>
+          )}
         </form>
       ) : tab === "listings" ? (
         <div className="application-list">
@@ -1793,6 +1918,16 @@ function Admin() {
                     {o.organization} · {typeLabel[o.type]}
                   </p>
                 </div>
+                <button
+                  className="button secondary"
+                  disabled={busy}
+                  onClick={() => {
+                    setEditing(o);
+                    setTab("publish");
+                  }}
+                >
+                  Edit
+                </button>
                 <select
                   disabled={busy}
                   aria-label={"Publication status for " + o.title}
@@ -1858,9 +1993,35 @@ function Admin() {
           )}
         </div>
       )}
+      {["listings", "applications"].includes(tab) &&
+        (() => {
+          const page = tab === "listings" ? listingPage : appPage;
+          return (
+            <div className="career-controls">
+              {page.error && <Notice>{errorMessage(page.error)}</Notice>}
+              {page.loading && <span role="status">Loading records…</span>}
+              <button
+                className="button secondary"
+                disabled={page.loading}
+                onClick={page.refresh}
+              >
+                Refresh records
+              </button>
+              {page.more && (
+                <button
+                  className="button"
+                  disabled={page.loading}
+                  onClick={page.loadMore}
+                >
+                  Load more records
+                </button>
+              )}
+            </div>
+          );
+        })()}
       <p className="hint">
-        Showing the latest 200 records. Roles are assigned through Firebase
-        Admin custom claims, never by a student form.
+        Roles are assigned through trusted Firebase Admin custom claims.
+        Students cannot grant themselves access.
       </p>
     </Workspace>
   );
@@ -2001,7 +2162,7 @@ export default function App() {
             path="/dashboard"
             element={
               <Guard>
-                <Dashboard catalog={catalog} />
+                <RoleHome catalog={catalog} />
               </Guard>
             }
           />
@@ -2035,6 +2196,30 @@ export default function App() {
               <Guard adminOnly>
                 <Admin />
               </Guard>
+            }
+          />
+          <Route
+            path="/planner"
+            element={
+              <Guard>
+                <Workspace
+                  title="Your career planner"
+                  subtitle="Turn your ambitions into small, achievable steps."
+                >
+                  <CareerPlanner />
+                </Workspace>
+              </Guard>
+            }
+          />
+          <Route
+            path="/learn"
+            element={
+              <Workspace
+                title="The learning library"
+                subtitle="Practical resources for your next opportunity."
+              >
+                <ResourceLibrary />
+              </Workspace>
             }
           />
           <Route path="/setup" element={<Setup />} />
