@@ -102,7 +102,8 @@ export function useCareerPage(
     }));
     if (
       !db ||
-      (((["careerTasks", "mentorBookings"].includes(kind) && !admin) ||
+      (((["careerTasks", "mentorBookings", "notifications"].includes(kind) &&
+        !admin) ||
         scope === "mine" ||
         (kind === "teamRequests" && scope !== "incoming")) &&
         !uid) ||
@@ -119,7 +120,8 @@ export function useCareerPage(
     }
     const filters = [];
     if (
-      (["careerTasks", "mentorBookings"].includes(kind) && !admin) ||
+      (["careerTasks", "mentorBookings", "notifications"].includes(kind) &&
+        !admin) ||
       (["projects", "teams"].includes(kind) && scope === "mine") ||
       (kind === "teamRequests" && scope !== "incoming")
     )

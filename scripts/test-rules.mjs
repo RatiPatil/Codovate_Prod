@@ -1212,6 +1212,131 @@ try {
       }),
     ),
   );
+  const notification = {
+    studentId: "alice",
+    title: "Application update",
+    body: "Please check your application.",
+    link: "/applications",
+    read: false,
+    createdBy: "operator",
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  };
+  await check(
+    "admin sends private notification",
+    assertSucceeds(
+      setDoc(doc(admin.firestore(), "notifications", "notice-1"), notification),
+    ),
+  );
+  await check(
+    "student reads own notification",
+    assertSucceeds(getDoc(doc(alice.firestore(), "notifications", "notice-1"))),
+  );
+  await check(
+    "other student cannot read notification",
+    assertFails(getDoc(doc(bob.firestore(), "notifications", "notice-1"))),
+  );
+  await check(
+    "anonymous cannot read notification",
+    assertFails(getDoc(doc(guest.firestore(), "notifications", "notice-1"))),
+  );
+  await check(
+    "student can query only own inbox",
+    assertSucceeds(
+      getDocs(
+        query(
+          collection(alice.firestore(), "notifications"),
+          where("studentId", "==", "alice"),
+        ),
+      ),
+    ),
+  );
+  await check(
+    "unrestricted inbox query denied",
+    assertFails(getDocs(collection(alice.firestore(), "notifications"))),
+  );
+  await check(
+    "student cannot forge notification",
+    assertFails(
+      setDoc(doc(alice.firestore(), "notifications", "forged"), notification),
+    ),
+  );
+  await check(
+    "student marks own message read",
+    assertSucceeds(
+      updateDoc(doc(alice.firestore(), "notifications", "notice-1"), {
+        read: true,
+        updatedAt: serverTimestamp(),
+      }),
+    ),
+  );
+  await check(
+    "student cannot edit message content",
+    assertFails(
+      updateDoc(doc(alice.firestore(), "notifications", "notice-1"), {
+        body: "Rewritten",
+        updatedAt: serverTimestamp(),
+      }),
+    ),
+  );
+  await check(
+    "student cannot retarget message",
+    assertFails(
+      updateDoc(doc(alice.firestore(), "notifications", "notice-1"), {
+        studentId: "bob",
+        updatedAt: serverTimestamp(),
+      }),
+    ),
+  );
+  await check(
+    "admin cannot rewrite sent message",
+    assertFails(
+      updateDoc(doc(admin.firestore(), "notifications", "notice-1"), {
+        title: "Changed",
+        updatedAt: serverTimestamp(),
+      }),
+    ),
+  );
+  await check(
+    "notification links must be supported internal destinations",
+    assertFails(
+      setDoc(doc(admin.firestore(), "notifications", "bad-link"), {
+        ...notification,
+        link: "https://evil.example",
+      }),
+    ),
+  );
+  await check(
+    "notification recipient must exist",
+    assertFails(
+      setDoc(doc(admin.firestore(), "notifications", "no-user"), {
+        ...notification,
+        studentId: "missing-student",
+      }),
+    ),
+  );
+  await check(
+    "notification starts unread",
+    assertFails(
+      setDoc(doc(admin.firestore(), "notifications", "pre-read"), {
+        ...notification,
+        read: true,
+      }),
+    ),
+  );
+  await check(
+    "notification cannot be deleted",
+    assertFails(deleteDoc(doc(alice.firestore(), "notifications", "notice-1"))),
+  );
+  await check(
+    "read flag must be boolean",
+    assertFails(
+      updateDoc(doc(alice.firestore(), "notifications", "notice-1"), {
+        read: "yes",
+        updatedAt: serverTimestamp(),
+      }),
+    ),
+  );
   console.log(`${checks} Firebase security checks passed.`);
 } finally {
   await env.cleanup();

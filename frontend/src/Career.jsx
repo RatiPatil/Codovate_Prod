@@ -491,6 +491,18 @@ export function StudentDirectory() {
               <dd>{s.skills?.join(", ") || "—"}</dd>
               <dt>Bio</dt>
               <dd>{s.bio || "—"}</dd>
+              <dt>Notification</dt>
+              <dd>
+                <Link
+                  className="text-link"
+                  to={
+                    "/admin?tab=notifications&student=" +
+                    encodeURIComponent(s.id)
+                  }
+                >
+                  Send notification
+                </Link>
+              </dd>
               <dt>Student ID</dt>
               <dd>{s.id}</dd>
             </dl>

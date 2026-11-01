@@ -167,7 +167,7 @@ export const bookingTransitions = {
   cancelled: [],
   completed: [],
 };
-export async function changeBooking(id, status, meetingUrl) {
+export async function changeBooking(id, status, meetingUrl, adminUid) {
   await runTransaction(db, async (tx) => {
     const target = doc(db, "mentorBookings", id),
       snapshot = await tx.get(target);
@@ -199,6 +199,17 @@ export async function changeBooking(id, status, meetingUrl) {
         );
     }
     tx.update(target, changes);
+    if (adminUid)
+      tx.set(doc(collection(db, "notifications")), {
+        studentId: booking.studentId,
+        title: "Mentoring booking update",
+        body: booking.sessionTitle + ": your request is now " + status + ".",
+        link: "/mentoring",
+        read: false,
+        createdBy: adminUid,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
   });
 }
 function foldCalendarLine(value) {
