@@ -166,3 +166,31 @@ it("folds long Unicode calendar content to valid 75-byte lines", () => {
   ).toBe(true);
   expect(text.replace(/\r\n /g, "")).toContain("SUMMARY:" + "अ".repeat(60));
 });
+it("admin booking decisions atomically notify the booking owner", async () => {
+  mock.get.mockResolvedValue({
+    exists: () => true,
+    data: () => ({
+      status: "pending",
+      startsAt: { toMillis: () => Date.parse("2099-01-01") },
+      format: "Online",
+      studentId: "alice",
+      sessionTitle: "Practice",
+    }),
+  });
+  await changeBooking(
+    "alice_session",
+    "confirmed",
+    "https://example.com/meeting",
+    "operator",
+  );
+  expect(mock.update).toHaveBeenCalled();
+  expect(mock.set).toHaveBeenCalledWith(
+    expect.anything(),
+    expect.objectContaining({
+      studentId: "alice",
+      createdBy: "operator",
+      link: "/mentoring",
+      read: false,
+    }),
+  );
+});

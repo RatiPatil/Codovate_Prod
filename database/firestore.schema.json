@@ -132,7 +132,12 @@
           "maxLength": 180
         },
         "type": {
-          "enum": ["internship", "job", "competition", "hackathon"]
+          "enum": [
+            "internship",
+            "job",
+            "competition",
+            "hackathon"
+          ]
         },
         "category": {
           "enum": [
@@ -145,7 +150,11 @@
           ]
         },
         "mode": {
-          "enum": ["Remote", "On-site", "Hybrid"]
+          "enum": [
+            "Remote",
+            "On-site",
+            "Hybrid"
+          ]
         },
         "location": {
           "type": "string",
@@ -196,7 +205,11 @@
           "maxLength": 6000
         },
         "status": {
-          "enum": ["draft", "published", "closed"]
+          "enum": [
+            "draft",
+            "published",
+            "closed"
+          ]
         },
         "createdBy": {
           "type": "string",
@@ -318,7 +331,9 @@
           }
         },
         {
-          "required": ["resumeUrl"],
+          "required": [
+            "resumeUrl"
+          ],
           "properties": {
             "resumeUrl": {
               "type": "string",
@@ -360,7 +375,12 @@
           "maxLength": 180
         },
         "type": {
-          "enum": ["internship", "job", "competition", "hackathon"]
+          "enum": [
+            "internship",
+            "job",
+            "competition",
+            "hackathon"
+          ]
         },
         "createdAt": {
           "type": "string",
@@ -401,7 +421,10 @@
           "format": "date"
         },
         "status": {
-          "enum": ["todo", "done"]
+          "enum": [
+            "todo",
+            "done"
+          ]
         },
         "createdAt": {
           "type": "string",
@@ -453,7 +476,10 @@
           ]
         },
         "status": {
-          "enum": ["draft", "published"]
+          "enum": [
+            "draft",
+            "published"
+          ]
         },
         "createdBy": {
           "type": "string",
@@ -537,10 +563,16 @@
           "format": "date-time"
         },
         "visibility": {
-          "enum": ["private", "public"]
+          "enum": [
+            "private",
+            "public"
+          ]
         },
         "moderation": {
-          "enum": ["visible", "hidden"]
+          "enum": [
+            "visible",
+            "hidden"
+          ]
         },
         "repoUrl": {
           "anyOf": [
@@ -642,7 +674,11 @@
           "minLength": 1
         },
         "status": {
-          "enum": ["open", "closed", "hidden"]
+          "enum": [
+            "open",
+            "closed",
+            "hidden"
+          ]
         }
       },
       "additionalProperties": false
@@ -692,7 +728,12 @@
           "minLength": 1
         },
         "status": {
-          "enum": ["pending", "accepted", "declined", "withdrawn"]
+          "enum": [
+            "pending",
+            "accepted",
+            "declined",
+            "withdrawn"
+          ]
         },
         "createdAt": {
           "type": "string",
@@ -732,7 +773,10 @@
           "maximum": 120
         },
         "format": {
-          "enum": ["Online", "In person"]
+          "enum": [
+            "Online",
+            "In person"
+          ]
         },
         "location": {
           "type": "string",
@@ -771,7 +815,11 @@
           "maxLength": 2000
         },
         "status": {
-          "enum": ["draft", "published", "closed"]
+          "enum": [
+            "draft",
+            "published",
+            "closed"
+          ]
         },
         "createdBy": {
           "type": "string",
@@ -810,7 +858,10 @@
           "maximum": 120
         },
         "format": {
-          "enum": ["Online", "In person"]
+          "enum": [
+            "Online",
+            "In person"
+          ]
         },
         "location": {
           "type": "string",
@@ -856,7 +907,13 @@
           "maxLength": 1000
         },
         "status": {
-          "enum": ["pending", "confirmed", "declined", "cancelled", "completed"]
+          "enum": [
+            "pending",
+            "confirmed",
+            "declined",
+            "cancelled",
+            "completed"
+          ]
         },
         "meetingUrl": {
           "anyOf": [
@@ -898,10 +955,18 @@
           "maxLength": 3000
         },
         "category": {
-          "enum": ["Platform news", "Opportunities", "Learning", "Community"]
+          "enum": [
+            "Platform news",
+            "Opportunities",
+            "Learning",
+            "Community"
+          ]
         },
         "status": {
-          "enum": ["draft", "published"]
+          "enum": [
+            "draft",
+            "published"
+          ]
         },
         "link": {
           "anyOf": [
@@ -915,6 +980,64 @@
               "maxLength": 500
             }
           ]
+        },
+        "createdBy": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "additionalProperties": false
+    },
+    "notifications": {
+      "type": "object",
+      "required": [
+        "studentId",
+        "title",
+        "body",
+        "link",
+        "read",
+        "createdBy",
+        "createdAt",
+        "updatedAt"
+      ],
+      "properties": {
+        "studentId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "body": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "link": {
+          "enum": [
+            "",
+            "/applications",
+            "/profile",
+            "/mentoring",
+            "/planner",
+            "/updates",
+            "/explore"
+          ]
+        },
+        "read": {
+          "type": "boolean"
         },
         "createdBy": {
           "type": "string",

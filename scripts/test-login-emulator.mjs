@@ -11,6 +11,7 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
+  getIdTokenResult,
 } from "firebase/auth";
 import {
   getFirestore,
@@ -107,6 +108,17 @@ try {
     signInWithEmailAndPassword(auth, email, "not-the-password"),
   );
   console.log("PASS incorrect credentials remain rejected.");
+  if (process.env.TEST_DEMO_ADMIN === "true") {
+    const demo = await signInWithEmailAndPassword(
+      auth,
+      "admin@codovate.test",
+      "Codovate-Local-Only-2026!",
+    );
+    assert.equal((await getIdTokenResult(demo.user, true)).claims.admin, true);
+    console.log("PASS local demo login receives a verified admin claim.");
+    await getDocs(collection(db, "users"));
+    console.log("PASS verified demo admin can access the student directory.");
+  }
 } catch (e) {
   console.error(e.code || e.message);
   process.exitCode = 1;

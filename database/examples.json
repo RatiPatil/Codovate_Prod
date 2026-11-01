@@ -10,7 +10,10 @@
         "graduationYear": "2027",
         "city": "Solapur",
         "bio": "Learning React",
-        "skills": ["React", "JavaScript"],
+        "skills": [
+          "React",
+          "JavaScript"
+        ],
         "portfolio": "https://github.com/example",
         "resumePath": "resumes/example-student/resume.pdf",
         "createdAt": "2026-11-01T00:00:00.000Z",
@@ -30,7 +33,9 @@
         "location": "India",
         "duration": "3 months",
         "stipend": 15000,
-        "skills": ["React"],
+        "skills": [
+          "React"
+        ],
         "deadline": "2099-12-31T00:00:00.000Z",
         "closesAt": "2099-12-31T00:00:00.000Z",
         "description": "Build web interfaces.",
@@ -112,7 +117,9 @@
         "title": "Campus energy dashboard",
         "summary": "Visualizing electricity use to help our college reduce waste.",
         "category": "Web & apps",
-        "skills": ["React"],
+        "skills": [
+          "React"
+        ],
         "createdAt": "2027-01-01T00:00:00.000Z",
         "updatedAt": "2027-01-01T00:00:00.000Z",
         "visibility": "private",
@@ -131,7 +138,9 @@
         "title": "Campus energy dashboard",
         "summary": "Visualizing electricity use to help our college reduce waste.",
         "category": "Web & apps",
-        "skills": ["React"],
+        "skills": [
+          "React"
+        ],
         "createdAt": "2027-01-01T00:00:00.000Z",
         "updatedAt": "2027-01-01T00:00:00.000Z",
         "lookingFor": "A designer to shape the dashboard",
@@ -207,6 +216,21 @@
         "createdBy": "operator-example",
         "createdAt": "2026-11-01T00:00:00.000Z",
         "updatedAt": "2026-11-01T00:00:00.000Z"
+      }
+    }
+  ],
+  "notifications": [
+    {
+      "id": "example-notice",
+      "data": {
+        "studentId": "example-student",
+        "title": "Review your application",
+        "body": "Your application has an update. Open applications to review it.",
+        "link": "/applications",
+        "read": false,
+        "createdBy": "example-admin",
+        "createdAt": "2026-11-02T00:00:00.000Z",
+        "updatedAt": "2026-11-02T00:00:00.000Z"
       }
     }
   ]

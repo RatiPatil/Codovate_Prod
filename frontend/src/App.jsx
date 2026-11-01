@@ -92,6 +92,8 @@ import {
 import { Projects, Teams, ProjectDetails } from "./Community";
 
 import { Mentoring, BookingAdmin, Updates } from "./Growth";
+import { Notifications, NotificationNav, AdminOverview } from "./Notifications";
+import { applicationDecision } from "./notificationData";
 
 const categoryIcons = {
   internship: BriefcaseBusiness,
@@ -1228,6 +1230,7 @@ function Workspace({ children, title, subtitle }) {
             {label}
           </NavLink>
         ))}
+        <NotificationNav />
         <Link className="explore-back" to="/explore">
           <Compass size={18} /> Explore opportunities
         </Link>
@@ -1740,8 +1743,10 @@ function Admin() {
   const appPage = useCareerPage("applications", null, true);
   const listings = listingPage.items,
     apps = appPage.items;
-  const [tab, setTab] = useState("listings"),
-    [editing, setEditing] = useState(null),
+  const [adminParams, setAdminParams] = useSearchParams();
+  const tab = adminParams.get("tab") || "overview";
+  const setTab = (value) => setAdminParams({ tab: value });
+  const [editing, setEditing] = useState(null),
     [error, setError] = useState(""),
     [message, setMessage] = useState(""),
     [busy, setBusy] = useState(false);
@@ -1801,10 +1806,13 @@ function Admin() {
     setError("");
     setBusy(true);
     try {
-      await updateDoc(doc(db, collectionName, id), {
-        status: value,
-        updatedAt: serverTimestamp(),
-      });
+      if (collectionName === "applications")
+        await applicationDecision(user.uid, id, value);
+      else
+        await updateDoc(doc(db, collectionName, id), {
+          status: value,
+          updatedAt: serverTimestamp(),
+        });
       (collectionName === "opportunities" ? listingPage : appPage).refresh();
       setMessage("Status updated.");
     } catch (e) {
@@ -1827,10 +1835,12 @@ function Admin() {
   return (
     <Workspace
       title="Platform administration"
-      subtitle="Publish opportunities and manage student applications."
+      subtitle="Manage opportunities, students, mentoring and communications."
     >
       <div className="type-tabs">
         {[
+          ["overview", "Control centre"],
+          ["notifications", "Notifications"],
           ["listings", "Listings"],
           ["publish", "Publish opportunity"],
           ["applications", "Applications"],
@@ -1853,7 +1863,11 @@ function Admin() {
       </div>
       {error && <Notice>{error}</Notice>}
       {message && <Notice kind="success">{message}</Notice>}
-      {tab === "resources" ? (
+      {tab === "overview" ? (
+        <AdminOverview open={setTab} />
+      ) : tab === "notifications" ? (
+        <Notifications manage />
+      ) : tab === "resources" ? (
         <ResourceLibrary manage />
       ) : tab === "students" ? (
         <StudentDirectory />
@@ -2358,6 +2372,19 @@ export default function App() {
               >
                 <Updates />
               </Workspace>
+            }
+          />
+          <Route
+            path="/notifications"
+            element={
+              <Guard>
+                <Workspace
+                  title="Notifications"
+                  subtitle="Updates that matter to you."
+                >
+                  <Notifications />
+                </Workspace>
+              </Guard>
             }
           />
           <Route path="/setup" element={<Setup />} />

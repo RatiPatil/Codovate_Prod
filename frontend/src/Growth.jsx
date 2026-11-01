@@ -475,6 +475,7 @@ function MentoringScreen({ manage }) {
   );
 }
 export function BookingAdmin() {
+  const { user } = useSession();
   const data = useCareerPage("mentorBookings", null, true),
     action = useAction(data.refresh);
   const [search, setSearch] = useState("");
@@ -482,7 +483,13 @@ export function BookingAdmin() {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
     await action.run(
-      () => changeBooking(item.id, form.get("status"), form.get("meetingUrl")),
+      () =>
+        changeBooking(
+          item.id,
+          form.get("status"),
+          form.get("meetingUrl"),
+          user.uid,
+        ),
       "Booking updated.",
     );
   }
