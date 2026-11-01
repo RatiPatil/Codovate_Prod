@@ -1,0 +1,77 @@
+{
+  "users": [
+    {
+      "id": "example-student",
+      "data": {
+        "name": "Example Student",
+        "email": "student@example.com",
+        "college": "Example College",
+        "degree": "B.Tech",
+        "graduationYear": "2027",
+        "city": "Solapur",
+        "bio": "Learning React",
+        "skills": ["React", "JavaScript"],
+        "portfolio": "https://github.com/example",
+        "resumePath": "resumes/example-student/resume.pdf",
+        "createdAt": "2026-11-01T00:00:00.000Z",
+        "updatedAt": "2026-11-01T00:00:00.000Z"
+      }
+    }
+  ],
+  "opportunities": [
+    {
+      "id": "example-listing",
+      "data": {
+        "title": "Frontend Intern",
+        "organization": "Example Organization",
+        "type": "internship",
+        "category": "Technology",
+        "mode": "Remote",
+        "location": "India",
+        "duration": "3 months",
+        "stipend": 15000,
+        "skills": ["React"],
+        "deadline": "2099-12-31T00:00:00.000Z",
+        "closesAt": "2099-12-31T00:00:00.000Z",
+        "description": "Build web interfaces.",
+        "responsibilities": "Implement accessible components.",
+        "eligibility": "Students and graduates.",
+        "status": "published",
+        "createdBy": "example-admin",
+        "createdAt": "2026-11-01T00:00:00.000Z",
+        "updatedAt": "2026-11-01T00:00:00.000Z"
+      }
+    }
+  ],
+  "applications": [
+    {
+      "id": "example-student_example-listing",
+      "data": {
+        "studentId": "example-student",
+        "opportunityId": "example-listing",
+        "opportunityTitle": "Frontend Intern",
+        "organization": "Example Organization",
+        "studentName": "Example Student",
+        "college": "Example College",
+        "resumePath": "resumes/example-student/resume.pdf",
+        "coverNote": "Interested in frontend development.",
+        "status": "submitted",
+        "createdAt": "2026-11-01T00:00:00.000Z",
+        "updatedAt": "2026-11-01T00:00:00.000Z"
+      }
+    }
+  ],
+  "bookmarks": [
+    {
+      "id": "example-student_example-listing",
+      "data": {
+        "studentId": "example-student",
+        "opportunityId": "example-listing",
+        "title": "Frontend Intern",
+        "organization": "Example Organization",
+        "type": "internship",
+        "createdAt": "2026-11-01T00:00:00.000Z"
+      }
+    }
+  ]
+}

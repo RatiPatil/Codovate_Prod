@@ -105,3 +105,17 @@ export function errorMessage(e) {
     }[e?.code] || "Something went wrong. Check your connection and try again."
   );
 }
+export function skillInputError(raw) {
+  const skills = [
+    ...new Set(
+      raw
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean),
+    ),
+  ];
+  if (skills.length > 20) return "Add up to 20 skills.";
+  if (skills.some((s) => s.length > 60))
+    return "Keep each skill under 61 characters.";
+  return "";
+}

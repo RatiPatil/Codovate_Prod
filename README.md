@@ -110,3 +110,11 @@ npm --prefix scripts run test:rules
 ```
 
 This suite uses only the `demo-codovate` emulator project and checks allowed and denied profile, listing, application, bookmark and Storage operations. It requires the emulator suite on ports 8080 and 9199.
+
+## UI refinement and database schemas
+
+The opportunity-first interface uses a compact search hero, visual category tiles, functional homepage tabs, and consistent cards. The original logo and all Firebase application workflows remain in place.
+
+Machine-readable collection contracts and example documents are in `database/`. To validate them, install the operator/test dependencies with `npm --prefix scripts ci`, then run `npm --prefix scripts run schema:check` and `npm --prefix scripts run test:schema`. See `docs/DATABASE.md` for optional read-only validation against the new project.
+
+**Using a downloaded ZIP:** download the latest main-branch ZIP into a new folder, open that folder in VS Code, run `npm run setup`, then `npm run dev`. Git commands do not work in ZIP downloads. Keep your private `frontend/.env.local` outside Git and copy it to the new folder only when it contains your intended new Firebase project's configuration.
