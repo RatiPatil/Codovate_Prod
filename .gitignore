@@ -11,3 +11,6 @@ serviceAccountKey.json
 .firebase/
 playwright-report/
 test-results/
+
+# Interrupted local Firebase configuration writes
+**/.env.local.tmp

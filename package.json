@@ -10,6 +10,9 @@
     "dev": "npm --prefix frontend run dev",
     "build": "npm --prefix frontend run build",
     "test": "npm --prefix frontend test",
-    "preview": "npm --prefix frontend run preview"
+    "preview": "npm --prefix frontend run preview",
+    "firebase:setup": "node scripts/firebase-setup.mjs",
+    "firebase:configure": "node scripts/firebase-setup.mjs --configure-only",
+    "test:setup": "node --test scripts/firebase-setup.test.mjs"
   }
 }

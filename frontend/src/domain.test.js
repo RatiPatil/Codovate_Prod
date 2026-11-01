@@ -105,3 +105,17 @@ describe("skill input validation", () => {
     ).toMatch(/20/);
   });
 });
+
+describe("authoritative application deadline", () => {
+  it("uses Firestore closesAt before a conflicting display deadline", () => {
+    const listing = {
+      status: "published",
+      deadline: "2099-01-01",
+      closesAt: { seconds: 1000 },
+    };
+    expect(isOpen(listing, 2000000)).toBe(false);
+    expect(
+      isOpen({ ...listing, closesAt: { toMillis: () => 3000000 } }, 2000000),
+    ).toBe(true);
+  });
+});

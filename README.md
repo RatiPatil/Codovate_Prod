@@ -19,36 +19,21 @@ npm run build
 npm run preview
 ```
 
-## Connect your NEW Firebase project
+## Connect the selected Firebase project
 
-The previous project binding, project-specific defaults, VPS deployment and old Express API have been removed. No existing cloud project or cloud data has been changed or deleted.
-
-1. Create a new Firebase project. Register a **Web app** under Project settings → General.
-2. Copy `frontend/.env.example` to `frontend/.env.local` and fill in the six values from the web app configuration. The new `VITE_FIREBASE_ENABLED=true` flag is also required, so an old environment file cannot silently reconnect the previous project. On Windows use `Copy-Item frontend/.env.example frontend/.env.local`; on macOS/Linux use `cp`.
-3. Enable Authentication → Sign-in method → **Email/Password** and **Google**. Configure Google's support email. Add **localhost** under Authentication → Settings → Authorized domains.
-4. Create **Cloud Firestore** and **Firebase Storage** in the new project. Choose your desired region before creating them. Firebase may require a billing plan for Storage.
-5. Install the Firebase CLI and sign in, then deploy the included rules and indexes to the explicitly named **new** project:
+The selected project is **codovate-dev**. From this repository folder, run:
 
 ```bash
-npm install -g firebase-tools
-firebase login
-firebase deploy --only firestore:rules,firestore:indexes,storage --project YOUR_NEW_PROJECT_ID
+npm run firebase:setup
 ```
 
-6. Restart `npm run dev`. Create a student account, save a profile, upload a PDF résumé, and test the flow below. Never configure the previous production project by accident.
+Sign in to the Google account that owns the project when the Firebase CLI opens. The command downloads this exact web app's configuration, writes ignored `frontend/.env.local`, and deploys Firestore rules/indexes and Storage rules. It does not import sample data or deploy the website. Restart `npm run dev`, open **http://localhost:5173**, and use `/setup` to test a live Firestore server read.
 
-Only the **web app config** is needed for the browser:
+Firebase Console must have Google and Email/Password sign-in enabled, localhost authorized, Cloud Firestore created, and the configured Storage bucket provisioned. If a service is missing or permission is denied, setup reports the error; fix the service/account issue and rerun. `npm run firebase:configure` performs only login and local configuration without deploying rules.
 
-| Firebase web config | Local environment variable |
-| --- | --- |
-| apiKey | VITE_FIREBASE_API_KEY |
-| authDomain | VITE_FIREBASE_AUTH_DOMAIN |
-| projectId | VITE_FIREBASE_PROJECT_ID |
-| storageBucket | VITE_FIREBASE_STORAGE_BUCKET |
-| messagingSenderId | VITE_FIREBASE_MESSAGING_SENDER_ID |
-| appId | VITE_FIREBASE_APP_ID |
+For current live-check results, setup behavior, and remaining cloud requirements, see [docs/FIREBASE_CONNECTION.md](docs/FIREBASE_CONNECTION.md). A local configuration or successful build does **not** establish that cloud rules, Storage or login providers are ready.
 
-Web configuration identifies a Firebase project; access is controlled by the included security rules. Do not commit `.env.local`. **Never put a service-account key in the frontend, chat or GitHub.**
+The web API key is not committed. Never commit `.env.local` or a service-account key. To use another Firebase project later, explicitly change `config/firebase.project.json` and `.firebaserc`, or configure the six values in `frontend/.env.example` manually.
 
 ## Administrator setup
 
