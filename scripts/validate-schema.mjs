@@ -43,6 +43,18 @@ export function validateDocument(collection, id, data) {
   if (collection === "teamRequests" && data.studentId === data.ownerId)
     errors.push("A team owner cannot request their own team");
   if (
+    collection === "mentorBookings" &&
+    id !== data.studentId + "_" + data.sessionId
+  )
+    errors.push("Document ID must match studentId_sessionId");
+  if (
+    collection === "mentorBookings" &&
+    data.status === "confirmed" &&
+    data.format === "Online" &&
+    !data.meetingUrl
+  )
+    errors.push("Online confirmations require a meeting URL");
+  if (
     ["users", "applications"].includes(collection) &&
     data.resumePath &&
     data.resumePath !==

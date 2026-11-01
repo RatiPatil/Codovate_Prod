@@ -102,7 +102,7 @@ export function useCareerPage(
     }));
     if (
       !db ||
-      ((kind === "careerTasks" ||
+      (((["careerTasks", "mentorBookings"].includes(kind) && !admin) ||
         scope === "mine" ||
         (kind === "teamRequests" && scope !== "incoming")) &&
         !uid) ||
@@ -119,7 +119,7 @@ export function useCareerPage(
     }
     const filters = [];
     if (
-      kind === "careerTasks" ||
+      (["careerTasks", "mentorBookings"].includes(kind) && !admin) ||
       (["projects", "teams"].includes(kind) && scope === "mine") ||
       (kind === "teamRequests" && scope !== "incoming")
     )
@@ -134,7 +134,15 @@ export function useCareerPage(
       );
     else if (kind === "teams" && !admin)
       filters.push(where("status", "==", "open"));
-    else if (["resources", "opportunities"].includes(kind) && !admin)
+    else if (
+      [
+        "resources",
+        "opportunities",
+        "mentorSessions",
+        "announcements",
+      ].includes(kind) &&
+      !admin
+    )
       filters.push(where("status", "==", "published"));
     withTimeout(
       getDocs(

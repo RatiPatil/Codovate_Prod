@@ -33,12 +33,13 @@ service cloud.firestore {
   }
   function validProfile(d) {
    return d.keys().hasAll(['name','email','college','degree','graduationYear','city','bio','skills','portfolio','resumePath','createdAt','updatedAt'])
-    && d.keys().hasOnly(['name','email','college','degree','graduationYear','city','bio','skills','portfolio','resumePath','createdAt','updatedAt'])
+    && d.keys().hasOnly(['name','email','college','degree','graduationYear','city','bio','skills','portfolio','resumePath','resumeUrl','createdAt','updatedAt'])
     && text(d.name,100) && text(d.email,320) && text(d.college,180) && text(d.degree,100)
     && text(d.graduationYear,4) && d.graduationYear.matches('^(20[0-9]{2}|2100)?$') && text(d.city,100) && text(d.bio,1500)
     && validSkills(d.skills) && text(d.portfolio,500)
     && (d.portfolio == '' || d.portfolio.matches('https://.*'))
     && (d.resumePath == '' || d.resumePath == 'resumes/' + request.auth.uid + '/resume.pdf')
+    && optionalHttps(d.get('resumeUrl',''))
     && d.createdAt is timestamp && d.updatedAt is timestamp;
   }
   match /users/{uid} {
@@ -80,7 +81,7 @@ service cloud.firestore {
    allow get: if admin() || (signedIn() && id.matches(request.auth.uid + '_.*'));
    allow list: if signedIn() && (resource.data.studentId == request.auth.uid || admin());
    allow create: if signedIn()
-    && request.resource.data.keys().hasOnly(['studentId','opportunityId','opportunityTitle','organization','studentName','college','resumePath','coverNote','status','createdAt','updatedAt'])
+    && request.resource.data.keys().hasOnly(['studentId','opportunityId','opportunityTitle','organization','studentName','college','resumePath','resumeUrl','coverNote','status','createdAt','updatedAt'])
     && request.resource.data.studentId == request.auth.uid
     && text(request.resource.data.opportunityId,128)
     && id == request.auth.uid + '_' + request.resource.data.opportunityId
@@ -91,7 +92,9 @@ service cloud.firestore {
     && request.resource.data.studentName.size()>0
     && request.resource.data.college == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.college
     && request.resource.data.college.size()>0
-    && request.resource.data.resumePath == 'resumes/' + request.auth.uid + '/resume.pdf'
+    && (request.resource.data.resumePath == 'resumes/' + request.auth.uid + '/resume.pdf' || (request.resource.data.resumePath == '' && request.resource.data.get('resumeUrl','').size()>0))
+    && optionalHttps(request.resource.data.get('resumeUrl',''))
+    && request.resource.data.get('resumeUrl','') == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('resumeUrl','')
     && request.resource.data.resumePath == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.resumePath
     && get(/databases/$(database)/documents/opportunities/$(request.resource.data.opportunityId)).data.status == 'published'
     && get(/databases/$(database)/documents/opportunities/$(request.resource.data.opportunityId)).data.closesAt > request.time
@@ -221,6 +224,76 @@ service cloud.firestore {
     && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','updatedAt'])
     && ((own(resource.data.studentId) && resource.data.status in ['pending','accepted'] && request.resource.data.status == 'withdrawn')
      || ((own(resource.data.ownerId) || admin()) && resource.data.status == 'pending' && request.resource.data.status in ['accepted','declined']));
+   allow delete: if false;
+  }
+  function validMentorSession(d) {
+   return d.keys().hasAll(['title','mentorName','topic','description','startsAt','durationMinutes','format','location','status','createdBy','createdAt','updatedAt'])
+    && d.keys().hasOnly(['title','mentorName','topic','description','startsAt','durationMinutes','format','location','status','createdBy','createdAt','updatedAt'])
+    && text(d.title,120) && d.title.size()>0 && text(d.mentorName,100) && d.mentorName.size()>0
+    && d.topic in ['Interview practice','Career direction','Resume review','Project feedback']
+    && text(d.description,2000) && d.description.size()>0 && d.startsAt is timestamp
+    && d.durationMinutes is int && d.durationMinutes>=15 && d.durationMinutes<=120
+    && d.format in ['Online','In person'] && text(d.location,180) && d.location.size()>0
+    && d.status in ['draft','published','closed'] && d.createdBy is string
+    && d.createdAt is timestamp && d.updatedAt is timestamp;
+  }
+  match /mentorSessions/{id} {
+   allow read: if resource.data.status == 'published' || admin();
+   allow create: if admin() && validMentorSession(request.resource.data)
+    && request.resource.data.createdBy == request.auth.uid && request.resource.data.startsAt>request.time
+    && request.resource.data.createdAt == request.time && changedTime();
+   allow update: if admin() && validMentorSession(request.resource.data) && changedTime()
+    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['description','status','updatedAt'])
+    && (request.resource.data.status != 'published' || resource.data.status == 'published' || request.resource.data.startsAt>request.time);
+   allow delete: if false;
+  }
+  function validBooking(d) {
+   return d.keys().hasAll(['studentId','studentName','sessionId','sessionTitle','mentorName','startsAt','durationMinutes','format','location','note','status','meetingUrl','createdAt','updatedAt'])
+    && d.keys().hasOnly(['studentId','studentName','sessionId','sessionTitle','mentorName','startsAt','durationMinutes','format','location','note','status','meetingUrl','createdAt','updatedAt'])
+    && text(d.studentId,128) && text(d.studentName,100) && d.studentName.size()>0 && text(d.sessionId,128) && d.sessionId.size()>0
+    && text(d.sessionTitle,120) && text(d.mentorName,100) && d.startsAt is timestamp && d.durationMinutes is int && d.durationMinutes>=15 && d.durationMinutes<=120
+    && d.format in ['Online','In person'] && text(d.location,180) && text(d.note,1000) && d.note.size()>0
+    && d.status in ['pending','confirmed','declined','cancelled','completed'] && optionalHttps(d.meetingUrl)
+    && d.createdAt is timestamp && d.updatedAt is timestamp;
+  }
+  function matchingMentor(d) {
+   let session = get(/databases/$(database)/documents/mentorSessions/$(d.sessionId)).data;
+   return session.status == 'published' && session.startsAt>request.time
+    && d.sessionTitle == session.title && d.mentorName == session.mentorName && d.startsAt == session.startsAt
+    && d.durationMinutes == session.durationMinutes && d.format == session.format && d.location == session.location;
+  }
+  match /mentorBookings/{id} {
+   allow get: if signedIn() && (!exists(/databases/$(database)/documents/mentorBookings/$(id)) || own(resource.data.studentId) || admin());
+   allow list: if signedIn() && (own(resource.data.studentId) || admin());
+   allow create: if signedIn() && validBooking(request.resource.data) && matchingMentor(request.resource.data)
+    && request.resource.data.studentId == request.auth.uid && id == request.auth.uid + '_' + request.resource.data.sessionId
+    && request.resource.data.studentName == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.name
+    && request.resource.data.status == 'pending' && request.resource.data.meetingUrl == ''
+    && request.resource.data.createdAt == request.time && changedTime();
+   allow update: if signedIn() && validBooking(request.resource.data) && changedTime()
+    && ((own(resource.data.studentId)
+      && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','updatedAt'])
+      && resource.data.status in ['pending','confirmed'] && request.resource.data.status == 'cancelled')
+     || (admin() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','meetingUrl','updatedAt'])
+      && ((resource.data.status == 'pending' && request.resource.data.status in ['confirmed','declined','cancelled'])
+       || (resource.data.status == 'confirmed' && request.resource.data.status in ['completed','cancelled']))
+      && (request.resource.data.status != 'confirmed' || (resource.data.startsAt>request.time && (resource.data.format != 'Online' || request.resource.data.meetingUrl.size()>0)))
+      && (request.resource.data.status != 'completed' || resource.data.startsAt + duration.value(resource.data.durationMinutes,'m') <= request.time)));
+   allow delete: if false;
+  }
+  function validAnnouncement(d) {
+   return d.keys().hasAll(['title','body','category','status','link','createdBy','createdAt','updatedAt'])
+    && d.keys().hasOnly(['title','body','category','status','link','createdBy','createdAt','updatedAt'])
+    && text(d.title,120) && d.title.size()>0 && text(d.body,3000) && d.body.size()>0
+    && d.category in ['Platform news','Opportunities','Learning','Community'] && d.status in ['draft','published']
+    && optionalHttps(d.link) && d.createdBy is string && d.createdAt is timestamp && d.updatedAt is timestamp;
+  }
+  match /announcements/{id} {
+   allow read: if resource.data.status == 'published' || admin();
+   allow create: if admin() && validAnnouncement(request.resource.data) && request.resource.data.createdBy == request.auth.uid
+    && request.resource.data.createdAt == request.time && changedTime();
+   allow update: if admin() && validAnnouncement(request.resource.data)
+    && request.resource.data.createdAt == resource.data.createdAt && request.resource.data.createdBy == resource.data.createdBy && changedTime();
    allow delete: if false;
   }
   match /{document=**} { allow read, write: if false; }

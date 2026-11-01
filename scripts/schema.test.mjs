@@ -91,3 +91,50 @@ test("validates team request identity and blocks self-request", () => {
     false,
   );
 });
+
+test("validates private mentoring identity and confirmation link", () => {
+  const b = examples.mentorBookings[0];
+  assert.equal(
+    validateDocument("mentorBookings", "wrong", b.data).valid,
+    false,
+  );
+  assert.equal(
+    validateDocument("mentorBookings", b.id, { ...b.data, status: "confirmed" })
+      .valid,
+    false,
+  );
+  assert.equal(
+    validateDocument("mentorBookings", b.id, {
+      ...b.data,
+      status: "confirmed",
+      meetingUrl: "https://example.com/meeting",
+    }).valid,
+    true,
+  );
+});
+test("resume links support applications without uploaded files", () => {
+  const a = examples.applications[0];
+  assert.equal(
+    validateDocument("applications", a.id, {
+      ...a.data,
+      resumePath: "",
+      resumeUrl: "https://example.com/resume",
+    }).valid,
+    true,
+  );
+  assert.equal(
+    validateDocument("applications", a.id, {
+      ...a.data,
+      resumePath: "",
+      resumeUrl: "",
+    }).valid,
+    false,
+  );
+  assert.equal(
+    validateDocument("users", examples.users[0].id, {
+      ...examples.users[0].data,
+      resumeUrl: "javascript:alert(1)",
+    }).valid,
+    false,
+  );
+});

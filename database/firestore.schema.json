@@ -81,6 +81,19 @@
         "updatedAt": {
           "type": "string",
           "format": "date-time"
+        },
+        "resumeUrl": {
+          "anyOf": [
+            {
+              "const": ""
+            },
+            {
+              "type": "string",
+              "format": "uri",
+              "pattern": "^https://[^ /]+",
+              "maxLength": 500
+            }
+          ]
         }
       },
       "additionalProperties": false
@@ -249,7 +262,14 @@
         },
         "resumePath": {
           "type": "string",
-          "pattern": "^resumes/[^/]+/resume\\.pdf$"
+          "anyOf": [
+            {
+              "const": ""
+            },
+            {
+              "pattern": "^resumes/[^/]+/resume\\.pdf$"
+            }
+          ]
         },
         "coverNote": {
           "type": "string",
@@ -272,9 +292,41 @@
         "updatedAt": {
           "type": "string",
           "format": "date-time"
+        },
+        "resumeUrl": {
+          "anyOf": [
+            {
+              "const": ""
+            },
+            {
+              "type": "string",
+              "format": "uri",
+              "pattern": "^https://[^ /]+",
+              "maxLength": 500
+            }
+          ]
         }
       },
-      "additionalProperties": false
+      "additionalProperties": false,
+      "anyOf": [
+        {
+          "properties": {
+            "resumePath": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        {
+          "required": ["resumeUrl"],
+          "properties": {
+            "resumeUrl": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      ]
     },
     "bookmarks": {
       "type": "object",
@@ -641,6 +693,233 @@
         },
         "status": {
           "enum": ["pending", "accepted", "declined", "withdrawn"]
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "additionalProperties": false
+    },
+    "mentorSessions": {
+      "type": "object",
+      "required": [
+        "startsAt",
+        "durationMinutes",
+        "format",
+        "location",
+        "createdAt",
+        "updatedAt",
+        "title",
+        "mentorName",
+        "topic",
+        "description",
+        "status",
+        "createdBy"
+      ],
+      "properties": {
+        "startsAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "durationMinutes": {
+          "type": "integer",
+          "minimum": 15,
+          "maximum": 120
+        },
+        "format": {
+          "enum": ["Online", "In person"]
+        },
+        "location": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 180
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "mentorName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "topic": {
+          "enum": [
+            "Interview practice",
+            "Career direction",
+            "Resume review",
+            "Project feedback"
+          ]
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "status": {
+          "enum": ["draft", "published", "closed"]
+        },
+        "createdBy": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        }
+      },
+      "additionalProperties": false
+    },
+    "mentorBookings": {
+      "type": "object",
+      "required": [
+        "startsAt",
+        "durationMinutes",
+        "format",
+        "location",
+        "createdAt",
+        "updatedAt",
+        "studentId",
+        "studentName",
+        "sessionId",
+        "sessionTitle",
+        "mentorName",
+        "note",
+        "status",
+        "meetingUrl"
+      ],
+      "properties": {
+        "startsAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "durationMinutes": {
+          "type": "integer",
+          "minimum": 15,
+          "maximum": 120
+        },
+        "format": {
+          "enum": ["Online", "In person"]
+        },
+        "location": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 180
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "studentId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "studentName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "sessionId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "sessionTitle": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "mentorName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "note": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "status": {
+          "enum": ["pending", "confirmed", "declined", "cancelled", "completed"]
+        },
+        "meetingUrl": {
+          "anyOf": [
+            {
+              "const": ""
+            },
+            {
+              "type": "string",
+              "format": "uri",
+              "pattern": "^https://[^ /]+",
+              "maxLength": 500
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "announcements": {
+      "type": "object",
+      "required": [
+        "title",
+        "body",
+        "category",
+        "status",
+        "link",
+        "createdBy",
+        "createdAt",
+        "updatedAt"
+      ],
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "body": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 3000
+        },
+        "category": {
+          "enum": ["Platform news", "Opportunities", "Learning", "Community"]
+        },
+        "status": {
+          "enum": ["draft", "published"]
+        },
+        "link": {
+          "anyOf": [
+            {
+              "const": ""
+            },
+            {
+              "type": "string",
+              "format": "uri",
+              "pattern": "^https://[^ /]+",
+              "maxLength": 500
+            }
+          ]
+        },
+        "createdBy": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
         },
         "createdAt": {
           "type": "string",

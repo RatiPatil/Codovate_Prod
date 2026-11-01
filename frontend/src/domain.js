@@ -50,7 +50,7 @@ export function filterOpportunities(
     );
 }
 export function completion(p = {}) {
-  p = p || {};
+  p = { ...(p || {}), resumePath: p?.resumePath || p?.resumeUrl || "" };
   return Math.round(
     ([
       "name",
@@ -137,7 +137,7 @@ export function errorMessage(e) {
       "auth/invalid-api-key":
         "The Firebase API key is invalid. Check frontend/.env.local.",
       "storage/unauthorized":
-        "Résumé upload was denied. Deploy storage.rules to your new Firebase project.",
+        "Résumé upload is unavailable or was denied. You can save an HTTPS résumé link instead.",
     }[e?.code] || "Something went wrong. Check your connection and try again."
   );
 }
