@@ -514,15 +514,13 @@ function Home({ catalog }) {
               <Card key={o.id} item={o} />
             ))}
           </div>
-        ) : (
+        ) : activeType === "competition" ? (
           <Empty title="Nothing here just yet">
             Try another category or check back for new listings.
           </Empty>
-        )}
+        ) : null}
+        {activeType !== "competition" && <CuratedOpportunities compact filters={{type:activeType}} />}
       </section>
-      <div className="container">
-        <CuratedOpportunities compact />
-      </div>
       <CareerSpotlight />
       <section className="profile-invite container">
         <span className="invite-icon">
