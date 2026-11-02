@@ -59,3 +59,11 @@ Admin browser clients can no longer read/list the users collection, including co
 Use the Placement preparation tab to choose one of 24 sections, open nested folders, and create/edit draft or published articles. Content renders as escaped text instead of PDF embeds. See [PLACEMENT_PREPARATION.md](PLACEMENT_PREPARATION.md) for hierarchy, visibility and database details.
 
 Aptitude source folders can be imported as drafts for editorial review. The editor supports reading time, source notes, level and up to six practice checkpoints, each with four options, an answer and an explanation. Student private notes and progress remain unavailable to admin browser clients.
+
+### Dedicated administration layout
+
+`/admin` now has a separate Master admin header and grouped administrator sidebar. Student workspace links, public opportunity navigation and the public footer are not rendered on the verified administrator route. The same login and verified admin claim still protect access. URL-based module links retain browser back/forward support; unknown module IDs fall back to Overview. Small screens use a collapsible admin navigation menu.
+
+User accounts and System settings are dedicated modules. The no-billing choice is preserved: account listing, enable/disable and provider settings open the project’s Firebase Console; granting/revoking admin access generates a reviewed command for the existing trusted operator tool. Copying does not execute anything, unsafe UIDs are rejected and the current administrator cannot generate a self-access-change command. The panel does not claim these are browser-side Auth mutations or display fake user totals. Console operations require Google IAM project access in addition to the application admin role.
+
+System settings show nonsecret project/configuration status and offer a bounded live Firestore read check. Student contact information and private learning notes remain protected by existing owner-only rules. No rules, claims, database documents, billing plans or credentials are changed by this layout update. Firebase Functions account-management APIs would require a billing-enabled trusted backend and are intentionally not enabled.

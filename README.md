@@ -146,3 +146,7 @@ Open `/placement` for all 24 source sections, grouped by learning goal. Administ
 ### Aptitude lessons and source review
 
 Aptitude includes six categories, 33 short lessons, worked examples, 35 practice checkpoints, private notes/bookmarks and completion tracking. Use [docs/APTITUDE_LIBRARY.md](docs/APTITUDE_LIBRARY.md) for the separate 25-file source review pack, private progress schema, safe Firestore import and live release commands. Source extraction stays in draft until checked; no reward balances are client-issued.
+
+### Dedicated master administration
+
+Verified administrators now use a separate `/admin` layout with grouped module navigation, user-account/access tools and a live database connection check. The no-billing setup keeps Auth account operations in Firebase Console or the trusted operator tool. Student navigation and public headers remain on student/public pages; existing privacy and role protections remain unchanged.
