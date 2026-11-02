@@ -251,5 +251,20 @@
         "updatedAt": "2026-11-02T00:00:00Z"
       }
     }
+  ],
+  "placementProgress": [
+    {
+      "id": "example-student_apt-percentages",
+      "data": {
+        "studentId": "example-student",
+        "lessonId": "apt-percentages",
+        "completed": false,
+        "bookmarked": true,
+        "note": "Remember the original base.",
+        "practiceScore": 1,
+        "practiceTotal": 1,
+        "updatedAt": "2026-11-02T00:00:00Z"
+      }
+    }
   ]
 }

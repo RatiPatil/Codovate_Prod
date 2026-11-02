@@ -21,6 +21,12 @@ export function validateDocument(collection, id, data) {
   const validate = validators[collection];
   if (!validate) return { valid: false, errors: ["Unknown collection"] };
   const errors = [];
+  if (
+    collection === "placementProgress" &&
+    (id !== data.studentId + "_" + data.lessonId ||
+      data.practiceScore > data.practiceTotal)
+  )
+    errors.push("Learning record identity or score is invalid.");
   if (!validate(data))
     errors.push(
       ...validate.errors.map((e) => (e.instancePath || "/") + " " + e.message),

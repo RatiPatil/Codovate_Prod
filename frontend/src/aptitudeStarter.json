@@ -1,0 +1,984 @@
+{
+  "format": "codovate-placement-v1",
+  "records": [
+    {
+      "id": "apt-quant",
+      "sectionId": "aptitude",
+      "parentId": "",
+      "kind": "folder",
+      "title": "Quantitative Aptitude",
+      "summary": "Build number sense, rates and algebra.",
+      "body": "",
+      "sourceUrl": "",
+      "status": "published"
+    },
+    {
+      "id": "apt-data",
+      "sectionId": "aptitude",
+      "parentId": "",
+      "kind": "folder",
+      "title": "Data Interpretation",
+      "summary": "Read tables and charts before calculating.",
+      "body": "",
+      "sourceUrl": "",
+      "status": "published"
+    },
+    {
+      "id": "apt-verbal",
+      "sectionId": "aptitude",
+      "parentId": "",
+      "kind": "folder",
+      "title": "Verbal Ability",
+      "summary": "Understand passages and express ideas precisely.",
+      "body": "",
+      "sourceUrl": "",
+      "status": "published"
+    },
+    {
+      "id": "apt-formulas",
+      "sectionId": "aptitude",
+      "parentId": "",
+      "kind": "folder",
+      "title": "Formula Handbook",
+      "summary": "Revise essential formulas with their conditions.",
+      "body": "",
+      "sourceUrl": "",
+      "status": "published"
+    },
+    {
+      "id": "apt-puzzles",
+      "sectionId": "aptitude",
+      "parentId": "",
+      "kind": "folder",
+      "title": "Puzzles",
+      "summary": "Make deductions and test constraints.",
+      "body": "",
+      "sourceUrl": "",
+      "status": "published"
+    },
+    {
+      "id": "apt-guesstimates",
+      "sectionId": "aptitude",
+      "parentId": "",
+      "kind": "folder",
+      "title": "Guesstimates",
+      "summary": "Estimate clearly using explicit assumptions.",
+      "body": "",
+      "sourceUrl": "",
+      "status": "published"
+    },
+    {
+      "id": "apt-numbers",
+      "sectionId": "aptitude",
+      "parentId": "apt-quant",
+      "kind": "article",
+      "title": "Number systems and divisibility",
+      "summary": "Classify integers, primes and factors before choosing a shortcut",
+      "body": "## What you will learn\nClassify integers, primes and factors before choosing a shortcut. A prime has exactly two positive factors; 1 is neither prime nor composite.\n\n## Key idea\nA number is divisible by 3 when its digit sum is divisible by 3. Divisibility by 9 uses the same rule with 9. Divisibility by 4 depends on the last two digits.\n\n## Worked example\nIs 372 divisible by 12? A multiple of 12 must be divisible by 3 and 4. The digit sum is 12, and 72 is divisible by 4. So 372 is divisible by 12.\n\n## Avoid this mistake\nDivisibility by 3 alone does not establish divisibility by 12.\n\n## Your next step\nTry the checkpoint below before marking this lesson complete. Explain your method aloud, then revisit any step that felt uncertain.",
+      "sourceUrl": "",
+      "status": "published",
+      "sourceNote": "Original Codovate teaching adaptation. Topic reference: Basics of Quantitative Ability.pdf. Worked examples and checkpoints are newly written and checked; no source answer key is assumed correct.",
+      "minutes": 7,
+      "level": "Foundation",
+      "practice": [
+        {
+          "prompt": "Which number is prime?",
+          "options": [
+            "1",
+            "21",
+            "29",
+            "39"
+          ],
+          "answerIndex": 2,
+          "explanation": "29 has no positive divisors other than 1 and 29. 21 and 39 are composite."
+        }
+      ]
+    },
+    {
+      "id": "apt-hcf-lcm",
+      "sectionId": "aptitude",
+      "parentId": "apt-quant",
+      "kind": "article",
+      "title": "HCF and LCM",
+      "summary": "Use the HCF for the largest equal grouping and the LCM for repeating events meeting again.",
+      "body": "## What you will learn\nUse the HCF for the largest equal grouping and the LCM for repeating events meeting again.\n\n## Key idea\nFor two positive integers a and b: HCF(a,b) × LCM(a,b) = a × b.\n\n## Worked example\nTwo bells ring every 12 and 18 minutes. Prime factors are 12 = 2² × 3 and 18 = 2 × 3². Their LCM is 2² × 3² = 36 minutes.\n\n## Avoid this mistake\nThe product identity above is for two positive integers, not a general formula for three numbers.\n\n## Your next step\nTry the checkpoint below before marking this lesson complete. Explain your method aloud, then revisit any step that felt uncertain.",
+      "sourceUrl": "",
+      "status": "published",
+      "sourceNote": "Original Codovate teaching adaptation. Topic reference: Basics of Quantitative Ability.pdf. Worked examples and checkpoints are newly written and checked; no source answer key is assumed correct.",
+      "minutes": 7,
+      "level": "Foundation",
+      "practice": [
+        {
+          "prompt": "What is the HCF of 24 and 36?",
+          "options": [
+            "6",
+            "12",
+            "18",
+            "72"
+          ],
+          "answerIndex": 1,
+          "explanation": "24 = 2³ × 3 and 36 = 2² × 3². Their common prime powers give 2² × 3 = 12."
+        }
+      ]
+    },
+    {
+      "id": "apt-percentages",
+      "sectionId": "aptitude",
+      "parentId": "apt-quant",
+      "kind": "article",
+      "title": "Percentages and successive changes",
+      "summary": "Always identify the base quantity: a percentage is a fraction of that base, not an isolated number.",
+      "body": "## What you will learn\nAlways identify the base quantity: a percentage is a fraction of that base, not an isolated number.\n\n## Key idea\nPercentage = part ÷ whole × 100. A p% increase multiplies the original value by (1 + p/100).\n\n## Worked example\nA fee of ₹800 increases by 10% and then decreases by 10%. New fee = 800 × 1.10 × 0.90 = ₹792. Overall change is a 1% decrease.\n\n## Avoid this mistake\nEqual percentage increases and decreases do not cancel because their bases differ.\n\n## Your next step\nTry the checkpoint below before marking this lesson complete. Explain your method aloud, then revisit any step that felt uncertain.",
+      "sourceUrl": "",
+      "status": "published",
+      "sourceNote": "Original Codovate teaching adaptation. Topic reference: Basics of Quantitative Ability.pdf. Worked examples and checkpoints are newly written and checked; no source answer key is assumed correct.",
+      "minutes": 7,
+      "level": "Foundation",
+      "practice": [
+        {
+          "prompt": "A price rises from ₹200 to ₹250. What is the increase?",
+          "options": [
+            "20%",
+            "25%",
+            "40%",
+            "50%"
+          ],
+          "answerIndex": 1,
+          "explanation": "Increase = 50. Divide by the original 200: 50/200 × 100 = 25%."
+        }
+      ]
+    },
+    {
+      "id": "apt-profit-loss",
+      "sectionId": "aptitude",
+      "parentId": "apt-quant",
+      "kind": "article",
+      "title": "Profit, loss and discount",
+      "summary": "Separate cost price, marked price and selling price",
+      "body": "## What you will learn\nSeparate cost price, marked price and selling price. Profit percentage uses cost price; discount percentage uses marked price.\n\n## Key idea\nProfit = SP − CP. Profit % = profit ÷ CP × 100. Discount = MP − SP.\n\n## Worked example\nA bag costs ₹600, is marked at ₹900, and is sold at 20% discount. SP = 900 × 0.80 = ₹720. Profit = ₹120, or 20% of CP.\n\n## Avoid this mistake\nDo not calculate profit percentage using the marked price.\n\n## Your next step\nTry the checkpoint below before marking this lesson complete. Explain your method aloud, then revisit any step that felt uncertain.",
+      "sourceUrl": "",
+      "status": "published",
+      "sourceNote": "Original Codovate teaching adaptation. Topic reference: Basics of Quantitative Ability.pdf. Worked examples and checkpoints are newly written and checked; no source answer key is assumed correct.",
+      "minutes": 7,
+      "level": "Foundation",
+      "practice": [
+        {
+          "prompt": "An item costs ₹400 and sells for ₹460. Profit percentage?",
+          "options": [
+            "10%",
+            "12%",
+            "15%",
+            "20%"
+          ],
+          "answerIndex": 2,
+          "explanation": "Profit is ₹60. 60/400 × 100 = 15%."
+        }
+      ]
+    },
+    {
+      "id": "apt-ratios",
+      "sectionId": "aptitude",
+      "parentId": "apt-quant",
+      "kind": "article",
+      "title": "Ratios and proportions",
+      "summary": "Ratios compare quantities in the same units",
+      "body": "## What you will learn\nRatios compare quantities in the same units. Convert a ratio into equal-sized parts before dividing a total.\n\n## Key idea\nIf A:B = m:n and total is T, A = Tm/(m+n), B = Tn/(m+n).\n\n## Worked example\nDivide ₹840 in the ratio 3:4. There are 7 parts, each worth ₹120. Shares are ₹360 and ₹480.\n\n## Avoid this mistake\nA ratio of 3:4 does not mean the first share is 3/4 of the total; it is 3/7.\n\n## Your next step\nTry the checkpoint below before marking this lesson complete. Explain your method aloud, then revisit any step that felt uncertain.",
+      "sourceUrl": "",
+      "status": "published",
+      "sourceNote": "Original Codovate teaching adaptation. Topic reference: Basics of Quantitative Ability.pdf. Worked examples and checkpoints are newly written and checked; no source answer key is assumed correct.",
+      "minutes": 7,
+      "level": "Foundation",
+      "practice": [
+        {
+          "prompt": "Split 90 in the ratio 2:3. What is the larger share?",
+          "options": [
+            "30",
+            "36",
+            "45",
+            "54"
+          ],
+          "answerIndex": 3,
+          "explanation": "Five parts total. Each is 18, so the larger share is 3 × 18 = 54."
+        }
+      ]
+    },
+    {
+      "id": "apt-averages",
+      "sectionId": "aptitude",
+      "parentId": "apt-quant",
+      "kind": "article",
+      "title": "Averages and weighted averages",
+      "summary": "An average balances a total across a count",
+      "body": "## What you will learn\nAn average balances a total across a count. Groups of different sizes need a weighted average.\n\n## Key idea\nAverage = sum ÷ count. Combined average = (n₁a₁ + n₂a₂)/(n₁+n₂).\n\n## Worked example\nTen students average 60 marks and twenty average 75. Combined average = (10×60 + 20×75)/30 = 70.\n\n## Avoid this mistake\nDo not take the simple average of two group averages unless group sizes are equal.\n\n## Your next step\nTry the checkpoint below before marking this lesson complete. Explain your method aloud, then revisit any step that felt uncertain.",
+      "sourceUrl": "",
+      "status": "published",
+      "sourceNote": "Original Codovate teaching adaptation. Topic reference: Basics of Quantitative Ability.pdf. Worked examples and checkpoints are newly written and checked; no source answer key is assumed correct.",
+      "minutes": 7,
+      "level": "Foundation",
+      "practice": [
+        {
+          "prompt": "Four numbers average 18. Their sum is?",
+          "options": [
+            "22",
+            "36",
+            "54",
+            "72"
+          ],
+          "answerIndex": 3,
+          "explanation": "Sum = count × average = 4 × 18 = 72."
+        }
+      ]
+    },
+    {
+      "id": "apt-mixtures",
+      "sectionId": "aptitude",
+      "parentId": "apt-quant",
+      "kind": "article",
+      "title": "Mixtures and concentration",
+      "summary": "Track the amount of the active ingredient separately from the total mixture.",
+      "body": "## What you will learn\nTrack the amount of the active ingredient separately from the total mixture.\n\n## Key idea\nConcentration = amount of ingredient ÷ total mixture × 100. When adding water, the ingredient amount stays fixed.\n\n## Worked example\nA 20-litre solution contains 30% syrup, so it has 6 litres of syrup. Add 10 litres of water. New concentration = 6/30 × 100 = 20%.\n\n## Avoid this mistake\nConcentration percentages do not add directly.\n\n## Your next step\nTry the checkpoint below before marking this lesson complete. Explain your method aloud, then revisit any step that felt uncertain.",
+      "sourceUrl": "",
+      "status": "published",
+      "sourceNote": "Original Codovate teaching adaptation. Topic reference: Basics of Quantitative Ability.pdf. Worked examples and checkpoints are newly written and checked; no source answer key is assumed correct.",
+      "minutes": 7,
+      "level": "Foundation",
+      "practice": [
+        {
+          "prompt": "10 litres of 40% juice is mixed with 10 litres of water. New juice concentration?",
+          "options": [
+            "10%",
+            "20%",
+            "30%",
+            "40%"
+          ],
+          "answerIndex": 1,
+          "explanation": "There are 4 litres of juice in 20 litres of mixture, giving 20%."
+        }
+      ]
+    },
+    {
+      "id": "apt-work",
+      "sectionId": "aptitude",
+      "parentId": "apt-quant",
+      "kind": "article",
+      "title": "Time and work",
+      "summary": "Translate completion times into work rates",
+      "body": "## What you will learn\nTranslate completion times into work rates. Rates add when people work together on the same job.\n\n## Key idea\nIf A finishes a job in a days, A’s daily rate is 1/a. Together: rate = 1/a + 1/b.\n\n## Worked example\nA finishes in 12 days and B in 6 days. Together they do 1/12 + 1/6 = 1/4 of the job per day, finishing in 4 days.\n\n## Avoid this mistake\nDo not add the completion times. Check that both people are working for the stated duration.\n\n## Your next step\nTry the checkpoint below before marking this lesson complete. Explain your method aloud, then revisit any step that felt uncertain.",
+      "sourceUrl": "",
+      "status": "published",
+      "sourceNote": "Original Codovate teaching adaptation. Topic reference: Basics of Quantitative Ability.pdf. Worked examples and checkpoints are newly written and checked; no source answer key is assumed correct.",
+      "minutes": 7,
+      "level": "Foundation",
+      "practice": [
+        {
+          "prompt": "A takes 10 days, B takes 15 days. Together they take?",
+          "options": [
+            "5 days",
+            "6 days",
+            "12 days",
+            "25 days"
+          ],
+          "answerIndex": 1,
+          "explanation": "Combined rate = 1/10 + 1/15 = 1/6 job/day, hence 6 days."
+        }
+      ]
+    },
+    {
+      "id": "apt-speed",
+      "sectionId": "aptitude",
+      "parentId": "apt-quant",
+      "kind": "article",
+      "title": "Speed, distance and time",
+      "summary": "Write consistent units before substituting",
+      "body": "## What you will learn\nWrite consistent units before substituting. For equal distances, the slower journey takes more time and affects the average more.\n\n## Key idea\nDistance = speed × time. km/h to m/s: multiply by 5/18. Average speed = total distance ÷ total time.\n\n## Worked example\nTravel 60 km at 30 km/h, then 60 km at 60 km/h. Total distance is 120 km; time is 2 + 1 = 3 hours. Average speed is 40 km/h.\n\n## Avoid this mistake\nThe average of 30 and 60 is not the average speed for this equal-distance trip.\n\n## Your next step\nTry the checkpoint below before marking this lesson complete. Explain your method aloud, then revisit any step that felt uncertain.",
+      "sourceUrl": "",
+      "status": "published",
+      "sourceNote": "Original Codovate teaching adaptation. Topic reference: Basics of Quantitative Ability.pdf. Worked examples and checkpoints are newly written and checked; no source answer key is assumed correct.",
+      "minutes": 7,
+      "level": "Foundation",
+      "practice": [
+        {
+          "prompt": "Convert 72 km/h into m/s.",
+          "options": [
+            "10",
+            "15",
+            "20",
+            "25"
+          ],
+          "answerIndex": 2,
+          "explanation": "72 × 5/18 = 20 m/s."
+        }
+      ]
+    },
+    {
+      "id": "apt-trains",
+      "sectionId": "aptitude",
+      "parentId": "apt-quant",
+      "kind": "article",
+      "title": "Trains and relative speed",
+      "summary": "To cross an object, a train must cover the combined lengths",
+      "body": "## What you will learn\nTo cross an object, a train must cover the combined lengths. Relative speed depends on direction.\n\n## Key idea\nOpposite directions: add speeds. Same direction: subtract speeds. Time = combined length ÷ relative speed.\n\n## Worked example\nA 180 m train passes a stationary pole at 54 km/h. Speed = 15 m/s. Time = 180/15 = 12 seconds.\n\n## Avoid this mistake\nFor a platform, include the platform length as well as the train length.\n\n## Your next step\nTry the checkpoint below before marking this lesson complete. Explain your method aloud, then revisit any step that felt uncertain.",
+      "sourceUrl": "",
+      "status": "published",
+      "sourceNote": "Original Codovate teaching adaptation. Topic reference: Formulae_Quant.pdf. Worked examples and checkpoints are newly written and checked; no source answer key is assumed correct.",
+      "minutes": 7,
+      "level": "Foundation",
+      "practice": [
+        {
+          "prompt": "A 100 m train crosses a 200 m platform at 10 m/s. Time?",
+          "options": [
+            "10 s",
+            "20 s",
+            "30 s",
+            "40 s"
+          ],
+          "answerIndex": 2,
+          "explanation": "It must travel 100+200 = 300 m. At 10 m/s this takes 30 seconds."
+        }
+      ]
+    },
+    {
+      "id": "apt-interest",
+      "sectionId": "aptitude",
+      "parentId": "apt-quant",
+      "kind": "article",
+      "title": "Simple and compound interest",
+      "summary": "Simple interest uses the original principal each period; compound interest includes earlier interest in the next period’s base.",
+      "body": "## What you will learn\nSimple interest uses the original principal each period; compound interest includes earlier interest in the next period’s base.\n\n## Key idea\nSI = PRT/100. With annual compounding, amount A = P(1+r/100)^t. Compound interest = A − P.\n\n## Worked example\n₹1,000 at 10% annually for 2 years becomes 1,000 × 1.1² = ₹1,210. Compound interest is ₹210; simple interest would be ₹200.\n\n## Avoid this mistake\nMatch the rate period to the number of compounding periods.\n\n## Your next step\nTry the checkpoint below before marking this lesson complete. Explain your method aloud, then revisit any step that felt uncertain.",
+      "sourceUrl": "",
+      "status": "published",
+      "sourceNote": "Original Codovate teaching adaptation. Topic reference: Formulae_Quant.pdf. Worked examples and checkpoints are newly written and checked; no source answer key is assumed correct.",
+      "minutes": 7,
+      "level": "Foundation",
+      "practice": [
+        {
+          "prompt": "Simple interest on ₹2,000 at 5% per year for 3 years?",
+          "options": [
+            "₹100",
+            "₹200",
+            "₹300",
+            "₹400"
+          ],
+          "answerIndex": 2,
+          "explanation": "2,000 × 5 × 3 / 100 = ₹300."
+        }
+      ]
+    },
+    {
+      "id": "apt-equations",
+      "sectionId": "aptitude",
+      "parentId": "apt-quant",
+      "kind": "article",
+      "title": "Linear and quadratic equations",
+      "summary": "Translate words into equations and check solutions against the original constraints.",
+      "body": "## What you will learn\nTranslate words into equations and check solutions against the original constraints.\n\n## Key idea\nA quadratic ax² + bx + c = 0 may factor into two linear factors. Substitute candidate roots to verify.\n\n## Worked example\nx² − 5x + 6 = 0 becomes (x−2)(x−3)=0. Therefore x is 2 or 3. Both satisfy the original equation.\n\n## Avoid this mistake\nA word problem may reject a negative root even when the algebra allows it.\n\n## Your next step\nTry the checkpoint below before marking this lesson complete. Explain your method aloud, then revisit any step that felt uncertain.",
+      "sourceUrl": "",
+      "status": "published",
+      "sourceNote": "Original Codovate teaching adaptation. Topic reference: Basics of Quantitative Ability.pdf. Worked examples and checkpoints are newly written and checked; no source answer key is assumed correct.",
+      "minutes": 7,
+      "level": "Foundation",
+      "practice": [
+        {
+          "prompt": "Solve 3x + 5 = 20.",
+          "options": [
+            "3",
+            "4",
+            "5",
+            "6"
+          ],
+          "answerIndex": 2,
+          "explanation": "Subtract 5 to get 3x = 15, then divide by 3: x = 5."
+        }
+      ]
+    },
+    {
+      "id": "apt-counting",
+      "sectionId": "aptitude",
+      "parentId": "apt-quant",
+      "kind": "article",
+      "title": "Permutations and combinations",
+      "summary": "Decide whether order matters before selecting a counting formula.",
+      "body": "## What you will learn\nDecide whether order matters before selecting a counting formula.\n\n## Key idea\nnPr = n!/(n−r)! for ordered choices without replacement. nCr = n!/[r!(n−r)!] for unordered selections.\n\n## Worked example\nChoose two representatives from five students: order does not matter, so 5C2 = 10. Choosing a captain and deputy instead gives 5P2 = 20.\n\n## Avoid this mistake\nSelecting a team and assigning distinct roles are different tasks.\n\n## Your next step\nTry the checkpoint below before marking this lesson complete. Explain your method aloud, then revisit any step that felt uncertain.",
+      "sourceUrl": "",
+      "status": "published",
+      "sourceNote": "Original Codovate teaching adaptation. Topic reference: Basics of Quantitative Ability.pdf. Worked examples and checkpoints are newly written and checked; no source answer key is assumed correct.",
+      "minutes": 7,
+      "level": "Foundation",
+      "practice": [
+        {
+          "prompt": "How many pairs can be chosen from 6 people?",
+          "options": [
+            "12",
+            "15",
+            "30",
+            "36"
+          ],
+          "answerIndex": 1,
+          "explanation": "6C2 = 6×5/2 = 15."
+        }
+      ]
+    },
+    {
+      "id": "apt-probability",
+      "sectionId": "aptitude",
+      "parentId": "apt-quant",
+      "kind": "article",
+      "title": "Probability and complementary events",
+      "summary": "Define the sample space and ensure outcomes are equally likely before counting.",
+      "body": "## What you will learn\nDefine the sample space and ensure outcomes are equally likely before counting.\n\n## Key idea\nP(event) = favourable outcomes ÷ total equally likely outcomes. P(not A) = 1 − P(A).\n\n## Worked example\nFor a fair six-sided die, even outcomes are 2, 4 and 6. Probability of an even result = 3/6 = 1/2.\n\n## Avoid this mistake\nIndependence and mutual exclusivity are different concepts; do not assume either without justification.\n\n## Your next step\nTry the checkpoint below before marking this lesson complete. Explain your method aloud, then revisit any step that felt uncertain.",
+      "sourceUrl": "",
+      "status": "published",
+      "sourceNote": "Original Codovate teaching adaptation. Topic reference: Basics of Quantitative Ability.pdf. Worked examples and checkpoints are newly written and checked; no source answer key is assumed correct.",
+      "minutes": 7,
+      "level": "Foundation",
+      "practice": [
+        {
+          "prompt": "A fair coin is tossed twice. Probability of two heads?",
+          "options": [
+            "1/2",
+            "1/3",
+            "1/4",
+            "3/4"
+          ],
+          "answerIndex": 2,
+          "explanation": "The equally likely outcomes are HH, HT, TH and TT. Only HH qualifies."
+        }
+      ]
+    },
+    {
+      "id": "apt-tables",
+      "sectionId": "aptitude",
+      "parentId": "apt-data",
+      "kind": "article",
+      "title": "Read a data table systematically",
+      "summary": "Read the title, row labels, column labels and units before answering",
+      "body": "## What you will learn\nRead the title, row labels, column labels and units before answering. Separate what is given from what must be calculated.\n\n## Key idea\nFor a share of total, divide the requested category by the relevant total, not an unrelated grand total.\n\n## Worked example\nA training centre has 40 engineering, 30 science and 30 commerce students. Engineering’s share is 40/(40+30+30) = 40%.\n\n## Avoid this mistake\nCheck whether the table reports counts, percentages, thousands or cumulative totals.\n\n## Your next step\nTry the checkpoint below before marking this lesson complete. Explain your method aloud, then revisit any step that felt uncertain.",
+      "sourceUrl": "",
+      "status": "published",
+      "sourceNote": "Original Codovate teaching adaptation. Topic reference: Data Interpretation 1.pdf. Worked examples and checkpoints are newly written and checked; no source answer key is assumed correct.",
+      "minutes": 7,
+      "level": "Foundation",
+      "practice": [
+        {
+          "prompt": "A table lists 25 interns and 75 employees. Interns are what share of all 100 people?",
+          "options": [
+            "20%",
+            "25%",
+            "33.3%",
+            "75%"
+          ],
+          "answerIndex": 1,
+          "explanation": "The relevant total is 100; 25/100 × 100 = 25%."
+        }
+      ]
+    },
+    {
+      "id": "apt-charts",
+      "sectionId": "aptitude",
+      "parentId": "apt-data",
+      "kind": "article",
+      "title": "Bar charts and line charts",
+      "summary": "Use bars to compare categories and lines to follow a series across ordered values such as time",
+      "body": "## What you will learn\nUse bars to compare categories and lines to follow a series across ordered values such as time. Always inspect the vertical-axis scale.\n\n## Key idea\nPercentage change = (new − old)/old × 100. A truncated axis can make a small difference look large.\n\n## Worked example\nSales increase from 80 to 100 units. Absolute growth is 20 units; percentage growth is 20/80 × 100 = 25%.\n\n## Avoid this mistake\nA steep-looking line does not establish a large percentage increase without axis values.\n\n## Your next step\nTry the checkpoint below before marking this lesson complete. Explain your method aloud, then revisit any step that felt uncertain.",
+      "sourceUrl": "",
+      "status": "published",
+      "sourceNote": "Original Codovate teaching adaptation. Topic reference: Data Interpretation 2.pdf. Worked examples and checkpoints are newly written and checked; no source answer key is assumed correct.",
+      "minutes": 7,
+      "level": "Foundation",
+      "practice": [
+        {
+          "prompt": "Output rises from 120 to 150. Percentage growth?",
+          "options": [
+            "20%",
+            "25%",
+            "30%",
+            "125%"
+          ],
+          "answerIndex": 1,
+          "explanation": "Growth is 30 relative to 120, so 30/120 × 100 = 25%."
+        }
+      ]
+    },
+    {
+      "id": "apt-pie-charts",
+      "sectionId": "aptitude",
+      "parentId": "apt-data",
+      "kind": "article",
+      "title": "Pie charts and central angles",
+      "summary": "A pie chart divides one whole into shares",
+      "body": "## What you will learn\nA pie chart divides one whole into shares. Read the legend carefully and check whether shares total 100%.\n\n## Key idea\nCentral angle = share × 360°. Share percentage = angle/360 × 100.\n\n## Worked example\nA department accounts for 15% of a ₹2,000,000 budget. Its allocation is ₹300,000 and its central angle is 54°.\n\n## Avoid this mistake\nA pie slice represents a fraction of the stated total; different charts may use different totals.\n\n## Your next step\nTry the checkpoint below before marking this lesson complete. Explain your method aloud, then revisit any step that felt uncertain.",
+      "sourceUrl": "",
+      "status": "published",
+      "sourceNote": "Original Codovate teaching adaptation. Topic reference: Data Interpretation 2.pdf. Worked examples and checkpoints are newly written and checked; no source answer key is assumed correct.",
+      "minutes": 7,
+      "level": "Foundation",
+      "practice": [
+        {
+          "prompt": "What angle represents 25% of a pie chart?",
+          "options": [
+            "45°",
+            "60°",
+            "90°",
+            "120°"
+          ],
+          "answerIndex": 2,
+          "explanation": "0.25 × 360° = 90°."
+        }
+      ]
+    },
+    {
+      "id": "apt-data-sufficiency",
+      "sectionId": "aptitude",
+      "parentId": "apt-data",
+      "kind": "article",
+      "title": "Data sufficiency and multi-step sets",
+      "summary": "Ask whether the information uniquely determines the answer, rather than rushing to calculate a plausible value.",
+      "body": "## What you will learn\nAsk whether the information uniquely determines the answer, rather than rushing to calculate a plausible value.\n\n## Key idea\nEvaluate statement 1 alone, statement 2 alone, then both together if needed. Keep conditions separate.\n\n## Worked example\nTo determine x+y: knowing x=4 alone is insufficient and y=6 alone is insufficient. Together, they determine x+y=10.\n\n## Avoid this mistake\nA single possible solution is not enough if other answers also satisfy the conditions.\n\n## Your next step\nTry the checkpoint below before marking this lesson complete. Explain your method aloud, then revisit any step that felt uncertain.",
+      "sourceUrl": "",
+      "status": "published",
+      "sourceNote": "Original Codovate teaching adaptation. Topic reference: Data Interpretation 3.pdf. Worked examples and checkpoints are newly written and checked; no source answer key is assumed correct.",
+      "minutes": 7,
+      "level": "Foundation",
+      "practice": [
+        {
+          "prompt": "To determine the area of a rectangle, length is 8 m and width is 3 m. Which information is needed?",
+          "options": [
+            "Length alone",
+            "Width alone",
+            "Both length and width",
+            "Neither"
+          ],
+          "answerIndex": 2,
+          "explanation": "Area = length × width. Both dimensions are needed here."
+        }
+      ]
+    },
+    {
+      "id": "apt-reading",
+      "sectionId": "aptitude",
+      "parentId": "apt-verbal",
+      "kind": "article",
+      "title": "Reading comprehension",
+      "summary": "Find the main claim, supporting evidence and tone",
+      "body": "## What you will learn\nFind the main claim, supporting evidence and tone. Base your answer on the passage instead of outside knowledge.\n\n## Key idea\nRead the question, locate relevant evidence, and eliminate options that are stronger or broader than the passage supports.\n\n## Worked example\nPassage: “The pilot reduced waiting time at two clinics; a citywide trial is planned.” Supported conclusion: the pilot showed improvement in those clinics. It does not prove every clinic will improve.\n\n## Avoid this mistake\nAvoid turning “some” into “all”, or correlation into causation.\n\n## Your next step\nTry the checkpoint below before marking this lesson complete. Explain your method aloud, then revisit any step that felt uncertain.",
+      "sourceUrl": "",
+      "status": "published",
+      "sourceNote": "Original Codovate teaching adaptation. Topic reference: Basics of Verbal Ability.pdf. Worked examples and checkpoints are newly written and checked; no source answer key is assumed correct.",
+      "minutes": 7,
+      "level": "Foundation",
+      "practice": [
+        {
+          "prompt": "Passage: “Some trainees preferred online classes.” Which conclusion is supported?",
+          "options": [
+            "All trainees preferred online classes",
+            "No trainee liked classrooms",
+            "At least some trainees preferred online classes",
+            "Online classes are always better"
+          ],
+          "answerIndex": 2,
+          "explanation": "Only the limited claim about some trainees is directly supported."
+        }
+      ]
+    },
+    {
+      "id": "apt-grammar",
+      "sectionId": "aptitude",
+      "parentId": "apt-verbal",
+      "kind": "article",
+      "title": "Subject–verb agreement",
+      "summary": "Identify the grammatical subject rather than choosing a verb based on the nearest noun.",
+      "body": "## What you will learn\nIdentify the grammatical subject rather than choosing a verb based on the nearest noun.\n\n## Key idea\nA singular subject normally takes a singular present-tense verb; a plural subject takes a plural verb.\n\n## Worked example\n“The list of topics is ready.” The subject is “list”, not “topics”, so “is” agrees with it.\n\n## Avoid this mistake\nPhrases such as “of the students” can distract from the actual subject.\n\n## Your next step\nTry the checkpoint below before marking this lesson complete. Explain your method aloud, then revisit any step that felt uncertain.",
+      "sourceUrl": "",
+      "status": "published",
+      "sourceNote": "Original Codovate teaching adaptation. Topic reference: VerbalAbility.pdf. Worked examples and checkpoints are newly written and checked; no source answer key is assumed correct.",
+      "minutes": 7,
+      "level": "Foundation",
+      "practice": [
+        {
+          "prompt": "Choose the correct sentence.",
+          "options": [
+            "The list of books are ready.",
+            "The list of books is ready.",
+            "The list of books be ready.",
+            "The list of books were ready now."
+          ],
+          "answerIndex": 1,
+          "explanation": "“List” is the singular subject, so “is” is correct."
+        }
+      ]
+    },
+    {
+      "id": "apt-sentence-completion",
+      "sectionId": "aptitude",
+      "parentId": "apt-verbal",
+      "kind": "article",
+      "title": "Sentence completion and context",
+      "summary": "Look for contrast, cause, continuation and tone clues before choosing a word.",
+      "body": "## What you will learn\nLook for contrast, cause, continuation and tone clues before choosing a word.\n\n## Key idea\nWords such as “although” and “however” signal contrast. “Therefore” usually signals a conclusion.\n\n## Worked example\n“Although the problem was difficult, her explanation was clear.” The contrast is between difficulty and clarity.\n\n## Avoid this mistake\nDo not select a familiar word if its meaning conflicts with the sentence’s logic.\n\n## Your next step\nTry the checkpoint below before marking this lesson complete. Explain your method aloud, then revisit any step that felt uncertain.",
+      "sourceUrl": "",
+      "status": "published",
+      "sourceNote": "Original Codovate teaching adaptation. Topic reference: Basics of Verbal Ability.pdf. Worked examples and checkpoints are newly written and checked; no source answer key is assumed correct.",
+      "minutes": 7,
+      "level": "Foundation",
+      "practice": [
+        {
+          "prompt": "“The instructions were clear; therefore, the team found the task ____.”",
+          "options": [
+            "confusing",
+            "manageable",
+            "unrelated",
+            "invisible"
+          ],
+          "answerIndex": 1,
+          "explanation": "“Therefore” asks for a result consistent with clear instructions; “manageable” fits."
+        }
+      ]
+    },
+    {
+      "id": "apt-sentence-correction",
+      "sectionId": "aptitude",
+      "parentId": "apt-verbal",
+      "kind": "article",
+      "title": "Sentence correction and clarity",
+      "summary": "Check grammar, parallel structure and meaning",
+      "body": "## What you will learn\nCheck grammar, parallel structure and meaning. Choose a correction that preserves the intended meaning without adding claims.\n\n## Key idea\nItems in a list should use a consistent grammatical form.\n\n## Worked example\n“She enjoys reading, writing and solving puzzles” is parallel. “She enjoys reading, writing and to solve puzzles” mixes forms.\n\n## Avoid this mistake\nA shorter sentence is not automatically the correct sentence.\n\n## Your next step\nTry the checkpoint below before marking this lesson complete. Explain your method aloud, then revisit any step that felt uncertain.",
+      "sourceUrl": "",
+      "status": "published",
+      "sourceNote": "Original Codovate teaching adaptation. Topic reference: Basics of Verbal Ability.pdf. Worked examples and checkpoints are newly written and checked; no source answer key is assumed correct.",
+      "minutes": 7,
+      "level": "Foundation",
+      "practice": [
+        {
+          "prompt": "Which list is parallel?",
+          "options": [
+            "reading, to write and solving",
+            "to read, writing and solve",
+            "reading, writing and solving",
+            "read, writing and to solve"
+          ],
+          "answerIndex": 2,
+          "explanation": "All three items use the same -ing form."
+        }
+      ]
+    },
+    {
+      "id": "apt-formula-percent",
+      "sectionId": "aptitude",
+      "parentId": "apt-formulas",
+      "kind": "article",
+      "title": "Percentage and ratio quick reference",
+      "summary": "Revise percentages using their base and convert common fractions to speed up calculations.",
+      "body": "## What you will learn\nRevise percentages using their base and convert common fractions to speed up calculations.\n\n## Key idea\n1/2 = 50%; 1/4 = 25%; 1/5 = 20%; 1/8 = 12.5%. For successive changes a% and b%, use multiplier (1+a/100)(1+b/100), with negative values for decreases.\n\n## Worked example\n12.5% of 640 equals one eighth of 640, which is 80.\n\n## Avoid this mistake\nDo not apply a formula until you have identified the original whole.\n\n## Your next step\nTry the checkpoint below before marking this lesson complete. Explain your method aloud, then revisit any step that felt uncertain.",
+      "sourceUrl": "",
+      "status": "published",
+      "sourceNote": "Original Codovate teaching adaptation. Topic reference: Formulae_Quant.pdf. Worked examples and checkpoints are newly written and checked; no source answer key is assumed correct.",
+      "minutes": 4,
+      "level": "Foundation",
+      "practice": [
+        {
+          "prompt": "12.5% of 320 is?",
+          "options": [
+            "20",
+            "30",
+            "40",
+            "80"
+          ],
+          "answerIndex": 2,
+          "explanation": "12.5% = 1/8, so 320/8 = 40."
+        }
+      ]
+    },
+    {
+      "id": "apt-formula-geometry",
+      "sectionId": "aptitude",
+      "parentId": "apt-formulas",
+      "kind": "article",
+      "title": "Geometry quick reference",
+      "summary": "Match each formula to the correct shape and distinguish perimeter from area.",
+      "body": "## What you will learn\nMatch each formula to the correct shape and distinguish perimeter from area.\n\n## Key idea\nRectangle: area = lw; perimeter = 2(l+w). Triangle: area = base × perpendicular height / 2. Circle: area = πr²; circumference = 2πr.\n\n## Worked example\nA rectangle 8 m long and 5 m wide has area 40 m² and perimeter 26 m.\n\n## Avoid this mistake\nArea has square units; circumference and perimeter have length units.\n\n## Your next step\nTry the checkpoint below before marking this lesson complete. Explain your method aloud, then revisit any step that felt uncertain.",
+      "sourceUrl": "",
+      "status": "published",
+      "sourceNote": "Original Codovate teaching adaptation. Topic reference: Basics of Quantitative Ability.pdf. Worked examples and checkpoints are newly written and checked; no source answer key is assumed correct.",
+      "minutes": 5,
+      "level": "Foundation",
+      "practice": [
+        {
+          "prompt": "Area of a triangle with base 10 cm and perpendicular height 6 cm?",
+          "options": [
+            "16 cm²",
+            "30 cm²",
+            "60 cm²",
+            "120 cm²"
+          ],
+          "answerIndex": 1,
+          "explanation": "10×6/2 = 30 cm²."
+        }
+      ]
+    },
+    {
+      "id": "apt-formula-progressions",
+      "sectionId": "aptitude",
+      "parentId": "apt-formulas",
+      "kind": "article",
+      "title": "Arithmetic and geometric progressions",
+      "summary": "Recognize a constant difference for an AP and a constant ratio for a GP.",
+      "body": "## What you will learn\nRecognize a constant difference for an AP and a constant ratio for a GP.\n\n## Key idea\nAP: aₙ = a+(n−1)d; Sₙ = n[2a+(n−1)d]/2. GP: aₙ = ar^(n−1). For r ≠ 1, Sₙ = a(r^n−1)/(r−1).\n\n## Worked example\nFor the AP 3, 7, 11, …, a=3 and d=4. The tenth term is 3+9×4=39.\n\n## Avoid this mistake\nUse n−1 steps to reach term n from the first term.\n\n## Your next step\nTry the checkpoint below before marking this lesson complete. Explain your method aloud, then revisit any step that felt uncertain.",
+      "sourceUrl": "",
+      "status": "published",
+      "sourceNote": "Original Codovate teaching adaptation. Topic reference: Basics of Quantitative Ability.pdf. Worked examples and checkpoints are newly written and checked; no source answer key is assumed correct.",
+      "minutes": 5,
+      "level": "Foundation",
+      "practice": [
+        {
+          "prompt": "Fifth term of the AP 2, 5, 8, …?",
+          "options": [
+            "11",
+            "14",
+            "17",
+            "20"
+          ],
+          "answerIndex": 1,
+          "explanation": "a=2, d=3. Term 5 is 2+4×3=14."
+        }
+      ]
+    },
+    {
+      "id": "apt-formula-units",
+      "sectionId": "aptitude",
+      "parentId": "apt-formulas",
+      "kind": "article",
+      "title": "Units, rates and sanity checks",
+      "summary": "Dimensional checks catch many errors before you finish a calculation.",
+      "body": "## What you will learn\nDimensional checks catch many errors before you finish a calculation.\n\n## Key idea\nDistance/time gives speed. Work/time gives rate. A percentage is dimensionless. Keep numerator and denominator units compatible.\n\n## Worked example\nAt 15 m/s for 20 seconds, distance = 15×20 = 300 metres. The seconds cancel.\n\n## Avoid this mistake\nNever combine kilometres with metres or hours with seconds without conversion.\n\n## Your next step\nTry the checkpoint below before marking this lesson complete. Explain your method aloud, then revisit any step that felt uncertain.",
+      "sourceUrl": "",
+      "status": "published",
+      "sourceNote": "Original Codovate teaching adaptation. Topic reference: Formulae_Quant.pdf. Worked examples and checkpoints are newly written and checked; no source answer key is assumed correct.",
+      "minutes": 4,
+      "level": "Foundation",
+      "practice": [
+        {
+          "prompt": "A worker makes 18 items in 3 hours. Rate?",
+          "options": [
+            "3 items/hour",
+            "6 items/hour",
+            "15 items/hour",
+            "54 items/hour"
+          ],
+          "answerIndex": 1,
+          "explanation": "18 items / 3 hours = 6 items/hour."
+        }
+      ]
+    },
+    {
+      "id": "apt-puzzle-equations",
+      "sectionId": "aptitude",
+      "parentId": "apt-puzzles",
+      "kind": "article",
+      "title": "Turn a word puzzle into equations",
+      "summary": "Define an unknown, translate each condition, and test the result in the original story.",
+      "body": "## What you will learn\nDefine an unknown, translate each condition, and test the result in the original story.\n\n## Key idea\nWrite one equation per independent condition. Preserve the distinction between a per-person amount and a total.\n\n## Worked example\nThree friends each have x tokens. Each spends 2 tokens. Together they now have x tokens: 3(x−2)=x. Solving gives x=3, so the original total was 9 tokens.\n\n## Avoid this mistake\nA value for each person is different from the total across all people.\n\n## Your next step\nTry the checkpoint below before marking this lesson complete. Explain your method aloud, then revisit any step that felt uncertain.",
+      "sourceUrl": "",
+      "status": "published",
+      "sourceNote": "Original Codovate teaching adaptation. Topic reference: 400-Puzzles.pdf. Worked examples and checkpoints are newly written and checked; no source answer key is assumed correct.",
+      "minutes": 7,
+      "level": "Foundation",
+      "practice": [
+        {
+          "prompt": "Two friends each have x tokens. Each spends 3; their combined remainder is 10. Find x.",
+          "options": [
+            "5",
+            "6",
+            "8",
+            "10"
+          ],
+          "answerIndex": 2,
+          "explanation": "2(x−3)=10 gives 2x=16, so x=8. The remainder is 5 each, total 10."
+        }
+      ]
+    },
+    {
+      "id": "apt-puzzle-constraints",
+      "sectionId": "aptitude",
+      "parentId": "apt-puzzles",
+      "kind": "article",
+      "title": "Ordering and constraint puzzles",
+      "summary": "Translate each clue into a relation, place forced positions first, then test remaining options.",
+      "body": "## What you will learn\nTranslate each clue into a relation, place forced positions first, then test remaining options.\n\n## Key idea\n“A before B” is an order constraint. “A immediately before B” also fixes adjacency. These are different clues.\n\n## Worked example\nThree tasks A, B and C must satisfy A before B and B before C. The only valid order is A, B, C.\n\n## Avoid this mistake\nDo not add adjacency or exclusivity unless the clue states it.\n\n## Your next step\nTry the checkpoint below before marking this lesson complete. Explain your method aloud, then revisit any step that felt uncertain.",
+      "sourceUrl": "",
+      "status": "published",
+      "sourceNote": "Original Codovate teaching adaptation. Topic reference: 400-Puzzles.pdf. Worked examples and checkpoints are newly written and checked; no source answer key is assumed correct.",
+      "minutes": 7,
+      "level": "Foundation",
+      "practice": [
+        {
+          "prompt": "A is before B. C is after B. Which order is valid?",
+          "options": [
+            "C, A, B",
+            "B, A, C",
+            "A, B, C",
+            "A, C, B"
+          ],
+          "answerIndex": 2,
+          "explanation": "A must precede B, and B must precede C; therefore A, B, C."
+        }
+      ]
+    },
+    {
+      "id": "apt-puzzle-invariants",
+      "sectionId": "aptitude",
+      "parentId": "apt-puzzles",
+      "kind": "article",
+      "title": "Invariants and parity",
+      "summary": "An invariant is a quantity or property that an allowed move cannot change",
+      "body": "## What you will learn\nAn invariant is a quantity or property that an allowed move cannot change. Parity tracks whether a number is even or odd.\n\n## Key idea\nAdding or subtracting an even number preserves parity. Adding or subtracting an odd number flips parity.\n\n## Worked example\nStart at 7 and repeatedly add 2. Every reachable value stays odd. Therefore 20 is unreachable with only these moves.\n\n## Avoid this mistake\nA pattern from a few examples is not a proof; explain why every allowed move preserves the property.\n\n## Your next step\nTry the checkpoint below before marking this lesson complete. Explain your method aloud, then revisit any step that felt uncertain.",
+      "sourceUrl": "",
+      "status": "published",
+      "sourceNote": "Original Codovate teaching adaptation. Topic reference: 400-Puzzles.pdf. Worked examples and checkpoints are newly written and checked; no source answer key is assumed correct.",
+      "minutes": 7,
+      "level": "Foundation",
+      "practice": [
+        {
+          "prompt": "Starting at 4, repeatedly add 6. Which value is impossible?",
+          "options": [
+            "10",
+            "16",
+            "22",
+            "25"
+          ],
+          "answerIndex": 3,
+          "explanation": "All reachable values are even; 25 is odd."
+        }
+      ]
+    },
+    {
+      "id": "apt-estimate-framework",
+      "sectionId": "aptitude",
+      "parentId": "apt-guesstimates",
+      "kind": "article",
+      "title": "A clear framework for estimation",
+      "summary": "Clarify the scope, break the quantity into drivers, state assumptions, calculate, and check the result",
+      "body": "## What you will learn\nClarify the scope, break the quantity into drivers, state assumptions, calculate, and check the result. Estimates are conditional, not measured facts.\n\n## Key idea\nDemand ≈ number of users × usage per user per period. Use a range when assumptions are uncertain.\n\n## Worked example\nEstimate daily tea cups at a hypothetical campus: assume 2,000 people, 60% drink tea, and 2 cups per tea drinker. Estimate = 2,000×0.6×2 = 2,400 cups/day.\n\n## Avoid this mistake\nDo not present an assumed population or usage rate as verified current data.\n\n## Your next step\nTry the checkpoint below before marking this lesson complete. Explain your method aloud, then revisit any step that felt uncertain.",
+      "sourceUrl": "",
+      "status": "published",
+      "sourceNote": "Original Codovate teaching adaptation. Topic reference: Guestimates.docx. Worked examples and checkpoints are newly written and checked; no source answer key is assumed correct.",
+      "minutes": 7,
+      "level": "Foundation",
+      "practice": [
+        {
+          "prompt": "With 1,000 people, 50% participation and 2 uses/day, estimated daily uses?",
+          "options": [
+            "500",
+            "1,000",
+            "1,500",
+            "2,000"
+          ],
+          "answerIndex": 1,
+          "explanation": "1,000×0.5×2 = 1,000 uses/day. This depends on the stated assumptions."
+        }
+      ]
+    },
+    {
+      "id": "apt-estimate-capacity",
+      "sectionId": "aptitude",
+      "parentId": "apt-guesstimates",
+      "kind": "article",
+      "title": "Capacity-based estimates",
+      "summary": "Estimate demand from capacity when the number of users is hard to observe",
+      "body": "## What you will learn\nEstimate demand from capacity when the number of users is hard to observe. Distinguish total capacity from occupancy and actual usage.\n\n## Key idea\nOccupied room-nights = rooms × occupancy fraction × nights. Multiply by usage per occupied room-night if needed.\n\n## Worked example\nA hypothetical hotel has 80 rooms, 75% occupancy and one soap item per occupied room-night. For 30 nights: 80×0.75×30 = 1,800 soap items.\n\n## Avoid this mistake\nIf one item lasts multiple nights, divide by the appropriate replacement interval.\n\n## Your next step\nTry the checkpoint below before marking this lesson complete. Explain your method aloud, then revisit any step that felt uncertain.",
+      "sourceUrl": "",
+      "status": "published",
+      "sourceNote": "Original Codovate teaching adaptation. Topic reference: Guestimates.docx. Worked examples and checkpoints are newly written and checked; no source answer key is assumed correct.",
+      "minutes": 7,
+      "level": "Foundation",
+      "practice": [
+        {
+          "prompt": "50 rooms at 80% occupancy for 10 nights gives how many occupied room-nights?",
+          "options": [
+            "400",
+            "500",
+            "800",
+            "4,000"
+          ],
+          "answerIndex": 0,
+          "explanation": "50×0.8×10 = 400 occupied room-nights."
+        }
+      ]
+    },
+    {
+      "id": "apt-estimate-cases",
+      "sectionId": "aptitude",
+      "parentId": "apt-guesstimates",
+      "kind": "article",
+      "title": "Business cases and sensitivity checks",
+      "summary": "Separate revenue and cost drivers, locate the biggest uncertainty, and test how the conclusion changes.",
+      "body": "## What you will learn\nSeparate revenue and cost drivers, locate the biggest uncertainty, and test how the conclusion changes.\n\n## Key idea\nProfit = revenue − cost. Revenue = price × quantity. A sensitivity check changes one assumption while keeping others fixed.\n\n## Worked example\nA hypothetical service sells 100 units at ₹50 with total costs ₹4,000: profit = ₹1,000. At 80 units and unchanged costs, revenue is ₹4,000 and profit is zero.\n\n## Avoid this mistake\nA case framework is a guide, not evidence. Label assumptions and ask for missing data.\n\n## Your next step\nTry the checkpoint below before marking this lesson complete. Explain your method aloud, then revisit any step that felt uncertain.",
+      "sourceUrl": "",
+      "status": "published",
+      "sourceNote": "Original Codovate teaching adaptation. Topic reference: Case-In-Point-7th-Edition1.pdf. Worked examples and checkpoints are newly written and checked; no source answer key is assumed correct.",
+      "minutes": 7,
+      "level": "Foundation",
+      "practice": [
+        {
+          "prompt": "At ₹20 per unit and 300 units, revenue is?",
+          "options": [
+            "₹600",
+            "₹3,000",
+            "₹6,000",
+            "₹60,000"
+          ],
+          "answerIndex": 2,
+          "explanation": "20 × 300 = ₹6,000 revenue, before subtracting costs."
+        }
+      ]
+    },
+    {
+      "id": "apt-publishing-case",
+      "sectionId": "aptitude",
+      "parentId": "apt-data",
+      "kind": "article",
+      "title": "Case study: publishing costs",
+      "summary": "Read a complete cost breakdown and solve three source-based questions with checked explanations.",
+      "body": "## Read the data first\nThe source pie chart gives these shares of the total cost of publishing a book. They add to 100%. The chart is rebuilt here as a readable table.\n\n| Cost component | Share of total |\n| --- | --- |\n| Printing | 20% |\n| Paper | 25% |\n| Binding | 20% |\n| Royalty | 15% |\n| Promotion | 10% |\n| Transportation | 10% |\n\n## Find the total from a part\nIf printing costs ₹30,600 and represents 20%, total cost = 30,600 / 0.20 = ₹153,000. Royalty is 15% of that total: 153,000 × 0.15 = ₹22,950.\n\n## Turn percentages into angles\nA full pie chart is 360°. Royalty occupies 15%, so its angle is 0.15 × 360° = 54°.\n\n## Work backwards from marked price\nIf a book is marked 20% above cost and marked at ₹180, cost is 180 / 1.20 = ₹150. Paper is 25% of cost, so paper cost per copy is 150 × 0.25 = ₹37.50.\n\n## Source quality note\nOnly the three questions supported by the checked table are included below. Other questions in the supplied set still need editorial review; an answer option is not assumed correct merely because it appears in a source.",
+      "sourceUrl": "",
+      "status": "published",
+      "sourceNote": "Adapted from Data Interpretation 2.pdf, source page 1. Chart values visually checked against the uploaded original; first three answers independently recalculated.",
+      "minutes": 8,
+      "level": "Intermediate",
+      "practice": [
+        {
+          "prompt": "Printing costs ₹30,600 and is 20% of total. What is royalty at 15%?",
+          "options": [
+            "₹19,450",
+            "₹21,200",
+            "₹22,950",
+            "₹26,150"
+          ],
+          "answerIndex": 2,
+          "explanation": "30,600 / 0.20 × 0.15 = ₹22,950."
+        },
+        {
+          "prompt": "What central angle represents the 15% royalty share?",
+          "options": [
+            "15°",
+            "24°",
+            "54°",
+            "48°"
+          ],
+          "answerIndex": 2,
+          "explanation": "15/100 × 360° = 54°."
+        },
+        {
+          "prompt": "A book is marked 20% above cost at ₹180. Paper is 25% of cost. Paper cost?",
+          "options": [
+            "₹36",
+            "₹37.50",
+            "₹42",
+            "₹44.25"
+          ],
+          "answerIndex": 1,
+          "explanation": "Cost = 180/1.20 = ₹150. Paper cost = 0.25 × 150 = ₹37.50."
+        }
+      ]
+    }
+  ]
+}

@@ -1598,6 +1598,158 @@ try {
     "cannot delete placement folder",
     assertFails(deleteDoc(placementRef)),
   );
+  const checkpoint = {
+    prompt: "What is 25% of 80?",
+    options: ["10", "20", "30", "40"],
+    answerIndex: 1,
+    explanation: "80/4 = 20.",
+  };
+  await check(
+    "admin adds validated checkpoint metadata",
+    assertSucceeds(
+      updateDoc(doc(admin.firestore(), "placementContent", "charts"), {
+        practice: [checkpoint],
+        level: "Foundation",
+        minutes: 5,
+        sourceNote: "Checked teaching example.",
+        updatedAt: serverTimestamp(),
+      }),
+    ),
+  );
+  await check(
+    "invalid answer index is rejected",
+    assertFails(
+      updateDoc(doc(admin.firestore(), "placementContent", "charts"), {
+        practice: [{ ...checkpoint, answerIndex: 4 }],
+        updatedAt: serverTimestamp(),
+      }),
+    ),
+  );
+  await check(
+    "missing checkpoint explanation is rejected",
+    assertFails(
+      updateDoc(doc(admin.firestore(), "placementContent", "charts"), {
+        practice: [{ ...checkpoint, explanation: "" }],
+        updatedAt: serverTimestamp(),
+      }),
+    ),
+  );
+  await check(
+    "student cannot edit checkpoint answers",
+    assertFails(
+      updateDoc(doc(alice.firestore(), "placementContent", "charts"), {
+        practice: [{ ...checkpoint, answerIndex: 0 }],
+        updatedAt: serverTimestamp(),
+      }),
+    ),
+  );
+  await check(
+    "folder cannot contain checkpoint questions",
+    assertFails(
+      updateDoc(placementRef, {
+        practice: [checkpoint],
+        updatedAt: serverTimestamp(),
+      }),
+    ),
+  );
+  const progress = {
+    studentId: "alice",
+    lessonId: "charts",
+    completed: true,
+    bookmarked: true,
+    note: "My private working",
+    practiceScore: 1,
+    practiceTotal: 1,
+    updatedAt: serverTimestamp(),
+  };
+  const progressRef = doc(
+    alice.firestore(),
+    "placementProgress",
+    "alice_charts",
+  );
+  await check(
+    "student saves private lesson progress",
+    assertSucceeds(setDoc(progressRef, progress)),
+  );
+  await check(
+    "student reads own progress",
+    assertSucceeds(getDoc(progressRef)),
+  );
+  await check(
+    "student queries own progress",
+    assertSucceeds(
+      getDocs(
+        query(
+          collection(alice.firestore(), "placementProgress"),
+          where("studentId", "==", "alice"),
+        ),
+      ),
+    ),
+  );
+  await check(
+    "other student cannot read progress",
+    assertFails(
+      getDoc(doc(bob.firestore(), "placementProgress", "alice_charts")),
+    ),
+  );
+  await check(
+    "admin cannot read student notes",
+    assertFails(
+      getDoc(doc(admin.firestore(), "placementProgress", "alice_charts")),
+    ),
+  );
+  await check(
+    "guest cannot read progress",
+    assertFails(
+      getDoc(doc(guest.firestore(), "placementProgress", "alice_charts")),
+    ),
+  );
+  await check(
+    "student cannot query every learner",
+    assertFails(getDocs(collection(alice.firestore(), "placementProgress"))),
+  );
+  await check(
+    "student cannot write someone else progress",
+    assertFails(
+      setDoc(
+        doc(bob.firestore(), "placementProgress", "alice_charts"),
+        progress,
+      ),
+    ),
+  );
+  await check(
+    "progress ID must match owner and lesson",
+    assertFails(
+      setDoc(
+        doc(alice.firestore(), "placementProgress", "alice_other"),
+        progress,
+      ),
+    ),
+  );
+  await check(
+    "score cannot exceed total",
+    assertFails(
+      updateDoc(progressRef, {
+        practiceScore: 2,
+        updatedAt: serverTimestamp(),
+      }),
+    ),
+  );
+  await check(
+    "client cannot mint gems in learning record",
+    assertFails(
+      updateDoc(progressRef, { gems: 100, updatedAt: serverTimestamp() }),
+    ),
+  );
+  await check(
+    "progress cannot be relabelled as another lesson",
+    assertFails(
+      updateDoc(progressRef, {
+        lessonId: "other",
+        updatedAt: serverTimestamp(),
+      }),
+    ),
+  );
   console.log(`${checks} Firebase security checks passed.`);
 } finally {
   await env.cleanup();

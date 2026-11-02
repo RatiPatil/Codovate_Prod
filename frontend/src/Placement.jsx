@@ -16,6 +16,9 @@ import { useSession } from "./session";
 import { withTimeout } from "./authSupport";
 import { sections, placementInput } from "./placementData";
 import "./placement.css";
+import { AptitudeLearningSummary } from "./AptitudeLearningSummary";
+import starter from "./aptitudeStarter.json";
+import { AptitudeReader } from "./AptitudeReader";
 export function Placement({ manage = false }) {
   const { user, admin } = useSession();
   const [params, setParams] = useSearchParams();
@@ -31,12 +34,27 @@ export function Placement({ manage = false }) {
     [busy, setBusy] = useState(false),
     [search, setSearch] = useState("");
   const allowed = manage && admin;
+  const [draftQuestions, setDraftQuestions] = useState([]);
+  useEffect(() => setDraftQuestions(editing?.practice || []), [editing]);
+  function questionChange(index, key, value) {
+    setDraftQuestions((qs) =>
+      qs.map((q, i) => (i === index ? { ...q, [key]: value } : q)),
+    );
+  }
   useEffect(() => {
     let active = true;
     setItems([]);
     setEditing(null);
     setError("");
-    if (!db || !section) return;
+    if (!section) {
+      setLoading(false);
+      return;
+    }
+    if (!db) {
+      setItems(section.id === "aptitude" ? starter.records : []);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     const filters = [where("sectionId", "==", section.id)];
     if (!allowed) filters.push(where("status", "==", "published"));
@@ -109,6 +127,7 @@ export function Placement({ manage = false }) {
         ...Object.fromEntries(new FormData(form)),
         sectionId: section.id,
         parentId: editing?.parentId ?? folder,
+        practice: draftQuestions,
       });
       const updatedAt = serverTimestamp();
       if (editing)
@@ -190,6 +209,12 @@ export function Placement({ manage = false }) {
           </span>
         ))}
       </nav>
+      {section?.id === "aptitude" && !manage && !article && (
+        <AptitudeLearningSummary
+          items={items}
+          view={folder + article + revision}
+        />
+      )}
       {error && (
         <div className="notice" role="alert">
           {error}
@@ -263,7 +288,10 @@ export function Placement({ manage = false }) {
                   <span className="pill">{current.status}</span>
                   <h2>{current.title}</h2>
                   <p>{current.summary}</p>
-                  <div className="placement-body">{current.body}</div>
+                  <AptitudeReader
+                    key={(user?.uid || "guest") + current.id}
+                    lesson={current}
+                  />
                   {current.sourceUrl && (
                     <p>
                       <a
@@ -320,6 +348,11 @@ export function Placement({ manage = false }) {
                           {allowed ? " · " + item.status : ""}
                         </span>
                         <h3>{item.title}</h3>
+                        {item.minutes && (
+                          <span className="pill">
+                            {item.minutes} min · {item.level || "Lesson"}
+                          </span>
+                        )}
                         <p>{item.summary}</p>
                         <button
                           className="button secondary"
@@ -421,6 +454,127 @@ export function Placement({ manage = false }) {
                   placeholder="https://…"
                 />
               </label>
+              <div className="form-grid">
+                <label>
+                  Reading time (minutes)
+                  <input
+                    type="number"
+                    name="minutes"
+                    min={1}
+                    max={60}
+                    defaultValue={editing?.minutes || 7}
+                  />
+                </label>
+                <label>
+                  Level
+                  <select
+                    name="level"
+                    defaultValue={editing?.level || "Foundation"}
+                  >
+                    <option>Foundation</option>
+                    <option>Intermediate</option>
+                    <option>Reference</option>
+                  </select>
+                </label>
+              </div>
+              <label>
+                Source and editorial note
+                <textarea
+                  name="sourceNote"
+                  maxLength={600}
+                  rows={3}
+                  defaultValue={editing?.sourceNote || ""}
+                />
+              </label>
+              <h4>Practice checkpoints (articles only)</h4>
+              {draftQuestions.map((q, i) => (
+                <fieldset key={i} className="apt-editor-question">
+                  <legend>Question {i + 1}</legend>
+                  <label>
+                    Question
+                    <input
+                      required
+                      maxLength={1500}
+                      value={q.prompt}
+                      onChange={(e) =>
+                        questionChange(i, "prompt", e.target.value)
+                      }
+                    />
+                  </label>
+                  {q.options.map((o, n) => (
+                    <label key={n}>
+                      Option {n + 1}
+                      <input
+                        required
+                        maxLength={300}
+                        value={o}
+                        onChange={(e) =>
+                          questionChange(
+                            i,
+                            "options",
+                            q.options.map((v, j) =>
+                              j === n ? e.target.value : v,
+                            ),
+                          )
+                        }
+                      />
+                    </label>
+                  ))}
+                  <label>
+                    Correct option
+                    <select
+                      value={q.answerIndex}
+                      onChange={(e) =>
+                        questionChange(i, "answerIndex", Number(e.target.value))
+                      }
+                    >
+                      {q.options.map((_, n) => (
+                        <option key={n} value={n}>
+                          Option {n + 1}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label>
+                    Explanation
+                    <textarea
+                      required
+                      maxLength={2000}
+                      value={q.explanation}
+                      onChange={(e) =>
+                        questionChange(i, "explanation", e.target.value)
+                      }
+                    />
+                  </label>
+                  <button
+                    type="button"
+                    className="button secondary small"
+                    onClick={() =>
+                      setDraftQuestions((qs) => qs.filter((_, n) => n !== i))
+                    }
+                  >
+                    Remove question {i + 1}
+                  </button>
+                </fieldset>
+              ))}
+              <button
+                type="button"
+                className="button secondary"
+                disabled={draftQuestions.length >= 6}
+                onClick={() =>
+                  setDraftQuestions((qs) => [
+                    ...qs,
+                    {
+                      prompt: "",
+                      options: ["", "", "", ""],
+                      answerIndex: 0,
+                      explanation: "",
+                    },
+                  ])
+                }
+              >
+                Add practice question
+              </button>
               <button className="button" disabled={busy}>
                 {busy ? "Saving…" : "Save content"}
               </button>

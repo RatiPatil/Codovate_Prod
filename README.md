@@ -142,3 +142,7 @@ Use the trusted XLSX importer described in [docs/STUDENT_IMPORT.md](docs/STUDENT
 ### Placement Preparation
 
 Open `/placement` for all 24 source sections, grouped by learning goal. Administration → Placement preparation manages nested folders and readable articles with draft/published visibility. No Drive materials are imported automatically. See [docs/PLACEMENT_PREPARATION.md](docs/PLACEMENT_PREPARATION.md) for the Firestore contract, publishing workflow, limits and deployment commands.
+
+### Aptitude lessons and source review
+
+Aptitude includes six categories, 33 short lessons, worked examples, 35 practice checkpoints, private notes/bookmarks and completion tracking. Use [docs/APTITUDE_LIBRARY.md](docs/APTITUDE_LIBRARY.md) for the separate 25-file source review pack, private progress schema, safe Firestore import and live release commands. Source extraction stays in draft until checked; no reward balances are client-issued.

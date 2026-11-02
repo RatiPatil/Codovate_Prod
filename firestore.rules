@@ -319,15 +319,33 @@ service cloud.firestore {
     && request.resource.data.read is bool && changedTime();
    allow delete: if false;
   }
+  function placementQuestion(q) {
+   return q is map && q.keys().hasAll(['prompt','options','answerIndex','explanation'])
+    && q.keys().hasOnly(['prompt','options','answerIndex','explanation'])
+    && text(q.prompt,1500) && q.prompt.size()>0 && text(q.explanation,2000) && q.explanation.size()>0
+    && q.options is list && q.options.size()==4
+    && text(q.options[0],300) && q.options[0].size()>0 && text(q.options[1],300) && q.options[1].size()>0
+    && text(q.options[2],300) && q.options[2].size()>0 && text(q.options[3],300) && q.options[3].size()>0
+    && q.answerIndex is int && q.answerIndex>=0 && q.answerIndex<4;
+  }
+  function placementPractice(p) {
+   return p is list && p.size()<=6
+    && (p.size()<1 || placementQuestion(p[0])) && (p.size()<2 || placementQuestion(p[1]))
+    && (p.size()<3 || placementQuestion(p[2])) && (p.size()<4 || placementQuestion(p[3]))
+    && (p.size()<5 || placementQuestion(p[4])) && (p.size()<6 || placementQuestion(p[5]));
+  }
   function validPlacement(d) {
    return d.keys().hasAll(['sectionId','parentId','kind','title','summary','body','sourceUrl','status','createdBy','createdAt','updatedAt'])
-    && d.keys().hasOnly(['sectionId','parentId','kind','title','summary','body','sourceUrl','status','createdBy','createdAt','updatedAt'])
+    && d.keys().hasOnly(['sectionId','parentId','kind','title','summary','body','sourceUrl','status','createdBy','createdAt','updatedAt','sourceNote','minutes','level','practice'])
     && d.sectionId in ['aptitude', 'business-analysis', 'cloud-computing', 'cold-email', 'cs-fundamentals', 'dsa', 'dbms', 'dsa-shared', 'placement', 'python-ai', 'resume-templates', 'complete-preparation', 'aptitude-roadmap', 'github-resources', 'youtube-playlists', 'civic-sense', 'final-year-projects', 'startup', 'hr-interviews', 'leetcode-resources', 'interview-150', 'documentation', 'career-portals', 'hackathons']
     && text(d.parentId,128) && d.parentId.matches('^[a-zA-Z0-9_-]*$')
     && d.kind in ['folder','article'] && d.status in ['draft','published']
     && text(d.title,140) && d.title.size()>0 && text(d.summary,600) && text(d.body,40000)
     && optionalHttps(d.sourceUrl) && (d.kind != 'folder' || (d.body == '' && d.sourceUrl == ''))
     && (d.kind != 'article' || d.status != 'published' || d.body.size()>0)
+    && text(d.get('sourceNote',''),600) && d.get('level','Foundation') in ['Foundation','Intermediate','Reference']
+    && d.get('minutes',1) is int && d.get('minutes',1)>=1 && d.get('minutes',1)<=60
+    && placementPractice(d.get('practice',[])) && (d.kind != 'folder' || d.get('practice',[]).size()==0)
     && text(d.createdBy,128) && d.createdAt is timestamp && d.updatedAt is timestamp;
   }
   function placementParent(d,id) {
@@ -341,7 +359,22 @@ service cloud.firestore {
    allow create: if admin() && validPlacement(request.resource.data) && placementParent(request.resource.data,id)
     && request.resource.data.createdBy == request.auth.uid && request.resource.data.createdAt == request.time && changedTime();
    allow update: if admin() && validPlacement(request.resource.data)
-    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['title','summary','body','sourceUrl','status','updatedAt']) && changedTime();
+    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['title','summary','body','sourceUrl','status','updatedAt','sourceNote','minutes','level','practice']) && changedTime();
+   allow delete: if false;
+  }
+  match /placementProgress/{id} {
+   allow get: if signedIn() && (!exists(/databases/$(database)/documents/placementProgress/$(id)) || own(resource.data.studentId));
+   allow list: if signedIn() && own(resource.data.studentId);
+   allow create,update: if signedIn() && own(request.resource.data.studentId)
+    && id == request.auth.uid + '_' + request.resource.data.lessonId
+    && request.resource.data.keys().hasAll(['studentId','lessonId','completed','bookmarked','note','practiceScore','practiceTotal','updatedAt'])
+    && request.resource.data.keys().hasOnly(['studentId','lessonId','completed','bookmarked','note','practiceScore','practiceTotal','updatedAt'])
+    && text(request.resource.data.lessonId,128) && request.resource.data.lessonId.matches('^[a-zA-Z0-9_-]+$')
+    && request.resource.data.completed is bool && request.resource.data.bookmarked is bool && text(request.resource.data.note,1000)
+    && request.resource.data.practiceScore is int && request.resource.data.practiceTotal is int
+    && request.resource.data.practiceTotal>=0 && request.resource.data.practiceTotal<=6
+    && request.resource.data.practiceScore>=0 && request.resource.data.practiceScore<=request.resource.data.practiceTotal
+    && changedTime();
    allow delete: if false;
   }
   match /{document=**} { allow read, write: if false; }
