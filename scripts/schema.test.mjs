@@ -179,3 +179,50 @@ test("connection and invitation identities cannot be substituted", () => {
   );
   assert.equal(validateDocument("groupInvites", "wrong", i.data).valid, false);
 });
+
+test("project team contracts reject inconsistent membership and history snapshots", () => {
+  const t = examples.projectTeams[0];
+  assert.equal(
+    validateDocument("projectTeams", t.id, {
+      ...t.data,
+      roles: { "someone-else": "leader" },
+    }).valid,
+    false,
+  );
+  assert.equal(
+    validateDocument("projectTeams", t.id, {
+      ...t.data,
+      members: ["example-student", "peer"],
+      roles: { "example-student": "leader", peer: "leader" },
+    }).valid,
+    false,
+  );
+  assert.equal(
+    validateDocument("projectTeams", t.id, {
+      ...t.data,
+      lifecycle: "archived",
+      recruitment: "recruiting",
+    }).valid,
+    false,
+  );
+  const h = examples.projectTeamHistory[0];
+  assert.equal(
+    validateDocument("projectTeamHistory", h.id, {
+      ...h.data,
+      snapshot: { ...h.data.snapshot, email: "private@example.com" },
+    }).valid,
+    false,
+  );
+});
+test("team chat contracts keep membership in the canonical team rather than duplicating it", () => {
+  const c = examples.conversations.find((row) => row.data.kind === "team");
+  assert.equal(validateDocument("conversations", c.id, c.data).valid, true);
+  assert.equal(
+    validateDocument("conversations", c.id, {
+      ...c.data,
+      members: ["example-student"],
+    }).valid,
+    false,
+  );
+  assert.equal(validateDocument("conversations", "wrong", c.data).valid, false);
+});

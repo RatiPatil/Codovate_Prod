@@ -27,9 +27,11 @@ vi.mock("./Community", () => ({
 }));
 vi.mock("firebase/firestore", () => ({
   doc: (_db, ...p) => p.join("/"),
-  onSnapshot: (path, fn) => {
+  onSnapshot: (path, options, next) => {
+    const fn = typeof options === "function" ? options : next;
     fn({
       exists: () => fake.published,
+      metadata: { fromCache: false },
       data: () => ({ name: path.endsWith("bob") ? "Bob" : "Alice" }),
     });
     return () => {};
@@ -112,16 +114,48 @@ it("accepts a real incoming connection and preserves recruiting module", async (
   await waitFor(() =>
     expect(fake.decision).toHaveBeenCalledWith("bob_alice", "accepted"),
   );
-  fireEvent.click(screen.getByRole("button", { name: "Discover teams" }));
+  fireEvent.click(screen.getByRole("button", { name: "My Teams" }));
+  fireEvent.click(
+    screen.getByRole("button", {
+      name: "Earlier recruiting teams and requests",
+    }),
+  );
   expect(screen.getByText("Recruiting teams module")).toBeTruthy();
 });
 
-it("opens the existing team board by default instead of an empty member directory", () => {
+it("opens My Teams with a clear empty state and preserves the earlier board", () => {
   render(
     <MemoryRouter initialEntries={["/teams"]}>
       <TeamHub />
     </MemoryRouter>,
   );
+  expect(screen.getByText("You haven't joined any teams yet.")).toBeTruthy();
+  fireEvent.click(
+    screen.getByRole("button", {
+      name: "Earlier recruiting teams and requests",
+    }),
+  );
   expect(screen.getByText("Recruiting teams module")).toBeTruthy();
-  expect(screen.queryByRole("searchbox")).toBeNull();
+});
+it("keeps earlier private workspaces visible in My Teams without rewriting their identity", () => {
+  fake.feeds.conversations = [
+    {
+      id: "earlier-room",
+      title: "Earlier Project",
+      ownerId: "bob",
+      members: ["alice", "bob"],
+      status: "active",
+      kind: "group",
+    },
+  ];
+  render(
+    <MemoryRouter initialEntries={["/teams"]}>
+      <TeamHub />
+    </MemoryRouter>,
+  );
+  expect(screen.getByText("Earlier Project")).toBeTruthy();
+  expect(screen.queryByText("You haven't joined any teams yet.")).toBeNull();
+  expect(
+    screen.getByRole("button", { name: "Open earlier workspace" }),
+  ).toBeTruthy();
 });

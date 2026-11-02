@@ -327,6 +327,14 @@
         "createdAt": "2026-11-02T00:00:00.000Z",
         "updatedAt": "2026-11-02T00:00:00.000Z"
       }
+    },
+    {
+      "id": "example-project-team",
+      "data": {
+        "kind": "team",
+        "teamId": "example-project-team",
+        "createdAt": "2026-11-02T00:00:00.000Z"
+      }
     }
   ],
   "groupInvites": [
@@ -350,6 +358,145 @@
         "senderName": "Example Student",
         "text": "Let us plan our first milestone.",
         "createdAt": "2026-11-02T00:00:00.000Z"
+      }
+    }
+  ],
+  "discoveryPreferences": [
+    {
+      "id": "example-student",
+      "data": {
+        "uid": "example-student",
+        "details": {
+          "desiredRole": "Frontend Developer",
+          "domain": "Web Development",
+          "experience": "Beginner",
+          "college": "Example College",
+          "year": "Second year",
+          "location": "Example City",
+          "photoUrl": "",
+          "achievements": [],
+          "seeking": [
+            "Project Collaborators"
+          ],
+          "passions": [
+            "Open Source"
+          ]
+        },
+        "shareDetails": false,
+        "updatedAt": "2026-11-02T00:00:00.000Z"
+      }
+    }
+  ],
+  "discoveryDismissals": [
+    {
+      "id": "example-peer",
+      "data": {
+        "studentId": "example-student",
+        "peerId": "example-peer",
+        "dismissed": true,
+        "createdAt": "2026-11-02T00:00:00.000Z",
+        "updatedAt": "2026-11-02T00:00:00.000Z"
+      }
+    }
+  ],
+  "projectTeams": [
+    {
+      "id": "example-project-team",
+      "data": {
+        "ownerId": "example-student",
+        "title": "Example Project Team",
+        "description": "An original student collaboration project",
+        "requiredSkills": [
+          "React"
+        ],
+        "capacity": 6,
+        "recruitment": "recruiting",
+        "lifecycle": "active",
+        "members": [
+          "example-student"
+        ],
+        "roles": {
+          "example-student": "leader"
+        },
+        "version": 1,
+        "historyId": "example-revision",
+        "createdAt": "2026-11-02T00:00:00.000Z",
+        "updatedAt": "2026-11-02T00:00:00.000Z"
+      }
+    }
+  ],
+  "projectTeamHistory": [
+    {
+      "id": "example-revision",
+      "data": {
+        "teamId": "example-project-team",
+        "actorId": "example-student",
+        "snapshot": {
+          "ownerId": "example-student",
+          "title": "Example Project Team",
+          "description": "An original student collaboration project",
+          "requiredSkills": [
+            "React"
+          ],
+          "capacity": 6,
+          "recruitment": "recruiting",
+          "lifecycle": "active",
+          "members": [
+            "example-student"
+          ],
+          "roles": {
+            "example-student": "leader"
+          },
+          "version": 1
+        },
+        "createdAt": "2026-11-02T00:00:00.000Z"
+      }
+    }
+  ],
+  "teamListings": [
+    {
+      "id": "example-project-team",
+      "data": {
+        "teamId": "example-project-team",
+        "ownerId": "example-student",
+        "title": "Example Project Team",
+        "description": "An original student collaboration project",
+        "requiredSkills": [
+          "React"
+        ],
+        "capacity": 6,
+        "recruitment": "recruiting",
+        "lifecycle": "active",
+        "version": 1,
+        "memberCount": 1,
+        "updatedAt": "2026-11-02T00:00:00.000Z"
+      }
+    }
+  ],
+  "projectTeamInvites": [
+    {
+      "id": "example-project-team_example-peer",
+      "data": {
+        "teamId": "example-project-team",
+        "ownerId": "example-student",
+        "studentId": "example-peer",
+        "status": "pending",
+        "createdAt": "2026-11-02T00:00:00.000Z",
+        "updatedAt": "2026-11-02T00:00:00.000Z"
+      }
+    }
+  ],
+  "projectTeamRequests": [
+    {
+      "id": "example-project-team_example-peer",
+      "data": {
+        "teamId": "example-project-team",
+        "ownerId": "example-student",
+        "studentId": "example-peer",
+        "status": "pending",
+        "createdAt": "2026-11-02T00:00:00.000Z",
+        "updatedAt": "2026-11-02T00:00:00.000Z",
+        "note": "I can contribute React components."
       }
     }
   ]
