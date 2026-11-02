@@ -956,7 +956,13 @@ function InvitationTitle({ groupId }) {
     if (!db) return;
     return onSnapshot(
       doc(db, "conversations", groupId),
-      (s) => setTitle(s.data()?.title || "Group invitation"),
+      (s) =>
+        setTitle(
+          s.exists()
+            ? s.data().title +
+                (s.data().status === "archived" ? " · Archived" : "")
+            : "Group invitation unavailable",
+        ),
       () => setTitle("Group invitation unavailable"),
     );
   }, [groupId]);

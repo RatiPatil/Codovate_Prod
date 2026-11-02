@@ -185,18 +185,17 @@ export async function answerInvite(invite, status) {
   if (!["accepted", "declined"].includes(status))
     throw new Error("Invalid invitation response.");
   await runTransaction(db, async (tx) => {
-    const ref = doc(db, "groupInvites", invite.id),
-      request = await tx.get(ref),
-      groupRef = doc(db, "conversations", invite.groupId),
-      group = await tx.get(groupRef);
-    if (
-      !request.exists() ||
-      request.data().status !== "pending" ||
-      !group.exists() ||
-      group.data().status !== "active"
-    )
+    const ref = doc(db, "groupInvites", invite.id);
+    const request = await tx.get(ref);
+    if (!request.exists() || request.data().status !== "pending")
       throw new Error("This invitation is no longer available.");
     if (status === "accepted") {
+      const groupRef = doc(db, "conversations", invite.groupId);
+      const group = await tx.get(groupRef);
+      if (!group.exists() || group.data().status !== "active")
+        throw new Error(
+          "This group is no longer available. You can decline this invitation.",
+        );
       if (group.data().members.length >= 12)
         throw new Error("This group has reached its 12-member limit.");
       tx.update(groupRef, {

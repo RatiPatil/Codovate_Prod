@@ -93,3 +93,18 @@ it("rejects full groups before joining", async () => {
   ).rejects.toThrow(/12-member/);
   expect(fake.update).not.toHaveBeenCalled();
 });
+it("can decline a pending invitation without needing an active group", async () => {
+  fake.get.mockResolvedValue({
+    exists: () => true,
+    data: () => ({ status: "pending" }),
+  });
+  await answerInvite(
+    { id: "invite", groupId: "archived-group", studentId: "alice" },
+    "declined",
+  );
+  expect(fake.get).toHaveBeenCalledTimes(1);
+  expect(fake.update).toHaveBeenCalledWith("groupInvites/invite", {
+    status: "declined",
+    updatedAt: "SERVER",
+  });
+});
