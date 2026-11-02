@@ -62,7 +62,8 @@
           "items": {
             "type": "string",
             "minLength": 1,
-            "maxLength": 60
+            "maxLength": 60,
+            "pattern": "^[^\\r\\n]+$"
           }
         },
         "portfolio": {
@@ -114,7 +115,8 @@
           "items": {
             "type": "string",
             "minLength": 1,
-            "maxLength": 60
+            "maxLength": 60,
+            "pattern": "^[^\\r\\n]+$"
           }
         },
         "skillSuggestionsSource": {
@@ -220,7 +222,8 @@
           "items": {
             "type": "string",
             "minLength": 1,
-            "maxLength": 60
+            "maxLength": 60,
+            "pattern": "^[^\\r\\n]+$"
           }
         },
         "deadline": {
@@ -593,7 +596,8 @@
           "items": {
             "type": "string",
             "maxLength": 60,
-            "minLength": 1
+            "minLength": 1,
+            "pattern": "^[^\\r\\n]+$"
           }
         },
         "createdAt": {
@@ -699,7 +703,8 @@
           "items": {
             "type": "string",
             "maxLength": 60,
-            "minLength": 1
+            "minLength": 1,
+            "pattern": "^[^\\r\\n]+$"
           }
         },
         "createdAt": {
@@ -1385,6 +1390,256 @@
           "minimum": 0
         },
         "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "additionalProperties": false
+    },
+    "memberProfiles": {
+      "type": "object",
+      "required": [
+        "uid",
+        "name",
+        "skills",
+        "updatedAt"
+      ],
+      "properties": {
+        "uid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "skills": {
+          "type": "array",
+          "maxItems": 20,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60,
+            "pattern": "^[^\\r\\n]+$"
+          }
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "additionalProperties": false
+    },
+    "connections": {
+      "type": "object",
+      "required": [
+        "fromId",
+        "toId",
+        "status",
+        "blockedBy",
+        "createdAt",
+        "updatedAt"
+      ],
+      "properties": {
+        "fromId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "toId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "status": {
+          "enum": [
+            "pending",
+            "accepted",
+            "declined",
+            "withdrawn",
+            "blocked"
+          ]
+        },
+        "blockedBy": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "additionalProperties": false
+    },
+    "conversations": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "kind",
+            "connectionId",
+            "members",
+            "createdAt"
+          ],
+          "properties": {
+            "kind": {
+              "const": "direct"
+            },
+            "connectionId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 257
+            },
+            "members": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              }
+            },
+            "createdAt": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "kind",
+            "title",
+            "ownerId",
+            "members",
+            "status",
+            "createdAt",
+            "updatedAt"
+          ],
+          "properties": {
+            "kind": {
+              "const": "group"
+            },
+            "title": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "ownerId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "members": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 12,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              }
+            },
+            "status": {
+              "enum": [
+                "active",
+                "archived"
+              ]
+            },
+            "createdAt": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "updatedAt": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "groupInvites": {
+      "type": "object",
+      "required": [
+        "groupId",
+        "ownerId",
+        "studentId",
+        "status",
+        "createdAt",
+        "updatedAt"
+      ],
+      "properties": {
+        "groupId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "ownerId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "studentId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "status": {
+          "enum": [
+            "pending",
+            "accepted",
+            "declined",
+            "revoked"
+          ]
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "additionalProperties": false
+    },
+    "chatMessages": {
+      "type": "object",
+      "required": [
+        "senderId",
+        "senderName",
+        "text",
+        "createdAt"
+      ],
+      "properties": {
+        "senderId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "senderName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1500
+        },
+        "createdAt": {
           "type": "string",
           "format": "date-time"
         }

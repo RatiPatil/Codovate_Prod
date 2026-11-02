@@ -286,5 +286,71 @@
         "updatedAt": "2026-11-02T00:00:00.000Z"
       }
     }
+  ],
+  "memberProfiles": [
+    {
+      "id": "example-student",
+      "data": {
+        "uid": "example-student",
+        "name": "Example Student",
+        "skills": [
+          "React"
+        ],
+        "updatedAt": "2026-11-02T00:00:00.000Z"
+      }
+    }
+  ],
+  "connections": [
+    {
+      "id": "example-student_example-peer",
+      "data": {
+        "fromId": "example-student",
+        "toId": "example-peer",
+        "status": "accepted",
+        "blockedBy": "",
+        "createdAt": "2026-11-02T00:00:00.000Z",
+        "updatedAt": "2026-11-02T00:00:00.000Z"
+      }
+    }
+  ],
+  "conversations": [
+    {
+      "id": "example-group",
+      "data": {
+        "kind": "group",
+        "title": "Example Project",
+        "ownerId": "example-student",
+        "members": [
+          "example-student"
+        ],
+        "status": "active",
+        "createdAt": "2026-11-02T00:00:00.000Z",
+        "updatedAt": "2026-11-02T00:00:00.000Z"
+      }
+    }
+  ],
+  "groupInvites": [
+    {
+      "id": "example-group_example-peer",
+      "data": {
+        "groupId": "example-group",
+        "ownerId": "example-student",
+        "studentId": "example-peer",
+        "status": "pending",
+        "createdAt": "2026-11-02T00:00:00.000Z",
+        "updatedAt": "2026-11-02T00:00:00.000Z"
+      }
+    }
+  ],
+  "chatMessages": [
+    {
+      "id": "example-message",
+      "data": {
+        "senderId": "example-student",
+        "senderName": "Example Student",
+        "text": "Let us plan our first milestone.",
+        "createdAt": "2026-11-02T00:00:00.000Z"
+      }
+    }
   ]
 }

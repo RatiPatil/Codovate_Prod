@@ -146,6 +146,7 @@ export function errorMessage(e) {
   );
 }
 export function skillInputError(raw) {
+  if (/[\r\n]/.test(raw)) return "Keep each skill on one line and separate skills with commas.";
   const skills = [
     ...new Set(
       raw
