@@ -438,93 +438,22 @@ export function ResourceLibrary({ manage = false }) {
   );
 }
 export function StudentDirectory() {
-  const data = useCareerPage("users", null, true);
-  const [search, setSearch] = useState("");
-  const students = data.items.filter((s) =>
-    (s.name + " " + s.email + " " + s.college)
-      .toLowerCase()
-      .includes(search.toLowerCase()),
-  );
   return (
-    <>
-      <div className="career-banner">
-        <Users size={32} />
-        <div>
-          <h2>Know your community.</h2>
-          <p>
-            Private student profiles. Visible only to verified administrators.
-          </p>
-        </div>
-      </div>
-      <label className="directory-search">
-        Search loaded students
-        <input
-          type="search"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Name, email or college"
-        />
-      </label>
-      <div className="student-directory">
-        {students.map((s) => (
-          <details className="panel student-row" key={s.id}>
-            <summary>
-              <span className="student-avatar">
-                {(s.name || s.email || "S")[0].toUpperCase()}
-              </span>
-              <span>
-                <strong>{s.name || "Profile in progress"}</strong>
-                <small>{s.college || "College not added"}</small>
-              </span>
-              <span className="completion-pill">{completion(s)}% complete</span>
-            </summary>
-            <dl>
-              <dt>Email</dt>
-              <dd>{s.email}</dd>
-              <dt>Degree</dt>
-              <dd>
-                {s.degree || "—"} {s.graduationYear}
-              </dd>
-              <dt>City</dt>
-              <dd>{s.city || "—"}</dd>
-              <dt>Skills</dt>
-              <dd>{s.skills?.join(", ") || "—"}</dd>
-              <dt>Bio</dt>
-              <dd>{s.bio || "—"}</dd>
-              <dt>Notification</dt>
-              <dd>
-                <Link
-                  className="text-link"
-                  to={
-                    "/admin?tab=notifications&student=" +
-                    encodeURIComponent(s.id)
-                  }
-                >
-                  Send notification
-                </Link>
-              </dd>
-              <dt>Student ID</dt>
-              <dd>{s.id}</dd>
-            </dl>
-            {s.portfolio && /^https:\/\//i.test(s.portfolio) && (
-              <a href={s.portfolio} target="_blank" rel="noopener noreferrer">
-                View portfolio <ArrowUpRight size={15} />
-              </a>
-            )}
-          </details>
-        ))}
-      </div>
-      {!students.length && !data.loading && !data.error && (
-        <p>No matching students in the loaded results.</p>
-      )}
-      <PageControls data={data} />
-      <p className="muted">
-        Authentication roles and account deletion require a trusted Firebase
-        administrator. Browser clients cannot grant admin access.
+    <div className="panel community-form">
+      <h2>Private student profiles</h2>
+      <p>
+        Student profiles and contact details are visible only to their owners.
+        Imported students are not listed publicly. Teammate discovery remains
+        off until students choose to participate.
       </p>
-    </>
+      <p>
+        To send a private notification, use the student ID provided by the
+        student in the Notifications module.
+      </p>
+    </div>
   );
 }
+
 export function CareerSpotlight() {
   return (
     <section className="career-spotlight container">

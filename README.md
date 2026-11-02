@@ -134,3 +134,7 @@ See [docs/ADMIN_PANEL.md](docs/ADMIN_PANEL.md) for module access, real admin pro
 ### Résumé templates and official opportunity links
 
 Open `/resume` for three editable templates and browser Print → Save as PDF. Explore and the homepage display real employer/organizer listings directly in the existing main opportunity cards and category tabs. Sources, eligibility, freshness policy and maintenance are documented in [docs/RESUME_AND_REAL_OPPORTUNITIES.md](docs/RESUME_AND_REAL_OPPORTUNITIES.md). External applications happen on the original website; stale/expired curated records are hidden automatically. Theme, colours, shared styles and logo remain unchanged.
+
+### Private student onboarding
+
+Use the trusted XLSX importer described in [docs/STUDENT_IMPORT.md](docs/STUDENT_IMPORT.md). Dry-run is the default. Imported profiles receive private, unconfirmed branch-skill suggestions and discovery remains off. Student profiles are now owner-only, including against browser admin clients; deploy those rules before importing. Real student spreadsheets/contact details are never checked into source or bundled into the application.

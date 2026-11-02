@@ -182,22 +182,19 @@ describe("career workflows", () => {
       ),
     );
   });
-  it("directory searches loaded students and expands profile details", () => {
+  it("does not expose student profiles or contact details in the admin directory", () => {
     state.items = [
       {
         id: "alice",
-        name: "Alice",
-        email: "alice@example.com",
-        college: "Regional College",
-        skills: ["React"],
+        name: "Private Student",
+        email: "private@example.test",
+        mobile: "+919000000001",
       },
     ];
     open(<StudentDirectory />);
-    fireEvent.click(screen.getByText("Alice"));
-    expect(screen.getByText("alice@example.com")).toBeInTheDocument();
-    fireEvent.change(screen.getByLabelText("Search loaded students"), {
-      target: { value: "missing" },
-    });
-    expect(screen.queryByText("Alice")).not.toBeInTheDocument();
+    expect(screen.getByText("Private student profiles")).toBeInTheDocument();
+    expect(screen.queryByText("Private Student")).not.toBeInTheDocument();
+    expect(screen.queryByText("private@example.test")).not.toBeInTheDocument();
+    expect(screen.queryByText("+919000000001")).not.toBeInTheDocument();
   });
 });

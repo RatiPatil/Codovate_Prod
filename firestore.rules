@@ -33,21 +33,29 @@ service cloud.firestore {
   }
   function validProfile(d) {
    return d.keys().hasAll(['name','email','college','degree','graduationYear','city','bio','skills','portfolio','resumePath','createdAt','updatedAt'])
-    && d.keys().hasOnly(['name','email','college','degree','graduationYear','city','bio','skills','portfolio','resumePath','resumeUrl','createdAt','updatedAt'])
+    && d.keys().hasOnly(['name','email','college','degree','graduationYear','city','bio','skills','portfolio','resumePath','resumeUrl','mobile','taluka','program','suggestedSkills','skillSuggestionsSource','discoveryEnabled','accountStatus','mobileVerified','importSource','createdAt','updatedAt'])
     && text(d.name,100) && text(d.email,320) && text(d.college,180) && text(d.degree,100)
     && text(d.graduationYear,4) && d.graduationYear.matches('^(20[0-9]{2}|2100)?$') && text(d.city,100) && text(d.bio,1500)
     && validSkills(d.skills) && text(d.portfolio,500)
     && (d.portfolio == '' || d.portfolio.matches('https://.*'))
     && (d.resumePath == '' || d.resumePath == 'resumes/' + request.auth.uid + '/resume.pdf')
     && optionalHttps(d.get('resumeUrl',''))
+    && text(d.get('mobile',''),16) && (d.get('mobile','') == '' || d.mobile.matches('^\\+91[6-9][0-9]{9}$'))
+    && text(d.get('taluka',''),100) && text(d.get('program',''),180) && validSkills(d.get('suggestedSkills',[]))
+    && d.get('discoveryEnabled',false) == false && d.get('mobileVerified',false) == false
+    && d.get('accountStatus','') in ['','invited'] && text(d.get('importSource',''),100) && text(d.get('skillSuggestionsSource',''),100)
     && d.createdAt is timestamp && d.updatedAt is timestamp;
   }
   match /users/{uid} {
-   allow read: if own(uid) || admin();
+   allow read: if own(uid);
    allow create: if own(uid) && validProfile(request.resource.data)
+    && !request.resource.data.keys().hasAny(['accountStatus','importSource','skillSuggestionsSource'])
     && request.resource.data.email == request.auth.token.email
     && request.resource.data.createdAt == request.time && changedTime();
    allow update: if own(uid) && validProfile(request.resource.data)
+    && request.resource.data.get('accountStatus','') == resource.data.get('accountStatus','')
+    && request.resource.data.get('importSource','') == resource.data.get('importSource','')
+    && request.resource.data.get('skillSuggestionsSource','') == resource.data.get('skillSuggestionsSource','')
     && request.resource.data.email == resource.data.email
     && request.resource.data.createdAt == resource.data.createdAt && changedTime();
    allow delete: if false;

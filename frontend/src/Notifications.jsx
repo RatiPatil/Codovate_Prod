@@ -91,7 +91,7 @@ function NotificationScreen({ manage }) {
         >
           <h2>Send a student notification</h2>
           <p>
-            Use a student ID from the directory. For public news, publish a
+            Use a student ID shared by the student. For public news, publish a
             platform update.
           </p>
           <fieldset disabled={busy || !configured}>
@@ -217,11 +217,7 @@ export function AdminOverview({ open }) {
   const sections = [
     ["listings", "Opportunities", "Edit, publish and close listings."],
     ["applications", "Applications", "Review submissions and update outcomes."],
-    [
-      "students",
-      "Student directory",
-      "Find student profiles and notification recipients.",
-    ],
+    ["students", "Student directory", "Review the student privacy policy."],
     [
       "notifications",
       "Notifications",
