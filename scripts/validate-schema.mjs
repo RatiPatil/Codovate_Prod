@@ -42,7 +42,7 @@ export function validateDocument(collection, id, data) {
     collection === "conversations" &&
     (data.kind === "direct"
       ? id !== "dm_" + data.connectionId
-      : !data.members?.includes(data.ownerId))
+      : !Array.isArray(data.members) || !data.members.includes(data.ownerId))
   )
     errors.push("Conversation identity or owner membership is invalid.");
   if (collection === "publicStats" && id !== "community")

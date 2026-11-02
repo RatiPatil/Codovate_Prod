@@ -138,3 +138,44 @@ test("resume links support applications without uploaded files", () => {
     false,
   );
 });
+
+test("discovery schema excludes private contact fields", () => {
+  const row = examples.memberProfiles[0];
+  for (const field of ["email", "mobile", "resumePath", "bio"])
+    assert.equal(
+      validateDocument("memberProfiles", row.id, {
+        ...row.data,
+        [field]: "private",
+      }).valid,
+      false,
+    );
+});
+test("malformed group membership returns validation errors without throwing", () => {
+  const row = examples.conversations[0];
+  for (const members of [{}, null, "invalid", []])
+    assert.equal(
+      validateDocument("conversations", row.id, { ...row.data, members }).valid,
+      false,
+    );
+  assert.equal(
+    validateDocument("conversations", row.id, {
+      ...row.data,
+      members: ["someone-else"],
+    }).valid,
+    false,
+  );
+});
+test("connection and invitation identities cannot be substituted", () => {
+  const c = examples.connections[0],
+    i = examples.groupInvites[0];
+  assert.equal(validateDocument("connections", "wrong", c.data).valid, false);
+  assert.equal(
+    validateDocument("connections", c.id, {
+      ...c.data,
+      status: "blocked",
+      blockedBy: "outsider",
+    }).valid,
+    false,
+  );
+  assert.equal(validateDocument("groupInvites", "wrong", i.data).valid, false);
+});
