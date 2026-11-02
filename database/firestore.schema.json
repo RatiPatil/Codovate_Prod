@@ -1096,6 +1096,141 @@
         }
       },
       "additionalProperties": false
+    },
+    "placementContent": {
+      "type": "object",
+      "required": [
+        "parentId",
+        "title",
+        "summary",
+        "body",
+        "sourceUrl",
+        "createdBy",
+        "sectionId",
+        "kind",
+        "status",
+        "createdAt",
+        "updatedAt"
+      ],
+      "properties": {
+        "parentId": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_-]*$"
+        },
+        "title": {
+          "type": "string",
+          "maxLength": 140,
+          "minLength": 1
+        },
+        "summary": {
+          "type": "string",
+          "maxLength": 600
+        },
+        "body": {
+          "type": "string",
+          "maxLength": 40000
+        },
+        "sourceUrl": {
+          "type": "string",
+          "maxLength": 500,
+          "pattern": "^(https://[^ /]+.*)?$"
+        },
+        "createdBy": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "sectionId": {
+          "enum": [
+            "aptitude",
+            "business-analysis",
+            "cloud-computing",
+            "cold-email",
+            "cs-fundamentals",
+            "dsa",
+            "dbms",
+            "dsa-shared",
+            "placement",
+            "python-ai",
+            "resume-templates",
+            "complete-preparation",
+            "aptitude-roadmap",
+            "github-resources",
+            "youtube-playlists",
+            "civic-sense",
+            "final-year-projects",
+            "startup",
+            "hr-interviews",
+            "leetcode-resources",
+            "interview-150",
+            "documentation",
+            "career-portals",
+            "hackathons"
+          ]
+        },
+        "kind": {
+          "enum": [
+            "folder",
+            "article"
+          ]
+        },
+        "status": {
+          "enum": [
+            "draft",
+            "published"
+          ]
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "folder"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "body": {
+                "const": ""
+              },
+              "sourceUrl": {
+                "const": ""
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "article"
+              },
+              "status": {
+                "const": "published"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "body": {
+                "minLength": 1,
+                "type": "string"
+              }
+            }
+          }
+        }
+      ]
     }
   }
 }

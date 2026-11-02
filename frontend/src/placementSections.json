@@ -1,0 +1,122 @@
+[
+  {
+    "id": "aptitude",
+    "title": "Aptitude",
+    "group": "Foundations"
+  },
+  {
+    "id": "business-analysis",
+    "title": "Business Analysis, Data Analytics, and Project Management Resources",
+    "group": "Career tracks"
+  },
+  {
+    "id": "cloud-computing",
+    "title": "Cloud Computing Resources",
+    "group": "Career tracks"
+  },
+  {
+    "id": "cold-email",
+    "title": "Cold email templates",
+    "group": "Applications"
+  },
+  {
+    "id": "cs-fundamentals",
+    "title": "CS Fundamentals (Lets Code)",
+    "group": "Technical preparation"
+  },
+  {
+    "id": "dsa",
+    "title": "Data Structures and Algorithms",
+    "group": "Technical preparation"
+  },
+  {
+    "id": "dbms",
+    "title": "DBMS",
+    "group": "Technical preparation"
+  },
+  {
+    "id": "dsa-shared",
+    "title": "DSA Common To Share All",
+    "group": "Technical preparation"
+  },
+  {
+    "id": "placement",
+    "title": "Placement",
+    "group": "Applications"
+  },
+  {
+    "id": "python-ai",
+    "title": "Python Artificial Intelligence",
+    "group": "Career tracks"
+  },
+  {
+    "id": "resume-templates",
+    "title": "Resume Templates",
+    "group": "Applications"
+  },
+  {
+    "id": "complete-preparation",
+    "title": "Complete Placement Preparation Resources",
+    "group": "Foundations"
+  },
+  {
+    "id": "aptitude-roadmap",
+    "title": "Aptitude Roadmap 2026 | Crack Placement Aptitude Tests",
+    "group": "Foundations"
+  },
+  {
+    "id": "github-resources",
+    "title": "Awesome GitHub Repositories for Developers",
+    "group": "Developer resources"
+  },
+  {
+    "id": "youtube-playlists",
+    "title": "Awesome YouTube Playlists",
+    "group": "Developer resources"
+  },
+  {
+    "id": "civic-sense",
+    "title": "Civic Sense in India",
+    "group": "Career skills"
+  },
+  {
+    "id": "final-year-projects",
+    "title": "Final Year Projects",
+    "group": "Career skills"
+  },
+  {
+    "id": "startup",
+    "title": "How to Build a Startup from Scratch",
+    "group": "Career skills"
+  },
+  {
+    "id": "hr-interviews",
+    "title": "HR Interview Questions",
+    "group": "Applications"
+  },
+  {
+    "id": "leetcode-resources",
+    "title": "LeetCode resources",
+    "group": "Technical preparation"
+  },
+  {
+    "id": "interview-150",
+    "title": "LeetCode Top Interview 150",
+    "group": "Technical preparation"
+  },
+  {
+    "id": "documentation",
+    "title": "List of Official Documentation",
+    "group": "Developer resources"
+  },
+  {
+    "id": "career-portals",
+    "title": "Top Companies Career Portals \u2014 Direct Hiring Links",
+    "group": "Applications"
+  },
+  {
+    "id": "hackathons",
+    "title": "Top Hackathons for College Students",
+    "group": "Career skills"
+  }
+]

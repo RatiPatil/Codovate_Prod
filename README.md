@@ -138,3 +138,7 @@ Open `/resume` for three editable templates and browser Print → Save as PDF. E
 ### Private student onboarding
 
 Use the trusted XLSX importer described in [docs/STUDENT_IMPORT.md](docs/STUDENT_IMPORT.md). Dry-run is the default. Imported profiles receive private, unconfirmed branch-skill suggestions and discovery remains off. Student profiles are now owner-only, including against browser admin clients; deploy those rules before importing. Real student spreadsheets/contact details are never checked into source or bundled into the application.
+
+### Placement Preparation
+
+Open `/placement` for all 24 source sections, grouped by learning goal. Administration → Placement preparation manages nested folders and readable articles with draft/published visibility. No Drive materials are imported automatically. See [docs/PLACEMENT_PREPARATION.md](docs/PLACEMENT_PREPARATION.md) for the Firestore contract, publishing workflow, limits and deployment commands.

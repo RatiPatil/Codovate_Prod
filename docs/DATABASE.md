@@ -115,3 +115,7 @@ Profiles may include optional `resumeUrl` (empty or HTTPS, maximum 500 character
 ## Private imported profiles
 
 The browser `users/{uid}` policy is owner-only, including against admin clients. Optional private fields: mobile (empty or +91 followed by a valid-looking Indian mobile number), taluka, program, suggestedSkills, skillSuggestionsSource, accountStatus, discoveryEnabled, mobileVerified and importSource. Imported accounts use invited status, discovery=false, mobileVerified=false and skills=[]; branch defaults are explicitly unconfirmed suggestedSkills. Trusted provenance cannot be rewritten by browser clients. No import creates public directory/project/team documents. See [STUDENT_IMPORT.md](STUDENT_IMPORT.md).
+
+### Placement content
+
+`placementContent` stores section IDs, immutable folder parents, article text, source attribution, draft/published visibility and server timestamps. Only verified administrators write; published lessons are public, drafts are admin-only. The 24 section IDs are defined in `frontend/src/placementSections.json`. See [PLACEMENT_PREPARATION.md](PLACEMENT_PREPARATION.md). No student or reward data is added by this module.
