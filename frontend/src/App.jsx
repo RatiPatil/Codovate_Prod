@@ -93,6 +93,8 @@ import { Projects, Teams, ProjectDetails } from "./Community";
 
 import { Mentoring, BookingAdmin, Updates } from "./Growth";
 import { Notifications, NotificationNav, AdminOverview } from "./Notifications";
+import { CuratedOpportunities } from "./CuratedOpportunities";
+import { ResumeBuilder } from "./ResumeBuilder";
 import { applicationDecision } from "./notificationData";
 
 const categoryIcons = {
@@ -240,6 +242,7 @@ function Footer() {
         <Link to="/explore">Explore</Link>
         <Link to="/profile">Your profile</Link>
         <Link to="/learn">Learning library</Link>
+        <Link to="/resume">Résumé templates</Link>
         <Link to="/projects">Project showcase</Link>
         <Link to="/updates">Updates</Link>
         {!configured && <Link to="/setup">Setup guide</Link>}
@@ -517,6 +520,9 @@ function Home({ catalog }) {
           </Empty>
         )}
       </section>
+      <div className="container">
+        <CuratedOpportunities compact />
+      </div>
       <CareerSpotlight />
       <section className="profile-invite container">
         <span className="invite-icon">
@@ -644,6 +650,8 @@ function Explore({ catalog }) {
               <option value="stipend">Highest stipend / prize</option>
             </select>
           </div>
+          <CuratedOpportunities filters={filters} />
+          <h2>Codovate listings</h2>
           <p className="result-count">
             {rows.length} {configured ? "matching loaded " : "sample "}
             opportunities
@@ -1218,6 +1226,7 @@ function Workspace({ children, title, subtitle }) {
           ["/saved", "Saved opportunities", Bookmark],
           ["/planner", "Career planner", CheckCircle2],
           ["/learn", "Learning library", GraduationCap],
+          ["/resume", "Résumé templates", FileText],
           ["/projects?view=mine", "My projects", Code2],
           ["/teams", "Find a team", Building2],
           ["/mentoring", "Mentor sessions", GraduationCap],
@@ -2385,6 +2394,17 @@ export default function App() {
                   <Notifications />
                 </Workspace>
               </Guard>
+            }
+          />
+          <Route
+            path="/resume"
+            element={
+              <Workspace
+                title="Résumé templates"
+                subtitle="Turn your education, skills and projects into a clear résumé."
+              >
+                <ResumeBuilder />
+              </Workspace>
             }
           />
           <Route path="/setup" element={<Setup />} />
