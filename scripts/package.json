@@ -20,6 +20,7 @@
     "test:import": "node --test student-import.test.mjs",
     "test:placement": "node --test placement-import.test.mjs",
     "test:directory": "node --test admin-directory.test.mjs",
-    "test:teams": "node test-team-rules.mjs"
+    "test:teams": "node test-team-rules.mjs",
+    "test:project-teams": "node test-project-teams.mjs"
   }
 }

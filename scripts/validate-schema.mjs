@@ -17,10 +17,59 @@ const validators = Object.fromEntries(
     ajv.compile({ $ref: schema.$id + "#/$defs/" + name }),
   ]),
 );
+function validProjectMembership(value) {
+  if (
+    !value ||
+    !Array.isArray(value.members) ||
+    !value.roles ||
+    typeof value.roles !== "object" ||
+    Array.isArray(value.roles)
+  )
+    return false;
+  return (
+    value.members.includes(value.ownerId) &&
+    value.members.length <= value.capacity &&
+    Object.keys(value.roles).length === value.members.length &&
+    Object.keys(value.roles).every((uid) => value.members.includes(uid)) &&
+    value.roles[value.ownerId] === "leader" &&
+    Object.values(value.roles).filter((v) => v === "leader").length === 1 &&
+    (value.lifecycle !== "archived" || value.recruitment === "closed")
+  );
+}
 export function validateDocument(collection, id, data) {
   const validate = validators[collection];
   if (!validate) return { valid: false, errors: ["Unknown collection"] };
   const errors = [];
+  if (collection === "discoveryPreferences" && id !== data.uid)
+    errors.push("Discovery preferences must belong to their UID.");
+  if (
+    collection === "discoveryDismissals" &&
+    (id !== data.peerId || data.peerId === data.studentId)
+  )
+    errors.push("Dismissal identity is invalid.");
+  if (
+    ["projectTeamInvites", "projectTeamRequests"].includes(collection) &&
+    (id !== data.teamId + "_" + data.studentId ||
+      data.ownerId === data.studentId)
+  )
+    errors.push("Team entry identity is invalid.");
+  if (
+    collection === "teamListings" &&
+    (id !== data.teamId ||
+      data.memberCount > data.capacity ||
+      (data.lifecycle === "archived" && data.recruitment !== "closed"))
+  )
+    errors.push("Team listing identity or capacity is invalid.");
+  if (
+    ["projectTeams", "projectTeamSnapshot"].includes(collection) &&
+    !validProjectMembership(data)
+  )
+    errors.push("Team membership, roles or capacity is inconsistent.");
+  if (
+    collection === "projectTeamHistory" &&
+    !validProjectMembership(data.snapshot)
+  )
+    errors.push("History snapshot membership is invalid.");
   if (collection === "memberProfiles" && id !== data.uid)
     errors.push("Discovery ID must match uid.");
   if (
@@ -42,7 +91,9 @@ export function validateDocument(collection, id, data) {
     collection === "conversations" &&
     (data.kind === "direct"
       ? id !== "dm_" + data.connectionId
-      : !Array.isArray(data.members) || !data.members.includes(data.ownerId))
+      : data.kind === "team"
+        ? id !== data.teamId
+        : !Array.isArray(data.members) || !data.members.includes(data.ownerId))
   )
     errors.push("Conversation identity or owner membership is invalid.");
   if (collection === "publicStats" && id !== "community")

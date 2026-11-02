@@ -200,3 +200,76 @@
   font: inherit;
   width: 100%;
 }
+/* Layout additions inherit the existing palette, typography and controls. */
+.discovery-filters,
+.discovery-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin: 20px 0;
+}
+.discovery-filters label,
+.discovery-form label {
+  display: grid;
+  gap: 8px;
+}
+.discovery-filters input,
+.discovery-filters select,
+.discovery-form input,
+.discovery-form select,
+.discovery-form textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: white;
+  color: inherit;
+  font: inherit;
+}
+.discovery-form fieldset {
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 14px;
+  min-width: 0;
+}
+.discovery-form .hub-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0;
+}
+.discovery-form .hub-check input {
+  width: auto;
+}
+.peer-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.peer-card > h3,
+.peer-role {
+  text-align: center;
+  margin: 0;
+}
+.peer-card > .hub-avatar,
+.peer-card > img {
+  align-self: center;
+}
+.peer-card > img {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 50%;
+}
+.peer-card h4 {
+  margin: 8px 0;
+}
+.peer-card .hub-actions {
+  margin-top: auto;
+}
+@media (max-width: 600px) {
+  .discovery-filters,
+  .discovery-form {
+    grid-template-columns: 1fr;
+  }
+}

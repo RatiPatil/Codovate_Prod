@@ -1,6 +1,6 @@
 # Codovate collaboration and private data
 
-Open **Teams** after signing in to see the live recruiting board by default. **Find teammates** opens opt-in member discovery. The existing recruiting-team board is retained under **Recruiting teams**. The new module uses real Firebase snapshot listeners and writes, without a mock fallback in production.
+Open **Teams → My Teams** after signing in. The expanded model and history contracts are documented in [Teams data model](TEAMS_DATA_MODEL.md). Earlier recruiting boards and private workspaces remain accessible with their original records. The sections below describe the retained original collaboration workflow.
 
 ## Discovery and consent
 

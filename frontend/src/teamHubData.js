@@ -4,6 +4,7 @@ import {
   doc,
   query,
   where,
+  orderBy,
   limit,
   onSnapshot,
   runTransaction,
@@ -13,8 +14,14 @@ import {
 } from "firebase/firestore";
 import { auth, db } from "./firebase";
 import { withTimeout } from "./authSupport";
-export function useTeamFeed(path, uid, filters = [], size = 100) {
-  const key = JSON.stringify([path, uid, filters, size]);
+export function useTeamFeed(
+  path,
+  uid,
+  filters = [],
+  size = 100,
+  ordering = null,
+) {
+  const key = JSON.stringify([path, uid, filters, size, ordering]);
   const [state, setState] = useState({
     key: "",
     items: [],
@@ -49,7 +56,12 @@ export function useTeamFeed(path, uid, filters = [], size = 100) {
       where(field, op, value),
     );
     const stop = onSnapshot(
-      query(collection(db, path), ...constraints, limit(size)),
+      query(
+        collection(db, path),
+        ...constraints,
+        ...(ordering ? [orderBy(...ordering)] : []),
+        limit(size),
+      ),
       { includeMetadataChanges: true },
       (s) => {
         if (!s.metadata.fromCache || s.docs.length) clearTimeout(timer);
@@ -111,10 +123,15 @@ export function validatedPublicProfile(user, profile) {
 }
 export async function publishMember(user, profile) {
   if (!db) throw new Error("Connect Firebase first.");
-  await setDoc(
-    doc(db, "memberProfiles", user.uid),
-    validatedPublicProfile(user, profile),
-  );
+  await runTransaction(db, async (tx) => {
+    const pref = await tx.get(doc(db, "discoveryPreferences", user.uid));
+    tx.set(doc(db, "memberProfiles", user.uid), {
+      ...validatedPublicProfile(user, profile),
+      ...(pref.exists() && pref.data().shareDetails
+        ? { details: pref.data().details }
+        : {}),
+    });
+  });
 }
 export const hideMember = (uid) => deleteDoc(doc(db, "memberProfiles", uid));
 export async function connectMember(uid, target) {
