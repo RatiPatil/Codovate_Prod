@@ -36,6 +36,7 @@ jobs:
       - run: npm --prefix scripts run test:schema
       - run: npm --prefix scripts run test:import
       - run: npm --prefix scripts run test:placement
+      - run: npm --prefix scripts run test:directory
 
   security-rules:
     runs-on: ubuntu-latest

@@ -6,6 +6,7 @@ import {
 } from "@firebase/rules-unit-testing";
 import {
   doc,
+  writeBatch,
   setDoc,
   getDoc,
   updateDoc,
@@ -1749,6 +1750,115 @@ try {
         updatedAt: serverTimestamp(),
       }),
     ),
+  );
+  const aliceProfile = (
+    await getDoc(doc(alice.firestore(), "users", "alice"))
+  ).data();
+  const directory = {
+    uid: "alice",
+    fullName: aliceProfile.name,
+    joinedAt: aliceProfile.createdAt,
+    updatedAt: serverTimestamp(),
+  };
+  const directoryRef = doc(alice.firestore(), "adminUsers", "alice");
+  await check(
+    "owner can sync name-only directory entry",
+    assertSucceeds(setDoc(directoryRef, directory)),
+  );
+  await check(
+    "administrator can read user names",
+    assertSucceeds(getDoc(doc(admin.firestore(), "adminUsers", "alice"))),
+  );
+  await check(
+    "administrator can list user names",
+    assertSucceeds(getDocs(collection(admin.firestore(), "adminUsers"))),
+  );
+  await check(
+    "student cannot enumerate user names",
+    assertFails(getDocs(collection(alice.firestore(), "adminUsers"))),
+  );
+  await check(
+    "student cannot read another name entry",
+    assertFails(getDoc(doc(bob.firestore(), "adminUsers", "alice"))),
+  );
+  await check(
+    "guest cannot enumerate user names",
+    assertFails(getDocs(collection(guest.firestore(), "adminUsers"))),
+  );
+  await check(
+    "directory rejects contact fields",
+    assertFails(
+      setDoc(directoryRef, { ...directory, email: "private@example.com" }),
+    ),
+  );
+  await check(
+    "directory rejects mobile fields",
+    assertFails(
+      setDoc(directoryRef, { ...directory, mobile: "+919876543210" }),
+    ),
+  );
+  await check(
+    "directory name must match owner profile",
+    assertFails(
+      setDoc(directoryRef, { ...directory, fullName: "Not my profile name" }),
+    ),
+  );
+  await check(
+    "directory identity cannot be spoofed",
+    assertFails(setDoc(directoryRef, { ...directory, uid: "bob" })),
+  );
+  await check(
+    "administrator cannot alter another student name",
+    assertFails(
+      setDoc(doc(admin.firestore(), "adminUsers", "alice"), directory),
+    ),
+  );
+  const nameBatch = writeBatch(alice.firestore());
+  nameBatch.update(doc(alice.firestore(), "users", "alice"), {
+    name: "Alice Renamed",
+    updatedAt: serverTimestamp(),
+  });
+  nameBatch.set(directoryRef, {
+    ...directory,
+    fullName: "Alice Renamed",
+    updatedAt: serverTimestamp(),
+  });
+  await check(
+    "profile and directory name update atomically",
+    assertSucceeds(nameBatch.commit()),
+  );
+  await check(
+    "directory rejects arbitrary role grants",
+    assertFails(
+      updateDoc(directoryRef, { admin: true, updatedAt: serverTimestamp() }),
+    ),
+  );
+  await check(
+    "client cannot delete directory records",
+    assertFails(deleteDoc(directoryRef)),
+  );
+  const newcomer = env.authenticatedContext("directory-new", {
+    email: "directory-new@example.com",
+  });
+  const joinBatch = writeBatch(newcomer.firestore());
+  joinBatch.set(doc(newcomer.firestore(), "users", "directory-new"), {
+    ...profile,
+    name: "New Student",
+    email: "directory-new@example.com",
+    resumePath: "",
+    skills: [],
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+  joinBatch.set(doc(newcomer.firestore(), "adminUsers", "directory-new"), {
+    uid: "directory-new",
+    fullName: "New Student",
+    joinedAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+  await check(
+    "new signup profile and directory creation succeed in one batch",
+    assertSucceeds(joinBatch.commit()),
   );
   console.log(`${checks} Firebase security checks passed.`);
 } finally {

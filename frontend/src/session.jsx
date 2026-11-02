@@ -119,8 +119,10 @@ export function SessionProvider({ children }) {
         runTransaction(db, async (transaction) => {
           const existing = await transaction.get(profileRef);
           if (existing.exists()) return;
+          const fullName = name || current.displayName || "";
+          const createdAt = serverTimestamp();
           transaction.set(profileRef, {
-            name: name || current.displayName || "",
+            name: fullName,
             email: current.email || "",
             college: "",
             degree: "",
@@ -131,7 +133,13 @@ export function SessionProvider({ children }) {
             portfolio: "",
             resumePath: "",
             resumeUrl: "",
-            createdAt: serverTimestamp(),
+            createdAt,
+            updatedAt: serverTimestamp(),
+          });
+          transaction.set(doc(db, "adminUsers", current.uid), {
+            uid: current.uid,
+            fullName,
+            joinedAt: createdAt,
             updatedAt: serverTimestamp(),
           });
         }),
