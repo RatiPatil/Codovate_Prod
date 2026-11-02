@@ -130,3 +130,7 @@ Students can discover mentor sessions, request a place, track admin decisions, c
 ### Admin control centre and private notifications
 
 See [docs/ADMIN_PANEL.md](docs/ADMIN_PANEL.md) for module access, real admin provisioning, local-only fixed demo credentials and notification schema/access rules. Application and mentoring decisions atomically notify students. In-app notifications include a live unread indicator and private read/unread inbox; platform updates handle public broadcasts. The current theme and layout are preserved.
+
+### Résumé templates and official opportunity links
+
+Open `/resume` for three editable templates and browser Print → Save as PDF. Explore and the homepage now include a separate curated section linking to real employer/organizer listings. Sources, eligibility, freshness policy and maintenance are documented in [docs/RESUME_AND_REAL_OPPORTUNITIES.md](docs/RESUME_AND_REAL_OPPORTUNITIES.md). External applications happen on the original website; stale/expired curated records are hidden automatically. Theme, colours, shared styles and logo remain unchanged.

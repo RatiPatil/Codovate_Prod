@@ -14,7 +14,7 @@
   "scripts": {
     "test:rules": "node test-rules.mjs",
     "schema:check": "node validate-schema.mjs --examples",
-    "test:schema": "node --test schema.test.mjs",
+    "test:schema": "node --test schema.test.mjs curated-schema.test.mjs",
     "test:login": "node test-login-emulator.mjs"
   }
 }
