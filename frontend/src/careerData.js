@@ -7,6 +7,7 @@ import {
   limit,
   startAfter,
   getDocs,
+  onSnapshot,
   addDoc,
   doc,
   updateDoc,
@@ -89,7 +90,18 @@ export function useCareerPage(
   const [cursor, setCursor] = useState(null),
     [revision, setRevision] = useState(0);
   const [paging, setPaging] = useState({ key: "", cursor: null });
-  const key = [kind, uid || "", admin, scope, teamId, revision].join(":");
+  const [teamLimit, setTeamLimit] = useState({ scope: "", size: PAGE_SIZE });
+  const teamKey = [uid || "", admin, scope].join(":");
+  const shownTeams = teamLimit.scope === teamKey ? teamLimit.size : PAGE_SIZE;
+  const key = [
+    kind,
+    uid || "",
+    admin,
+    scope,
+    teamId,
+    revision,
+    kind === "teams" ? shownTeams : "",
+  ].join(":");
   const page = paging.key === key ? paging.cursor : null;
   useEffect(() => {
     let active = true;
@@ -146,6 +158,54 @@ export function useCareerPage(
       !admin
     )
       filters.push(where("status", "==", "published"));
+    if (kind === "teams") {
+      const timer = setTimeout(() => {
+        if (active)
+          setState((s) => ({
+            ...s,
+            loading: false,
+            error: { code: "app/data-timeout" },
+            more: false,
+          }));
+      }, 12000);
+      const stop = onSnapshot(
+        query(
+          collection(db, kind),
+          ...filters,
+          orderBy("createdAt", "desc"),
+          limit(shownTeams + 1),
+        ),
+        { includeMetadataChanges: true },
+        (snapshot) => {
+          if (!active) return;
+          const docs = snapshot.docs.slice(0, shownTeams);
+          if (!snapshot.metadata.fromCache || docs.length) clearTimeout(timer);
+          setState({
+            requestKey: key,
+            items: docs.map((d) => ({ ...d.data(), id: d.id })),
+            loading: snapshot.metadata.fromCache && docs.length === 0,
+            error: null,
+            more: snapshot.size > shownTeams,
+          });
+        },
+        (error) => {
+          clearTimeout(timer);
+          if (active)
+            setState({
+              requestKey: key,
+              items: [],
+              loading: false,
+              error,
+              more: false,
+            });
+        },
+      );
+      return () => {
+        active = false;
+        clearTimeout(timer);
+        stop();
+      };
+    }
     withTimeout(
       getDocs(
         query(
@@ -183,7 +243,7 @@ export function useCareerPage(
     return () => {
       active = false;
     };
-  }, [key, page, kind, uid, admin, scope, teamId]);
+  }, [key, page, kind, uid, admin, scope, teamId, shownTeams]);
   const visible =
     state.requestKey === key
       ? state
@@ -192,6 +252,10 @@ export function useCareerPage(
     ...visible,
     refresh: () => setRevision((n) => n + 1),
     loadMore: () => {
+      if (kind === "teams") {
+        setTeamLimit({ scope: teamKey, size: shownTeams + PAGE_SIZE });
+        return;
+      }
       if (cursor && !state.loading) setPaging({ key, cursor });
     },
   };

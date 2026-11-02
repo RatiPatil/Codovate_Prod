@@ -1,6 +1,6 @@
 # Codovate collaboration and private data
 
-Open **Teams → Find teammates** after signing in. The existing recruiting-team board is retained under **Recruiting teams**. The new module uses real Firebase snapshot listeners and writes, without a mock fallback in production.
+Open **Teams** after signing in to see the live recruiting board by default. **Find teammates** opens opt-in member discovery. The existing recruiting-team board is retained under **Recruiting teams**. The new module uses real Firebase snapshot listeners and writes, without a mock fallback in production.
 
 ## Discovery and consent
 
@@ -53,3 +53,5 @@ npx --yes firebase-tools@15.34.2 deploy --only "firestore:rules,firestore:indexe
 ```
 
 Wait for the conversations index to finish building. Sign in as two separate students in separate browser profiles. Opt both into discovery, send/accept a connection, send a message and verify it appears on the other account. Create a group, invite/accept, verify messages, then remove a member and verify access is denied. A third unrelated account must be denied access. Verify a recovery email with an account you control; production email delivery cannot be proven from local tests. No application records are seeded or imported by deployment.
+
+The recruiting board streams its entire loaded prefix (24 records initially, with live load-more). Empty cached results are not treated as confirmed empty database results; a timed-out read shows a retryable error. Group/member feeds distinguish missing indexes and denied rules from a genuine empty collection.

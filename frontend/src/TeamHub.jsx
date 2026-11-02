@@ -46,11 +46,11 @@ function FeedStatus({ feed }) {
 export function TeamHub() {
   const { user, profile } = useSession();
   const [params, setParams] = useSearchParams();
-  const tab = ["connections", "groups", "recruiting"].includes(
+  const tab = ["people", "connections", "groups", "recruiting"].includes(
     params.get("hub"),
   )
     ? params.get("hub")
-    : "people";
+    : "recruiting";
   const [size, setSize] = useState(48),
     [search, setSearch] = useState(""),
     [error, setError] = useState(""),
@@ -120,52 +120,54 @@ export function TeamHub() {
   if (!user) return null;
   return (
     <div className="team-hub">
-      <section className="panel hub-intro">
-        <span className="eyebrow">BUILD TOGETHER</span>
-        <h2>Good people. Shared ambition.</h2>
-        <p>
-          Find complementary skills, make real connections and collaborate in
-          private group chats.
-        </p>
-        <p className="hint">
-          Discovery shares only your name and confirmed skills. Your email,
-          mobile, résumé and private learning records stay hidden.
-        </p>
-        <div className="hub-actions">
-          <button
-            className="button secondary"
-            disabled={busy || !db}
-            onClick={() =>
-              act(
-                () =>
+      {tab !== "recruiting" && (
+        <section className="panel hub-intro">
+          <span className="eyebrow">BUILD TOGETHER</span>
+          <h2>Good people. Shared ambition.</h2>
+          <p>
+            Find complementary skills, make real connections and collaborate in
+            private group chats.
+          </p>
+          <p className="hint">
+            Discovery shares only your name and confirmed skills. Your email,
+            mobile, résumé and private learning records stay hidden.
+          </p>
+          <div className="hub-actions">
+            <button
+              className="button secondary"
+              disabled={busy || !db}
+              onClick={() =>
+                act(
+                  () =>
+                    myPublic
+                      ? hideMember(user.uid)
+                      : publishMember(user, profile),
                   myPublic
-                    ? hideMember(user.uid)
-                    : publishMember(user, profile),
-                myPublic
-                  ? "Your discovery profile is hidden."
-                  : "Your name and confirmed skills are now discoverable.",
-              )
-            }
-          >
-            {myPublic
-              ? "Hide my discovery profile"
-              : "Make my profile discoverable"}
-          </button>
-          <Link className="text-link" to="/profile">
-            Edit name & skills
-          </Link>
-        </div>
-      </section>
+                    ? "Your discovery profile is hidden."
+                    : "Your name and confirmed skills are now discoverable.",
+                )
+              }
+            >
+              {myPublic
+                ? "Hide my discovery profile"
+                : "Make my profile discoverable"}
+            </button>
+            <Link className="text-link" to="/profile">
+              Edit name & skills
+            </Link>
+          </div>
+        </section>
+      )}
       <div
         className="type-tabs hub-tabs"
         role="group"
         aria-label="Collaboration views"
       >
         {[
+          ["recruiting", "Discover teams"],
           ["people", "Find teammates"],
           ["connections", "Connections"],
           ["groups", "My groups"],
-          ["recruiting", "Recruiting teams"],
         ].map(([id, label]) => (
           <button
             key={id}
@@ -208,15 +210,18 @@ export function TeamHub() {
             />
           </label>
           <FeedStatus feed={people} />
-          {!people.loading && !people.error && !people.items.length && (
-            <div className="panel">
-              <h3>Be the first to connect.</h3>
-              <p>
-                Publish your discovery profile above. Members appear here only
-                after choosing to share their name and skills.
-              </p>
-            </div>
-          )}
+          {!people.loading &&
+            !people.error &&
+            !people.items.length &&
+            !people.cached && (
+              <div className="panel">
+                <h3>Be the first to connect.</h3>
+                <p>
+                  Publish your discovery profile above. Members appear here only
+                  after choosing to share their name and skills.
+                </p>
+              </div>
+            )}
           <div className="hub-people">
             {people.items
               .filter((p) =>
@@ -534,11 +539,14 @@ export function TeamHub() {
               </section>
             ))}
           </div>
-          {!groups.items.length && !groups.loading && (
-            <p className="panel">
-              Start a group or accept an invitation to build together.
-            </p>
-          )}
+          {!groups.items.length &&
+            !groups.loading &&
+            !groups.error &&
+            !groups.cached && (
+              <p className="panel">
+                Start a group or accept an invitation to build together.
+              </p>
+            )}
           {selected && (
             <TeamChat
               key={user.uid + selected}

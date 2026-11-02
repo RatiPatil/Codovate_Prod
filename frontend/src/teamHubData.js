@@ -23,9 +23,28 @@ export function useTeamFeed(path, uid, filters = [], size = 100) {
     cached: false,
   });
   useEffect(() => {
-    setState({ key, items: [], loading: !!db, error: "", cached: false });
+    setState({
+      key,
+      items: [],
+      loading: !!db && !!uid && !!path,
+      error: !db
+        ? "Firebase is not configured. Open setup to connect this application."
+        : "",
+      cached: false,
+    });
     if (!db || !uid || !path) return;
     let active = true;
+    const timer = setTimeout(() => {
+      if (active)
+        setState({
+          key,
+          items: [],
+          loading: false,
+          error:
+            "Could not confirm live records. Check your connection and reload.",
+          cached: false,
+        });
+    }, 12000);
     const constraints = filters.map(([field, op, value]) =>
       where(field, op, value),
     );
@@ -33,29 +52,36 @@ export function useTeamFeed(path, uid, filters = [], size = 100) {
       query(collection(db, path), ...constraints, limit(size)),
       { includeMetadataChanges: true },
       (s) => {
+        if (!s.metadata.fromCache || s.docs.length) clearTimeout(timer);
         if (active)
           setState({
             key,
             items: s.docs.map((d) => ({ id: d.id, ...d.data() })),
-            loading: false,
+            loading: s.metadata.fromCache && s.docs.length === 0,
             error: "",
             cached: s.metadata.fromCache,
           });
       },
-      () => {
+      (error) => {
+        clearTimeout(timer);
         if (active)
           setState({
             key,
             items: [],
             loading: false,
             error:
-              "Could not load live records. Check your connection and deployed rules.",
+              error.code === "failed-precondition"
+                ? "The required Firebase index is missing or still building. Deploy firestore:indexes and wait for it to become ready."
+                : error.code === "permission-denied"
+                  ? "Firebase denied this read. Deploy the latest firestore:rules, then sign out and sign in again."
+                  : "Could not load live records. Check your connection and try again.",
             cached: false,
           });
       },
     );
     return () => {
       active = false;
+      clearTimeout(timer);
       stop();
     };
   }, [key]);

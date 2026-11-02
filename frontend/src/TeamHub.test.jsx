@@ -81,7 +81,7 @@ it("shows only name and skills, filters loaded members and keeps publishing opt-
     },
   ];
   render(
-    <MemoryRouter>
+    <MemoryRouter initialEntries={["/teams?hub=people"]}>
       <TeamHub />
     </MemoryRouter>,
   );
@@ -112,6 +112,16 @@ it("accepts a real incoming connection and preserves recruiting module", async (
   await waitFor(() =>
     expect(fake.decision).toHaveBeenCalledWith("bob_alice", "accepted"),
   );
-  fireEvent.click(screen.getByRole("button", { name: "Recruiting teams" }));
+  fireEvent.click(screen.getByRole("button", { name: "Discover teams" }));
   expect(screen.getByText("Recruiting teams module")).toBeTruthy();
+});
+
+it("opens the existing team board by default instead of an empty member directory", () => {
+  render(
+    <MemoryRouter initialEntries={["/teams"]}>
+      <TeamHub />
+    </MemoryRouter>,
+  );
+  expect(screen.getByText("Recruiting teams module")).toBeTruthy();
+  expect(screen.queryByRole("searchbox")).toBeNull();
 });
