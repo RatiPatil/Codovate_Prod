@@ -93,7 +93,8 @@ import { Projects, Teams, ProjectDetails } from "./Community";
 
 import { Mentoring, BookingAdmin, Updates } from "./Growth";
 import { Notifications, NotificationNav, AdminOverview } from "./Notifications";
-import { CuratedOpportunities } from "./CuratedOpportunities";
+import { externalById } from "./externalCatalog";
+import { ExternalDetails } from "./ExternalDetails";
 import { ResumeBuilder } from "./ResumeBuilder";
 import { applicationDecision } from "./notificationData";
 
@@ -256,7 +257,8 @@ function PreviewBanner() {
     !configured && (
       <div className="preview-banner">
         <span>
-          <Sparkles size={14} /> Local preview · Sample listings
+          <Sparkles size={14} /> Firebase not connected · Official listings
+          available
         </span>
         <Link to="/setup">
           Setup <ArrowRight size={14} />
@@ -278,13 +280,13 @@ function Card({ item, saved = false, onSave }) {
           {
             {
               internship: "Internship",
-              job: "Fresher job",
+              job: "Job",
               competition: "Competition",
               hackathon: "Hackathon",
             }[item.type]
           }
         </span>
-        {onSave && (
+        {onSave && !item.external && (
           <button
             className={"save-button " + (saved ? "is-saved" : "")}
             aria-label={(saved ? "Unsave " : "Save ") + item.title}
@@ -315,15 +317,24 @@ function Card({ item, saved = false, onSave }) {
         ))}
       </div>
       <div className="card-deadline">
-        <span className="availability-dot" /> Applications open
+        <span className="availability-dot" />{" "}
+        {item.external ? "Check official availability" : "Applications open"}
       </div>
       <div className="card-bottom">
         <div>
-          <strong>{money(item.stipend)}</strong>
+          <strong>
+            {item.external
+              ? item.type === "hackathon"
+                ? "See prize rules"
+                : "Pay not stated"
+              : money(item.stipend)}
+          </strong>
           <small>
-            {["competition", "hackathon"].includes(item.type)
-              ? "Prize pool"
-              : "/ month"}
+            {item.external
+              ? "Official application"
+              : ["competition", "hackathon"].includes(item.type)
+                ? "Prize pool"
+                : "/ month"}
           </small>
         </div>
         <Link
@@ -341,7 +352,7 @@ function Home({ catalog }) {
   const [activeType, setActiveType] = useState("all");
   const navigate = useNavigate();
   const open = catalog.items.filter((o) => isOpen(o));
-  const featured = filterOpportunities(open, { type: activeType }).slice(0, 6);
+  const featured = filterOpportunities(open, { type: activeType });
   return (
     <div className="landing">
       <section className="intro container">
@@ -358,7 +369,7 @@ function Home({ catalog }) {
             </span>
           </h1>
           <p>
-            Internships, fresher jobs and challenges.
+            Internships, jobs and challenges.
             <br />
             One place to get started.
           </p>
@@ -497,13 +508,11 @@ function Home({ catalog }) {
               </button>
             ))}
           </div>
-          <span className="board-note">
-            {configured ? "Recently added" : "Preview listings"}
-          </span>
+          <span className="board-note">Recently added</span>
         </div>
-        {catalog.loading ? (
+        {catalog.loading && !featured.length ? (
           <Loading />
-        ) : catalog.error ? (
+        ) : catalog.error && !featured.length ? (
           <Notice>
             {errorMessage(catalog.error)}{" "}
             <button onClick={catalog.retry}>Retry</button>
@@ -514,12 +523,11 @@ function Home({ catalog }) {
               <Card key={o.id} item={o} />
             ))}
           </div>
-        ) : activeType === "competition" ? (
+        ) : (
           <Empty title="Nothing here just yet">
             Try another category or check back for new listings.
           </Empty>
-        ) : null}
-        {activeType !== "competition" && <CuratedOpportunities compact filters={{type:activeType}} />}
+        )}
       </section>
       <CareerSpotlight />
       <section className="profile-invite container">
@@ -648,11 +656,8 @@ function Explore({ catalog }) {
               <option value="stipend">Highest stipend / prize</option>
             </select>
           </div>
-          <CuratedOpportunities filters={filters} />
-          <h2>Codovate listings</h2>
           <p className="result-count">
-            {rows.length} {configured ? "matching loaded " : "sample "}
-            opportunities
+            {rows.length} matching loaded opportunities
           </p>
           {notice && (
             <Notice kind="info">
@@ -661,7 +666,7 @@ function Explore({ catalog }) {
           )}
           {catalog.loading && !catalog.items.length ? (
             <Loading />
-          ) : catalog.error ? (
+          ) : catalog.error && !rows.length ? (
             <Notice>
               {errorMessage(catalog.error)}{" "}
               <button onClick={catalog.retry}>Retry</button>
@@ -729,8 +734,9 @@ function Details({ catalog }) {
     setLoading(true);
     setError("");
     setSuccess(false);
-    if (!configured) {
-      setItem(catalog.items.find((o) => o.id === id) || null);
+    const external = externalById(id);
+    if (external || !configured) {
+      setItem(external || catalog.items.find((o) => o.id === id) || null);
       setLoading(false);
       return;
     }
@@ -769,6 +775,7 @@ function Details({ catalog }) {
     }
   }
   if (loading) return <Loading />;
+  if (item?.external) return <ExternalDetails item={item} />;
   if (!item)
     return (
       <div className="container section">

@@ -11,22 +11,22 @@ import {
   deleteDoc,
 } from "firebase/firestore";
 import { db, configured } from "./firebase";
-import { samples } from "./sample";
+import { mergeOpportunityCatalog } from "./externalCatalog";
 import { httpsLink } from "./communityData";
 import { isOpen } from "./domain";
 import { useCareerPage } from "./careerData";
 export function useOpportunities() {
   const page = useCareerPage("opportunities", null);
-  return configured
-    ? { ...page, retry: page.refresh }
-    : {
-        items: samples,
-        loading: false,
-        error: null,
-        more: false,
-        retry: page.refresh,
-        loadMore: page.loadMore,
-      };
+  const [now, setNow] = useState(Date.now);
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 60000);
+    return () => clearInterval(timer);
+  }, []);
+  return {
+    ...page,
+    items: mergeOpportunityCatalog(configured ? page.items : [], now),
+    retry: page.refresh,
+  };
 }
 export function useOwned(collectionName, uid) {
   const [state, setState] = useState({
@@ -56,6 +56,10 @@ export async function applyToOpportunity(
   opportunity,
   coverNote,
 ) {
+  if (opportunity?.external)
+    throw new Error(
+      "Apply through the official employer or organizer website.",
+    );
   if (!db || !user) throw new Error("Sign in first.");
   if (
     !profile?.name ||

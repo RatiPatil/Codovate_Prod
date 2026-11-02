@@ -81,3 +81,13 @@ it("keeps legacy uploaded resume applications working", async () => {
     }),
   );
 });
+it("external opportunities never create internal application submissions", async () => {
+  await expect(
+    applyToOpportunity(
+      { uid: "alice" },
+      {},
+      { id: "stripe-8031833", external: true },
+      "",
+    ),
+  ).rejects.toThrow("official");
+});

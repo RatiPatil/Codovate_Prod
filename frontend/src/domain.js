@@ -1,17 +1,21 @@
+import { externalAvailable } from "./externalCatalog";
 export const types = ["internship", "job", "competition", "hackathon"];
 export const typeLabel = {
   internship: "Internships",
-  job: "Fresher jobs",
+  job: "Jobs",
   competition: "Competitions",
   hackathon: "Hackathons",
 };
 export function deadlineMillis(item) {
+  if (item.external && !item.deadline) return Infinity;
   const value = item.closesAt ?? item.deadline;
   if (typeof value?.toMillis === "function") return value.toMillis();
   if (typeof value?.seconds === "number") return value.seconds * 1000;
   return Date.parse(value);
 }
 export function isOpen(item, now = Date.now()) {
+  if (item.external)
+    return item.status === "published" && externalAvailable(item, now);
   const deadline = deadlineMillis(item);
   return (
     item.status === "published" && Number.isFinite(deadline) && deadline > now
