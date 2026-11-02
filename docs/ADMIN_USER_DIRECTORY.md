@@ -34,3 +34,18 @@ Unchanged directory rows are skipped. Stale derived directory rows for deleted A
 The live UI listens to the directory, not directly to the privileged Auth list API. It deliberately labels its count as synced accounts. The listener initially reads all minimal name records so name-contains search and the current directory total are accurate; pagination limits rendered rows, not Firestore reads. At larger scales, a trusted search/count backend should replace that approach. Each new admin session/refresh reads the directory records and consumes Firestore read quota.
 
 No new Firebase billing plan, Functions, VPS or other database is required. Firebase Hosting/rules deployment and the first sync remain operator steps when development has no cloud credentials.
+
+## Public community count and admin summaries
+
+The home page reads only `publicStats/community` and labels its aggregate “registered members”, not active learners. No member names, email addresses or phones are public. Initialize/reconcile from the actual Firebase Authentication total (the reported 1,479 is not hardcoded):
+
+```powershell
+node scripts/publish-community-count.mjs --project=codovate-dev
+node scripts/publish-community-count.mjs --project=codovate-dev --apply
+```
+
+New in-app profiles increment the initialized counter in their creation transaction. Retries/existing profiles do not increment again. Rules permit exactly +1 only with the owner's first profile creation; clients cannot initialize, reset or delete the counter. The trusted script uses a write precondition to avoid overwriting concurrent increments. Re-run after bulk imports, Console account deletions, or overlapping first initialization. Auth registrations whose profile creation failed are counted when the reconciliation script runs. Counts include administrator/test/invited accounts, so “registered members” is deliberate. No count is fabricated before initialization or on read failure.
+
+Admin overview has live cards for synced accounts, opportunities, applications and placement items. Cards open the corresponding modules; loading, cached and error states are explicit. These listeners read the corresponding collections while that admin screen is open and consume Firestore reads.
+
+Placement navigation remains visible to guests. Opening `/placement` (including direct lesson URLs) redirects to login and preserves the destination. Published placement documents now require authentication in Firestore rules. Starter lesson text is no longer bundled in the public frontend; import it with the existing trusted placement importer. Previously downloaded/offline copies cannot be revoked.

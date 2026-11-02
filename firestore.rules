@@ -60,6 +60,19 @@ service cloud.firestore {
     && request.resource.data.createdAt == resource.data.createdAt && changedTime();
    allow delete: if false;
   }
+  match /publicStats/{id} {
+   allow get: if id == 'community';
+   allow list,create,delete: if false;
+   allow update: if id == 'community' && signedIn()
+    && request.resource.data.keys().hasAll(['registeredStudents','updatedAt'])
+    && request.resource.data.keys().hasOnly(['registeredStudents','updatedAt'])
+    && resource.data.registeredStudents is int
+    && request.resource.data.registeredStudents == resource.data.registeredStudents + 1
+    && !exists(/databases/$(database)/documents/users/$(request.auth.uid))
+    && existsAfter(/databases/$(database)/documents/users/$(request.auth.uid))
+    && getAfter(/databases/$(database)/documents/users/$(request.auth.uid)).data.createdAt == request.time
+    && changedTime();
+  }
   match /adminUsers/{uid} {
    allow get: if admin() || own(uid);
    allow list: if admin();
@@ -368,7 +381,7 @@ service cloud.firestore {
     && get(/databases/$(database)/documents/placementContent/$(d.parentId)).data.sectionId == d.sectionId);
   }
   match /placementContent/{id} {
-   allow read: if resource.data.status == 'published' || admin();
+   allow read: if (signedIn() && resource.data.status == 'published') || admin();
    allow create: if admin() && validPlacement(request.resource.data) && placementParent(request.resource.data,id)
     && request.resource.data.createdBy == request.auth.uid && request.resource.data.createdAt == request.time && changedTime();
    allow update: if admin() && validPlacement(request.resource.data)

@@ -1,3 +1,4 @@
+import { AdminLiveSummary } from "./AdminLiveSummary";
 import { useRef, useState } from "react";
 import { Link, NavLink, useSearchParams } from "react-router-dom";
 import { Bell } from "lucide-react";
@@ -251,6 +252,7 @@ export function AdminOverview({ open }) {
   ];
   return (
     <>
+      <AdminLiveSummary open={open} />
       <section className="panel community-form">
         <h2>Codovate control centre</h2>
         <p>Signed in as {user?.email} · Verified administrator</p>

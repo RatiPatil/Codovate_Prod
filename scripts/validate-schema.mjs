@@ -21,6 +21,7 @@ export function validateDocument(collection, id, data) {
   const validate = validators[collection];
   if (!validate) return { valid: false, errors: ["Unknown collection"] };
   const errors = [];
+  if (collection === "publicStats" && id !== "community") errors.push("Public aggregate ID must be community.");
   if (collection === "adminUsers" && id !== data.uid)
     errors.push("Directory ID must match uid.");
   if (

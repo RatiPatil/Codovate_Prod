@@ -119,8 +119,14 @@ export function SessionProvider({ children }) {
         runTransaction(db, async (transaction) => {
           const existing = await transaction.get(profileRef);
           if (existing.exists()) return;
+          const statsRef = doc(db, "publicStats", "community");
+          const stats = await transaction.get(statsRef);
           const fullName = name || current.displayName || "";
           const createdAt = serverTimestamp();
+          if (stats.exists()) transaction.update(statsRef, {
+            registeredStudents: stats.data().registeredStudents + 1,
+            updatedAt: serverTimestamp(),
+          });
           transaction.set(profileRef, {
             name: fullName,
             email: current.email || "",

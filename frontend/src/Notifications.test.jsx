@@ -18,7 +18,7 @@ vi.mock("./session", () => ({
     user: { uid: "operator", email: "admin@example.test" },
   }),
 }));
-vi.mock("./firebase", () => ({ configured: true }));
+vi.mock("./firebase", () => ({ configured: true, db: null }));
 vi.mock("./careerData", () => ({
   useCareerPage: () => ({
     items: state.items,

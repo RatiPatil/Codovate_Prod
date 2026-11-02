@@ -1472,8 +1472,8 @@ try {
     ),
   );
   await check(
-    "guest reads published placement folder",
-    assertSucceeds(
+    "guest cannot read published placement folder",
+    assertFails(
       getDoc(doc(guest.firestore(), "placementContent", "di-folder")),
     ),
   );
@@ -1492,8 +1492,8 @@ try {
     ),
   );
   await check(
-    "guest queries published section",
-    assertSucceeds(
+    "guest cannot query published section",
+    assertFails(
       getDocs(
         query(
           collection(guest.firestore(), "placementContent"),
@@ -1840,7 +1840,14 @@ try {
   const newcomer = env.authenticatedContext("directory-new", {
     email: "directory-new@example.com",
   });
+  await env.withSecurityRulesDisabled(async c => {
+    await setDoc(doc(c.firestore(), "publicStats", "community"), { registeredStudents: 1479, updatedAt: serverTimestamp() });
+  });
+  await check("guest can read aggregate only", assertSucceeds(getDoc(doc(guest.firestore(), "publicStats", "community"))));
+  await check("guest cannot inflate aggregate", assertFails(updateDoc(doc(guest.firestore(), "publicStats", "community"), { registeredStudents: 9999, updatedAt: serverTimestamp() })));
+  await check("existing student cannot increment again", assertFails(updateDoc(doc(alice.firestore(), "publicStats", "community"), { registeredStudents: 1480, updatedAt: serverTimestamp() })));
   const joinBatch = writeBatch(newcomer.firestore());
+  joinBatch.update(doc(newcomer.firestore(), "publicStats", "community"), { registeredStudents: 1480, updatedAt: serverTimestamp() });
   joinBatch.set(doc(newcomer.firestore(), "users", "directory-new"), {
     ...profile,
     name: "New Student",
@@ -1860,6 +1867,8 @@ try {
     "new signup profile and directory creation succeed in one batch",
     assertSucceeds(joinBatch.commit()),
   );
+  await check("repeat registration cannot inflate aggregate", assertFails(updateDoc(doc(newcomer.firestore(), "publicStats", "community"), { registeredStudents: 1481, updatedAt: serverTimestamp() })));
+  await check("signed-in student reads placement content", assertSucceeds(getDoc(doc(alice.firestore(), "placementContent", "charts"))));
   console.log(`${checks} Firebase security checks passed.`);
 } finally {
   await env.cleanup();
