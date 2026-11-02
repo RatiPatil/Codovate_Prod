@@ -49,6 +49,7 @@ import {
   collection,
   doc,
   getDoc,
+  writeBatch,
   getDocsFromServer,
   setDoc,
   updateDoc,
@@ -1559,11 +1560,21 @@ function Profile() {
         });
       }
       if (!profile) await createProfile(user, data.name);
-      await updateDoc(doc(db, "users", user.uid), {
+      const currentProfile =
+        profile || (await getDoc(doc(db, "users", user.uid))).data();
+      const batch = writeBatch(db);
+      batch.update(doc(db, "users", user.uid), {
         ...data,
         resumePath,
         updatedAt: serverTimestamp(),
       });
+      batch.set(doc(db, "adminUsers", user.uid), {
+        uid: user.uid,
+        fullName: data.name,
+        joinedAt: currentProfile.createdAt,
+        updatedAt: serverTimestamp(),
+      });
+      await batch.commit();
       setFile(null);
       setMessage("Your profile has been saved.");
     } catch (e) {

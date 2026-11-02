@@ -21,6 +21,8 @@ export function validateDocument(collection, id, data) {
   const validate = validators[collection];
   if (!validate) return { valid: false, errors: ["Unknown collection"] };
   const errors = [];
+  if (collection === "adminUsers" && id !== data.uid)
+    errors.push("Directory ID must match uid.");
   if (
     collection === "placementProgress" &&
     (id !== data.studentId + "_" + data.lessonId ||

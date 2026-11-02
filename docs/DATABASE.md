@@ -121,3 +121,5 @@ The browser `users/{uid}` policy is owner-only, including against admin clients.
 `placementContent` stores section IDs, immutable folder parents, article text, source attribution, draft/published visibility and server timestamps. Only verified administrators write; published lessons are public, drafts are admin-only. The 24 section IDs are defined in `frontend/src/placementSections.json`. See [PLACEMENT_PREPARATION.md](PLACEMENT_PREPARATION.md). No student or reward data is added by this module.
 
 Aptitude adds optional validated checkpoint metadata on placementContent and a private placementProgress collection for owner-only completion, notes, bookmarks and self-practice results. See [APTITUDE_LIBRARY.md](APTITUDE_LIBRARY.md) for exact fields and safe content import. Progress is never an authoritative reward ledger.
+
+`adminUsers` is a minimal administrator-only index of account UID, full name and join/update timestamps. Owner writes must match the private profile; students cannot list the index and contact/role fields are rejected. See [ADMIN_USER_DIRECTORY.md](ADMIN_USER_DIRECTORY.md).

@@ -96,7 +96,7 @@ describe("session and profile integrity", () => {
       </SessionProvider>,
     );
     fireEvent.click(screen.getByRole("button", { name: "Create profile" }));
-    await waitFor(() => expect(state.set).toHaveBeenCalledOnce());
+    await waitFor(() => expect(state.set).toHaveBeenCalledTimes(2));
     expect(state.set.mock.calls[0][0]).toEqual({
       col: "users",
       id: "student-id",

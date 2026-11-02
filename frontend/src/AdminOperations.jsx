@@ -1,3 +1,4 @@
+import { AdminUserDirectory } from "./AdminUserDirectory";
 import { useState } from "react";
 import { ShieldCheck, Users, ExternalLink, Copy, Activity } from "lucide-react";
 import {
@@ -46,6 +47,7 @@ export function AdminAccounts() {
   }
   return (
     <div className="admin-operations">
+      <AdminUserDirectory selectUser={setUid} />
       <section className="panel admin-operations-hero">
         <div className="admin-section-icon">
           <Users size={24} />
@@ -114,7 +116,7 @@ export function AdminAccounts() {
           </a>
         </section>
       </div>
-      <section className="panel admin-role-tool">
+      <section id="admin-access-tools" className="panel admin-role-tool">
         <h3>
           <ShieldCheck size={20} /> Administrator access
         </h3>

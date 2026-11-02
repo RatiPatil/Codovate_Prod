@@ -60,6 +60,19 @@ service cloud.firestore {
     && request.resource.data.createdAt == resource.data.createdAt && changedTime();
    allow delete: if false;
   }
+  match /adminUsers/{uid} {
+   allow get: if admin() || own(uid);
+   allow list: if admin();
+   allow create,update: if own(uid)
+    && request.resource.data.keys().hasAll(['uid','fullName','joinedAt','updatedAt'])
+    && request.resource.data.keys().hasOnly(['uid','fullName','joinedAt','updatedAt'])
+    && request.resource.data.uid == uid && text(request.resource.data.fullName,200)
+    && existsAfter(/databases/$(database)/documents/users/$(uid))
+    && request.resource.data.fullName == getAfter(/databases/$(database)/documents/users/$(uid)).data.name
+    && request.resource.data.joinedAt == getAfter(/databases/$(database)/documents/users/$(uid)).data.createdAt
+    && request.resource.data.joinedAt is timestamp && changedTime();
+   allow delete: if false;
+  }
   function validListing(d) {
    return d.keys().hasAll(['title','organization','type','category','mode','location','duration','stipend','skills','deadline','closesAt','description','responsibilities','eligibility','status','createdBy','createdAt','updatedAt'])
     && d.keys().hasOnly(['title','organization','type','category','mode','location','duration','stipend','skills','deadline','closesAt','description','responsibilities','eligibility','status','createdBy','createdAt','updatedAt'])

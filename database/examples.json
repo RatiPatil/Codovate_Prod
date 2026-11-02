@@ -266,5 +266,16 @@
         "updatedAt": "2026-11-02T00:00:00Z"
       }
     }
+  ],
+  "adminUsers": [
+    {
+      "id": "example-student",
+      "data": {
+        "uid": "example-student",
+        "fullName": "Example Student",
+        "joinedAt": "2026-11-02T00:00:00Z",
+        "updatedAt": "2026-11-02T00:00:00Z"
+      }
+    }
   ]
 }

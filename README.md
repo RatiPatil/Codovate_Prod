@@ -150,3 +150,7 @@ Aptitude includes six categories, 33 short lessons, worked examples, 35 practice
 ### Dedicated master administration
 
 Verified administrators now use a separate `/admin` layout with grouped module navigation, user-account/access tools and a live database connection check. The no-billing setup keeps Auth account operations in Firebase Console or the trusted operator tool. Student navigation and public headers remain on student/public pages; existing privacy and role protections remain unchanged.
+
+### Live admin user directory
+
+Administration → User accounts lists names and UIDs with live updates, search, pagination and a synced registered-account count. Run the one-time directory sync for existing/imported users. See [docs/ADMIN_USER_DIRECTORY.md](docs/ADMIN_USER_DIRECTORY.md) for setup and the read-only command that counts current Firebase Authentication accounts.
