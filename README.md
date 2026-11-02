@@ -154,3 +154,5 @@ Verified administrators now use a separate `/admin` layout with grouped module n
 ### Live admin user directory
 
 Administration → User accounts lists names and UIDs with live updates, search, pagination and a synced registered-account count. Run the one-time directory sync for existing/imported users. See [docs/ADMIN_USER_DIRECTORY.md](docs/ADMIN_USER_DIRECTORY.md) for setup and the read-only command that counts current Firebase Authentication accounts.
+
+Teams now includes opt-in name/skill discovery, accepted connections, private direct chat and invited project groups. See [collaboration data and deployment](docs/TEAM_COLLABORATION.md) for storage, permissions, limits and account recovery.

@@ -21,7 +21,32 @@ export function validateDocument(collection, id, data) {
   const validate = validators[collection];
   if (!validate) return { valid: false, errors: ["Unknown collection"] };
   const errors = [];
-  if (collection === "publicStats" && id !== "community") errors.push("Public aggregate ID must be community.");
+  if (collection === "memberProfiles" && id !== data.uid)
+    errors.push("Discovery ID must match uid.");
+  if (
+    collection === "connections" &&
+    (id !== data.fromId + "_" + data.toId ||
+      data.fromId === data.toId ||
+      (data.status === "blocked"
+        ? ![data.fromId, data.toId].includes(data.blockedBy)
+        : data.blockedBy !== ""))
+  )
+    errors.push("Connection identity or blocking state is invalid.");
+  if (
+    collection === "groupInvites" &&
+    (id !== data.groupId + "_" + data.studentId ||
+      data.ownerId === data.studentId)
+  )
+    errors.push("Invitation identity is invalid.");
+  if (
+    collection === "conversations" &&
+    (data.kind === "direct"
+      ? id !== "dm_" + data.connectionId
+      : !Array.isArray(data.members) || !data.members.includes(data.ownerId))
+  )
+    errors.push("Conversation identity or owner membership is invalid.");
+  if (collection === "publicStats" && id !== "community")
+    errors.push("Public aggregate ID must be community.");
   if (collection === "adminUsers" && id !== data.uid)
     errors.push("Directory ID must match uid.");
   if (

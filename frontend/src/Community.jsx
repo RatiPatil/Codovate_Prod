@@ -659,8 +659,7 @@ function TeamRequests({ team, incoming = false, manage = false, onClose }) {
             )}
             {r.status === "accepted" && (
               <p className="hint">
-                The owner accepted this introduction. Codovate does not yet
-                include team chat or a shared project workspace.
+                The owner accepted this introduction. Open My groups in the collaboration hub to create a private workspace and invite teammates.
               </p>
             )}
           </article>

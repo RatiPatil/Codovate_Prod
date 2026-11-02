@@ -19,6 +19,7 @@
     "test:login": "node test-login-emulator.mjs",
     "test:import": "node --test student-import.test.mjs",
     "test:placement": "node --test placement-import.test.mjs",
-    "test:directory": "node --test admin-directory.test.mjs"
+    "test:directory": "node --test admin-directory.test.mjs",
+    "test:teams": "node test-team-rules.mjs"
   }
 }

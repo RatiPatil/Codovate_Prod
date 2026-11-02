@@ -43,13 +43,12 @@ import {
   signInWithPopup,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
-  sendPasswordResetEmail,
 } from "firebase/auth";
 import {
   collection,
   doc,
   getDoc,
-  writeBatch,
+  runTransaction,
   getDocsFromServer,
   setDoc,
   updateDoc,
@@ -96,6 +95,8 @@ import { AdminAccounts, AdminSystem } from "./AdminOperations";
 import { AdminLayout, adminModule } from "./AdminLayout";
 import { Placement } from "./Placement";
 import { CommunityCount } from "./CommunityCount";
+import { TeamHub } from "./TeamHub";
+import { PasswordRecovery } from "./PasswordRecovery";
 import { Mentoring, BookingAdmin, Updates } from "./Growth";
 import { Notifications, NotificationNav, AdminOverview } from "./Notifications";
 import { externalById } from "./externalCatalog";
@@ -1085,30 +1086,15 @@ function AuthPage({ signup = false }) {
       setBusy(false);
     }
   }
-  async function reset() {
-    if (!configured || busy) return;
-    const email = document.querySelector("#auth-email")?.value;
-    if (!email) {
-      setError("Enter your email above first.");
-      return;
-    }
-    setBusy(true);
-    setError("");
-    try {
-      await withTimeout(
-        sendPasswordResetEmail(auth, email.trim()),
-        "app/auth-timeout",
-        25000,
-      );
-      setMessage(
-        "If this email has an account, a password reset link will be sent.",
-      );
-    } catch (e) {
-      setError(errorMessage(e));
-    } finally {
-      setBusy(false);
-    }
+  function reset() {
+    navigate("/forgot-password", {
+      state: {
+        ...loc.state,
+        email: document.querySelector("#auth-email")?.value || "",
+      },
+    });
   }
+
   return (
     <div className="auth-layout container">
       <div className="auth-story">
@@ -1562,21 +1548,32 @@ function Profile() {
         });
       }
       if (!profile) await createProfile(user, data.name);
-      const currentProfile =
-        profile || (await getDoc(doc(db, "users", user.uid))).data();
-      const batch = writeBatch(db);
-      batch.update(doc(db, "users", user.uid), {
-        ...data,
-        resumePath,
-        updatedAt: serverTimestamp(),
+      await runTransaction(db, async (transaction) => {
+        const profileRef = doc(db, "users", user.uid);
+        const memberRef = doc(db, "memberProfiles", user.uid);
+        const current = await transaction.get(profileRef);
+        const publicCard = await transaction.get(memberRef);
+        if (!current.exists())
+          throw new Error("Your profile is unavailable. Please retry.");
+        if (publicCard.exists())
+          transaction.update(memberRef, {
+            uid: user.uid,
+            name: data.name,
+            skills: data.skills,
+            updatedAt: serverTimestamp(),
+          });
+        transaction.update(profileRef, {
+          ...data,
+          resumePath,
+          updatedAt: serverTimestamp(),
+        });
+        transaction.set(doc(db, "adminUsers", user.uid), {
+          uid: user.uid,
+          fullName: data.name,
+          joinedAt: current.data().createdAt,
+          updatedAt: serverTimestamp(),
+        });
       });
-      batch.set(doc(db, "adminUsers", user.uid), {
-        uid: user.uid,
-        fullName: data.name,
-        joinedAt: currentProfile.createdAt,
-        updatedAt: serverTimestamp(),
-      });
-      await batch.commit();
       setFile(null);
       setMessage("Your profile has been saved.");
     } catch (e) {
@@ -2277,6 +2274,7 @@ export default function App() {
           />
           <Route path="/login" element={<AuthPage />} />
           <Route path="/signup" element={<AuthPage signup />} />
+          <Route path="/forgot-password" element={<PasswordRecovery />} />
           <Route path="/register" element={<Navigate to="/signup" replace />} />
           <Route
             path="/dashboard"
@@ -2361,7 +2359,7 @@ export default function App() {
                   title="The student community"
                   subtitle="Find teammates who share your curiosity."
                 >
-                  <Teams />
+                  <TeamHub />
                 </Workspace>
               </Guard>
             }
@@ -2420,7 +2418,9 @@ export default function App() {
                 title="Placement Preparation"
                 subtitle="A clear path from learning to your next opportunity."
               >
-                <Guard><Placement /></Guard>
+                <Guard>
+                  <Placement />
+                </Guard>
               </Workspace>
             }
           />
