@@ -91,6 +91,7 @@ import {
 
 import { Projects, Teams, ProjectDetails } from "./Community";
 
+import { Placement } from "./Placement";
 import { Mentoring, BookingAdmin, Updates } from "./Growth";
 import { Notifications, NotificationNav, AdminOverview } from "./Notifications";
 import { externalById } from "./externalCatalog";
@@ -113,6 +114,7 @@ const categories = [
   "Other",
 ];
 const nav = [
+  ["/placement", "Placement prep"],
   ["/explore?type=internship", "Internships"],
   ["/explore?type=job", "Jobs"],
   ["/explore?type=competition", "Competitions"],
@@ -1232,6 +1234,7 @@ function Workspace({ children, title, subtitle }) {
           ["/planner", "Career planner", CheckCircle2],
           ["/learn", "Learning library", GraduationCap],
           ["/resume", "Résumé templates", FileText],
+          ["/placement", "Placement preparation", GraduationCap],
           ["/projects?view=mine", "My projects", Code2],
           ["/teams", "Find a team", Building2],
           ["/mentoring", "Mentor sessions", GraduationCap],
@@ -1859,6 +1862,7 @@ function Admin() {
           ["publish", "Publish opportunity"],
           ["applications", "Applications"],
           ["resources", "Learning resources"],
+          ["placement", "Placement preparation"],
           ["students", "Student directory"],
           ["projects", "Project moderation"],
           ["teams", "Team moderation"],
@@ -1881,6 +1885,8 @@ function Admin() {
         <AdminOverview open={setTab} />
       ) : tab === "notifications" ? (
         <Notifications manage />
+      ) : tab === "placement" ? (
+        <Placement manage />
       ) : tab === "resources" ? (
         <ResourceLibrary manage />
       ) : tab === "students" ? (
@@ -2409,6 +2415,17 @@ export default function App() {
                 subtitle="Turn your education, skills and projects into a clear résumé."
               >
                 <ResumeBuilder />
+              </Workspace>
+            }
+          />
+          <Route
+            path="/placement"
+            element={
+              <Workspace
+                title="Placement Preparation"
+                subtitle="A clear path from learning to your next opportunity."
+              >
+                <Placement />
               </Workspace>
             }
           />

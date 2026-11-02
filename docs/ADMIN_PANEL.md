@@ -53,3 +53,7 @@ Deploy the new Firestore rules/indexes before the frontend; follow `docs/GROWTH.
 ## Student privacy update
 
 Admin browser clients can no longer read/list the users collection, including contact information. The former student directory is replaced by a privacy notice. Trusted Firebase Console/Admin SDK operators retain privileged backend access; frontend role claims do not bypass profile privacy. Deploy the updated rules before importing student records.
+
+### Placement preparation
+
+Use the Placement preparation tab to choose one of 24 sections, open nested folders, and create/edit draft or published articles. Content renders as escaped text instead of PDF embeds. See [PLACEMENT_PREPARATION.md](PLACEMENT_PREPARATION.md) for hierarchy, visibility and database details.

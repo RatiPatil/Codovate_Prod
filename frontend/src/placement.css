@@ -1,0 +1,92 @@
+.placement-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  align-items: center;
+}
+.placement-heading p {
+  color: var(--muted, #73798d);
+}
+.placement-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 270px), 1fr));
+  gap: 18px;
+  margin: 20px 0 32px;
+}
+.placement-section {
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+  transition: transform 0.18s ease;
+}
+.placement-section:hover {
+  transform: translateY(-3px);
+}
+.placement-section h3 {
+  margin: 18px 0;
+  line-height: 1.45;
+}
+.placement-breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 24px 0;
+  align-items: center;
+}
+.placement-breadcrumb button {
+  background: none;
+  border: 0;
+  color: #554ee7;
+  font: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+.placement-search {
+  display: block;
+  max-width: 560px;
+  margin: 20px 0;
+}
+.placement-search input {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+}
+.placement-article {
+  max-width: 900px;
+  margin: 24px auto;
+}
+.placement-body {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: 1.85;
+  margin: 28px 0;
+}
+.placement-editor {
+  margin-top: 32px;
+}
+.placement-editor label {
+  display: block;
+  margin-bottom: 16px;
+}
+.placement-editor textarea,
+.placement-editor input {
+  width: 100%;
+}
+.placement-module .button {
+  margin: 8px 8px 0 0;
+}
+@media (max-width: 700px) {
+  .placement-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .placement-section {
+    transition: none;
+  }
+  .placement-section:hover {
+    transform: none;
+  }
+}

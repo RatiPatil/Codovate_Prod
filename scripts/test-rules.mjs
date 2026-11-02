@@ -1428,6 +1428,176 @@ try {
     "other students cannot read imported contact details",
     assertFails(getDoc(doc(bob.firestore(), "users", "imported-private"))),
   );
+  const placement = {
+    sectionId: "aptitude",
+    parentId: "",
+    kind: "folder",
+    title: "Data Interpretation",
+    summary: "Topic folder",
+    body: "",
+    sourceUrl: "",
+    status: "draft",
+    createdBy: "operator",
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  };
+  const placementRef = doc(admin.firestore(), "placementContent", "di-folder");
+  await check(
+    "admin creates placement folder",
+    assertSucceeds(setDoc(placementRef, placement)),
+  );
+  await check(
+    "guest cannot read draft placement folder",
+    assertFails(
+      getDoc(doc(guest.firestore(), "placementContent", "di-folder")),
+    ),
+  );
+  await check(
+    "student cannot publish placement content",
+    assertFails(
+      setDoc(doc(alice.firestore(), "placementContent", "student-created"), {
+        ...placement,
+        createdBy: "alice",
+      }),
+    ),
+  );
+  await check(
+    "admin publishes placement folder",
+    assertSucceeds(
+      updateDoc(placementRef, {
+        status: "published",
+        updatedAt: serverTimestamp(),
+      }),
+    ),
+  );
+  await check(
+    "guest reads published placement folder",
+    assertSucceeds(
+      getDoc(doc(guest.firestore(), "placementContent", "di-folder")),
+    ),
+  );
+  const lesson = {
+    ...placement,
+    parentId: "di-folder",
+    kind: "article",
+    title: "Charts",
+    body: "Original worked example",
+    status: "published",
+  };
+  await check(
+    "admin adds nested readable article",
+    assertSucceeds(
+      setDoc(doc(admin.firestore(), "placementContent", "charts"), lesson),
+    ),
+  );
+  await check(
+    "guest queries published section",
+    assertSucceeds(
+      getDocs(
+        query(
+          collection(guest.firestore(), "placementContent"),
+          where("sectionId", "==", "aptitude"),
+          where("status", "==", "published"),
+        ),
+      ),
+    ),
+  );
+  await check(
+    "guest cannot query drafts",
+    assertFails(
+      getDocs(
+        query(
+          collection(guest.firestore(), "placementContent"),
+          where("sectionId", "==", "aptitude"),
+        ),
+      ),
+    ),
+  );
+  await check(
+    "parent must exist",
+    assertFails(
+      setDoc(doc(admin.firestore(), "placementContent", "orphan"), {
+        ...lesson,
+        parentId: "missing",
+      }),
+    ),
+  );
+  await check(
+    "article cannot contain children",
+    assertFails(
+      setDoc(doc(admin.firestore(), "placementContent", "bad-parent"), {
+        ...lesson,
+        parentId: "charts",
+      }),
+    ),
+  );
+  await check(
+    "parent section must match",
+    assertFails(
+      setDoc(doc(admin.firestore(), "placementContent", "cross-section"), {
+        ...lesson,
+        sectionId: "dbms",
+      }),
+    ),
+  );
+  await check(
+    "cannot move content to create hierarchy cycles",
+    assertFails(
+      updateDoc(placementRef, {
+        parentId: "di-folder",
+        updatedAt: serverTimestamp(),
+      }),
+    ),
+  );
+  await check(
+    "cannot publish empty article",
+    assertFails(
+      setDoc(doc(admin.firestore(), "placementContent", "empty-lesson"), {
+        ...lesson,
+        body: "",
+      }),
+    ),
+  );
+  await check(
+    "cannot create unknown section",
+    assertFails(
+      setDoc(doc(admin.firestore(), "placementContent", "bad-section"), {
+        ...placement,
+        sectionId: "unknown",
+      }),
+    ),
+  );
+  await check(
+    "cannot spoof creator",
+    assertFails(
+      setDoc(doc(admin.firestore(), "placementContent", "bad-author"), {
+        ...placement,
+        createdBy: "alice",
+      }),
+    ),
+  );
+  await check(
+    "cannot store scripts as source links",
+    assertFails(
+      setDoc(doc(admin.firestore(), "placementContent", "bad-link"), {
+        ...lesson,
+        sourceUrl: "javascript:alert(1)",
+      }),
+    ),
+  );
+  await check(
+    "cannot add reward fields to lesson",
+    assertFails(
+      updateDoc(doc(admin.firestore(), "placementContent", "charts"), {
+        gems: 500,
+        updatedAt: serverTimestamp(),
+      }),
+    ),
+  );
+  await check(
+    "cannot delete placement folder",
+    assertFails(deleteDoc(placementRef)),
+  );
   console.log(`${checks} Firebase security checks passed.`);
 } finally {
   await env.cleanup();

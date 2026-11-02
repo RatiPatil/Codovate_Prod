@@ -233,5 +233,23 @@
         "updatedAt": "2026-11-02T00:00:00.000Z"
       }
     }
+  ],
+  "placementContent": [
+    {
+      "id": "aptitude-intro",
+      "data": {
+        "sectionId": "aptitude",
+        "parentId": "",
+        "kind": "folder",
+        "title": "Quantitative aptitude",
+        "summary": "Topic folder example.",
+        "body": "",
+        "sourceUrl": "",
+        "status": "draft",
+        "createdBy": "example-admin",
+        "createdAt": "2026-11-02T00:00:00Z",
+        "updatedAt": "2026-11-02T00:00:00Z"
+      }
+    }
   ]
 }
