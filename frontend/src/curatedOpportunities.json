@@ -5,9 +5,13 @@
     "organization": "Amazon",
     "type": "internship",
     "location": "India — Bengaluru, Chennai, Hyderabad and Gurugram",
-    "mode": "On-site",
+    "mode": "Not specified",
     "category": "Technology",
-    "skills": ["Java", "Python", "Data structures"],
+    "skills": [
+      "Java",
+      "Python",
+      "Data structures"
+    ],
     "summary": "Engineering internship working on large-scale software systems.",
     "eligibility": "Bachelor’s/Master’s CS or related engineering background. Full-time availability and university declaration required; review the complete employer criteria.",
     "compensation": "Not specified in the reviewed listing",
@@ -21,9 +25,13 @@
     "organization": "Amazon",
     "type": "internship",
     "location": "India — Bengaluru, Chennai, Hyderabad and Greater Noida",
-    "mode": "On-site",
+    "mode": "Not specified",
     "category": "Technology",
-    "skills": ["SQL", "Python", "ETL"],
+    "skills": [
+      "SQL",
+      "Python",
+      "ETL"
+    ],
     "summary": "Build data pipelines and analytical datasets for business teams.",
     "eligibility": "Final-year CS/engineering or related Bachelor’s/Master’s course; SQL and Python experience. Full-time commitment required.",
     "compensation": "Not specified in the reviewed listing",
@@ -39,7 +47,11 @@
     "location": "Bengaluru, India",
     "mode": "On-site",
     "category": "Technology",
-    "skills": ["Programming", "Computer science", "Team projects"],
+    "skills": [
+      "Programming",
+      "Computer science",
+      "Team projects"
+    ],
     "summary": "Contribute production software with guidance from an engineering team.",
     "eligibility": "CS, mathematics or related degree background; programming and collaborative project experience. Check office expectations on the original page.",
     "compensation": "Not specified in the reviewed listing",
@@ -55,7 +67,11 @@
     "location": "Hyderabad, India",
     "mode": "Not specified",
     "category": "Technology",
-    "skills": ["Programming", "Software development", "Testing"],
+    "skills": [
+      "Programming",
+      "Software development",
+      "Testing"
+    ],
     "summary": "Develop, test and maintain software components across the delivery lifecycle. Job ID 10580008.",
     "eligibility": "Requires 1+ years of non-internship professional software development experience. This is not a zero-experience fresher vacancy.",
     "compensation": "Not specified in the reviewed listing",
@@ -71,7 +87,11 @@
     "location": "Hyderabad, India",
     "mode": "Not specified",
     "category": "Technology",
-    "skills": ["Programming", "UI engineering", "Software development"],
+    "skills": [
+      "Programming",
+      "UI engineering",
+      "Software development"
+    ],
     "summary": "Work on the Amazon Pay rendering platform and reusable user experiences. Job ID 10580014.",
     "eligibility": "Requires 1+ years of non-internship professional software development experience. Check the employer’s full requirements.",
     "compensation": "Not specified in the reviewed listing",
@@ -87,7 +107,11 @@
     "location": "Online — eligible countries only",
     "mode": "Remote",
     "category": "Technology",
-    "skills": ["AI", "Web", "Payments"],
+    "skills": [
+      "AI",
+      "Web",
+      "Payments"
+    ],
     "summary": "Create an AI-enabled solution using the PayPal ecosystem.",
     "eligibility": "Legal age of majority in your country; geographic exceptions and full competition rules apply.",
     "compensation": "See official prize rules",
@@ -103,7 +127,11 @@
     "location": "Online — eligible countries only",
     "mode": "Remote",
     "category": "Technology",
-    "skills": ["Prototyping", "Problem solving", "Teamwork"],
+    "skills": [
+      "Prototyping",
+      "Problem solving",
+      "Teamwork"
+    ],
     "summary": "A student hackathon for useful prototypes and original ideas.",
     "eligibility": "Students at recognized institutions who are above their country’s legal age of majority; geographic restrictions apply. Solo and team entries permitted.",
     "compensation": "See official prize rules",
