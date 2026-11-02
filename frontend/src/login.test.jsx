@@ -77,6 +77,68 @@ describe("login regressions", () => {
       await screen.findByRole("heading", { name: "Platform administration" }),
     ).toBeInTheDocument();
   });
+  it("uses a dedicated admin shell without student or public navigation", async () => {
+    state.session.user = { uid: "operator", email: "admin@example.com" };
+    state.session.admin = true;
+    open("/admin");
+    expect(
+      await screen.findByRole("navigation", { name: "Administrator modules" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("navigation", { name: "Main navigation" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: "My applications" }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Overview" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+    fireEvent.click(screen.getByRole("link", { name: "User accounts" }));
+    expect(
+      await screen.findByRole("heading", { name: "User accounts & access" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "User accounts" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+    expect(
+      screen.getByRole("link", { name: "Open user management" }),
+    ).toHaveAttribute(
+      "href",
+      "https://console.firebase.google.com/project/codovate-dev/authentication/users",
+    );
+  });
+  it("rejects unsafe UIDs before generating account access commands", async () => {
+    state.session.user = { uid: "operator" };
+    state.session.admin = true;
+    open("/admin?tab=users");
+    fireEvent.change(screen.getByLabelText("Target user UID"), {
+      target: { value: 'bad";Remove-Item' },
+    });
+    expect(screen.getByRole("alert")).toHaveTextContent("Use the exact UID");
+    expect(
+      screen.queryByRole("button", { name: "Copy access command" }),
+    ).not.toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("Target user UID"), {
+      target: { value: "student-123" },
+    });
+    expect(screen.getByText(/node scripts\/set-admin.mjs/)).toHaveTextContent(
+      '"student-123" grant',
+    );
+  });
+  it("returns unknown admin modules to the overview", () => {
+    state.session.user = { uid: "operator" };
+    state.session.admin = true;
+    open("/admin?tab=unknown");
+    expect(
+      screen.getByRole("heading", { name: "Platform administration" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Overview" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+  });
   it("does not admit a student to the administrator screen", () => {
     state.session.user = { uid: "student" };
     open("/admin");

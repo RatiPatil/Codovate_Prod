@@ -215,9 +215,24 @@ function NotificationScreen({ manage }) {
 export function AdminOverview({ open }) {
   const { user } = useSession();
   const sections = [
+    [
+      "users",
+      "User accounts & access",
+      "Manage registered accounts and administrator access.",
+    ],
+    [
+      "system",
+      "System settings",
+      "Check configuration and live Firestore connectivity.",
+    ],
     ["listings", "Opportunities", "Edit, publish and close listings."],
+    [
+      "placement",
+      "Placement preparation",
+      "Review Aptitude sources, organize lessons and edit practice questions.",
+    ],
     ["applications", "Applications", "Review submissions and update outcomes."],
-    ["students", "Student directory", "Review the student privacy policy."],
+    ["students", "Student privacy", "Review the student privacy policy."],
     [
       "notifications",
       "Notifications",

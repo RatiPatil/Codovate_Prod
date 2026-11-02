@@ -91,6 +91,8 @@ import {
 
 import { Projects, Teams, ProjectDetails } from "./Community";
 
+import { AdminAccounts, AdminSystem } from "./AdminOperations";
+import { AdminLayout, adminModule } from "./AdminLayout";
 import { Placement } from "./Placement";
 import { Mentoring, BookingAdmin, Updates } from "./Growth";
 import { Notifications, NotificationNav, AdminOverview } from "./Notifications";
@@ -1761,7 +1763,7 @@ function Admin() {
   const listings = listingPage.items,
     apps = appPage.items;
   const [adminParams, setAdminParams] = useSearchParams();
-  const tab = adminParams.get("tab") || "overview";
+  const tab = adminModule(adminParams.get("tab")).id;
   const setTab = (value) => setAdminParams({ tab: value });
   const [editing, setEditing] = useState(null),
     [error, setError] = useState(""),
@@ -1850,39 +1852,15 @@ function Admin() {
     }
   }
   return (
-    <Workspace
-      title="Platform administration"
-      subtitle="Manage opportunities, students, mentoring and communications."
-    >
-      <div className="type-tabs">
-        {[
-          ["overview", "Control centre"],
-          ["notifications", "Notifications"],
-          ["listings", "Listings"],
-          ["publish", "Publish opportunity"],
-          ["applications", "Applications"],
-          ["resources", "Learning resources"],
-          ["placement", "Placement preparation"],
-          ["students", "Student directory"],
-          ["projects", "Project moderation"],
-          ["teams", "Team moderation"],
-          ["mentoring", "Mentor sessions"],
-          ["bookings", "Mentor bookings"],
-          ["updates", "Platform updates"],
-        ].map(([key, label]) => (
-          <button
-            key={key}
-            onClick={() => setTab(key)}
-            className={tab === key ? "active" : ""}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
+    <AdminLayout>
       {error && <Notice>{error}</Notice>}
       {message && <Notice kind="success">{message}</Notice>}
       {tab === "overview" ? (
         <AdminOverview open={setTab} />
+      ) : tab === "users" ? (
+        <AdminAccounts />
+      ) : tab === "system" ? (
+        <AdminSystem />
       ) : tab === "notifications" ? (
         <Notifications manage />
       ) : tab === "placement" ? (
@@ -2148,7 +2126,7 @@ function Admin() {
         Roles are assigned through trusted Firebase Admin custom claims.
         Students cannot grant themselves access.
       </p>
-    </Workspace>
+    </AdminLayout>
   );
 }
 function Setup() {
@@ -2255,19 +2233,23 @@ function Setup() {
   );
 }
 export default function App() {
+  const { admin } = useSession();
   const catalog = useOpportunities();
   const location = useLocation();
+  const adminScreen = admin && location.pathname === "/admin";
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" });
-    document.title = "Codovate — Your next chapter starts here";
-  }, [location.pathname]);
+    document.title = adminScreen
+      ? "Codovate — Admin console"
+      : "Codovate — Your next chapter starts here";
+  }, [location.pathname, adminScreen]);
   return (
     <>
       <a className="skip-link" href="#main">
         Skip to content
       </a>
-      <Header />
-      <PreviewBanner />
+      {!adminScreen && <Header />}
+      {!adminScreen && <PreviewBanner />}
       <main id="main">
         <Routes>
           <Route path="/" element={<Home catalog={catalog} />} />
@@ -2442,7 +2424,7 @@ export default function App() {
           />
         </Routes>
       </main>
-      <Footer />
+      {!adminScreen && <Footer />}
     </>
   );
 }
