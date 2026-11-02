@@ -14,3 +14,8 @@ test-results/
 
 # Interrupted local Firebase configuration writes
 **/.env.local.tmp
+
+# Student source records and private import artifacts
+*.xlsx
+*.xls
+student-import-private/

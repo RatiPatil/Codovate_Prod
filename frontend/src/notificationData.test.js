@@ -47,10 +47,8 @@ it("validates recipients and rejects arbitrary destinations", () => {
       }),
     ).toThrow();
 });
-it("sends only to an existing profile with private immutable content", async () => {
-  mock.get
-    .mockResolvedValueOnce({ exists: () => true })
-    .mockResolvedValueOnce({ exists: () => false });
+it("sends private immutable content without reading a private profile", async () => {
+  mock.get.mockResolvedValue({ exists: () => false });
   await sendNotification(
     "operator",
     { studentId: "alice", title: "Hello", body: "Update", link: "/profile" },
@@ -66,16 +64,18 @@ it("sends only to an existing profile with private immutable content", async () 
     }),
   );
 });
-it("rejects missing recipients", async () => {
+it("surfaces the server rejection of a missing recipient", async () => {
   mock.get.mockResolvedValue({ exists: () => false });
+  mock.set.mockImplementationOnce(() => {
+    throw new Error("Recipient write rejected");
+  });
   await expect(
     sendNotification(
       "operator",
       { studentId: "alice", title: "Hi", body: "Update", link: "" },
       "draft-1",
     ),
-  ).rejects.toThrow("not found");
-  expect(mock.set).not.toHaveBeenCalled();
+  ).rejects.toThrow("Recipient write rejected");
 });
 it("retries a delivered draft without duplicating it", async () => {
   mock.get.mockResolvedValue({ exists: () => true });

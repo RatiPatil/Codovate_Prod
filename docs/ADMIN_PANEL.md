@@ -36,7 +36,7 @@ Fingerprint/passkey login is not added. This static Firebase client currently ha
 
 `/notifications` is an authenticated private inbox. The navigation uses an owner-filtered, bounded live listener (`studentId == uid`, `read == false`, `limit(1)`) to signal new/unread messages. Inbox/history uses 24-record cursor pages ordered by creation time, explicit Refresh and Load more. The listener signals unread presence, not a fabricated unread count. A listener error prompts inbox refresh. Account changes hide the old user's unread state immediately.
 
-Admin → Student directory → Send notification opens the composer with the student ID selected. Admins enter a title, body and optional supported internal destination. The transaction verifies the recipient profile exists. An unchanged draft retries the same document ID to avoid duplicate delivery after an ambiguous response. Changing the draft creates a new request. Sent content cannot be edited or deleted by browser clients.
+Private student profiles are no longer listed in the admin directory. Enter a student ID shared by the student in the notification composer. Admins enter a title, body and optional supported internal destination. Security rules verify the recipient profile exists without allowing the sender to read it. An unchanged draft retries the same document ID to avoid duplicate delivery after an ambiguous response. Changing the draft creates a new request. Sent content cannot be edited or deleted by browser clients.
 
 Application status changes and admin mentoring decisions write their notification in the same Firestore transaction as the decision. Both commit or neither does. Repeating an unchanged application status sends nothing. Student cancellations do not generate admin messages. Public broadcasts use Platform updates, without expensive per-student fanout. Notifications are in-app only, not email, SMS or operating-system push.
 
@@ -49,3 +49,7 @@ The executable schema/fixtures now cover thirteen collections. Indexes include o
 ## Release and acceptance
 
 Deploy the new Firestore rules/indexes before the frontend; follow `docs/GROWTH.md`. No domain, VPS, billing or live hosting changes are included. Test with separate real admin/student accounts after deployment: denied student admin access; direct private delivery; unread marker; mark read/unread; application decision notification; mentoring confirmation notification; cross-account denial. Production administrators must be provisioned separately using trusted credentials.
+
+## Student privacy update
+
+Admin browser clients can no longer read/list the users collection, including contact information. The former student directory is replaced by a privacy notice. Trusted Firebase Console/Admin SDK operators retain privileged backend access; frontend role claims do not bypass profile privacy. Deploy the updated rules before importing student records.

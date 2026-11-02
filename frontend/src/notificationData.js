@@ -44,15 +44,9 @@ export async function sendNotification(uid, raw, requestId) {
     ? doc(db, "notifications", requestId)
     : doc(collection(db, "notifications"));
   await runTransaction(db, async (tx) => {
-    const [recipient, previous] = await Promise.all([
-      tx.get(doc(db, "users", value.studentId)),
-      tx.get(target),
-    ]);
+    const previous = await tx.get(target);
     if (previous.exists()) return; // Retry the same draft safely after an ambiguous response.
-    if (!recipient.exists())
-      throw new Error(
-        "Student profile not found. Choose a student from the directory.",
-      );
+
     tx.set(target, {
       ...value,
       createdBy: uid,

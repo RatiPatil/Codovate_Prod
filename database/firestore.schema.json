@@ -94,6 +94,48 @@
               "maxLength": 500
             }
           ]
+        },
+        "mobile": {
+          "type": "string",
+          "pattern": "^(\\+91[6-9][0-9]{9})?$"
+        },
+        "taluka": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "program": {
+          "type": "string",
+          "maxLength": 180
+        },
+        "suggestedSkills": {
+          "type": "array",
+          "maxItems": 20,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60
+          }
+        },
+        "skillSuggestionsSource": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "discoveryEnabled": {
+          "const": false
+        },
+        "accountStatus": {
+          "enum": [
+            "",
+            "invited"
+          ]
+        },
+        "mobileVerified": {
+          "const": false
+        },
+        "importSource": {
+          "type": "string",
+          "maxLength": 100
         }
       },
       "additionalProperties": false

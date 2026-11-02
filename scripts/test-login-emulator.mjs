@@ -116,8 +116,8 @@ try {
     );
     assert.equal((await getIdTokenResult(demo.user, true)).claims.admin, true);
     console.log("PASS local demo login receives a verified admin claim.");
-    await getDocs(collection(db, "users"));
-    console.log("PASS verified demo admin can access the student directory.");
+    await assertFails(getDocs(collection(db, "users")));
+    console.log("PASS verified demo admin cannot access private student profiles.");
   }
 } catch (e) {
   console.error(e.code || e.message);

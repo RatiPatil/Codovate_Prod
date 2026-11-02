@@ -6,7 +6,7 @@ Firestore is schemaless; the schema below is enforced by `firestore.rules`, form
 
 | Path | Fields | Read access | Write access |
 | --- | --- | --- | --- |
-| `users/{authUid}` | name, email, college, degree, graduationYear, city, bio, skills[], portfolio, resumePath, createdAt, updatedAt | Owner and admin | Owner; email/createdAt immutable; no role field allowed |
+| `users/{authUid}` | name, email, college, degree, graduationYear, city, bio, skills[], portfolio, resumePath, createdAt, updatedAt | Owner only | Owner; email/createdAt immutable; no role field allowed |
 | `opportunities/{autoId}` | title, organization, type, category, mode, location, duration, stipend, skills[], deadline, closesAt, description, responsibilities, eligibility, status, createdBy, createdAt, updatedAt | Public if published; admin sees all | Admin only; creator/time immutable |
 | `applications/{uid}_{opportunityId}` | studentId, opportunityId, opportunityTitle, organization, studentName, college, resumePath, coverNote, status, createdAt, updatedAt | Student owner and admin | Owner creates once; admin changes only status and updatedAt |
 | `bookmarks/{uid}_{opportunityId}` | studentId, opportunityId, title, organization, type, createdAt | Owner only | Owner creates/deletes; updates disallowed |
@@ -111,3 +111,7 @@ Profiles may include optional `resumeUrl` (empty or HTTPS, maximum 500 character
 ## Private notifications
 
 `notifications/{id}` adds private admin-to-student messages with owner read/unread state. See [ADMIN_PANEL.md](ADMIN_PANEL.md) for the full thirteen-collection contract, queries, rules and atomic decision notifications.
+
+## Private imported profiles
+
+The browser `users/{uid}` policy is owner-only, including against admin clients. Optional private fields: mobile (empty or +91 followed by a valid-looking Indian mobile number), taluka, program, suggestedSkills, skillSuggestionsSource, accountStatus, discoveryEnabled, mobileVerified and importSource. Imported accounts use invited status, discovery=false, mobileVerified=false and skills=[]; branch defaults are explicitly unconfirmed suggestedSkills. Trusted provenance cannot be rewritten by browser clients. No import creates public directory/project/team documents. See [STUDENT_IMPORT.md](STUDENT_IMPORT.md).

@@ -430,8 +430,8 @@ try {
     assertFails(getDocs(collection(guest.firestore(), "resources"))),
   );
   await check(
-    "admin directory query accepted",
-    assertSucceeds(getDocs(collection(admin.firestore(), "users"))),
+    "admin cannot browse private profile directory",
+    assertFails(getDocs(collection(admin.firestore(), "users"))),
   );
   await check(
     "other student cannot delete a task",
@@ -1336,6 +1336,97 @@ try {
         updatedAt: serverTimestamp(),
       }),
     ),
+  );
+  await check(
+    "admin cannot fetch another private profile",
+    assertFails(getDoc(doc(admin.firestore(), "users", "alice"))),
+  );
+  await check(
+    "owner can store an unverified private mobile and program",
+    assertSucceeds(
+      updateDoc(doc(alice.firestore(), "users", "alice"), {
+        mobile: "+919000000001",
+        taluka: "Example Taluka",
+        program: "CIVIL ENGINEERING",
+        suggestedSkills: ["Surveying"],
+        discoveryEnabled: false,
+        mobileVerified: false,
+        updatedAt: serverTimestamp(),
+      }),
+    ),
+  );
+  await check(
+    "owner cannot claim mobile verification",
+    assertFails(
+      updateDoc(doc(alice.firestore(), "users", "alice"), {
+        mobileVerified: true,
+        updatedAt: serverTimestamp(),
+      }),
+    ),
+  );
+  await check(
+    "discovery cannot be enabled without a consent workflow",
+    assertFails(
+      updateDoc(doc(alice.firestore(), "users", "alice"), {
+        discoveryEnabled: true,
+        updatedAt: serverTimestamp(),
+      }),
+    ),
+  );
+  await check(
+    "unvalidated mobile is rejected",
+    assertFails(
+      updateDoc(doc(alice.firestore(), "users", "alice"), {
+        mobile: "1234",
+        updatedAt: serverTimestamp(),
+      }),
+    ),
+  );
+  await check(
+    "browser cannot rewrite trusted import provenance",
+    assertFails(
+      updateDoc(doc(alice.firestore(), "users", "alice"), {
+        importSource: "fake",
+        updatedAt: serverTimestamp(),
+      }),
+    ),
+  );
+  await env.withSecurityRulesDisabled(async (context) => {
+    await setDoc(doc(context.firestore(), "users", "imported-private"), {
+      ...profile,
+      resumePath: "",
+      email: "imported@example.test",
+      mobile: "+919000000002",
+      taluka: "Example Taluka",
+      program: "CIVIL ENGINEERING",
+      skills: [],
+      suggestedSkills: ["Surveying"],
+      skillSuggestionsSource: "program_defaults_v1",
+      importSource: "student_workbook_v1",
+      accountStatus: "invited",
+      discoveryEnabled: false,
+      mobileVerified: false,
+    });
+  });
+  const importedOwner = env.authenticatedContext("imported-private", {
+    email: "imported@example.test",
+  });
+  await check(
+    "imported owner can update their private profile",
+    assertSucceeds(
+      updateDoc(doc(importedOwner.firestore(), "users", "imported-private"), {
+        bio: "My own profile",
+        updatedAt: serverTimestamp(),
+      }),
+    ),
+  );
+  await check(
+    "admin cannot read imported contact details",
+    assertFails(getDoc(doc(admin.firestore(), "users", "imported-private"))),
+  );
+  await check(
+    "other students cannot read imported contact details",
+    assertFails(getDoc(doc(bob.firestore(), "users", "imported-private"))),
   );
   console.log(`${checks} Firebase security checks passed.`);
 } finally {
