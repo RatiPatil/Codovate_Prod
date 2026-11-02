@@ -17,7 +17,6 @@ import { withTimeout } from "./authSupport";
 import { sections, placementInput } from "./placementData";
 import "./placement.css";
 import { AptitudeLearningSummary } from "./AptitudeLearningSummary";
-import starter from "./aptitudeStarter.json";
 import { AptitudeReader } from "./AptitudeReader";
 export function Placement({ manage = false }) {
   const { user, admin } = useSession();
@@ -46,12 +45,12 @@ export function Placement({ manage = false }) {
     setItems([]);
     setEditing(null);
     setError("");
-    if (!section) {
+    if (!user || !section) {
       setLoading(false);
       return;
     }
     if (!db) {
-      setItems(section.id === "aptitude" ? starter.records : []);
+      setError("Connect Firebase to access placement materials.");
       setLoading(false);
       return;
     }
@@ -87,7 +86,7 @@ export function Placement({ manage = false }) {
     return () => {
       active = false;
     };
-  }, [section?.id, allowed, revision]);
+  }, [section?.id, allowed, revision, user?.uid]);
   function go(extra = {}) {
     setParams({
       ...(manage ? { tab: "placement" } : {}),

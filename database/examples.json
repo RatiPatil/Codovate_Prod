@@ -277,5 +277,14 @@
         "updatedAt": "2026-11-02T00:00:00Z"
       }
     }
+  ],
+  "publicStats": [
+    {
+      "id": "community",
+      "data": {
+        "registeredStudents": 1479,
+        "updatedAt": "2026-11-02T00:00:00.000Z"
+      }
+    }
   ]
 }

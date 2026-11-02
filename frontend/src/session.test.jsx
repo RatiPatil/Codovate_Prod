@@ -12,6 +12,8 @@ const state = vi.hoisted(() => ({
   profileChanged: null,
   profileFailed: null,
   existing: false,
+  stats: false,
+  update: vi.fn(),
   set: vi.fn(),
 }));
 vi.mock("./firebase", () => ({ auth: {}, db: {}, configured: true }));
@@ -32,7 +34,8 @@ vi.mock("firebase/firestore", () => ({
   }),
   runTransaction: vi.fn(async (_db, callback) =>
     callback({
-      get: async () => ({ exists: () => state.existing }),
+      get: async (ref) => ({ exists: () => ref.col === "publicStats" ? state.stats : state.existing, data: () => ({ registeredStudents: 1479 }) }),
+      update: state.update,
       set: state.set,
     }),
   ),
@@ -61,6 +64,8 @@ function Probe() {
 }
 beforeEach(() => {
   state.existing = false;
+  state.stats = false;
+  state.update.mockClear();
   state.set.mockClear();
   state.authChanged = null;
   state.profileChanged = null;
@@ -107,6 +112,13 @@ describe("session and profile integrity", () => {
       skills: [],
       resumePath: "",
     });
+  });
+  it("increments an initialized aggregate only with the first profile", async () => {
+    state.stats = true;
+    render(<SessionProvider><Probe /></SessionProvider>);
+    fireEvent.click(screen.getByRole("button", { name: "Create profile" }));
+    await waitFor(() => expect(state.update).toHaveBeenCalledTimes(1));
+    expect(state.update.mock.calls[0][1].registeredStudents).toBe(1480);
   });
   it("preserves an existing profile when sign-in setup runs again", async () => {
     state.existing = true;

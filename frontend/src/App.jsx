@@ -95,6 +95,7 @@ import { Projects, Teams, ProjectDetails } from "./Community";
 import { AdminAccounts, AdminSystem } from "./AdminOperations";
 import { AdminLayout, adminModule } from "./AdminLayout";
 import { Placement } from "./Placement";
+import { CommunityCount } from "./CommunityCount";
 import { Mentoring, BookingAdmin, Updates } from "./Growth";
 import { Notifications, NotificationNav, AdminOverview } from "./Notifications";
 import { externalById } from "./externalCatalog";
@@ -396,6 +397,7 @@ function Home({ catalog }) {
               Search <ArrowRight size={17} />
             </button>
           </form>
+          <CommunityCount />
           <div className="quick-search">
             <span>Try</span>
             {["Remote", "React", "Design"].map((term) => (
@@ -2418,7 +2420,7 @@ export default function App() {
                 title="Placement Preparation"
                 subtitle="A clear path from learning to your next opportunity."
               >
-                <Placement />
+                <Guard><Placement /></Guard>
               </Workspace>
             }
           />

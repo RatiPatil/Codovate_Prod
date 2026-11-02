@@ -3604,3 +3604,14 @@ button:disabled:hover {
     gap: 14px;
   }
 }
+
+.community-count { margin: 22px 0; display: grid; gap: 4px; }
+.community-count strong { color: var(--primary, #5b50e6); font-size: 1.08rem; }
+.community-count small { color: #7d8497; font-size: .78rem; }
+.community-count strong { font-variant-numeric: tabular-nums; animation: community-enter .45s ease-out both; }
+@keyframes community-enter { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) { .community-count strong { animation: none; } }
+.loading { position: relative; overflow: hidden; }
+.loading::after { content: ""; position: absolute; bottom: 20px; width: 100px; height: 3px; border-radius: 3px; background: linear-gradient(90deg,transparent,#5b50e655,transparent); animation: loading-glide 1.4s ease-in-out infinite; }
+@keyframes loading-glide { 0%,100% { transform:translateX(-35px); opacity:.3; } 50% { transform:translateX(35px); opacity:1; } }
+@media(prefers-reduced-motion:reduce) { .loading::after,.spinner { animation: none; } }

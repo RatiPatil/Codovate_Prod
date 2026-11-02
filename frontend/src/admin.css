@@ -449,3 +449,14 @@
     text-align: left;
   }
 }
+
+.admin-live-grid { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 16px; margin-bottom: 24px; }
+.admin-live-card { display: grid; gap: 12px; text-align: left; padding: 22px; cursor: pointer; font: inherit; }
+.admin-live-card strong { font-size: 1.8rem; color: #5b50e6; }
+.admin-live-card small { color: #7d8497; }
+@media(max-width:1000px) { .admin-live-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+@media(max-width:520px) { .admin-live-grid { grid-template-columns: 1fr; } }
+.admin-live-card { transition: transform .18s ease, box-shadow .18s ease; }
+.admin-live-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px #5b50e610; }
+.admin-live-card strong { font-variant-numeric: tabular-nums; }
+@media(prefers-reduced-motion:reduce) { .admin-live-card { transition: none; } .admin-live-card:hover { transform:none; } }
