@@ -133,4 +133,4 @@ See [docs/ADMIN_PANEL.md](docs/ADMIN_PANEL.md) for module access, real admin pro
 
 ### Résumé templates and official opportunity links
 
-Open `/resume` for three editable templates and browser Print → Save as PDF. Explore and the homepage now include a separate curated section linking to real employer/organizer listings. Sources, eligibility, freshness policy and maintenance are documented in [docs/RESUME_AND_REAL_OPPORTUNITIES.md](docs/RESUME_AND_REAL_OPPORTUNITIES.md). External applications happen on the original website; stale/expired curated records are hidden automatically. Theme, colours, shared styles and logo remain unchanged.
+Open `/resume` for three editable templates and browser Print → Save as PDF. Explore and the homepage display real employer/organizer listings directly in the existing main opportunity cards and category tabs. Sources, eligibility, freshness policy and maintenance are documented in [docs/RESUME_AND_REAL_OPPORTUNITIES.md](docs/RESUME_AND_REAL_OPPORTUNITIES.md). External applications happen on the original website; stale/expired curated records are hidden automatically. Theme, colours, shared styles and logo remain unchanged.

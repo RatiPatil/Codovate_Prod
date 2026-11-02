@@ -1,4 +1,4 @@
-import { afterEach, describe, it, expect, vi } from "vitest";
+import { beforeEach, afterEach, describe, it, expect, vi } from "vitest";
 import {
   cleanup,
   fireEvent,
@@ -16,8 +16,14 @@ vi.mock("./firebase", () => ({
   db: null,
   storage: null,
 }));
-vi.spyOn(window, "scrollTo").mockImplementation(() => {});
-afterEach(cleanup);
+beforeEach(() => {
+  vi.spyOn(window, "scrollTo").mockImplementation(() => {});
+  vi.spyOn(Date, "now").mockReturnValue(Date.parse("2026-11-02T01:00:00Z"));
+});
+afterEach(() => {
+  cleanup();
+  vi.restoreAllMocks();
+});
 function renderAt(path) {
   return render(
     <MemoryRouter initialEntries={[path]}>
@@ -27,7 +33,7 @@ function renderAt(path) {
     </MemoryRouter>,
   );
 }
-describe("disconnected local preview", () => {
+describe("main opportunity catalog without Firebase", () => {
   it("keeps original logo and exposes four opportunity categories", () => {
     renderAt("/");
     expect(screen.getAllByAltText("Codovate")[0]).toHaveAttribute(
@@ -38,19 +44,19 @@ describe("disconnected local preview", () => {
       "big move.",
     );
     expect(document.querySelectorAll(".path-card")).toHaveLength(4);
-    expect(screen.getByText(/Local preview/)).toBeInTheDocument();
+    expect(screen.getByText(/Official listings available/)).toBeInTheDocument();
   });
   it("switches homepage opportunity categories", async () => {
     renderAt("/");
     fireEvent.click(
-      screen.getByRole("button", { name: "Competitions", exact: true }),
+      screen.getByRole("button", { name: "Hackathons", exact: true }),
     );
     await waitFor(() =>
-      expect(document.querySelectorAll(".opportunity-card")).toHaveLength(1),
+      expect(document.querySelectorAll(".opportunity-card")).toHaveLength(2),
     );
     expect(
       screen.getByRole("link", {
-        name: "Design for a Better Campus",
+        name: "PayPal AI Hackathon",
         exact: true,
       }),
     ).toBeInTheDocument();
@@ -60,23 +66,26 @@ describe("disconnected local preview", () => {
     expect(document.querySelectorAll(".opportunity-card")).toHaveLength(3);
     fireEvent.change(
       screen.getByRole("textbox", { name: "Search by role, skill or company" }),
-      { target: { value: "React" } },
+      { target: { value: "Stripe" } },
     );
     await waitFor(() =>
       expect(document.querySelectorAll(".opportunity-card")).toHaveLength(1),
     );
     fireEvent.click(
       screen.getByRole("link", {
-        name: "Frontend Development Intern",
+        name: "Software Engineer, Intern",
         exact: true,
       }),
     );
     await waitFor(() =>
       expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
-        "Frontend Development Intern",
+        "Software Engineer, Intern",
       ),
     );
-    expect(screen.getByRole("button", { name: "Preview only" })).toBeDisabled();
+    expect(
+      screen.getByRole("link", { name: "Apply on official website" }),
+    ).toHaveAttribute("href", expect.stringContaining("stripe.com"));
+    expect(screen.queryByText("Real opportunities")).not.toBeInTheDocument();
   });
   it("shows Google sign-in clearly while preventing unconfigured auth requests", () => {
     renderAt("/login");
