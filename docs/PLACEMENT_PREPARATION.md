@@ -24,7 +24,7 @@ Collection `placementContent`, automatic document ID:
 
 Rules enforce administrator-only writes, valid parents, immutable hierarchy and creator metadata, and published-only public reads. Draft queries require admin claims. Published content is public learning material: never include student contact details in lessons. Student profile privacy rules remain owner-only. Schema and a synthetic draft example are in database/.
 
-Queries filter sectionId + status for students; composite index is in firestore.indexes.json. A bounded 501-document query detects sections over the current 500-item UI limit and reports it explicitly. This first stage is for establishing the library structure, before large-scale material ingestion. No student progress, quizzes, scoring, gems or redemption has been implemented or claimed. Those require their own reviewed contracts and trusted reward evaluation.
+Queries filter sectionId + status for students; composite index is in firestore.indexes.json. A bounded 501-document query detects sections over the current 500-item UI limit and reports it explicitly. This first stage is for establishing the library structure, before large-scale material ingestion. Aptitude now adds self-practice checkpoints and owner-only notes, bookmarks and progress; see APTITUDE_LIBRARY.md. Gems and redemption are not enabled.
 
 ## Deploy existing Firebase Hosting
 

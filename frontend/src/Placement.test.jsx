@@ -24,6 +24,8 @@ vi.mock("firebase/firestore", () => ({
   limit: vi.fn(),
   doc: vi.fn(),
   serverTimestamp: () => "time",
+  getDoc: async () => ({exists:()=>false}),
+  setDoc: vi.fn(),
   getDocs: async () => ({
     docs: fake.docs.map((d) => ({ id: d.id, data: () => d })),
   }),

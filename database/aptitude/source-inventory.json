@@ -1,0 +1,338 @@
+{
+  "sourceFiles": 25,
+  "sourcePagesOrSections": 2247,
+  "sources": [
+    {
+      "id": "62877803112c9109",
+      "file": "Data Interpretation/Aptitude and Paragraph 1.pdf",
+      "sha256": "d519f635b6c477b7a3da12358c10beabf4c5fd5387f3b04f9b30976e292d7b8e",
+      "pages": 5,
+      "method": "text",
+      "extractedCharacters": 6692,
+      "emptyTextPages": [],
+      "reviewParts": 1,
+      "status": "needs_editorial_review",
+      "visuals": "Not included in text extraction; verify original charts and diagrams."
+    },
+    {
+      "id": "914bcc80f7355e92",
+      "file": "Data Interpretation/Aptitude and Paragraph 2.pdf",
+      "sha256": "689fa842b586ed4cdf623537362d7092bd49d248308e3101a5284f74c7c7af58",
+      "pages": 9,
+      "method": "text",
+      "extractedCharacters": 6361,
+      "emptyTextPages": [],
+      "reviewParts": 1,
+      "status": "needs_editorial_review",
+      "visuals": "Not included in text extraction; verify original charts and diagrams."
+    },
+    {
+      "id": "c71493d83938ffc6",
+      "file": "Data Interpretation/Data Interpretation 1.pdf",
+      "sha256": "095430e841ff3c5d99413f65964a867333a2d66ba4a9786f56bd4dd0d3667efb",
+      "pages": 11,
+      "method": "text",
+      "extractedCharacters": 3948,
+      "emptyTextPages": [],
+      "reviewParts": 1,
+      "status": "needs_editorial_review",
+      "visuals": "Not included in text extraction; verify original charts and diagrams."
+    },
+    {
+      "id": "3384de46d0048ec8",
+      "file": "Data Interpretation/Data Interpretation 2.pdf",
+      "sha256": "36c3b5c2175f17e072d4740c7a5d7726175faa65a9db66952ae1781c82909cc8",
+      "pages": 5,
+      "method": "text",
+      "extractedCharacters": 3589,
+      "emptyTextPages": [],
+      "reviewParts": 1,
+      "status": "needs_editorial_review",
+      "visuals": "Not included in text extraction; verify original charts and diagrams."
+    },
+    {
+      "id": "c4c65da0d4fa98ec",
+      "file": "Data Interpretation/Data Interpretation 3.pdf",
+      "sha256": "8060608a71d285deb93d6355d420c29df948bb9bd284a2f4ba332f8adb28c51e",
+      "pages": 10,
+      "method": "text",
+      "extractedCharacters": 5794,
+      "emptyTextPages": [],
+      "reviewParts": 1,
+      "status": "needs_editorial_review",
+      "visuals": "Not included in text extraction; verify original charts and diagrams."
+    },
+    {
+      "id": "5edf3dc22033400d",
+      "file": "Formulas PDF/Basics of Quantitative Ability.pdf",
+      "sha256": "81593b38899271cee9f8da2757511b9afb30a2d51387d7cea41edf09cf61052b",
+      "pages": 51,
+      "method": "text",
+      "extractedCharacters": 63658,
+      "emptyTextPages": [],
+      "reviewParts": 2,
+      "status": "needs_editorial_review",
+      "visuals": "Not included in text extraction; verify original charts and diagrams."
+    },
+    {
+      "id": "9aaad524499486b7",
+      "file": "Formulas PDF/Formulae_Quant.pdf",
+      "sha256": "f8ba7bf9cbec5e98017fb8c7933d72f757d308581befc52d24444b414fcdb27b",
+      "pages": 31,
+      "method": "text",
+      "extractedCharacters": 59205,
+      "emptyTextPages": [
+        31
+      ],
+      "reviewParts": 2,
+      "status": "needs_editorial_review",
+      "visuals": "Not included in text extraction; verify original charts and diagrams."
+    },
+    {
+      "id": "8d5dbf2a532fc998",
+      "file": "Guesstimates/Case-In-Point-7th-Edition1.pdf",
+      "sha256": "9601a8f9c6b473879d9001bd515c6eaf9eeb824122e94e515577c088c83c3821",
+      "pages": 285,
+      "method": "text",
+      "extractedCharacters": 477828,
+      "emptyTextPages": [
+        1,
+        4,
+        7,
+        79,
+        208,
+        210,
+        275
+      ],
+      "reviewParts": 15,
+      "status": "needs_editorial_review",
+      "visuals": "Not included in text extraction; verify original charts and diagrams."
+    },
+    {
+      "id": "740c71ac2483d9b3",
+      "file": "Guesstimates/Guestimates.docx",
+      "sha256": "81988b8369f0ba47b211d972ddbe58d02521a4b6d71609a60235a12f698da2ac",
+      "pages": 1,
+      "method": "text",
+      "extractedCharacters": 6333,
+      "emptyTextPages": [],
+      "reviewParts": 1,
+      "status": "needs_editorial_review",
+      "visuals": "Not included in text extraction; verify original charts and diagrams."
+    },
+    {
+      "id": "464f902247961854",
+      "file": "Puzzles/400-Puzzles.pdf",
+      "sha256": "e71251021a9e25ca5daff540be50e5518e26057897e72e879117f2ccf327803e",
+      "pages": 194,
+      "method": "text",
+      "extractedCharacters": 261033,
+      "emptyTextPages": [],
+      "reviewParts": 8,
+      "status": "needs_editorial_review",
+      "visuals": "Not included in text extraction; verify original charts and diagrams."
+    },
+    {
+      "id": "291356d03f7a9e51",
+      "file": "Puzzles/How Would You Move Mount Fuji.pdf",
+      "sha256": "f194135b7d3cb582d3521b1a9f49a1026cbb65ea06dc753a3c4e86cfa54b588c",
+      "pages": 288,
+      "method": "text",
+      "extractedCharacters": 479776,
+      "emptyTextPages": [
+        1,
+        156,
+        256
+      ],
+      "reviewParts": 15,
+      "status": "needs_editorial_review",
+      "visuals": "Not included in text extraction; verify original charts and diagrams."
+    },
+    {
+      "id": "7dfc963113c9b3aa",
+      "file": "Puzzles/Timothy Falcon Crack - Heard on the Street, Quantitative Questions from Wall Street Job Interviews-Timothy Crack (2014).pdf",
+      "sha256": "ac4324431043bfbdc324e46c250ea96491155aaf59a8cbcca5153f145ee3ca31",
+      "pages": 280,
+      "method": "ocr",
+      "extractedCharacters": 628409,
+      "emptyTextPages": [
+        3,
+        11,
+        13,
+        35,
+        69,
+        189,
+        247
+      ],
+      "reviewParts": 19,
+      "status": "needs_editorial_review",
+      "visuals": "Not included in text extraction; verify original charts and diagrams."
+    },
+    {
+      "id": "d0c9a446bbcef4d0",
+      "file": "Quantitative Aptitude/Quantitative Apti QuestionSet1.pdf",
+      "sha256": "12458474b007bdf24d6cde1ed6ef36f11fea96bb49d09a711eea88dfd5a63e9b",
+      "pages": 4,
+      "method": "text",
+      "extractedCharacters": 33002,
+      "emptyTextPages": [],
+      "reviewParts": 1,
+      "status": "needs_editorial_review",
+      "visuals": "Not included in text extraction; verify original charts and diagrams."
+    },
+    {
+      "id": "625c8879844c9056",
+      "file": "Quantitative Aptitude/Quantitative Apti QuestionSet2.pdf",
+      "sha256": "e80f69734fd0d67c586ec1329aa9605abc327a7111f65828fce85010757b242a",
+      "pages": 3,
+      "method": "text",
+      "extractedCharacters": 21329,
+      "emptyTextPages": [],
+      "reviewParts": 1,
+      "status": "needs_editorial_review",
+      "visuals": "Not included in text extraction; verify original charts and diagrams."
+    },
+    {
+      "id": "728a73a831f90ba4",
+      "file": "Quantitative Aptitude/Quantitative Apti QuestionSet3.pdf",
+      "sha256": "2481031ce1668c8e0513f2ef5edcdc7f038d4c82dbd7c2975fcf834e430bc386",
+      "pages": 6,
+      "method": "text",
+      "extractedCharacters": 42348,
+      "emptyTextPages": [],
+      "reviewParts": 2,
+      "status": "needs_editorial_review",
+      "visuals": "Not included in text extraction; verify original charts and diagrams."
+    },
+    {
+      "id": "9f363eaafccc0b04",
+      "file": "Quantitative Aptitude/Quantitative Apti QuestionSet4.pdf",
+      "sha256": "3e9ba2410af14985ae3dfcdc3a2e3c019680075e09e7bf99ec8a4292d0089a99",
+      "pages": 3,
+      "method": "text",
+      "extractedCharacters": 25728,
+      "emptyTextPages": [],
+      "reviewParts": 1,
+      "status": "needs_editorial_review",
+      "visuals": "Not included in text extraction; verify original charts and diagrams."
+    },
+    {
+      "id": "9c0f0a7adb9dee1b",
+      "file": "Quantitative Aptitude/Quantitative Apti QuestionSet5.pdf",
+      "sha256": "d0768d46e9f1d197a1bb3dd95353e2d113387f71fa10cc76d7ed7fadb116c9dd",
+      "pages": 4,
+      "method": "text",
+      "extractedCharacters": 28234,
+      "emptyTextPages": [],
+      "reviewParts": 1,
+      "status": "needs_editorial_review",
+      "visuals": "Not included in text extraction; verify original charts and diagrams."
+    },
+    {
+      "id": "c63ce4f1cd832eac",
+      "file": "Quantitative Aptitude/Quantitative Apti QuestionSet6.pdf",
+      "sha256": "94c021bac0198eaf686f77779ab4ac516b4dfea8a5054f99b3ee8afdecd739c7",
+      "pages": 5,
+      "method": "text",
+      "extractedCharacters": 36559,
+      "emptyTextPages": [],
+      "reviewParts": 2,
+      "status": "needs_editorial_review",
+      "visuals": "Not included in text extraction; verify original charts and diagrams."
+    },
+    {
+      "id": "633d8bf8a77b259b",
+      "file": "Quantitative Aptitude/Quantitative Apti QuestionSet7.pdf",
+      "sha256": "0d22a04a1aabc47e2ce3abb2660532b934ed1f33b558f81e69a436989e59104a",
+      "pages": 5,
+      "method": "text",
+      "extractedCharacters": 38858,
+      "emptyTextPages": [],
+      "reviewParts": 2,
+      "status": "needs_editorial_review",
+      "visuals": "Not included in text extraction; verify original charts and diagrams."
+    },
+    {
+      "id": "ca8ddaa89234759f",
+      "file": "Quantitative Aptitude/Quantitative Apti QuestionSet8.pdf",
+      "sha256": "8bf6d94715bbc0d1a10dc682bd919a8ed86fa85f4eb3a830fa83ab7dc58d01e8",
+      "pages": 5,
+      "method": "text",
+      "extractedCharacters": 37563,
+      "emptyTextPages": [],
+      "reviewParts": 2,
+      "status": "needs_editorial_review",
+      "visuals": "Not included in text extraction; verify original charts and diagrams."
+    },
+    {
+      "id": "2f5edf680ecd131a",
+      "file": "Quantitative Aptitude/RS Aggarwal.pdf",
+      "sha256": "ec7d79654f6ed594e225a03eda23770d699269d9c8e363ebc11c691fe08cd3a5",
+      "pages": 195,
+      "method": "ocr",
+      "extractedCharacters": 283623,
+      "emptyTextPages": [],
+      "reviewParts": 9,
+      "status": "needs_editorial_review",
+      "visuals": "Not included in text extraction; verify original charts and diagrams."
+    },
+    {
+      "id": "58b1cef119ce9a03",
+      "file": "Quantitative Aptitude/fifty_challenging_problems_in__2.pdf",
+      "sha256": "92257374e66e1917091066afec38913aa06a4fade4a775ee9db0ece2a66ed4b2",
+      "pages": 96,
+      "method": "ocr",
+      "extractedCharacters": 164251,
+      "emptyTextPages": [],
+      "reviewParts": 5,
+      "status": "needs_editorial_review",
+      "visuals": "Not included in text extraction; verify original charts and diagrams."
+    },
+    {
+      "id": "a9049bcbd2bc98a8",
+      "file": "Verbal Ability/Basics of Verbal Ability.pdf",
+      "sha256": "567d54fcceecd426a13804947f2ab84ee10bbfd6f0496b07ac07d7fce4df5c66",
+      "pages": 13,
+      "method": "text",
+      "extractedCharacters": 27567,
+      "emptyTextPages": [
+        10
+      ],
+      "reviewParts": 1,
+      "status": "needs_editorial_review",
+      "visuals": "Not included in text extraction; verify original charts and diagrams."
+    },
+    {
+      "id": "dc7338b393c3df60",
+      "file": "Verbal Ability/Princeton-1014.pdf",
+      "sha256": "76f35b9e5ee4a5c657f7ac7183d664862626b09bc0d27f809dd1aafda07eaed7",
+      "pages": 714,
+      "method": "text",
+      "extractedCharacters": 1039699,
+      "emptyTextPages": [
+        1,
+        234,
+        637,
+        683,
+        714
+      ],
+      "reviewParts": 32,
+      "status": "needs_editorial_review",
+      "visuals": "Not included in text extraction; verify original charts and diagrams."
+    },
+    {
+      "id": "5232e2674ded2d1b",
+      "file": "Verbal Ability/VerbalAbility.pdf",
+      "sha256": "30a22bcb25a7835916a48d4b7dd1067fdcee3edcd2981ef07197e85a8e6d49af",
+      "pages": 24,
+      "method": "text",
+      "extractedCharacters": 40324,
+      "emptyTextPages": [
+        24
+      ],
+      "reviewParts": 2,
+      "status": "needs_editorial_review",
+      "visuals": "Not included in text extraction; verify original charts and diagrams."
+    }
+  ]
+}

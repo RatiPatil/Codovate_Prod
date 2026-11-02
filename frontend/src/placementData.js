@@ -47,5 +47,46 @@ export function placementInput(raw) {
     )
       throw new Error("Enter a valid HTTPS source link.");
   }
+  if (raw.sourceNote !== undefined)
+    d.sourceNote = String(raw.sourceNote).trim();
+  if (raw.level !== undefined) d.level = raw.level;
+  if (raw.minutes !== undefined) d.minutes = Number(raw.minutes);
+  if (raw.practice !== undefined) d.practice = raw.practice;
+  if (
+    (d.sourceNote?.length || 0) > 600 ||
+    (d.level !== undefined &&
+      !["Foundation", "Intermediate", "Reference"].includes(d.level)) ||
+    (d.minutes !== undefined &&
+      (!Number.isInteger(d.minutes) || d.minutes < 1 || d.minutes > 60))
+  )
+    throw new Error("Invalid lesson metadata.");
+  if (
+    d.practice !== undefined &&
+    (!Array.isArray(d.practice) ||
+      d.practice.length > 6 ||
+      d.practice.some(
+        (q) =>
+          !q ||
+          typeof q.prompt !== "string" ||
+          !q.prompt.trim() ||
+          q.prompt.length > 1500 ||
+          !Array.isArray(q.options) ||
+          q.options.length !== 4 ||
+          q.options.some(
+            (o) => typeof o !== "string" || !o.trim() || o.length > 300,
+          ) ||
+          !Number.isInteger(q.answerIndex) ||
+          q.answerIndex < 0 ||
+          q.answerIndex > 3 ||
+          typeof q.explanation !== "string" ||
+          !q.explanation.trim() ||
+          q.explanation.length > 2000,
+      ))
+  )
+    throw new Error(
+      "Check question text, four options, answer and explanation.",
+    );
+  if (d.kind === "folder" && d.practice?.length)
+    throw new Error("Practice questions belong to articles.");
   return d;
 }

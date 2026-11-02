@@ -57,3 +57,5 @@ Admin browser clients can no longer read/list the users collection, including co
 ### Placement preparation
 
 Use the Placement preparation tab to choose one of 24 sections, open nested folders, and create/edit draft or published articles. Content renders as escaped text instead of PDF embeds. See [PLACEMENT_PREPARATION.md](PLACEMENT_PREPARATION.md) for hierarchy, visibility and database details.
+
+Aptitude source folders can be imported as drafts for editorial review. The editor supports reading time, source notes, level and up to six practice checkpoints, each with four options, an answer and an explanation. Student private notes and progress remain unavailable to admin browser clients.
