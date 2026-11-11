@@ -96,6 +96,18 @@ const application = {
   updatedAt: serverTimestamp(),
 };
 try {
+  const phone = env.authenticatedContext("phone-student", { phone_number: "+919876543210" });
+  await check("phone-authenticated owner can create an email-free profile", assertSucceeds(
+    setDoc(doc(phone.firestore(), "users", "phone-student"), { ...profile, email: "", resumePath: "" }),
+  ));
+  const noIdentity = env.authenticatedContext("no-identity");
+  await check("identity without email or verified phone cannot create a profile", assertFails(
+    setDoc(doc(noIdentity.firestore(), "users", "no-identity"), { ...profile, email: "", resumePath: "" }),
+  ));
+  await check("phone user cannot forge an email", assertFails(
+    setDoc(doc(env.authenticatedContext("phone-forged", { phone_number: "+919876543210" }).firestore(), "users", "phone-forged"), { ...profile, resumePath: "" }),
+  ));
+
   await env.clearFirestore();
   await check(
     "owner can read an absent profile before transactional creation",

@@ -158,3 +158,7 @@ Administration → User accounts lists names and UIDs with live updates, search,
 Teams now includes opt-in name/skill discovery, accepted connections, private direct chat and invited project groups. See [collaboration data and deployment](docs/TEAM_COLLABORATION.md) for storage, permissions, limits and account recovery.
 
 The expanded Teams module adds opt-in profile details, filters, saved dismissals, explainable suggestions, unified new-team membership/chat and append-only team revisions. See [Teams data model and history](docs/TEAMS_DATA_MODEL.md). Existing records and the application theme are preserved.
+
+### Phone OTP sign-in
+
+Phone SMS login is available at `/phone-login` using the existing theme. It requires Firebase Phone provider, authorized production domains, SMS region settings, and deployment of the updated Firestore rules. Phone-only accounts have an empty email and a separate UID unless their provider is linked to an existing account. See [PHONE_OTP_LOGIN.md](docs/PHONE_OTP_LOGIN.md) for deployment and verification steps.

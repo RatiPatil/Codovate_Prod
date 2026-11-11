@@ -33,7 +33,8 @@ service cloud.firestore {
    allow read: if own(uid);
    allow create: if own(uid) && validProfile(request.resource.data)
     && !request.resource.data.keys().hasAny(['accountStatus','importSource','skillSuggestionsSource'])
-    && request.resource.data.email == request.auth.token.email
+    && request.resource.data.email == request.auth.token.get('email', '')
+    && (request.auth.token.get('email', '') != '' || request.auth.token.get('phone_number', '') != '')
     && request.resource.data.createdAt == request.time && changedTime();
    allow update: if own(uid) && validProfile(request.resource.data)
     && request.resource.data.get('accountStatus','') == resource.data.get('accountStatus','')

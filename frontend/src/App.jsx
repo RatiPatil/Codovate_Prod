@@ -96,6 +96,7 @@ import { AdminLayout, adminModule } from "./AdminLayout";
 import { Placement } from "./Placement";
 import { CommunityCount } from "./CommunityCount";
 import { TeamHub } from "./TeamHub";
+import { PhoneLogin } from "./PhoneLogin";
 import { PasswordRecovery } from "./PasswordRecovery";
 import { Mentoring, BookingAdmin, Updates } from "./Growth";
 import { Notifications, NotificationNav, AdminOverview } from "./Notifications";
@@ -1149,6 +1150,7 @@ function AuthPage({ signup = false }) {
           </span>{" "}
           Continue with Google
         </button>
+        <Link className="button secondary full" to="/phone-login" state={loc.state}>Continue with phone OTP</Link>
         <div className="divider">
           <span>or continue with email</span>
         </div>
@@ -2273,6 +2275,7 @@ export default function App() {
             element={<Details catalog={catalog} />}
           />
           <Route path="/login" element={<AuthPage />} />
+          <Route path="/phone-login" element={<PhoneLogin />} />
           <Route path="/signup" element={<AuthPage signup />} />
           <Route path="/forgot-password" element={<PasswordRecovery />} />
           <Route path="/register" element={<Navigate to="/signup" replace />} />

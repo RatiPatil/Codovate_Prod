@@ -226,3 +226,8 @@ test("team chat contracts keep membership in the canonical team rather than dupl
   );
   assert.equal(validateDocument("conversations", "wrong", c.data).valid, false);
 });
+
+test("phone-only profiles allow an empty email but reject malformed emails", () => {
+  assert.equal(validateDocument("users", user.id, { ...user.data, email: "" }).valid, true);
+  assert.equal(validateDocument("users", user.id, { ...user.data, email: "invalid" }).valid, false);
+});

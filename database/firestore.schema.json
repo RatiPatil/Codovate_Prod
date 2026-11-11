@@ -28,8 +28,15 @@
         },
         "email": {
           "type": "string",
-          "format": "email",
-          "maxLength": 320
+          "maxLength": 320,
+          "anyOf": [
+            {
+              "const": ""
+            },
+            {
+              "format": "email"
+            }
+          ]
         },
         "college": {
           "type": "string",
