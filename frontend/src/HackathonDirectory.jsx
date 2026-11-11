@@ -1,5 +1,5 @@
 import { ExternalLink } from "lucide-react";
-import { hackathonDirectory, filterHackathonDirectory, directoryStatus } from "./hackathonDirectory";
+import { hackathonDirectory, filterHackathonDirectory, directoryStatus } from "./hackathonCatalog.js";
 import { money, dateLabel } from "./domain";
 import "./placement.css";
 const statusLabels = { open: "Registration open", upcoming: "Coming soon", closed: "Closed", unverified: "Dates not announced / verify edition" };

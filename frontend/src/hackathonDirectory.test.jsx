@@ -1,7 +1,7 @@
 import { afterEach, expect, it } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
-import { HackathonDirectory } from "./HackathonDirectory";
-import { hackathonDirectory, filterHackathonDirectory, directoryStatus } from "./hackathonDirectory";
+import { HackathonDirectory } from "./HackathonDirectory.jsx";
+import { hackathonDirectory, filterHackathonDirectory, directoryStatus } from "./hackathonCatalog.js";
 afterEach(cleanup);
 it("preserves source groups and never invents edition dates or money", () => {
   expect(hackathonDirectory).toHaveLength(76);
