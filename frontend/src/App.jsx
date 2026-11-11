@@ -488,16 +488,15 @@ function Home({ catalog }) {
               </span>
               <h2>{typeLabel[type]}</h2>
               <span className="category-count" aria-live="polite">
-                <strong>{Number.isInteger(liveCounts.counts[type]) ? liveCounts.counts[type].toLocaleString("en-IN") : liveCounts.loading ? "…" : "—"}</strong>
-                <small>{Number.isInteger(liveCounts.counts[type]) ? "active listings" : liveCounts.loading ? "Loading count" : "Count unavailable"}</small>
-                {type === "hackathon" && <small>{hackathonDirectory.length} directory resources</small>}
+                <strong>{type === "hackathon"
+                  ? (hackathonDirectory.length + (liveCounts.counts[type] || 0)).toLocaleString("en-IN")
+                  : Number.isInteger(liveCounts.counts[type]) ? liveCounts.counts[type].toLocaleString("en-IN") : liveCounts.loading ? "…" : "—"}</strong>
               </span>
               <ArrowUpRight size={16} />
             </Link>
           );
         })}
       </section>
-      <p className="container hint category-count-note">Counts cover active listings published on Codovate and refresh every minute. Hackathon directory resources are shown separately.</p>
       <section className="opportunities-section container">
         <div className="section-heading">
           <div>
