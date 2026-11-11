@@ -146,3 +146,10 @@ it("validates publication and source links", () => {
   ).toThrow(/Folders/);
   expect(placementInput({ ...base, body: "Lesson" }).body).toBe("Lesson");
 });
+it("shows the career directory alongside existing published material", async () => {
+  fake.docs = [{id: "guide", parentId: "", sectionId: "career-portals", kind: "article", title: "Application checklist", status: "published"}];
+  show("/placement?section=career-portals");
+  expect(screen.getByRole("heading", { name: "Find your next opportunity directly." })).toBeInTheDocument();
+  expect(await screen.findByRole("heading", { name: "Application checklist" })).toBeInTheDocument();
+  expect(screen.queryByText("Material is being prepared")).toBeNull();
+});

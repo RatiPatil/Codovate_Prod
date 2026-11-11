@@ -17,6 +17,7 @@ import { withTimeout } from "./authSupport";
 import { sections, placementInput } from "./placementData";
 import "./placement.css";
 import { AptitudeLearningSummary } from "./AptitudeLearningSummary";
+import { CareerPortals } from "./CareerPortals";
 import { AptitudeReader } from "./AptitudeReader";
 export function Placement({ manage = false }) {
   const { user, admin } = useSession();
@@ -96,6 +97,7 @@ export function Placement({ manage = false }) {
     setEditing(null);
     setMessage("");
   }
+  const showCareerPortals = section?.id === "career-portals" && !folder && !article;
   const current = items.find((i) => i.id === (article || folder));
   const children = items
     .filter((i) => i.parentId === folder)
@@ -278,6 +280,7 @@ export function Placement({ manage = false }) {
         </>
       ) : (
         <>
+          {showCareerPortals && <CareerPortals />}
           {loading ? (
             <p role="status">Loading topics…</p>
           ) : article ? (
@@ -325,12 +328,12 @@ export function Placement({ manage = false }) {
             </>
           ) : (
             <>
-              <h3>{current?.title || section.title}</h3>
+              {!showCareerPortals && <h3>{current?.title || section.title}</h3>}
               {folder && !current ? (
                 <p>This folder is unavailable or has not been published.</p>
               ) : (
                 <>
-                  {!children.length && !error && (
+                  {!showCareerPortals && !children.length && !error && (
                     <div className="panel">
                       <h3>Material is being prepared</h3>
                       <p>

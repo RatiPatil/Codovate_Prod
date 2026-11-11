@@ -1,0 +1,2244 @@
+[
+  {
+    "title": "FAANG & Big Tech",
+    "companies": [
+      {
+        "name": "Google",
+        "roles": [
+          "SWE",
+          "ML",
+          "Data",
+          "PM",
+          "DevRel"
+        ],
+        "url": "https://www.google.com/about/careers/applications/"
+      },
+      {
+        "name": "Meta",
+        "roles": [
+          "SWE",
+          "Data Science",
+          "Infrastructure",
+          "PM"
+        ],
+        "url": "https://www.metacareers.com/"
+      },
+      {
+        "name": "Apple",
+        "roles": [
+          "SWE",
+          "Hardware",
+          "AI/ML",
+          "Design"
+        ],
+        "url": "https://jobs.apple.com/"
+      },
+      {
+        "name": "Amazon",
+        "roles": [
+          "SDE",
+          "Data",
+          "Ops",
+          "PM",
+          "Cloud"
+        ],
+        "url": "https://www.amazon.jobs/"
+      },
+      {
+        "name": "Netflix",
+        "roles": [
+          "SWE",
+          "Data",
+          "Security",
+          "Content Engineering"
+        ],
+        "url": "https://explore.jobs.netflix.net/"
+      },
+      {
+        "name": "Microsoft",
+        "roles": [
+          "SWE",
+          "Cloud",
+          "AI",
+          "PM",
+          "Support"
+        ],
+        "url": "https://careers.microsoft.com/"
+      },
+      {
+        "name": "Alphabet / DeepMind",
+        "roles": [
+          "Research",
+          "AI",
+          "Engineering"
+        ],
+        "url": "https://deepmind.google/careers/"
+      },
+      {
+        "name": "OpenAI",
+        "roles": [
+          "Research",
+          "SWE",
+          "Safety",
+          "Policy"
+        ],
+        "url": "https://openai.com/careers/"
+      },
+      {
+        "name": "Anthropic",
+        "roles": [
+          "Research",
+          "SWE",
+          "Safety"
+        ],
+        "url": "https://www.anthropic.com/careers"
+      },
+      {
+        "name": "ByteDance",
+        "roles": [
+          "SWE",
+          "Data",
+          "ML",
+          "Product"
+        ],
+        "url": "https://jobs.bytedance.com/en/"
+      }
+    ]
+  },
+  {
+    "title": "Indian Product & Unicorns",
+    "companies": [
+      {
+        "name": "Flipkart",
+        "roles": [
+          "SDE",
+          "Data",
+          "PM",
+          "Ops"
+        ],
+        "url": "https://www.flipkartcareers.com/"
+      },
+      {
+        "name": "Razorpay",
+        "roles": [
+          "SDE",
+          "DevOps",
+          "FinTech",
+          "PM"
+        ],
+        "url": "https://razorpay.com/jobs/"
+      },
+      {
+        "name": "Zepto",
+        "roles": [
+          "SDE",
+          "Data",
+          "Supply Chain"
+        ],
+        "url": "https://www.zepto.com/careers"
+      },
+      {
+        "name": "Meesho",
+        "roles": [
+          "SDE",
+          "ML",
+          "Growth",
+          "PM"
+        ],
+        "url": "https://www.meesho.io/jobs"
+      },
+      {
+        "name": "CRED",
+        "roles": [
+          "SDE",
+          "Data",
+          "Product"
+        ],
+        "url": "https://careers.cred.club/"
+      },
+      {
+        "name": "PhonePe",
+        "roles": [
+          "SDE",
+          "Data",
+          "UX",
+          "PM"
+        ],
+        "url": "https://www.phonepe.com/careers/"
+      },
+      {
+        "name": "Swiggy",
+        "roles": [
+          "SDE",
+          "Data",
+          "Ops",
+          "PM"
+        ],
+        "url": "https://careers.swiggy.com/"
+      },
+      {
+        "name": "Zomato",
+        "roles": [
+          "SDE",
+          "Data",
+          "Product",
+          "Ops"
+        ],
+        "url": "https://www.zomato.com/careers"
+      },
+      {
+        "name": "Ola",
+        "roles": [
+          "SDE",
+          "Data",
+          "EV Tech",
+          "PM"
+        ],
+        "url": "https://www.olacabs.com/careers"
+      },
+      {
+        "name": "Paytm",
+        "roles": [
+          "SDE",
+          "Data",
+          "FinTech",
+          "PM"
+        ],
+        "url": "https://paytm.com/careers/"
+      },
+      {
+        "name": "Dream11",
+        "roles": [
+          "SDE",
+          "Data",
+          "Platform"
+        ],
+        "url": "https://www.dreamsports.group/careers/"
+      },
+      {
+        "name": "Groww",
+        "roles": [
+          "SDE",
+          "Data",
+          "FinTech",
+          "PM"
+        ],
+        "url": "https://groww.in/careers"
+      },
+      {
+        "name": "Nykaa",
+        "roles": [
+          "SDE",
+          "Data",
+          "E-Commerce"
+        ],
+        "url": "https://www.nykaa.com/careers"
+      },
+      {
+        "name": "upGrad",
+        "roles": [
+          "SDE",
+          "Data",
+          "EdTech",
+          "PM"
+        ],
+        "url": "https://www.upgrad.com/careers/"
+      },
+      {
+        "name": "BrowserStack",
+        "roles": [
+          "SDE",
+          "QA",
+          "DevRel"
+        ],
+        "url": "https://www.browserstack.com/careers"
+      },
+      {
+        "name": "Postman",
+        "roles": [
+          "SDE",
+          "DevRel",
+          "PM"
+        ],
+        "url": "https://www.postman.com/company/careers/"
+      },
+      {
+        "name": "Freshworks",
+        "roles": [
+          "SDE",
+          "Data",
+          "CS",
+          "PM"
+        ],
+        "url": "https://www.freshworks.com/company/careers/"
+      },
+      {
+        "name": "Zoho",
+        "roles": [
+          "SDE",
+          "QA",
+          "Support"
+        ],
+        "url": "https://www.zoho.com/careers/"
+      },
+      {
+        "name": "InMobi",
+        "roles": [
+          "SDE",
+          "Data",
+          "AdTech"
+        ],
+        "url": "https://www.inmobi.com/company/careers"
+      },
+      {
+        "name": "MPL",
+        "roles": [
+          "SDE",
+          "Data",
+          "Gaming"
+        ],
+        "url": "https://www.mpl.live/",
+        "note": "Official company site; a dedicated hiring portal is not confirmed."
+      },
+      {
+        "name": "Lenskart",
+        "roles": [
+          "SDE",
+          "Data",
+          "Supply Chain"
+        ],
+        "url": "https://www.lenskart.com/careers"
+      },
+      {
+        "name": "Dunzo",
+        "roles": [
+          "SDE",
+          "Ops",
+          "Data"
+        ],
+        "url": "",
+        "note": "A current official hiring portal has not been confirmed."
+      },
+      {
+        "name": "Delhivery",
+        "roles": [
+          "SDE",
+          "Data",
+          "Logistics"
+        ],
+        "url": "https://www.delhivery.com/company/careers"
+      },
+      {
+        "name": "Cars24",
+        "roles": [
+          "SDE",
+          "Data",
+          "Automotive"
+        ],
+        "url": "https://www.cars24.com/careers/"
+      }
+    ]
+  },
+  {
+    "title": "Indian IT Services & MNCs",
+    "companies": [
+      {
+        "name": "TCS",
+        "roles": [
+          "SWE",
+          "Consulting",
+          "Data",
+          "Testing"
+        ],
+        "url": "https://www.tcs.com/careers"
+      },
+      {
+        "name": "Infosys",
+        "roles": [
+          "SWE",
+          "Consulting",
+          "Data",
+          "BPO"
+        ],
+        "url": "https://www.infosys.com/careers/"
+      },
+      {
+        "name": "Wipro",
+        "roles": [
+          "SWE",
+          "Consulting",
+          "Cloud",
+          "Security"
+        ],
+        "url": "https://careers.wipro.com/"
+      },
+      {
+        "name": "HCL Technologies",
+        "roles": [
+          "SWE",
+          "Cloud",
+          "Data",
+          "SAP"
+        ],
+        "url": "https://www.hcltech.com/careers"
+      },
+      {
+        "name": "Tech Mahindra",
+        "roles": [
+          "SWE",
+          "Telecom",
+          "Data",
+          "BPO"
+        ],
+        "url": "https://careers.techmahindra.com/"
+      },
+      {
+        "name": "Cognizant",
+        "roles": [
+          "SWE",
+          "Consulting",
+          "Data",
+          "BPO"
+        ],
+        "url": "https://careers.cognizant.com/"
+      },
+      {
+        "name": "Capgemini",
+        "roles": [
+          "SWE",
+          "Consulting",
+          "Cloud",
+          "SAP"
+        ],
+        "url": "https://www.capgemini.com/careers/"
+      },
+      {
+        "name": "Accenture",
+        "roles": [
+          "Consulting",
+          "SWE",
+          "Data",
+          "Cloud"
+        ],
+        "url": "https://www.accenture.com/careers"
+      },
+      {
+        "name": "Mphasis",
+        "roles": [
+          "SWE",
+          "Data",
+          "BFSI",
+          "Cloud"
+        ],
+        "url": "https://www.mphasis.com/home/careers.html"
+      },
+      {
+        "name": "LTIMindtree",
+        "roles": [
+          "SWE",
+          "Data",
+          "Cloud",
+          "SAP"
+        ],
+        "url": "https://www.ltimindtree.com/careers/"
+      },
+      {
+        "name": "Persistent Systems",
+        "roles": [
+          "SWE",
+          "Data",
+          "Cloud"
+        ],
+        "url": "https://www.persistent.com/careers/"
+      },
+      {
+        "name": "KPIT Technologies",
+        "roles": [
+          "Embedded",
+          "Automotive",
+          "SWE"
+        ],
+        "url": "https://www.kpit.com/careers/"
+      },
+      {
+        "name": "Hexaware",
+        "roles": [
+          "SWE",
+          "Data",
+          "BPO",
+          "Cloud"
+        ],
+        "url": "https://hexaware.com/careers/"
+      },
+      {
+        "name": "Zensar Technologies",
+        "roles": [
+          "SWE",
+          "Data",
+          "Digital"
+        ],
+        "url": "https://www.zensar.com/careers"
+      },
+      {
+        "name": "EPAM Systems",
+        "roles": [
+          "SWE",
+          "Data",
+          "Cloud"
+        ],
+        "url": "https://www.epam.com/careers"
+      },
+      {
+        "name": "Virtusa",
+        "roles": [
+          "SWE",
+          "BFSI",
+          "Data"
+        ],
+        "url": "https://www.virtusa.com/careers"
+      }
+    ]
+  },
+  {
+    "title": "Global BFSI",
+    "companies": [
+      {
+        "name": "Goldman Sachs",
+        "roles": [
+          "SWE",
+          "Quant",
+          "Risk",
+          "Data"
+        ],
+        "url": "https://www.goldmansachs.com/careers"
+      },
+      {
+        "name": "JP Morgan Chase",
+        "roles": [
+          "SWE",
+          "Data",
+          "Quant",
+          "Risk"
+        ],
+        "url": "https://careers.jpmorgan.com/"
+      },
+      {
+        "name": "Morgan Stanley",
+        "roles": [
+          "SWE",
+          "Quant",
+          "Risk",
+          "Data"
+        ],
+        "url": "https://www.morganstanley.com/people-opportunities"
+      },
+      {
+        "name": "Citi",
+        "roles": [
+          "SWE",
+          "Data",
+          "Risk",
+          "Compliance"
+        ],
+        "url": "https://jobs.citi.com/"
+      },
+      {
+        "name": "Bank of America",
+        "roles": [
+          "SWE",
+          "Data",
+          "Risk",
+          "Analytics"
+        ],
+        "url": "https://careers.bankofamerica.com/"
+      },
+      {
+        "name": "Barclays",
+        "roles": [
+          "SWE",
+          "Data",
+          "Quant",
+          "Risk"
+        ],
+        "url": "https://search.jobs.barclays/"
+      },
+      {
+        "name": "Deutsche Bank",
+        "roles": [
+          "SWE",
+          "Data",
+          "Quant",
+          "Risk"
+        ],
+        "url": "https://careers.db.com/"
+      },
+      {
+        "name": "HSBC",
+        "roles": [
+          "SWE",
+          "Data",
+          "Risk",
+          "Compliance"
+        ],
+        "url": "https://www.hsbc.com/careers"
+      },
+      {
+        "name": "UBS",
+        "roles": [
+          "SWE",
+          "Quant",
+          "Data",
+          "Risk"
+        ],
+        "url": "https://www.ubs.com/global/en/careers.html"
+      },
+      {
+        "name": "Credit Suisse / UBS",
+        "roles": [
+          "SWE",
+          "Quant",
+          "Risk"
+        ],
+        "url": "https://www.ubs.com/global/en/careers.html",
+        "note": "Recruitment is handled through UBS."
+      },
+      {
+        "name": "BNY Mellon",
+        "roles": [
+          "SWE",
+          "Data",
+          "Risk"
+        ],
+        "url": "https://www.bny.com/corporate/global/en/careers.html"
+      },
+      {
+        "name": "State Street",
+        "roles": [
+          "SWE",
+          "Data",
+          "Risk"
+        ],
+        "url": "https://careers.statestreet.com/"
+      },
+      {
+        "name": "Wells Fargo",
+        "roles": [
+          "SWE",
+          "Data",
+          "Risk",
+          "Compliance"
+        ],
+        "url": "https://www.wellsfargojobs.com/"
+      },
+      {
+        "name": "American Express",
+        "roles": [
+          "SWE",
+          "Data",
+          "Risk",
+          "PM"
+        ],
+        "url": "https://www.americanexpress.com/en-us/careers/"
+      }
+    ]
+  },
+  {
+    "title": "Quant & HFT",
+    "companies": [
+      {
+        "name": "DE Shaw",
+        "roles": [
+          "SWE",
+          "Quant",
+          "Systems",
+          "Research"
+        ],
+        "url": "https://www.deshaw.com/careers"
+      },
+      {
+        "name": "Two Sigma",
+        "roles": [
+          "SWE",
+          "Quant",
+          "Data",
+          "Research"
+        ],
+        "url": "https://www.twosigma.com/careers/"
+      },
+      {
+        "name": "Citadel",
+        "roles": [
+          "SWE",
+          "Quant",
+          "Research",
+          "Risk"
+        ],
+        "url": "https://www.citadel.com/careers/"
+      },
+      {
+        "name": "Jane Street",
+        "roles": [
+          "Quant",
+          "SWE",
+          "Research",
+          "Trading"
+        ],
+        "url": "https://www.janestreet.com/join-jane-street/"
+      },
+      {
+        "name": "Jump Trading",
+        "roles": [
+          "SWE",
+          "Quant",
+          "Systems"
+        ],
+        "url": "https://www.jumptrading.com/careers/"
+      },
+      {
+        "name": "Hudson River Trading",
+        "roles": [
+          "SWE",
+          "Quant",
+          "Research"
+        ],
+        "url": "https://www.hudsonrivertrading.com/careers/"
+      },
+      {
+        "name": "Optiver",
+        "roles": [
+          "SWE",
+          "Quant",
+          "Trading",
+          "Research"
+        ],
+        "url": "https://optiver.com/working-at-optiver/career-opportunities/"
+      },
+      {
+        "name": "Flow Traders",
+        "roles": [
+          "SWE",
+          "Quant",
+          "Trading"
+        ],
+        "url": "https://www.flowtraders.com/careers",
+        "note": "Flow Traders portal; the supplied AlphaTensor reference is not a separate employer listing."
+      },
+      {
+        "name": "IMC Trading",
+        "roles": [
+          "SWE",
+          "Quant",
+          "Trading"
+        ],
+        "url": "https://www.imc.com/us/careers/"
+      }
+    ]
+  },
+  {
+    "title": "Consulting & Big 4",
+    "companies": [
+      {
+        "name": "McKinsey & Company",
+        "roles": [
+          "BA",
+          "Consulting",
+          "Data",
+          "Tech"
+        ],
+        "url": "https://www.mckinsey.com/careers"
+      },
+      {
+        "name": "Boston Consulting Group",
+        "roles": [
+          "BA",
+          "Consulting",
+          "Data",
+          "Tech"
+        ],
+        "url": "https://careers.bcg.com/"
+      },
+      {
+        "name": "Bain & Company",
+        "roles": [
+          "BA",
+          "Consulting",
+          "Data"
+        ],
+        "url": "https://www.bain.com/careers/"
+      },
+      {
+        "name": "Deloitte",
+        "roles": [
+          "Consulting",
+          "Audit",
+          "SWE",
+          "Data",
+          "Risk"
+        ],
+        "url": "https://www.deloitte.com/global/en/careers.html"
+      },
+      {
+        "name": "PwC",
+        "roles": [
+          "Consulting",
+          "Audit",
+          "Tax",
+          "Data"
+        ],
+        "url": "https://www.pwc.com/gx/en/careers.html"
+      },
+      {
+        "name": "EY",
+        "roles": [
+          "Consulting",
+          "Audit",
+          "Tax",
+          "Data"
+        ],
+        "url": "https://www.ey.com/en_gl/careers"
+      },
+      {
+        "name": "KPMG",
+        "roles": [
+          "Consulting",
+          "Audit",
+          "Risk",
+          "Data"
+        ],
+        "url": "https://kpmg.com/xx/en/careers.html"
+      },
+      {
+        "name": "Oliver Wyman",
+        "roles": [
+          "Consulting",
+          "Data",
+          "Risk"
+        ],
+        "url": "https://www.oliverwyman.com/careers.html"
+      },
+      {
+        "name": "A.T. Kearney",
+        "roles": [
+          "Consulting",
+          "Data"
+        ],
+        "url": "https://www.kearney.com/careers"
+      },
+      {
+        "name": "Strategy&",
+        "roles": [
+          "Consulting",
+          "Strategy"
+        ],
+        "url": "https://www.strategyand.pwc.com/gx/en/careers.html"
+      }
+    ]
+  },
+  {
+    "title": "Semiconductor & Hardware",
+    "companies": [
+      {
+        "name": "Qualcomm",
+        "roles": [
+          "VLSI",
+          "Embedded",
+          "ML",
+          "SWE"
+        ],
+        "url": "https://careers.qualcomm.com/"
+      },
+      {
+        "name": "Intel",
+        "roles": [
+          "VLSI",
+          "Embedded",
+          "SWE",
+          "Hardware",
+          "Data"
+        ],
+        "url": "https://jobs.intel.com/"
+      },
+      {
+        "name": "NVIDIA",
+        "roles": [
+          "GPU",
+          "ML",
+          "SWE",
+          "Hardware"
+        ],
+        "url": "https://www.nvidia.com/en-us/about-nvidia/careers/"
+      },
+      {
+        "name": "AMD",
+        "roles": [
+          "VLSI",
+          "SWE",
+          "Hardware",
+          "ML"
+        ],
+        "url": "https://careers.amd.com/"
+      },
+      {
+        "name": "Texas Instruments",
+        "roles": [
+          "Embedded",
+          "Analog",
+          "VLSI",
+          "SWE"
+        ],
+        "url": "https://careers.ti.com/"
+      },
+      {
+        "name": "Broadcom",
+        "roles": [
+          "VLSI",
+          "Networking",
+          "SWE"
+        ],
+        "url": "https://www.broadcom.com/company/careers"
+      },
+      {
+        "name": "Marvell",
+        "roles": [
+          "VLSI",
+          "Networking",
+          "SWE"
+        ],
+        "url": "https://www.marvell.com/company/careers.html"
+      },
+      {
+        "name": "MediaTek",
+        "roles": [
+          "VLSI",
+          "SWE",
+          "ML"
+        ],
+        "url": "https://careers.mediatek.com/"
+      },
+      {
+        "name": "Samsung R&D",
+        "roles": [
+          "VLSI",
+          "AI",
+          "SWE",
+          "Hardware"
+        ],
+        "url": "https://research.samsung.com/careers"
+      },
+      {
+        "name": "NXP Semiconductors",
+        "roles": [
+          "Embedded",
+          "VLSI",
+          "SWE"
+        ],
+        "url": "https://www.nxp.com/company/about-nxp/careers:CAREERS"
+      },
+      {
+        "name": "STMicroelectronics",
+        "roles": [
+          "VLSI",
+          "Embedded",
+          "SWE"
+        ],
+        "url": "https://www.st.com/content/st_com/en/about/careers.html"
+      },
+      {
+        "name": "Cadence Design Systems",
+        "roles": [
+          "EDA",
+          "SWE",
+          "VLSI"
+        ],
+        "url": "https://www.cadence.com/en_US/home/company/careers.html"
+      },
+      {
+        "name": "Synopsys",
+        "roles": [
+          "EDA",
+          "SWE",
+          "VLSI"
+        ],
+        "url": "https://careers.synopsys.com/"
+      },
+      {
+        "name": "Micron Technology",
+        "roles": [
+          "SWE",
+          "Hardware",
+          "Data"
+        ],
+        "url": "https://careers.micron.com/"
+      }
+    ]
+  },
+  {
+    "title": "Cloud & DevOps",
+    "companies": [
+      {
+        "name": "AWS",
+        "roles": [
+          "Cloud",
+          "SRE",
+          "SWE",
+          "Security"
+        ],
+        "url": "https://www.amazon.jobs/content/en/teams/amazon-web-services"
+      },
+      {
+        "name": "Google Cloud",
+        "roles": [
+          "Cloud",
+          "SRE",
+          "SWE",
+          "PM"
+        ],
+        "url": "https://www.google.com/about/careers/applications/teams/google-cloud/"
+      },
+      {
+        "name": "Microsoft Azure",
+        "roles": [
+          "Cloud",
+          "SRE",
+          "SWE"
+        ],
+        "url": "https://careers.microsoft.com/"
+      },
+      {
+        "name": "Salesforce",
+        "roles": [
+          "SWE",
+          "Cloud",
+          "CRM",
+          "PM"
+        ],
+        "url": "https://careers.salesforce.com/"
+      },
+      {
+        "name": "ServiceNow",
+        "roles": [
+          "SWE",
+          "Cloud",
+          "ITSM",
+          "PM"
+        ],
+        "url": "https://careers.servicenow.com/"
+      },
+      {
+        "name": "Datadog",
+        "roles": [
+          "SWE",
+          "DevOps",
+          "Cloud",
+          "SRE"
+        ],
+        "url": "https://careers.datadoghq.com/"
+      },
+      {
+        "name": "HashiCorp",
+        "roles": [
+          "SWE",
+          "DevOps",
+          "Cloud"
+        ],
+        "url": "https://www.hashicorp.com/en/careers"
+      },
+      {
+        "name": "Atlassian",
+        "roles": [
+          "SWE",
+          "DevOps",
+          "PM"
+        ],
+        "url": "https://www.atlassian.com/company/careers"
+      },
+      {
+        "name": "GitHub",
+        "roles": [
+          "SWE",
+          "DevOps",
+          "PM"
+        ],
+        "url": "https://www.github.careers/"
+      },
+      {
+        "name": "GitLab",
+        "roles": [
+          "SWE",
+          "DevOps",
+          "Cloud",
+          "Remote"
+        ],
+        "url": "https://about.gitlab.com/jobs/"
+      },
+      {
+        "name": "Cloudflare",
+        "roles": [
+          "SWE",
+          "Network",
+          "Security"
+        ],
+        "url": "https://www.cloudflare.com/careers/"
+      },
+      {
+        "name": "Fastly",
+        "roles": [
+          "SWE",
+          "CDN",
+          "Network"
+        ],
+        "url": "https://www.fastly.com/about/careers"
+      },
+      {
+        "name": "Confluent",
+        "roles": [
+          "SWE",
+          "Data",
+          "Cloud",
+          "Kafka"
+        ],
+        "url": "https://careers.confluent.io/"
+      },
+      {
+        "name": "Snowflake",
+        "roles": [
+          "SWE",
+          "Data",
+          "Cloud"
+        ],
+        "url": "https://careers.snowflake.com/"
+      }
+    ]
+  },
+  {
+    "title": "Cybersecurity",
+    "companies": [
+      {
+        "name": "Palo Alto Networks",
+        "roles": [
+          "Security",
+          "SWE",
+          "Threat Intel"
+        ],
+        "url": "https://jobs.paloaltonetworks.com/"
+      },
+      {
+        "name": "CrowdStrike",
+        "roles": [
+          "Security",
+          "SWE",
+          "Data",
+          "Threat Intel"
+        ],
+        "url": "https://www.crowdstrike.com/en-us/careers/"
+      },
+      {
+        "name": "Zscaler",
+        "roles": [
+          "Security",
+          "SWE",
+          "Cloud"
+        ],
+        "url": "https://www.zscaler.com/careers"
+      },
+      {
+        "name": "SentinelOne",
+        "roles": [
+          "Security",
+          "SWE",
+          "ML"
+        ],
+        "url": "https://www.sentinelone.com/careers/"
+      },
+      {
+        "name": "Darktrace",
+        "roles": [
+          "Security",
+          "SWE",
+          "ML"
+        ],
+        "url": "https://www.darktrace.com/careers"
+      },
+      {
+        "name": "Cisco Security",
+        "roles": [
+          "Network",
+          "Security",
+          "SWE"
+        ],
+        "url": "https://jobs.cisco.com/"
+      },
+      {
+        "name": "Check Point",
+        "roles": [
+          "Security",
+          "SWE",
+          "Network"
+        ],
+        "url": "https://careers.checkpoint.com/"
+      },
+      {
+        "name": "Fortinet",
+        "roles": [
+          "Network",
+          "Security",
+          "SWE"
+        ],
+        "url": "https://www.fortinet.com/corporate/careers"
+      },
+      {
+        "name": "Tenable",
+        "roles": [
+          "Security",
+          "SWE",
+          "Vulnerability Mgmt"
+        ],
+        "url": "https://www.tenable.com/careers"
+      },
+      {
+        "name": "Rapid7",
+        "roles": [
+          "Security",
+          "SWE",
+          "SIEM"
+        ],
+        "url": "https://careers.rapid7.com/"
+      }
+    ]
+  },
+  {
+    "title": "AI & ML Companies",
+    "companies": [
+      {
+        "name": "Hugging Face",
+        "roles": [
+          "ML",
+          "SWE",
+          "Research",
+          "DevRel"
+        ],
+        "url": "https://huggingface.co/join-us"
+      },
+      {
+        "name": "Cohere",
+        "roles": [
+          "ML",
+          "SWE",
+          "Research"
+        ],
+        "url": "https://cohere.com/careers"
+      },
+      {
+        "name": "Mistral AI",
+        "roles": [
+          "ML",
+          "Research",
+          "SWE"
+        ],
+        "url": "https://mistral.ai/careers"
+      },
+      {
+        "name": "Stability AI",
+        "roles": [
+          "ML",
+          "Research",
+          "SWE"
+        ],
+        "url": "https://stability.ai/careers"
+      },
+      {
+        "name": "Perplexity AI",
+        "roles": [
+          "ML",
+          "SWE",
+          "Research",
+          "PM"
+        ],
+        "url": "https://www.perplexity.ai/hub/careers"
+      },
+      {
+        "name": "Inflection AI",
+        "roles": [
+          "ML",
+          "SWE",
+          "Research"
+        ],
+        "url": "https://inflection.ai/careers"
+      },
+      {
+        "name": "Scale AI",
+        "roles": [
+          "ML",
+          "Data",
+          "SWE",
+          "Ops"
+        ],
+        "url": "https://scale.com/careers"
+      },
+      {
+        "name": "DataRobot",
+        "roles": [
+          "ML",
+          "SWE",
+          "Data",
+          "PM"
+        ],
+        "url": "https://www.datarobot.com/careers/"
+      },
+      {
+        "name": "C3.ai",
+        "roles": [
+          "ML",
+          "SWE",
+          "Data",
+          "PM"
+        ],
+        "url": "https://c3.ai/careers/"
+      },
+      {
+        "name": "Databricks",
+        "roles": [
+          "Data",
+          "SWE",
+          "ML",
+          "Cloud"
+        ],
+        "url": "https://www.databricks.com/company/careers"
+      }
+    ]
+  },
+  {
+    "title": "E-Commerce & Fintech",
+    "companies": [
+      {
+        "name": "Stripe",
+        "roles": [
+          "SWE",
+          "Data",
+          "FinTech",
+          "PM",
+          "Infrastructure"
+        ],
+        "url": "https://stripe.com/jobs"
+      },
+      {
+        "name": "PayPal",
+        "roles": [
+          "SWE",
+          "Data",
+          "FinTech",
+          "Risk"
+        ],
+        "url": "https://careers.pypl.com/"
+      },
+      {
+        "name": "Square / Block",
+        "roles": [
+          "SWE",
+          "Data",
+          "FinTech",
+          "PM"
+        ],
+        "url": "https://block.xyz/careers"
+      },
+      {
+        "name": "Plaid",
+        "roles": [
+          "SWE",
+          "Data",
+          "FinTech",
+          "PM"
+        ],
+        "url": "https://plaid.com/careers/"
+      },
+      {
+        "name": "Shopify",
+        "roles": [
+          "SWE",
+          "Data",
+          "E-Commerce",
+          "PM"
+        ],
+        "url": "https://www.shopify.com/careers"
+      },
+      {
+        "name": "Klarna",
+        "roles": [
+          "SWE",
+          "Data",
+          "FinTech",
+          "PM"
+        ],
+        "url": "https://www.klarna.com/careers/"
+      },
+      {
+        "name": "Revolut",
+        "roles": [
+          "SWE",
+          "Data",
+          "FinTech",
+          "PM"
+        ],
+        "url": "https://www.revolut.com/careers/"
+      },
+      {
+        "name": "Robinhood",
+        "roles": [
+          "SWE",
+          "Data",
+          "FinTech",
+          "Risk"
+        ],
+        "url": "https://careers.robinhood.com/"
+      },
+      {
+        "name": "Coinbase",
+        "roles": [
+          "SWE",
+          "Data",
+          "Web3",
+          "PM"
+        ],
+        "url": "https://www.coinbase.com/careers"
+      },
+      {
+        "name": "Binance",
+        "roles": [
+          "SWE",
+          "Data",
+          "Web3",
+          "Trading"
+        ],
+        "url": "https://www.binance.com/en/careers"
+      }
+    ]
+  },
+  {
+    "title": "Automotive & EV",
+    "companies": [
+      {
+        "name": "Tesla",
+        "roles": [
+          "SWE",
+          "ML",
+          "Embedded",
+          "Hardware"
+        ],
+        "url": "https://www.tesla.com/careers"
+      },
+      {
+        "name": "Waymo",
+        "roles": [
+          "SWE",
+          "ML",
+          "Robotics",
+          "Hardware"
+        ],
+        "url": "https://waymo.com/careers/"
+      },
+      {
+        "name": "Rivian",
+        "roles": [
+          "SWE",
+          "Hardware",
+          "Embedded",
+          "Data"
+        ],
+        "url": "https://careers.rivian.com/"
+      },
+      {
+        "name": "Lucid Motors",
+        "roles": [
+          "SWE",
+          "Hardware",
+          "Embedded"
+        ],
+        "url": "https://careers.lucidmotors.com/"
+      },
+      {
+        "name": "Ola Electric",
+        "roles": [
+          "SWE",
+          "Embedded",
+          "EV",
+          "Data"
+        ],
+        "url": "https://www.olaelectric.com/careers"
+      },
+      {
+        "name": "Ather Energy",
+        "roles": [
+          "SWE",
+          "Embedded",
+          "EV"
+        ],
+        "url": "https://www.atherenergy.com/careers"
+      },
+      {
+        "name": "Bosch",
+        "roles": [
+          "Embedded",
+          "SWE",
+          "Automotive",
+          "VLSI"
+        ],
+        "url": "https://www.bosch.com/careers/"
+      },
+      {
+        "name": "Continental",
+        "roles": [
+          "Embedded",
+          "SWE",
+          "Automotive"
+        ],
+        "url": "https://jobs.continental.com/"
+      },
+      {
+        "name": "Aptiv",
+        "roles": [
+          "Embedded",
+          "SWE",
+          "Automotive"
+        ],
+        "url": "https://www.aptiv.com/en/careers"
+      },
+      {
+        "name": "Mahindra",
+        "roles": [
+          "Embedded",
+          "SWE",
+          "EV",
+          "Automotive"
+        ],
+        "url": "https://www.mahindra.com/careers"
+      }
+    ]
+  },
+  {
+    "title": "Aerospace & Defence",
+    "companies": [
+      {
+        "name": "ISRO",
+        "roles": [
+          "Aerospace",
+          "SWE",
+          "Electronics"
+        ],
+        "url": "https://www.isro.gov.in/Careers.html"
+      },
+      {
+        "name": "SpaceX",
+        "roles": [
+          "Aerospace",
+          "SWE",
+          "Embedded",
+          "Hardware"
+        ],
+        "url": "https://www.spacex.com/careers/"
+      },
+      {
+        "name": "Boeing",
+        "roles": [
+          "Aerospace",
+          "SWE",
+          "Data",
+          "Systems"
+        ],
+        "url": "https://jobs.boeing.com/"
+      },
+      {
+        "name": "Airbus",
+        "roles": [
+          "Aerospace",
+          "SWE",
+          "Data"
+        ],
+        "url": "https://www.airbus.com/en/careers"
+      },
+      {
+        "name": "Lockheed Martin",
+        "roles": [
+          "Aerospace",
+          "SWE",
+          "Systems"
+        ],
+        "url": "https://www.lockheedmartinjobs.com/"
+      },
+      {
+        "name": "HAL",
+        "roles": [
+          "Aerospace",
+          "Electronics",
+          "SWE"
+        ],
+        "url": "https://hal-india.co.in/",
+        "note": "Official company site; check its careers or recruitment section."
+      },
+      {
+        "name": "DRDO",
+        "roles": [
+          "Defence",
+          "Electronics",
+          "SWE"
+        ],
+        "url": "https://www.drdo.gov.in/drdo/careers"
+      }
+    ]
+  },
+  {
+    "title": "Healthcare & MedTech",
+    "companies": [
+      {
+        "name": "Philips Healthcare",
+        "roles": [
+          "SWE",
+          "Data",
+          "Hardware",
+          "AI"
+        ],
+        "url": "https://www.careers.philips.com/"
+      },
+      {
+        "name": "GE Healthcare",
+        "roles": [
+          "SWE",
+          "Data",
+          "AI",
+          "Hardware"
+        ],
+        "url": "https://careers.gehealthcare.com/"
+      },
+      {
+        "name": "Siemens Healthineers",
+        "roles": [
+          "SWE",
+          "Data",
+          "Hardware"
+        ],
+        "url": "https://www.siemens-healthineers.com/careers"
+      },
+      {
+        "name": "Abbott",
+        "roles": [
+          "SWE",
+          "Hardware",
+          "Regulatory",
+          "Data"
+        ],
+        "url": "https://www.jobs.abbott/"
+      },
+      {
+        "name": "Medtronic",
+        "roles": [
+          "SWE",
+          "Embedded",
+          "Data",
+          "Regulatory"
+        ],
+        "url": "https://www.medtronic.com/en-us/our-company/careers.html"
+      },
+      {
+        "name": "3M Health",
+        "roles": [
+          "SWE",
+          "Data",
+          "Hardware"
+        ],
+        "url": "https://www.solventum.com/en-us/home/our-company/careers/",
+        "note": "Healthcare careers are now listed through Solventum."
+      },
+      {
+        "name": "HealthStream",
+        "roles": [
+          "SWE",
+          "Data",
+          "EdTech"
+        ],
+        "url": "https://www.healthstream.com/about/careers"
+      },
+      {
+        "name": "Practo",
+        "roles": [
+          "SWE",
+          "Data",
+          "HealthTech"
+        ],
+        "url": "https://www.practo.com/company/careers"
+      },
+      {
+        "name": "PharmEasy",
+        "roles": [
+          "SWE",
+          "Data",
+          "HealthTech"
+        ],
+        "url": "https://pharmeasy.in/careers"
+      },
+      {
+        "name": "1mg",
+        "roles": [
+          "SWE",
+          "Data",
+          "HealthTech"
+        ],
+        "url": "https://www.1mg.com/jobs"
+      }
+    ]
+  },
+  {
+    "title": "Media, Gaming & Entertainment",
+    "companies": [
+      {
+        "name": "Netflix Tech",
+        "roles": [
+          "SWE",
+          "Data",
+          "Streaming"
+        ],
+        "url": "https://explore.jobs.netflix.net/"
+      },
+      {
+        "name": "Spotify",
+        "roles": [
+          "SWE",
+          "Data",
+          "ML",
+          "PM"
+        ],
+        "url": "https://www.lifeatspotify.com/"
+      },
+      {
+        "name": "Electronic Arts",
+        "roles": [
+          "SWE",
+          "Graphics",
+          "Data",
+          "Gaming"
+        ],
+        "url": "https://www.ea.com/careers"
+      },
+      {
+        "name": "Riot Games",
+        "roles": [
+          "SWE",
+          "Graphics",
+          "Data",
+          "Gaming"
+        ],
+        "url": "https://www.riotgames.com/en/work-with-us"
+      },
+      {
+        "name": "Epic Games",
+        "roles": [
+          "SWE",
+          "Graphics",
+          "Gaming"
+        ],
+        "url": "https://www.epicgames.com/site/en-US/careers"
+      },
+      {
+        "name": "Niantic",
+        "roles": [
+          "SWE",
+          "AR/VR",
+          "Data"
+        ],
+        "url": "https://careers.nianticlabs.com/"
+      },
+      {
+        "name": "Unity Technologies",
+        "roles": [
+          "SWE",
+          "Graphics",
+          "AR/VR"
+        ],
+        "url": "https://unity.com/careers"
+      },
+      {
+        "name": "Adobe",
+        "roles": [
+          "SWE",
+          "Data",
+          "Design",
+          "PM"
+        ],
+        "url": "https://careers.adobe.com/"
+      },
+      {
+        "name": "Canva",
+        "roles": [
+          "SWE",
+          "Data",
+          "Design",
+          "PM"
+        ],
+        "url": "https://www.lifeatcanva.com/"
+      },
+      {
+        "name": "Figma",
+        "roles": [
+          "SWE",
+          "Data",
+          "Design",
+          "PM"
+        ],
+        "url": "https://www.figma.com/careers/"
+      }
+    ]
+  },
+  {
+    "title": "Telecom & Networking",
+    "companies": [
+      {
+        "name": "Cisco",
+        "roles": [
+          "Networking",
+          "SWE",
+          "Security",
+          "Cloud"
+        ],
+        "url": "https://jobs.cisco.com/"
+      },
+      {
+        "name": "Nokia",
+        "roles": [
+          "Networking",
+          "SWE",
+          "Telecom",
+          "5G"
+        ],
+        "url": "https://www.nokia.com/about-us/careers/"
+      },
+      {
+        "name": "Ericsson",
+        "roles": [
+          "Telecom",
+          "SWE",
+          "5G",
+          "Embedded"
+        ],
+        "url": "https://www.ericsson.com/en/careers"
+      },
+      {
+        "name": "Juniper Networks",
+        "roles": [
+          "Networking",
+          "SWE",
+          "Cloud"
+        ],
+        "url": "https://careers.hpe.com/",
+        "note": "See HPE careers for Juniper opportunities."
+      },
+      {
+        "name": "Arista Networks",
+        "roles": [
+          "Networking",
+          "SWE",
+          "Cloud"
+        ],
+        "url": "https://www.arista.com/en/careers"
+      },
+      {
+        "name": "Jio Platforms",
+        "roles": [
+          "Telecom",
+          "SWE",
+          "Data",
+          "Cloud"
+        ],
+        "url": "https://careers.jio.com/"
+      },
+      {
+        "name": "Airtel",
+        "roles": [
+          "Telecom",
+          "SWE",
+          "Data",
+          "5G"
+        ],
+        "url": "https://careers.airtel.com/"
+      },
+      {
+        "name": "BSNL",
+        "roles": [
+          "Telecom",
+          "SWE"
+        ],
+        "url": "https://www.bsnl.co.in/",
+        "note": "Official company site; check recruitment notices."
+      }
+    ]
+  },
+  {
+    "title": "Indian Banks & NBFCs",
+    "companies": [
+      {
+        "name": "HDFC Bank",
+        "roles": [
+          "SWE",
+          "Data",
+          "Risk",
+          "Analytics"
+        ],
+        "url": "https://www.hdfcbank.com/personal/about-us/careers"
+      },
+      {
+        "name": "ICICI Bank",
+        "roles": [
+          "SWE",
+          "Data",
+          "Risk",
+          "Analytics"
+        ],
+        "url": "https://www.icicicareers.com/"
+      },
+      {
+        "name": "Axis Bank",
+        "roles": [
+          "SWE",
+          "Data",
+          "Risk"
+        ],
+        "url": "https://www.axisbank.com/careers"
+      },
+      {
+        "name": "Kotak Mahindra Bank",
+        "roles": [
+          "SWE",
+          "Data",
+          "Risk",
+          "FinTech"
+        ],
+        "url": "https://www.kotak.com/en/about-us/careers.html"
+      },
+      {
+        "name": "SBI",
+        "roles": [
+          "IT",
+          "Data",
+          "Systems"
+        ],
+        "url": "https://sbi.co.in/web/careers"
+      },
+      {
+        "name": "IDFC First Bank",
+        "roles": [
+          "SWE",
+          "Data",
+          "Risk"
+        ],
+        "url": "https://www.idfcfirstbank.com/careers"
+      },
+      {
+        "name": "Bajaj Finserv",
+        "roles": [
+          "SWE",
+          "Data",
+          "FinTech"
+        ],
+        "url": "https://www.bajajfinserv.in/careers"
+      },
+      {
+        "name": "Zerodha",
+        "roles": [
+          "SWE",
+          "Data",
+          "FinTech"
+        ],
+        "url": "https://zerodha.com/careers/"
+      },
+      {
+        "name": "Angel One",
+        "roles": [
+          "SWE",
+          "Data",
+          "FinTech"
+        ],
+        "url": "https://www.angelone.in/careers"
+      },
+      {
+        "name": "Groww",
+        "roles": [
+          "SWE",
+          "Data",
+          "FinTech"
+        ],
+        "url": "https://groww.in/careers"
+      }
+    ]
+  },
+  {
+    "title": "Robotics & IoT",
+    "companies": [
+      {
+        "name": "Boston Dynamics",
+        "roles": [
+          "Robotics",
+          "SWE",
+          "ML",
+          "Hardware"
+        ],
+        "url": "https://bostondynamics.com/careers/"
+      },
+      {
+        "name": "iRobot",
+        "roles": [
+          "Robotics",
+          "SWE",
+          "Embedded"
+        ],
+        "url": "https://careers.irobot.com/"
+      },
+      {
+        "name": "ABB Robotics",
+        "roles": [
+          "Robotics",
+          "SWE",
+          "Embedded"
+        ],
+        "url": "https://careers.abb/global/en"
+      },
+      {
+        "name": "Fanuc",
+        "roles": [
+          "Robotics",
+          "Embedded",
+          "SWE"
+        ],
+        "url": "https://www.fanucindia.com/careers"
+      },
+      {
+        "name": "Siemens IoT",
+        "roles": [
+          "IoT",
+          "SWE",
+          "Embedded",
+          "Cloud"
+        ],
+        "url": "https://www.siemens.com/global/en/company/jobs.html"
+      },
+      {
+        "name": "Honeywell",
+        "roles": [
+          "IoT",
+          "SWE",
+          "Embedded",
+          "Data"
+        ],
+        "url": "https://careers.honeywell.com/"
+      },
+      {
+        "name": "Rockwell Automation",
+        "roles": [
+          "IoT",
+          "SWE",
+          "Embedded"
+        ],
+        "url": "https://www.rockwellautomation.com/en-us/company/careers.html"
+      },
+      {
+        "name": "PTC",
+        "roles": [
+          "IoT",
+          "SWE",
+          "CAD",
+          "Cloud"
+        ],
+        "url": "https://www.ptc.com/en/careers"
+      },
+      {
+        "name": "Tata Robotics",
+        "roles": [
+          "Robotics",
+          "SWE",
+          "Embedded"
+        ],
+        "url": "https://www.tal.co.in/",
+        "note": "Official TAL site; check current recruitment information."
+      }
+    ]
+  },
+  {
+    "title": "Global MNCs with Strong India Offices",
+    "companies": [
+      {
+        "name": "IBM",
+        "roles": [
+          "SWE",
+          "Data",
+          "Cloud",
+          "Consulting"
+        ],
+        "url": "https://www.ibm.com/careers"
+      },
+      {
+        "name": "SAP",
+        "roles": [
+          "SWE",
+          "ERP",
+          "Data",
+          "Consulting"
+        ],
+        "url": "https://jobs.sap.com/"
+      },
+      {
+        "name": "Oracle",
+        "roles": [
+          "SWE",
+          "Data",
+          "Cloud",
+          "DBA"
+        ],
+        "url": "https://www.oracle.com/careers/"
+      },
+      {
+        "name": "VMware",
+        "roles": [
+          "SWE",
+          "Cloud",
+          "Virtualization"
+        ],
+        "url": "https://www.broadcom.com/company/careers",
+        "note": "See Broadcom careers for VMware opportunities."
+      },
+      {
+        "name": "Dell Technologies",
+        "roles": [
+          "SWE",
+          "Hardware",
+          "Data",
+          "Sales"
+        ],
+        "url": "https://jobs.dell.com/"
+      },
+      {
+        "name": "HP",
+        "roles": [
+          "SWE",
+          "Hardware",
+          "Data",
+          "PM"
+        ],
+        "url": "https://jobs.hp.com/"
+      },
+      {
+        "name": "Lenovo",
+        "roles": [
+          "SWE",
+          "Hardware",
+          "Data"
+        ],
+        "url": "https://jobs.lenovo.com/"
+      },
+      {
+        "name": "Siemens",
+        "roles": [
+          "SWE",
+          "Embedded",
+          "Data",
+          "Automation"
+        ],
+        "url": "https://www.siemens.com/global/en/company/jobs.html"
+      },
+      {
+        "name": "3M",
+        "roles": [
+          "SWE",
+          "Data",
+          "Hardware",
+          "Research"
+        ],
+        "url": "https://www.3m.com/3M/en_US/careers-us/"
+      },
+      {
+        "name": "Philips",
+        "roles": [
+          "SWE",
+          "Data",
+          "Hardware",
+          "AI"
+        ],
+        "url": "https://www.careers.philips.com/"
+      },
+      {
+        "name": "GE Digital",
+        "roles": [
+          "SWE",
+          "Data",
+          "Cloud",
+          "Industrial IoT"
+        ],
+        "url": "https://careers.gevernova.com/",
+        "note": "See GE Vernova careers for digital opportunities."
+      },
+      {
+        "name": "Harman International",
+        "roles": [
+          "SWE",
+          "Embedded",
+          "Audio",
+          "Automotive"
+        ],
+        "url": "https://jobs.harman.com/"
+      },
+      {
+        "name": "Unilever",
+        "roles": [
+          "Data",
+          "Analytics",
+          "SWE",
+          "PM"
+        ],
+        "url": "https://careers.unilever.com/"
+      },
+      {
+        "name": "Procter & Gamble",
+        "roles": [
+          "Data",
+          "IT",
+          "SWE",
+          "PM"
+        ],
+        "url": "https://www.pgcareers.com/"
+      },
+      {
+        "name": "L&T Technology Services",
+        "roles": [
+          "SWE",
+          "Embedded",
+          "Automotive",
+          "Aerospace"
+        ],
+        "url": "https://www.ltts.com/careers"
+      },
+      {
+        "name": "Tata Elxsi",
+        "roles": [
+          "SWE",
+          "Embedded",
+          "Design",
+          "Automotive"
+        ],
+        "url": "https://www.tataelxsi.com/careers"
+      },
+      {
+        "name": "Tata Consultancy Services (TCS)",
+        "roles": [
+          "SWE",
+          "Data",
+          "Consulting"
+        ],
+        "url": "https://www.tcs.com/careers"
+      },
+      {
+        "name": "Mahindra Tech",
+        "roles": [
+          "SWE",
+          "Data",
+          "Automotive"
+        ],
+        "url": "https://careers.techmahindra.com/"
+      }
+    ]
+  }
+]
