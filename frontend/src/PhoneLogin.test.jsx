@@ -34,7 +34,7 @@ it("verifies the SMS before creating the profile and limits resends", async () =
   expect(screen.getByRole("button", { name: /Resend in/ })).toBeDisabled();
   fireEvent.change(screen.getByLabelText("Verification code"), { target: { value: "123456" } });
   fireEvent.click(screen.getByRole("button", { name: "Verify and sign in" }));
-  await waitFor(() => expect(state.createProfile).toHaveBeenCalledWith({ uid: "phone-user", email: null }, "Student Patil"));
+  await waitFor(() => expect(state.createProfile).toHaveBeenCalledWith({ uid: "phone-user", email: null }, "STUDENT PATIL"));
 });
 it("keeps an incorrect code from creating a profile", async () => {
   state.confirm.mockRejectedValue({ code: "auth/invalid-verification-code" });
@@ -70,7 +70,13 @@ it.each(["", "   ", "Vivek", "Vivek   ", "123 456", "Vivek 123"])("blocks SMS re
   expect(state.createProfile).not.toHaveBeenCalled();
 });
 it("accepts international names and normalizes whitespace", () => {
-  expect(fullName("  Vivek   Chavan  ")).toBe("Vivek Chavan");
+  expect(fullName("  Vivek   Chavan  ")).toBe("VIVEK CHAVAN");
   expect(fullName("विवेक चव्हाण")).toBe("विवेक चव्हाण");
-  expect(fullName("Anne-Marie O’Neill")).toBe("Anne-Marie O’Neill");
+  expect(fullName("Anne-Marie O’Neill")).toBe("ANNE-MARIE O’NEILL");
+});
+
+it("shows the full-name placeholder and accepts mixed case", () => {
+  open();
+  expect(screen.getByPlaceholderText("Enter your full name")).toBeInTheDocument();
+  expect(fullName("vIvEk cHaVaN")).toBe("VIVEK CHAVAN");
 });

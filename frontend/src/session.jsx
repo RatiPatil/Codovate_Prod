@@ -121,7 +121,7 @@ export function SessionProvider({ children }) {
           if (existing.exists()) return;
           const statsRef = doc(db, "publicStats", "community");
           const stats = await transaction.get(statsRef);
-          const fullName = name || current.displayName || "";
+          const fullName = (name || current.displayName || "").trim().replace(/\s+/gu, " ").toUpperCase();
           const createdAt = serverTimestamp();
           if (stats.exists()) transaction.update(statsRef, {
             registeredStudents: stats.data().registeredStudents + 1,

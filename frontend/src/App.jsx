@@ -1518,6 +1518,7 @@ function Profile() {
     const values = new FormData(e.currentTarget);
     const data = Object.fromEntries(values);
     delete data.resume;
+    data.name = data.name.trim().replace(/\s+/gu, " ").toUpperCase();
     const skillsError = skillInputError(data.skills);
     if (skillsError) {
       setError(skillsError);
@@ -1605,7 +1606,7 @@ function Profile() {
           {(profile?.name || user.email || "S")[0].toUpperCase()}
         </div>
         <div>
-          <h2>{profile?.name || "Complete your profile"}</h2>
+          <h2>{profile?.name?.toUpperCase() || "Complete your profile"}</h2>
           <p>{user.email}</p>
           <span className="pill">{admin ? "Administrator" : "Student"}</span>
         </div>
@@ -1626,7 +1627,7 @@ function Profile() {
               required
               maxLength={100}
               name="name"
-              defaultValue={profile?.name || user.displayName || ""}
+              defaultValue={(profile?.name || user.displayName || "").toUpperCase()}
               autoComplete="name"
             />
           </label>

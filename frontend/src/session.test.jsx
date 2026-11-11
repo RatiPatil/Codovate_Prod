@@ -107,7 +107,7 @@ describe("session and profile integrity", () => {
       id: "student-id",
     });
     expect(state.set.mock.calls[0][1]).toMatchObject({
-      name: "Student",
+      name: "STUDENT",
       email: "student@example.com",
       skills: [],
       resumePath: "",

@@ -6,7 +6,7 @@ import { useSession } from "./session";
 import { safeReturnPath, withTimeout } from "./authSupport";
 
 export function fullName(value) {
-  const normalized = value.trim().replace(/\s+/gu, " ");
+  const normalized = value.trim().replace(/\s+/gu, " ").toUpperCase();
   const parts = normalized.split(" ");
   if (normalized.length > 100 || parts.length < 2 ||
       parts.some(part => !/^[\p{L}\p{M}][\p{L}\p{M}'’.-]*$/u.test(part)))
@@ -115,7 +115,7 @@ export function PhoneLogin() {
       {error && <p className="notice error" role="alert">{error}</p>}
       {sessionError && !busy ? <div className="notice error" role="alert"><p>You're signed in, but the account connection needs attention.</p><button className="button secondary" onClick={() => { setError(""); retrySession(); }}>Retry account connection</button><button className="button secondary" onClick={() => logout().catch(() => setError("Could not sign out. Please retry."))}>Sign out</button></div> : <>
         <form onSubmit={send}>
-          <label>Your full name<input name="name" placeholder="First and last name" autoComplete="name" required maxLength={100} value={name} disabled={busy || !!confirmation} onChange={e => setName(e.target.value)} /></label>
+          <label>Your full name<input name="name" placeholder="Enter your full name" autoComplete="name" required maxLength={100} value={name} disabled={busy || !!confirmation} onChange={e => setName(e.target.value)} /></label>
           <label>Phone number<input name="phone" type="tel" autoComplete="tel" required maxLength={24} value={number} disabled={busy || !!confirmation} onChange={e => setNumber(e.target.value)} /></label>
           <p className="hint">By requesting a code, you agree to receive a verification SMS. Carrier charges may apply. Google processes phone numbers for spam and abuse prevention.</p>
           <div ref={captchaNode} />
