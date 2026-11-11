@@ -5,14 +5,8 @@ import { auth, configured } from "./firebase";
 import { useSession } from "./session";
 import { safeReturnPath, withTimeout } from "./authSupport";
 
-export function fullName(value) {
-  const normalized = value.trim().replace(/\s+/gu, " ").toUpperCase();
-  const parts = normalized.split(" ");
-  if (normalized.length > 100 || parts.length < 2 ||
-      parts.some(part => !/^[\p{L}\p{M}][\p{L}\p{M}'’.-]*$/u.test(part)))
-    throw new Error("Enter your full name, including your first and last name.");
-  return normalized;
-}
+import { normalizeFullName as fullName } from "./profileNames";
+export { fullName };
 
 export function phoneNumber(value) {
   const number = value.trim().replace(/[\s()-]/g, "");

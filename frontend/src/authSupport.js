@@ -27,7 +27,7 @@ export function safeReturnPath(value) {
   )
     return "/dashboard";
   const path = value.split(/[?#]/)[0].replace(/\/+$/, "").toLowerCase();
-  if (["/login", "/signup", "/register", "/forgot-password", "/phone-login"].includes(path))
+  if (["/login", "/signup", "/register", "/forgot-password", "/phone-login", "/onboarding"].includes(path))
     return "/dashboard";
   return value;
 }

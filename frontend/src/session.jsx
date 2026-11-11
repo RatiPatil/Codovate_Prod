@@ -8,6 +8,8 @@ import {
 } from "firebase/firestore";
 import { auth, db, configured } from "./firebase";
 import { SESSION_TIMEOUT_MS, withTimeout, sessionFailure } from "./authSupport";
+import { initialOnboarding } from "./onboardingContract";
+import { normalizeName } from "./profileNames";
 const Context = createContext(null);
 export function SessionProvider({ children }) {
   const [user, setUser] = useState(null),
@@ -121,7 +123,7 @@ export function SessionProvider({ children }) {
           if (existing.exists()) return;
           const statsRef = doc(db, "publicStats", "community");
           const stats = await transaction.get(statsRef);
-          const fullName = (name || current.displayName || "").trim().replace(/\s+/gu, " ").toUpperCase();
+          const fullName = normalizeName(name || current.displayName);
           const createdAt = serverTimestamp();
           if (stats.exists()) transaction.update(statsRef, {
             registeredStudents: stats.data().registeredStudents + 1,
@@ -129,6 +131,7 @@ export function SessionProvider({ children }) {
           });
           transaction.set(profileRef, {
             name: fullName,
+            onboarding: initialOnboarding(createdAt),
             email: current.email || "",
             college: "",
             degree: "",

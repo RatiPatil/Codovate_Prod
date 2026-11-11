@@ -145,6 +145,173 @@
         "importSource": {
           "type": "string",
           "maxLength": 100
+        },
+        "careerPreferences": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "desiredRole",
+            "domain",
+            "experience",
+            "goals",
+            "seeking",
+            "availability",
+            "mode",
+            "yearOfStudy",
+            "justStarting"
+          ],
+          "properties": {
+            "desiredRole": {
+              "type": "string",
+              "maxLength": 100
+            },
+            "domain": {
+              "enum": [
+                "",
+                "Web Development",
+                "AI/ML",
+                "Data Science",
+                "Cyber Security",
+                "Startups",
+                "Research",
+                "Hackathons",
+                "Other"
+              ]
+            },
+            "experience": {
+              "enum": [
+                "",
+                "Beginner",
+                "Intermediate",
+                "Advanced"
+              ]
+            },
+            "goals": {
+              "type": "array",
+              "maxItems": 6,
+              "uniqueItems": true,
+              "items": {
+                "enum": [
+                  "Internships",
+                  "Jobs",
+                  "Hackathons",
+                  "Project collaboration",
+                  "Research",
+                  "Startups"
+                ]
+              }
+            },
+            "seeking": {
+              "type": "array",
+              "maxItems": 4,
+              "uniqueItems": true,
+              "items": {
+                "enum": [
+                  "Hackathon Teammates",
+                  "Project Collaborators",
+                  "Startup Co-founders",
+                  "Research Partners"
+                ]
+              }
+            },
+            "availability": {
+              "enum": [
+                "Not sure yet",
+                "1-5 hours/week",
+                "6-10 hours/week",
+                "10+ hours/week"
+              ]
+            },
+            "mode": {
+              "enum": [
+                "Remote",
+                "On-site",
+                "Hybrid"
+              ]
+            },
+            "yearOfStudy": {
+              "enum": [
+                "",
+                "First year",
+                "Second year",
+                "Third year",
+                "Fourth year",
+                "Final year",
+                "Graduated",
+                "Other"
+              ]
+            },
+            "justStarting": {
+              "type": "boolean"
+            }
+          }
+        },
+        "onboarding": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "version",
+            "status",
+            "step",
+            "startedAt",
+            "completedAt"
+          ],
+          "properties": {
+            "version": {
+              "const": 1
+            },
+            "status": {
+              "enum": [
+                "in-progress",
+                "completed"
+              ]
+            },
+            "step": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 4
+            },
+            "startedAt": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "completedAt": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date-time"
+            }
+          },
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "status": {
+                    "const": "completed"
+                  }
+                }
+              },
+              "then": {
+                "properties": {
+                  "step": {
+                    "const": 4
+                  },
+                  "completedAt": {
+                    "type": "string",
+                    "format": "date-time"
+                  }
+                }
+              },
+              "else": {
+                "properties": {
+                  "completedAt": {
+                    "type": "null"
+                  }
+                }
+              }
+            }
+          ]
         }
       },
       "additionalProperties": false

@@ -40,6 +40,16 @@ export function validateDocument(collection, id, data) {
   const validate = validators[collection];
   if (!validate) return { valid: false, errors: ["Unknown collection"] };
   const errors = [];
+  if (collection === "users" && data.onboarding) {
+    const o = data.onboarding, p = data.careerPreferences || {};
+    if (o.startedAt !== data.createdAt) errors.push("Onboarding must retain the original profile creation timestamp.");
+    if (o.status === "completed" && (
+      data.name !== data.name?.toUpperCase() || !/^[^ ]+( [^ ]+)+$/.test(data.name || "") ||
+      !data.college || !data.degree || !data.graduationYear || !p.yearOfStudy ||
+      !p.desiredRole || !p.domain || !p.experience || !p.goals?.length ||
+      (!data.skills?.length && !p.justStarting)
+    )) errors.push("Completed onboarding requires the full uppercase name, education and career details.");
+  }
   if (collection === "discoveryPreferences" && id !== data.uid)
     errors.push("Discovery preferences must belong to their UID.");
   if (

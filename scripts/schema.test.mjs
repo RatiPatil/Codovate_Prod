@@ -231,3 +231,13 @@ test("phone-only profiles allow an empty email but reject malformed emails", () 
   assert.equal(validateDocument("users", user.id, { ...user.data, email: "" }).valid, true);
   assert.equal(validateDocument("users", user.id, { ...user.data, email: "invalid" }).valid, false);
 });
+test('onboarding schema preserves legacy profiles and validates resumable and completed accounts', () => {
+  const onboarding={version:1,status:'in-progress',step:1,startedAt:user.data.createdAt,completedAt:null};
+  const preferences={desiredRole:'Frontend Developer',domain:'Web Development',experience:'Beginner',goals:['Internships'],seeking:['Project Collaborators'],availability:'1-5 hours/week',mode:'Remote',yearOfStudy:'Final year',justStarting:false};
+  assert.equal(validateDocument('users',user.id,{...user.data,onboarding}).valid,true);
+  const complete={...user.data,name:'VIVEK CHAVAN',skills:['React'],careerPreferences:preferences,onboarding:{...onboarding,status:'completed',step:4,completedAt:user.data.updatedAt}};
+  assert.equal(validateDocument('users',user.id,complete).valid,true);
+  for(const patch of [{name:'Vivek Chavan'},{college:''},{careerPreferences:{...preferences,goals:[]}},{onboarding:{...complete.onboarding,step:1}},{onboarding:{...complete.onboarding,completedAt:null}}]) {
+    assert.equal(validateDocument('users',user.id,{...complete,...patch}).valid,false,JSON.stringify(patch));
+  }
+});

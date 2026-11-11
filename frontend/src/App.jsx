@@ -103,6 +103,9 @@ import { PasswordRecovery } from "./PasswordRecovery";
 import { Mentoring, BookingAdmin, Updates } from "./Growth";
 import { Notifications, NotificationNav, AdminOverview } from "./Notifications";
 import { useOpportunityCounts } from "./opportunityCounts.js";
+import { Onboarding, OnboardingGate } from "./Onboarding.jsx";
+import { needsOnboarding } from "./onboardingContract";
+import { normalizeFullName } from "./profileNames";
 import { OpportunityResources } from "./OpportunityResources.jsx";
 import { HackathonDirectory } from "./HackathonDirectory.jsx";
 import { hackathonDirectory } from "./hackathonCatalog.js";
@@ -1008,8 +1011,8 @@ function AccountRecovery() {
     </div>
   );
 }
-function Guard({ children, adminOnly = false }) {
-  const { user, admin, loading, sessionError } = useSession();
+function Guard({ children, adminOnly = false, allowOnboarding = false }) {
+  const { user, profile, admin, loading, sessionError } = useSession();
   const loc = useLocation();
   if (loading) return <Loading />;
   if (!configured)
@@ -1042,6 +1045,9 @@ function Guard({ children, adminOnly = false }) {
         </Empty>
       </div>
     );
+  if (!allowOnboarding && !adminOnly && !admin && (!profile || needsOnboarding(profile))) {
+    return <Navigate to="/onboarding" replace state={{ from: loc.pathname + loc.search }} />;
+  }
   return children;
 }
 function AuthPage({ signup = false }) {
@@ -1543,7 +1549,8 @@ function Profile() {
     const values = new FormData(e.currentTarget);
     const data = Object.fromEntries(values);
     delete data.resume;
-    data.name = data.name.trim().replace(/\s+/gu, " ").toUpperCase();
+    try { data.name = normalizeFullName(data.name); }
+    catch (failure) { setError(failure.message); return; }
     const skillsError = skillInputError(data.skills);
     if (skillsError) {
       setError(skillsError);
@@ -1637,6 +1644,16 @@ function Profile() {
         </div>
         <strong>{completion(profile)}% complete</strong>
       </div>
+      {profile?.careerPreferences && <section className="panel onboarding-profile-details" aria-label="Career and collaboration profile">
+        <h2>Career & collaboration</h2>
+        <div className="form-grid">
+          <div><strong>Professional direction</strong><p>{profile.careerPreferences.desiredRole} · {profile.careerPreferences.domain}</p><p>{profile.careerPreferences.experience} · {profile.careerPreferences.yearOfStudy}</p></div>
+          <div><strong>Career goals</strong><p>{profile.careerPreferences.goals.join(" · ") || "Not selected"}</p></div>
+          <div><strong>Collaboration</strong><p>{profile.careerPreferences.mode} · {profile.careerPreferences.availability}</p><p>{profile.careerPreferences.seeking.join(" · ") || "Exploring opportunities"}</p></div>
+        </div>
+        <p className="hint">Your preferences stay private. Manage teammate discovery and optional shared details in Find a team.</p>
+        <Link className="button secondary" to="/teams?hub=people">Find teammates <ArrowUpRight size={15} /></Link>
+      </section>}
       {error && <Notice>{error}</Notice>}
       {message && <Notice kind="success">{message}</Notice>}
       <form
@@ -2289,7 +2306,9 @@ export default function App() {
       {!adminScreen && <Header />}
       {!adminScreen && <PreviewBanner />}
       <main id="main">
+        <OnboardingGate>
         <Routes>
+          <Route path="/onboarding" element={<Guard allowOnboarding><Onboarding /></Guard>} />
           <Route path="/" element={<Home catalog={catalog} />} />
           <Route path="/explore" element={<Explore catalog={catalog} />} />
           <Route
@@ -2465,6 +2484,7 @@ export default function App() {
             }
           />
         </Routes>
+        </OnboardingGate>
       </main>
       {!adminScreen && <Footer />}
     </>

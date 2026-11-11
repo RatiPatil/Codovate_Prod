@@ -14,9 +14,48 @@ service cloud.firestore {
     && (s.size() == 0 || (joined.split('\n') == s
      && joined.matches('[^\\n\\r]{1,60}(\\n[^\\n\\r]{1,60}){0,19}')));
   }
+  function validCareerPreferences(p) {
+   return p is map && p.keys().hasAll(['desiredRole','domain','experience','goals','seeking','availability','mode','yearOfStudy','justStarting'])
+    && p.keys().hasOnly(['desiredRole','domain','experience','goals','seeking','availability','mode','yearOfStudy','justStarting'])
+    && text(p.desiredRole,100)
+    && p.domain in ['','Web Development','AI/ML','Data Science','Cyber Security','Startups','Research','Hackathons','Other']
+    && p.experience in ['','Beginner','Intermediate','Advanced']
+    && p.goals is list && p.goals.size()<=6 && p.goals.toSet().size()==p.goals.size()
+    && p.goals.hasOnly(['Internships','Jobs','Hackathons','Project collaboration','Research','Startups'])
+    && p.seeking is list && p.seeking.size()<=4 && p.seeking.toSet().size()==p.seeking.size()
+    && p.seeking.hasOnly(['Hackathon Teammates','Project Collaborators','Startup Co-founders','Research Partners'])
+    && p.availability in ['Not sure yet','1-5 hours/week','6-10 hours/week','10+ hours/week']
+    && p.mode in ['Remote','On-site','Hybrid'] && p.justStarting is bool
+    && p.yearOfStudy in ['','First year','Second year','Third year','Fourth year','Final year','Graduated','Other'];
+  }
+  function onboardingCompleteProfile(d) {
+   let p = d.get('careerPreferences',{});
+   // validProfile validates the preferences map once before this completeness check.
+   return d.keys().hasAll(['careerPreferences']) && d.name.size()>2 && d.name==d.name.upper()
+    && d.name.matches('[^ ]+( [^ ]+)+') && d.college.size()>0 && d.degree.size()>0 && d.graduationYear.size()==4
+    && p.yearOfStudy!='' && p.desiredRole.size()>0 && p.domain!='' && p.experience!='' && p.goals.size()>0
+    && (d.skills.size()>0 || p.justStarting);
+  }
+  function validOnboarding(d) {
+   let o = d.onboarding;
+   return o is map && o.keys().hasAll(['version','status','step','startedAt','completedAt'])
+    && o.keys().hasOnly(['version','status','step','startedAt','completedAt'])
+    && o.version==1 && o.step is int && o.step>=1 && o.step<=4 && o.startedAt is timestamp && o.startedAt==d.createdAt
+    && ((o.status=='in-progress' && o.completedAt==null)
+      || (o.status=='completed' && o.step==4 && o.completedAt is timestamp && onboardingCompleteProfile(d)));
+  }
+  function onboardingTransition() {
+   let before = resource.data.get('onboarding',{});
+   let after = request.resource.data.get('onboarding',{});
+   return (!resource.data.keys().hasAny(['onboarding']) && !request.resource.data.keys().hasAny(['onboarding']))
+    || (resource.data.keys().hasAny(['onboarding']) && request.resource.data.keys().hasAny(['onboarding'])
+      && before.version==after.version && before.startedAt==after.startedAt
+      && ((before.status=='completed' && before==after)
+        || (before.status=='in-progress' && (after.status=='in-progress' || (after.status=='completed' && after.completedAt==request.time)))));
+  }
   function validProfile(d) {
    return d.keys().hasAll(['name','email','college','degree','graduationYear','city','bio','skills','portfolio','resumePath','createdAt','updatedAt'])
-    && d.keys().hasOnly(['name','email','college','degree','graduationYear','city','bio','skills','portfolio','resumePath','resumeUrl','mobile','taluka','program','suggestedSkills','skillSuggestionsSource','discoveryEnabled','accountStatus','mobileVerified','importSource','createdAt','updatedAt'])
+    && d.keys().hasOnly(['name','email','college','degree','graduationYear','city','bio','skills','portfolio','resumePath','resumeUrl','mobile','taluka','program','suggestedSkills','skillSuggestionsSource','onboarding','careerPreferences','discoveryEnabled','accountStatus','mobileVerified','importSource','createdAt','updatedAt'])
     && text(d.name,100) && text(d.email,320) && text(d.college,180) && text(d.degree,100)
     && text(d.graduationYear,4) && d.graduationYear.matches('^(20[0-9]{2}|2100)?$') && text(d.city,100) && text(d.bio,1500)
     && validSkills(d.skills) && text(d.portfolio,500)
@@ -27,6 +66,8 @@ service cloud.firestore {
     && text(d.get('taluka',''),100) && text(d.get('program',''),180) && validSkills(d.get('suggestedSkills',[]))
     && d.get('discoveryEnabled',false) == false && d.get('mobileVerified',false) == false
     && d.get('accountStatus','') in ['','invited'] && text(d.get('importSource',''),100) && text(d.get('skillSuggestionsSource',''),100)
+    && (!d.keys().hasAny(['careerPreferences']) || validCareerPreferences(d.careerPreferences))
+    && (!d.keys().hasAny(['onboarding']) || validOnboarding(d))
     && d.createdAt is timestamp && d.updatedAt is timestamp;
   }
   match /users/{uid} {
@@ -35,8 +76,9 @@ service cloud.firestore {
     && !request.resource.data.keys().hasAny(['accountStatus','importSource','skillSuggestionsSource'])
     && request.resource.data.email == request.auth.token.get('email', '')
     && (request.auth.token.get('email', '') != '' || request.auth.token.get('phone_number', '') != '')
+    && (!request.resource.data.keys().hasAny(['onboarding']) || request.resource.data.onboarding.status=='in-progress')
     && request.resource.data.createdAt == request.time && changedTime();
-   allow update: if own(uid) && validProfile(request.resource.data)
+   allow update: if own(uid) && validProfile(request.resource.data) && onboardingTransition()
     && request.resource.data.get('accountStatus','') == resource.data.get('accountStatus','')
     && request.resource.data.get('importSource','') == resource.data.get('importSource','')
     && request.resource.data.get('skillSuggestionsSource','') == resource.data.get('skillSuggestionsSource','')

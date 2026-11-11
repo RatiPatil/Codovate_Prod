@@ -1881,6 +1881,34 @@ try {
   );
   await check("repeat registration cannot inflate aggregate", assertFails(updateDoc(doc(newcomer.firestore(), "publicStats", "community"), { registeredStudents: 1481, updatedAt: serverTimestamp() })));
   await check("signed-in student reads placement content", assertSucceeds(getDoc(doc(alice.firestore(), "placementContent", "charts"))));
+  const onboardUser = env.authenticatedContext('onboarding-student', {email:'onboarding@example.com'});
+  const onboardRef = doc(onboardUser.firestore(),'users','onboarding-student');
+  await check('new profile starts resumable onboarding',assertSucceeds(setDoc(onboardRef,{
+    ...profile,name:'VIVEK CHAVAN',email:'onboarding@example.com',resumePath:'',
+    onboarding:{version:1,status:'in-progress',step:1,startedAt:serverTimestamp(),completedAt:null},
+  })));
+  const onboardingProfile=(await getDoc(onboardRef)).data();
+  const preferences={desiredRole:'Frontend Developer',domain:'Web Development',experience:'Beginner',goals:['Internships'],seeking:['Project Collaborators'],availability:'1-5 hours/week',mode:'Remote',yearOfStudy:'Final year',justStarting:false};
+  const completion={...onboardingProfile.onboarding,status:'completed',step:4,completedAt:serverTimestamp()};
+  await check('onboarding cannot complete without required preferences',assertFails(updateDoc(onboardRef,{onboarding:completion,updatedAt:serverTimestamp()})));
+  await check('onboarding rejects an invalid completion step',assertFails(updateDoc(onboardRef,{onboarding:{...completion,step:5},careerPreferences:preferences,updatedAt:serverTimestamp()})));
+  await check('onboarding cannot expose arbitrary privilege fields in preferences',assertFails(updateDoc(onboardRef,{careerPreferences:{...preferences,admin:true},updatedAt:serverTimestamp()})));
+  await check('onboarding completion requires uppercase full name',assertFails(updateDoc(onboardRef,{name:'Vivek Chavan',careerPreferences:preferences,onboarding:completion,updatedAt:serverTimestamp()})));
+  await check('onboarding cannot replace its start timestamp',assertFails(updateDoc(onboardRef,{onboarding:{...onboardingProfile.onboarding,startedAt:Timestamp.fromDate(new Date('2020-01-01'))},updatedAt:serverTimestamp()})));
+  const completeBatch=writeBatch(onboardUser.firestore());
+  completeBatch.update(onboardRef,{careerPreferences:preferences,onboarding:completion,updatedAt:serverTimestamp()});
+  completeBatch.set(doc(onboardUser.firestore(),'adminUsers','onboarding-student'),{uid:'onboarding-student',fullName:'VIVEK CHAVAN',joinedAt:onboardingProfile.createdAt,updatedAt:serverTimestamp()});
+  completeBatch.set(doc(onboardUser.firestore(),'discoveryPreferences','onboarding-student'),{
+    uid:'onboarding-student',details:{desiredRole:preferences.desiredRole,domain:preferences.domain,experience:preferences.experience,college:profile.college,year:preferences.yearOfStudy,location:profile.city,photoUrl:'',achievements:[],seeking:preferences.seeking,passions:[]},shareDetails:false,updatedAt:serverTimestamp(),
+  });
+  completeBatch.set(doc(onboardUser.firestore(),'memberProfiles','onboarding-student'),{uid:'onboarding-student',name:'VIVEK CHAVAN',skills:profile.skills,updatedAt:serverTimestamp()});
+  await check('onboarding completion and consented discovery commit atomically',assertSucceeds(completeBatch.commit()));
+  await check('completed onboarding cannot be reset',assertFails(updateDoc(onboardRef,{onboarding:{...onboardingProfile.onboarding,step:1},updatedAt:serverTimestamp()})));
+  await check('other students cannot read onboarding or private career preferences',assertFails(getDoc(doc(bob.firestore(),'users','onboarding-student'))));
+  await check('private discovery preferences remain owner-only',assertFails(getDoc(doc(bob.firestore(),'discoveryPreferences','onboarding-student'))));
+  await check('consented name and skills remain discoverable',assertSucceeds(getDoc(doc(bob.firestore(),'memberProfiles','onboarding-student'))));
+  await check('completed users can still edit their private profile',assertSucceeds(updateDoc(onboardRef,{bio:'Updated introduction',updatedAt:serverTimestamp()})));
+
   console.log(`${checks} Firebase security checks passed.`);
 } finally {
   await env.cleanup();
