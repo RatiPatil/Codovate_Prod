@@ -1150,7 +1150,7 @@ function AuthPage({ signup = false }) {
           </span>{" "}
           Continue with Google
         </button>
-        <Link className="button secondary full" to="/phone-login" state={loc.state}>Continue with phone OTP</Link>
+        <Link className="button secondary full" to="/phone-login" state={loc.state}><span aria-hidden="true">📱</span>{" "}Continue with phone OTP</Link>
         <div className="divider">
           <span>or continue with email</span>
         </div>
