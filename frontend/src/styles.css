@@ -1103,6 +1103,9 @@ form > label {
 .google-button {
   margin-top: 24px;
 }
+.auth-card > .google-button + .button {
+  margin-top: 12px;
+}
 .google-g {
   font-family: Arial, sans-serif;
   font-size: 18px;
