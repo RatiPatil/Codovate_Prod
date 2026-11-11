@@ -683,9 +683,9 @@ function Explore({ catalog }) {
             </select>
           </div>
           {type === "hackathon" && <p className="hint">Listing filters apply to loaded opportunities. Section filters below apply to the reference directory; dated opportunities remain visible separately.</p>}
-          <p className="result-count">
+          {(type !== "hackathon" || rows.length > 0) && <p className="result-count">
             {rows.length} matching loaded opportunities
-          </p>
+          </p>}
           {notice && (
             <Notice kind="info">
               {notice} {!user && <Link to="/login">Sign in</Link>}
@@ -709,9 +709,7 @@ function Explore({ catalog }) {
                 />
               ))}
             </div>
-          ) : type === "hackathon" ? (
-            <p className="notice">No dated hackathon listings match these filters. Browse the reference resources below or refresh the published listings.</p>
-          ) : (
+          ) : type === "hackathon" ? null : (
             <Empty title="No matching opportunities">
               Try another skill or remove a filter. New listings appear here
               when published.
