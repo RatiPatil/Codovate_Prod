@@ -125,7 +125,7 @@ const categories = [
 ];
 const nav = [
   ["/placement", "Placement prep"],
-  ["/placement?section=career-portals", "Career portals"],
+  ["/placement?section=career-portals", "Top Company Career Portals"],
   ["/explore?type=internship", "Internships"],
   ["/explore?type=job", "Jobs"],
   ["/explore?type=competition", "Competitions"],
