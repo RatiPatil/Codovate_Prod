@@ -20,7 +20,8 @@
       "deadline",
       "publishedAt",
       "prizeINR",
-      "note"
+      "note",
+      "schedule"
     ],
     "properties": {
       "id": {
@@ -132,6 +133,104 @@
       "note": {
         "type": "string",
         "maxLength": 1000
+      },
+      "schedule": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "state",
+          "edition",
+          "eventStartDate",
+          "eventEndDate",
+          "registrationOpensDate",
+          "registrationDeadlineDate",
+          "registration",
+          "dateText",
+          "checkedOn",
+          "sourceUrl",
+          "timeZone",
+          "note"
+        ],
+        "properties": {
+          "state": {
+            "enum": [
+              "dated",
+              "multiple",
+              "partial",
+              "unannounced",
+              "paused",
+              "unavailable",
+              "conflicting"
+            ]
+          },
+          "edition": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "eventStartDate": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date"
+          },
+          "eventEndDate": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date"
+          },
+          "registrationOpensDate": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date"
+          },
+          "registrationDeadlineDate": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date"
+          },
+          "registration": {
+            "enum": [
+              "open",
+              "closed",
+              "not-open",
+              "unconfirmed"
+            ]
+          },
+          "dateText": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "checkedOn": {
+            "type": "string",
+            "format": "date"
+          },
+          "sourceUrl": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uri",
+            "pattern": "^https://[^/@]+(?:/|$)"
+          },
+          "timeZone": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 1000
+          }
+        }
       }
     }
   }

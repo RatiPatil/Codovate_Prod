@@ -215,3 +215,5 @@
 .hackathon-directory > .panel { margin-bottom: 20px; }
 .hackathon-directory details { margin-top: 16px; }
 .hackathon-directory summary { cursor: pointer; }
+.hackathon-schedule { border-top: 1px solid var(--border); padding-top: 12px; width: 100%; }
+.hackathon-schedule p { margin: 8px 0; }

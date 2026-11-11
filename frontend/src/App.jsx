@@ -125,6 +125,7 @@ const categories = [
 ];
 const nav = [
   ["/placement", "Placement prep"],
+  ["/placement?section=career-portals", "Career portals"],
   ["/explore?type=internship", "Internships"],
   ["/explore?type=job", "Jobs"],
   ["/explore?type=competition", "Competitions"],
@@ -181,9 +182,10 @@ function Header() {
             <Link
               key={label}
               className={
-                loc.pathname === "/explore" &&
-                new URLSearchParams(loc.search).get("type") ===
-                  new URLSearchParams(to.split("?")[1]).get("type")
+                loc.pathname === to.split("?")[0] &&
+                ["type", "section"].every(key =>
+                  new URLSearchParams(loc.search).get(key) ===
+                    new URLSearchParams(to.split("?")[1]).get(key))
                   ? "selected"
                   : ""
               }
@@ -648,7 +650,7 @@ function Explore({ catalog }) {
           </label>
           {type === "hackathon" && <>
             <label>Registration status<select value={filters.availability} onChange={e => change("availability", e.target.value)}>
-              <option value="all">All statuses</option><option value="open">Open now</option><option value="upcoming">Coming soon</option><option value="closed">Closed</option><option value="unverified">Dates not announced / verify</option>
+              <option value="all">All statuses</option><option value="open">Open now</option><option value="upcoming">Coming soon</option><option value="ongoing">Event in progress</option><option value="closed">Closed</option><option value="unverified">Dates not announced / verify</option>
             </select></label>
             <label>Hackathon section<select value={filters.group} onChange={e => change("group", e.target.value)}>
               <option value="all">All sections</option>{[...new Set(hackathonDirectory.map(row => row.group))].map(group => <option key={group}>{group}</option>)}
@@ -676,6 +678,7 @@ function Explore({ catalog }) {
             >
               <option value="newest">Newest first</option>
               <option value="deadline">Closing soon</option>
+              {type === "hackathon" && <option value="eventDate">Event date — upcoming first</option>}
               <option value="stipend">Highest stipend / prize</option>
             </select>
           </div>

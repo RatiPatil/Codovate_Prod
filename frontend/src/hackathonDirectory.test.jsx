@@ -10,14 +10,15 @@ it("preserves source groups and never invents edition dates or money", () => {
   for (const row of hackathonDirectory) {
     expect(row.deadline).toBeNull();
     expect(row.prizeINR).toBeNull();
-    expect(directoryStatus(row)).toBe("unverified");
+    expect(row.schedule.checkedOn).toBe("2026-11-11");
+    if (row.schedule.eventStartDate) expect(row.schedule.sourceUrl).toMatch(/^https:/);
   }
 });
 it("combines mode, interest, section and search filters", () => {
   const rows = filterHackathonDirectory(hackathonDirectory, {mode:"Remote",category:"Finance",group:"Tech Company Hackathons",search:"PayPal"});
   expect(rows.map(row => row.title)).toEqual(["PayPal Hackathons"]);
-  expect(filterHackathonDirectory(hackathonDirectory, {availability:"open"})).toEqual([]);
-  expect(filterHackathonDirectory(hackathonDirectory, {availability:"upcoming"})).toEqual([]);
+  expect(filterHackathonDirectory(hackathonDirectory, {availability:"open"}, Date.parse("2026-11-11T12:00:00Z")).some(row => row.id === "pennapps")).toBe(true);
+  expect(filterHackathonDirectory(hackathonDirectory, {availability:"upcoming"}, Date.parse("2026-11-11T12:00:00Z")).some(row => row.id === "mchacks")).toBe(true);
   expect(filterHackathonDirectory(hackathonDirectory, {mode:"Hybrid"}).map(row => row.title)).toEqual(["Microsoft Imagine Cup"]);
 });
 it("computes closed and coming-soon states from explicit timestamps and ranks only known amounts", () => {
@@ -34,6 +35,19 @@ it("labels reference resources separately and applies passed filters to links", 
   render(<HackathonDirectory filters={{search:"NASA"}} />);
   expect(screen.getByRole("heading",{name:"NASA Space Apps Challenge"})).toBeInTheDocument();
   expect(screen.queryByRole("heading",{name:"HackMIT"})).toBeNull();
-  expect(screen.getByText("Dates not announced / verify edition")).toBeInTheDocument();
+  expect(screen.getByRole("link", {name:/Date source/})).toBeInTheDocument();
   expect(screen.getByRole("link",{name:/Visit NASA/})).toHaveAttribute("rel","noopener noreferrer");
+});
+
+it("distinguishes event dates, closed applications, partial announcements and stale open observations", () => {
+  const now=Date.parse("2026-11-11T12:00:00Z");
+  const get=id=>hackathonDirectory.find(row=>row.id===id);
+  expect(directoryStatus(get("hackprinceton"),now)).toBe("closed");
+  expect(directoryStatus(get("global-game-jam"),now)).toBe("upcoming");
+  expect(directoryStatus(get("mhacks"),now)).toBe("closed");
+  expect(directoryStatus(get("dandyhacks"),now)).toBe("unverified");
+  expect(directoryStatus(get("treehacks"),now)).toBe("open");
+  expect(directoryStatus(get("treehacks"),Date.parse("2026-11-20T12:00:00Z"))).toBe("upcoming");
+  const ranked=filterHackathonDirectory(hackathonDirectory,{sort:"eventDate"},now);
+  expect(ranked.findIndex(row=>row.id==="hackprinceton")).toBeLessThan(ranked.findIndex(row=>row.id==="treehacks"));
 });

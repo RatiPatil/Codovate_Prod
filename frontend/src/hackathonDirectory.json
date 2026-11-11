@@ -23,7 +23,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition."
+    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition.",
+    "schedule": {
+      "state": "multiple",
+      "edition": null,
+      "eventStartDate": null,
+      "eventEndDate": null,
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "unconfirmed",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://mlh.io/seasons/2027/events",
+      "timeZone": "UTC",
+      "note": "Multiple events or resources; consult the linked calendar for edition-specific dates."
+    }
   },
   {
     "id": "hackmit",
@@ -48,7 +62,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+    "note": "The last dated edition is shown explicitly; check the organizer for future announcements.",
+    "schedule": {
+      "state": "dated",
+      "edition": "HackMIT 2026 (archive)",
+      "eventStartDate": "2026-09-19",
+      "eventEndDate": "2026-09-20",
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": "2026-07-04",
+      "registration": "closed",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://archive.hackmit.org/2026/",
+      "timeZone": "America/New_York",
+      "note": "Verified 2026 archive; no 2027 event date is inferred."
+    }
   },
   {
     "id": "treehacks",
@@ -73,7 +101,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+    "note": "Edition dates checked against the linked organizer or official event calendar; registration details may change.",
+    "schedule": {
+      "state": "dated",
+      "edition": "TreeHacks 2027",
+      "eventStartDate": "2027-02-12",
+      "eventEndDate": "2027-02-14",
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "open",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://www.treehacks.com/",
+      "timeZone": "America/Los_Angeles",
+      "note": "Event dates are separate from the application deadline. Confirm eligibility and registration on the organizer page."
+    }
   },
   {
     "id": "pennapps",
@@ -98,7 +140,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+    "note": "Edition dates checked against the linked organizer or official event calendar; registration details may change.",
+    "schedule": {
+      "state": "dated",
+      "edition": "PennApps XXVII",
+      "eventStartDate": "2027-02-05",
+      "eventEndDate": "2027-02-07",
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": "2027-01-06",
+      "registration": "open",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://pennapps.com/",
+      "timeZone": "America/New_York",
+      "note": "Priority deadline: 6 December 2026. Regular deadline: 6 January 2027; no cutoff time inferred."
+    }
   },
   {
     "id": "hackgt",
@@ -123,7 +179,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+    "note": "Edition dates checked against the linked organizer or official event calendar; registration details may change.",
+    "schedule": {
+      "state": "dated",
+      "edition": "HackGT 13",
+      "eventStartDate": "2026-09-25",
+      "eventEndDate": "2026-09-27",
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "unconfirmed",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://hack.gt/",
+      "timeZone": "America/New_York",
+      "note": "Event dates are separate from the application deadline. Confirm eligibility and registration on the organizer page."
+    }
   },
   {
     "id": "mhacks",
@@ -148,7 +218,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+    "note": "Edition dates checked against the linked organizer or official event calendar; registration details may change.",
+    "schedule": {
+      "state": "dated",
+      "edition": "MHacks 2026",
+      "eventStartDate": "2026-10-03",
+      "eventEndDate": "2026-10-04",
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": "2026-09-12",
+      "registration": "unconfirmed",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://mhacks.org/",
+      "timeZone": "America/Detroit",
+      "note": "Event dates are separate from the application deadline. Confirm eligibility and registration on the organizer page."
+    }
   },
   {
     "id": "calhacks",
@@ -173,7 +257,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+    "note": "Edition dates checked against the linked organizer or official event calendar; registration details may change.",
+    "schedule": {
+      "state": "dated",
+      "edition": "Cal Hacks 13.0",
+      "eventStartDate": "2026-10-23",
+      "eventEndDate": "2026-10-25",
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": "2026-09-20",
+      "registration": "unconfirmed",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://www.mlh.com/seasons/2027/events/",
+      "timeZone": "America/Los_Angeles",
+      "note": "Event dates are separate from the application deadline. Confirm eligibility and registration on the organizer page."
+    }
   },
   {
     "id": "angelhack",
@@ -199,7 +297,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition."
+    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition.",
+    "schedule": {
+      "state": "multiple",
+      "edition": null,
+      "eventStartDate": null,
+      "eventEndDate": null,
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "unconfirmed",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://angelhack.com/",
+      "timeZone": "UTC",
+      "note": "Multiple events or resources; consult the linked calendar for edition-specific dates."
+    }
   },
   {
     "id": "hacktx",
@@ -224,7 +336,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+    "note": "Edition dates checked against the linked organizer or official event calendar; registration details may change.",
+    "schedule": {
+      "state": "dated",
+      "edition": "HackTX 26",
+      "eventStartDate": "2026-10-24",
+      "eventEndDate": "2026-10-25",
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "unconfirmed",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://www.mlh.com/seasons/2027/events/",
+      "timeZone": "America/Chicago",
+      "note": "Event dates are separate from the application deadline. Confirm eligibility and registration on the organizer page."
+    }
   },
   {
     "id": "hackillinois",
@@ -249,7 +375,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+    "note": "Edition dates checked against the linked organizer or official event calendar; registration details may change.",
+    "schedule": {
+      "state": "dated",
+      "edition": "HackIllinois 2027",
+      "eventStartDate": "2027-02-26",
+      "eventEndDate": "2027-02-28",
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "unconfirmed",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://www.mlh.com/seasons/2027/events/",
+      "timeZone": "America/Chicago",
+      "note": "Event dates are separate from the application deadline. Confirm eligibility and registration on the organizer page."
+    }
   },
   {
     "id": "hacknyu",
@@ -274,7 +414,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates.",
+    "schedule": {
+      "state": "unavailable",
+      "edition": null,
+      "eventStartDate": null,
+      "eventEndDate": null,
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "unconfirmed",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://hacknyu.org/",
+      "timeZone": "UTC",
+      "note": "A complete, current edition schedule could not be confirmed from the accessible organizer page."
+    }
   },
   {
     "id": "microsoft-imagine-cup",
@@ -299,7 +453,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+    "note": "Edition dates checked against the linked organizer or official event calendar; registration details may change.",
+    "schedule": {
+      "state": "dated",
+      "edition": "Imagine Cup 2027",
+      "eventStartDate": null,
+      "eventEndDate": null,
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": "2027-02-28",
+      "registration": "open",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://imaginecup.microsoft.com/",
+      "timeZone": "UTC",
+      "note": "Application deadline is published; event/finals dates are not confirmed here."
+    }
   },
   {
     "id": "nasa-space-apps-challenge",
@@ -325,7 +493,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+    "note": "Edition dates checked against the linked organizer or official event calendar; registration details may change.",
+    "schedule": {
+      "state": "dated",
+      "edition": "NASA Space Apps 2026",
+      "eventStartDate": "2026-11-14",
+      "eventEndDate": "2026-11-15",
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "unconfirmed",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://www.spaceappschallenge.org/about/",
+      "timeZone": "UTC",
+      "note": "Global event dates; registration details and local schedules depend on the selected location."
+    }
   },
   {
     "id": "hackduke",
@@ -350,7 +532,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+    "note": "Edition dates checked against the linked organizer or official event calendar; registration details may change.",
+    "schedule": {
+      "state": "dated",
+      "edition": "Code for Good 2026",
+      "eventStartDate": "2026-03-21",
+      "eventEndDate": "2026-03-22",
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "unconfirmed",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://hackduke-code-for-good-2026.devpost.com/",
+      "timeZone": "America/New_York",
+      "note": "Event dates are separate from the application deadline. Confirm eligibility and registration on the organizer page."
+    }
   },
   {
     "id": "hackprinceton",
@@ -375,7 +571,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+    "note": "Edition dates checked against the linked organizer or official event calendar; registration details may change.",
+    "schedule": {
+      "state": "dated",
+      "edition": "HackPrinceton Fall 2026",
+      "eventStartDate": "2026-11-13",
+      "eventEndDate": "2026-11-15",
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": "2026-09-28",
+      "registration": "closed",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://hackprinceton.com/",
+      "timeZone": "America/New_York",
+      "note": "Event dates are separate from the application deadline. Confirm eligibility and registration on the organizer page."
+    }
   },
   {
     "id": "smart-india-hackathon",
@@ -401,7 +611,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+    "note": "Edition dates checked against the linked organizer or official event calendar; registration details may change.",
+    "schedule": {
+      "state": "dated",
+      "edition": "SIH 2026 idea submission",
+      "eventStartDate": null,
+      "eventEndDate": null,
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": "2026-10-09",
+      "registration": "unconfirmed",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://www.sih.gov.in/",
+      "timeZone": "Asia/Kolkata",
+      "note": "Team nomination and idea-submission deadline only; grand-finale dates are not inferred from it."
+    }
   },
   {
     "id": "hackindia",
@@ -410,9 +634,9 @@
     "kind": "event-series",
     "summary": "One of India's largest student-run hackathons",
     "modes": [
-      "On-site"
+      "Remote"
     ],
-    "location": "Offline (Multiple Cities)",
+    "location": "Online (AgentVerse ’26 selected edition)",
     "interests": [
       "Technology",
       "Design",
@@ -426,7 +650,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates.",
+    "schedule": {
+      "state": "dated",
+      "edition": "Selected edition: AgentVerse ’26",
+      "eventStartDate": "2026-10-30",
+      "eventEndDate": "2026-12-05",
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "unconfirmed",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://hackindia.org/2026/agentverse-26-supported-by-openai",
+      "timeZone": "Asia/Kolkata",
+      "note": "Selected online edition from a multi-event platform. Event end is not assumed to be the registration deadline."
+    }
   },
   {
     "id": "inout",
@@ -451,7 +689,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+    "note": "Edition dates checked against the linked organizer or official event calendar; registration details may change.",
+    "schedule": {
+      "state": "dated",
+      "edition": "InOut 7.0 (archive)",
+      "eventStartDate": "2020-11-27",
+      "eventEndDate": "2020-12-21",
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "unconfirmed",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://hackinout.co/",
+      "timeZone": "UTC",
+      "note": "The linked official site is the 2020 edition. No new edition is implied."
+    }
   },
   {
     "id": "hackwithinfy",
@@ -476,7 +728,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates.",
+    "schedule": {
+      "state": "partial",
+      "edition": "HackWithInfy 2026",
+      "eventStartDate": null,
+      "eventEndDate": null,
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "unconfirmed",
+      "dateText": "Finale: November 2026 — exact days not announced",
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://www.infosys.com/careers/hackwithinfy.html",
+      "timeZone": "UTC",
+      "note": "Organizer lists January–March registration, March/April qualifiers and November finale; no exact day inferred."
+    }
   },
   {
     "id": "tcs-codevita",
@@ -501,7 +767,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates.",
+    "schedule": {
+      "state": "unannounced",
+      "edition": null,
+      "eventStartDate": null,
+      "eventEndDate": null,
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "unconfirmed",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://codevita.tcsapps.com/",
+      "timeZone": "UTC",
+      "note": "A complete, current edition schedule could not be confirmed from the accessible organizer page."
+    }
   },
   {
     "id": "hackvsit",
@@ -526,7 +806,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+    "note": "Edition dates checked against the linked organizer or official event calendar; registration details may change.",
+    "schedule": {
+      "state": "dated",
+      "edition": "HackVSIT 7.0",
+      "eventStartDate": "2026-07-24",
+      "eventEndDate": "2026-07-25",
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "unconfirmed",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://hackvsit-7.devfolio.co/",
+      "timeZone": "Asia/Kolkata",
+      "note": "Event dates are separate from the application deadline. Confirm eligibility and registration on the organizer page."
+    }
   },
   {
     "id": "hackcbs",
@@ -551,7 +845,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+    "note": "Edition dates checked against the linked organizer or official event calendar; registration details may change.",
+    "schedule": {
+      "state": "dated",
+      "edition": "hackCBS 9.0",
+      "eventStartDate": "2026-10-31",
+      "eventEndDate": "2026-11-01",
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "unconfirmed",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://hackcbs.tech/",
+      "timeZone": "Asia/Kolkata",
+      "note": "Event dates are separate from the application deadline. Confirm eligibility and registration on the organizer page."
+    }
   },
   {
     "id": "hackmanthan",
@@ -576,7 +884,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "The supplied name does not identify a confirmed current edition or official registration page."
+    "note": "The supplied name does not identify a confirmed current edition or official registration page.",
+    "schedule": {
+      "state": "unavailable",
+      "edition": null,
+      "eventStartDate": null,
+      "eventEndDate": null,
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "unconfirmed",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": null,
+      "timeZone": "UTC",
+      "note": "A complete, current edition schedule could not be confirmed from the accessible organizer page."
+    }
   },
   {
     "id": "hacknitr",
@@ -601,7 +923,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+    "note": "Edition dates checked against the linked organizer or official event calendar; registration details may change.",
+    "schedule": {
+      "state": "dated",
+      "edition": "HackNITR 7.0",
+      "eventStartDate": "2026-01-03",
+      "eventEndDate": "2026-01-04",
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "unconfirmed",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://hacknitr.com/",
+      "timeZone": "Asia/Kolkata",
+      "note": "The event header identifies January 2026. Its November registration timeline has no year; no new deadline is assumed."
+    }
   },
   {
     "id": "codeshastra-djsce",
@@ -626,7 +962,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates.",
+    "schedule": {
+      "state": "unavailable",
+      "edition": null,
+      "eventStartDate": null,
+      "eventEndDate": null,
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "unconfirmed",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://www.djsce.ac.in/",
+      "timeZone": "UTC",
+      "note": "A complete, current edition schedule could not be confirmed from the accessible organizer page."
+    }
   },
   {
     "id": "nmit-hacks",
@@ -651,7 +1001,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+    "note": "Edition dates checked against the linked organizer or official event calendar; registration details may change.",
+    "schedule": {
+      "state": "dated",
+      "edition": "NMIT Hacks 2026",
+      "eventStartDate": "2026-05-08",
+      "eventEndDate": "2026-05-10",
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "unconfirmed",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://www.nmithacks.com/",
+      "timeZone": "Asia/Kolkata",
+      "note": "Event dates are separate from the application deadline. Confirm eligibility and registration on the organizer page."
+    }
   },
   {
     "id": "google-hackathons",
@@ -675,7 +1039,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition."
+    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition.",
+    "schedule": {
+      "state": "multiple",
+      "edition": null,
+      "eventStartDate": null,
+      "eventEndDate": null,
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "unconfirmed",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://developers.google.com/community",
+      "timeZone": "UTC",
+      "note": "Multiple events or resources; consult the linked calendar for edition-specific dates."
+    }
   },
   {
     "id": "amazon-aws-hackathons",
@@ -699,7 +1077,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition."
+    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition.",
+    "schedule": {
+      "state": "multiple",
+      "edition": null,
+      "eventStartDate": null,
+      "eventEndDate": null,
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "unconfirmed",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://aws.amazon.com/events/",
+      "timeZone": "UTC",
+      "note": "Multiple events or resources; consult the linked calendar for edition-specific dates."
+    }
   },
   {
     "id": "dell-technologies-hackathon",
@@ -722,7 +1114,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition."
+    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition.",
+    "schedule": {
+      "state": "multiple",
+      "edition": null,
+      "eventStartDate": null,
+      "eventEndDate": null,
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "unconfirmed",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://www.dell.com/en-us/dt/events/index.htm",
+      "timeZone": "UTC",
+      "note": "Multiple events or resources; consult the linked calendar for edition-specific dates."
+    }
   },
   {
     "id": "red-hat-hackathons",
@@ -745,7 +1151,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition."
+    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition.",
+    "schedule": {
+      "state": "multiple",
+      "edition": null,
+      "eventStartDate": null,
+      "eventEndDate": null,
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "unconfirmed",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://developers.redhat.com/events",
+      "timeZone": "UTC",
+      "note": "Multiple events or resources; consult the linked calendar for edition-specific dates."
+    }
   },
   {
     "id": "paypal-hackathons",
@@ -769,7 +1189,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition."
+    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition.",
+    "schedule": {
+      "state": "multiple",
+      "edition": null,
+      "eventStartDate": null,
+      "eventEndDate": null,
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "unconfirmed",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://developer.paypal.com/community/",
+      "timeZone": "UTC",
+      "note": "Multiple events or resources; consult the linked calendar for edition-specific dates."
+    }
   },
   {
     "id": "samsung-prism-hackathon",
@@ -792,7 +1226,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition."
+    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition.",
+    "schedule": {
+      "state": "multiple",
+      "edition": null,
+      "eventStartDate": null,
+      "eventEndDate": null,
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "unconfirmed",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://www.samsungprism.com/",
+      "timeZone": "UTC",
+      "note": "Multiple events or resources; consult the linked calendar for edition-specific dates."
+    }
   },
   {
     "id": "intel-india-hackathon",
@@ -816,7 +1264,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition."
+    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition.",
+    "schedule": {
+      "state": "multiple",
+      "edition": null,
+      "eventStartDate": null,
+      "eventEndDate": null,
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "unconfirmed",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://www.intel.com/content/www/us/en/developer/events/overview.html",
+      "timeZone": "UTC",
+      "note": "Multiple events or resources; consult the linked calendar for edition-specific dates."
+    }
   },
   {
     "id": "linkedin-hackathons",
@@ -839,7 +1301,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition."
+    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition.",
+    "schedule": {
+      "state": "multiple",
+      "edition": null,
+      "eventStartDate": null,
+      "eventEndDate": null,
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "unconfirmed",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://engineering.linkedin.com/",
+      "timeZone": "UTC",
+      "note": "Multiple events or resources; consult the linked calendar for edition-specific dates."
+    }
   },
   {
     "id": "twitter-hackathons",
@@ -862,7 +1338,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "X developer resources; a current public hackathon is not confirmed."
+    "note": "X developer resources; a current public hackathon is not confirmed.",
+    "schedule": {
+      "state": "multiple",
+      "edition": null,
+      "eventStartDate": null,
+      "eventEndDate": null,
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "unconfirmed",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://developer.x.com/",
+      "timeZone": "UTC",
+      "note": "Multiple events or resources; consult the linked calendar for edition-specific dates."
+    }
   },
   {
     "id": "airbnb-hackathons",
@@ -885,7 +1375,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Official company careers page; a public student hackathon is not confirmed."
+    "note": "Official company careers page; a public student hackathon is not confirmed.",
+    "schedule": {
+      "state": "multiple",
+      "edition": null,
+      "eventStartDate": null,
+      "eventEndDate": null,
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "unconfirmed",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://careers.airbnb.com/",
+      "timeZone": "UTC",
+      "note": "Multiple events or resources; consult the linked calendar for edition-specific dates."
+    }
   },
   {
     "id": "salesforce-hackathons",
@@ -908,7 +1412,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition."
+    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition.",
+    "schedule": {
+      "state": "multiple",
+      "edition": null,
+      "eventStartDate": null,
+      "eventEndDate": null,
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "unconfirmed",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://developer.salesforce.com/events",
+      "timeZone": "UTC",
+      "note": "Multiple events or resources; consult the linked calendar for edition-specific dates."
+    }
   },
   {
     "id": "ibm-hackathons",
@@ -931,7 +1449,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition."
+    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition.",
+    "schedule": {
+      "state": "multiple",
+      "edition": null,
+      "eventStartDate": null,
+      "eventEndDate": null,
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "unconfirmed",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://developer.ibm.com/events/",
+      "timeZone": "UTC",
+      "note": "Multiple events or resources; consult the linked calendar for edition-specific dates."
+    }
   },
   {
     "id": "devfolio",
@@ -954,7 +1486,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition."
+    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition.",
+    "schedule": {
+      "state": "multiple",
+      "edition": null,
+      "eventStartDate": null,
+      "eventEndDate": null,
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "unconfirmed",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://devfolio.co/hackathons",
+      "timeZone": "UTC",
+      "note": "Multiple events or resources; consult the linked calendar for edition-specific dates."
+    }
   },
   {
     "id": "devpost-hackathons",
@@ -977,7 +1523,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition."
+    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition.",
+    "schedule": {
+      "state": "multiple",
+      "edition": null,
+      "eventStartDate": null,
+      "eventEndDate": null,
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "unconfirmed",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://devpost.com/hackathons",
+      "timeZone": "UTC",
+      "note": "Multiple events or resources; consult the linked calendar for edition-specific dates."
+    }
   },
   {
     "id": "hackerrank-college-competitions",
@@ -1000,7 +1560,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition."
+    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition.",
+    "schedule": {
+      "state": "multiple",
+      "edition": null,
+      "eventStartDate": null,
+      "eventEndDate": null,
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "unconfirmed",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://www.hackerrank.com/contests",
+      "timeZone": "UTC",
+      "note": "Multiple events or resources; consult the linked calendar for edition-specific dates."
+    }
   },
   {
     "id": "github-campus-program",
@@ -1023,7 +1597,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition."
+    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition.",
+    "schedule": {
+      "state": "multiple",
+      "edition": null,
+      "eventStartDate": null,
+      "eventEndDate": null,
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "unconfirmed",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://education.github.com/",
+      "timeZone": "UTC",
+      "note": "Multiple events or resources; consult the linked calendar for edition-specific dates."
+    }
   },
   {
     "id": "kaggle-competitions",
@@ -1048,7 +1636,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition."
+    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition.",
+    "schedule": {
+      "state": "multiple",
+      "edition": null,
+      "eventStartDate": null,
+      "eventEndDate": null,
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "unconfirmed",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://www.kaggle.com/competitions",
+      "timeZone": "UTC",
+      "note": "Multiple events or resources; consult the linked calendar for edition-specific dates."
+    }
   },
   {
     "id": "topcoder-hackathons",
@@ -1071,7 +1673,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition."
+    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition.",
+    "schedule": {
+      "state": "multiple",
+      "edition": null,
+      "eventStartDate": null,
+      "eventEndDate": null,
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "unconfirmed",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://www.topcoder.com/challenges",
+      "timeZone": "UTC",
+      "note": "Multiple events or resources; consult the linked calendar for edition-specific dates."
+    }
   },
   {
     "id": "unstop-dare2compete",
@@ -1094,7 +1710,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition."
+    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition.",
+    "schedule": {
+      "state": "multiple",
+      "edition": null,
+      "eventStartDate": null,
+      "eventEndDate": null,
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "unconfirmed",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://unstop.com/hackathons",
+      "timeZone": "UTC",
+      "note": "Multiple events or resources; consult the linked calendar for edition-specific dates."
+    }
   },
   {
     "id": "skillenza-hackathons",
@@ -1117,7 +1747,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition."
+    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition.",
+    "schedule": {
+      "state": "multiple",
+      "edition": null,
+      "eventStartDate": null,
+      "eventEndDate": null,
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "unconfirmed",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://skillenza.com/",
+      "timeZone": "UTC",
+      "note": "Multiple events or resources; consult the linked calendar for edition-specific dates."
+    }
   },
   {
     "id": "hackerearth-challenges",
@@ -1140,7 +1784,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition."
+    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition.",
+    "schedule": {
+      "state": "multiple",
+      "edition": null,
+      "eventStartDate": null,
+      "eventEndDate": null,
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "unconfirmed",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://www.hackerearth.com/challenges/",
+      "timeZone": "UTC",
+      "note": "Multiple events or resources; consult the linked calendar for edition-specific dates."
+    }
   },
   {
     "id": "drivendata-challenges",
@@ -1165,7 +1823,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition."
+    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition.",
+    "schedule": {
+      "state": "multiple",
+      "edition": null,
+      "eventStartDate": null,
+      "eventEndDate": null,
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "unconfirmed",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://www.drivendata.org/competitions/",
+      "timeZone": "UTC",
+      "note": "Multiple events or resources; consult the linked calendar for edition-specific dates."
+    }
   },
   {
     "id": "technica",
@@ -1191,7 +1863,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+    "note": "Edition dates checked against the linked organizer or official event calendar; registration details may change.",
+    "schedule": {
+      "state": "dated",
+      "edition": "Technica 2026",
+      "eventStartDate": "2026-10-17",
+      "eventEndDate": "2026-10-18",
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "unconfirmed",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://gotechnica.org/",
+      "timeZone": "America/New_York",
+      "note": "Event dates are separate from the application deadline. Confirm eligibility and registration on the organizer page."
+    }
   },
   {
     "id": "global-game-jam",
@@ -1218,7 +1904,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+    "note": "Edition dates checked against the linked organizer or official event calendar; registration details may change.",
+    "schedule": {
+      "state": "dated",
+      "edition": "Global Game Jam 2027",
+      "eventStartDate": "2027-01-25",
+      "eventEndDate": "2027-01-31",
+      "registrationOpensDate": "2026-12-01",
+      "registrationDeadlineDate": null,
+      "registration": "not-open",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://globalgamejam.org/",
+      "timeZone": "UTC",
+      "note": "Participant registration opens 1 December 2026; site-host registration is separate. Local jam schedules vary."
+    }
   },
   {
     "id": "blockchain-hackathon",
@@ -1245,7 +1945,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "The supplied name does not identify a confirmed current edition or official registration page."
+    "note": "The supplied name does not identify a confirmed current edition or official registration page.",
+    "schedule": {
+      "state": "multiple",
+      "edition": null,
+      "eventStartDate": null,
+      "eventEndDate": null,
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "unconfirmed",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": null,
+      "timeZone": "UTC",
+      "note": "Multiple events or resources; consult the linked calendar for edition-specific dates."
+    }
   },
   {
     "id": "ai-for-good-hackathon",
@@ -1272,7 +1986,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates.",
+    "schedule": {
+      "state": "multiple",
+      "edition": null,
+      "eventStartDate": null,
+      "eventEndDate": null,
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "unconfirmed",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://aiforgood.itu.int/",
+      "timeZone": "UTC",
+      "note": "Multiple events or resources; consult the linked calendar for edition-specific dates."
+    }
   },
   {
     "id": "ethglobal-hackathons",
@@ -1281,9 +2009,9 @@
     "kind": "event-series",
     "summary": "Ethereum ecosystem development",
     "modes": [
-      "Remote"
+      "On-site"
     ],
-    "location": "Online",
+    "location": "On-site (Cannes, France; selected edition)",
     "interests": [
       "Technology",
       "Design",
@@ -1299,7 +2027,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+    "note": "Edition dates checked against the linked organizer or official event calendar; registration details may change.",
+    "schedule": {
+      "state": "dated",
+      "edition": "Next listed: ETHGlobal Cannes 2027",
+      "eventStartDate": "2027-04-14",
+      "eventEndDate": "2027-04-16",
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "open",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://ethglobal.com/events/cannes2027",
+      "timeZone": "Europe/Paris",
+      "note": "Selected next listed hackathon from a multi-event series; other editions have different dates."
+    }
   },
   {
     "id": "solana-hackathons",
@@ -1326,7 +2068,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates.",
+    "schedule": {
+      "state": "multiple",
+      "edition": null,
+      "eventStartDate": null,
+      "eventEndDate": null,
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "unconfirmed",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://solana.com/hackathon",
+      "timeZone": "UTC",
+      "note": "Multiple events or resources; consult the linked calendar for edition-specific dates."
+    }
   },
   {
     "id": "openai-hackathons",
@@ -1353,7 +2109,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "OpenAI developer resources; this is not an announcement of an official hackathon."
+    "note": "OpenAI developer resources; this is not an announcement of an official hackathon.",
+    "schedule": {
+      "state": "multiple",
+      "edition": null,
+      "eventStartDate": null,
+      "eventEndDate": null,
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "unconfirmed",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://developers.openai.com/",
+      "timeZone": "UTC",
+      "note": "Multiple events or resources; consult the linked calendar for edition-specific dates."
+    }
   },
   {
     "id": "hackzurich",
@@ -1378,7 +2148,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates.",
+    "schedule": {
+      "state": "paused",
+      "edition": null,
+      "eventStartDate": null,
+      "eventEndDate": null,
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "unconfirmed",
+      "dateText": "On hiatus",
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://hackzurich.com/",
+      "timeZone": "UTC",
+      "note": "Organizer says the event is on hiatus; no new edition dates are announced."
+    }
   },
   {
     "id": "junction",
@@ -1403,7 +2187,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+    "note": "Edition dates checked against the linked organizer or official event calendar; registration details may change.",
+    "schedule": {
+      "state": "dated",
+      "edition": "Junction 2026",
+      "eventStartDate": "2026-11-13",
+      "eventEndDate": "2026-11-15",
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "unconfirmed",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://hackjunction.app/hackathons/junction-2026",
+      "timeZone": "Europe/Helsinki",
+      "note": "Event dates are separate from the application deadline. Confirm eligibility and registration on the organizer page."
+    }
   },
   {
     "id": "hackthenorth",
@@ -1428,7 +2226,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+    "note": "Edition dates checked against the linked organizer or official event calendar; registration details may change.",
+    "schedule": {
+      "state": "dated",
+      "edition": "Hack the North 2026",
+      "eventStartDate": "2026-09-18",
+      "eventEndDate": "2026-09-20",
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "unconfirmed",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://www.mlh.com/seasons/2027/events/",
+      "timeZone": "America/Toronto",
+      "note": "Event dates are separate from the application deadline. Confirm eligibility and registration on the organizer page."
+    }
   },
   {
     "id": "la-hacks",
@@ -1453,7 +2265,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+    "note": "Edition dates checked against the linked organizer or official event calendar; registration details may change.",
+    "schedule": {
+      "state": "dated",
+      "edition": "LA Hacks 27",
+      "eventStartDate": "2027-04-16",
+      "eventEndDate": "2027-04-18",
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "unconfirmed",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://www.mlh.com/seasons/2027/events/",
+      "timeZone": "America/Los_Angeles",
+      "note": "Event dates are separate from the application deadline. Confirm eligibility and registration on the organizer page."
+    }
   },
   {
     "id": "hack-the-6ix",
@@ -1478,7 +2304,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+    "note": "Edition dates checked against the linked organizer or official event calendar; registration details may change.",
+    "schedule": {
+      "state": "dated",
+      "edition": "Hack the 6ix 2026",
+      "eventStartDate": "2026-07-17",
+      "eventEndDate": "2026-07-19",
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "closed",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://hackthe6ix.com/",
+      "timeZone": "America/Toronto",
+      "note": "Event dates are separate from the application deadline. Confirm eligibility and registration on the organizer page."
+    }
   },
   {
     "id": "mchacks",
@@ -1503,7 +2343,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+    "note": "Edition dates checked against the linked organizer or official event calendar; registration details may change.",
+    "schedule": {
+      "state": "dated",
+      "edition": "McHacks 14",
+      "eventStartDate": "2027-01-16",
+      "eventEndDate": "2027-01-17",
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "not-open",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://mchacks.ca/",
+      "timeZone": "America/Toronto",
+      "note": "Organizer lists an interest form and says applications will open soon; an interest form is not registration."
+    }
   },
   {
     "id": "hackupc",
@@ -1528,7 +2382,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+    "note": "Edition dates checked against the linked organizer or official event calendar; registration details may change.",
+    "schedule": {
+      "state": "dated",
+      "edition": "HackUPC 2026",
+      "eventStartDate": "2026-04-24",
+      "eventEndDate": "2026-04-26",
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "unconfirmed",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://hackupc.com/",
+      "timeZone": "Europe/Madrid",
+      "note": "Event dates are separate from the application deadline. Confirm eligibility and registration on the organizer page."
+    }
   },
   {
     "id": "deltahacks",
@@ -1553,7 +2421,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+    "note": "Edition dates checked against the linked organizer or official event calendar; registration details may change.",
+    "schedule": {
+      "state": "dated",
+      "edition": "DeltaHacks 13",
+      "eventStartDate": "2027-01-09",
+      "eventEndDate": "2027-01-10",
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "open",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://deltahacks.com/",
+      "timeZone": "America/Toronto",
+      "note": "Event dates are separate from the application deadline. Confirm eligibility and registration on the organizer page."
+    }
   },
   {
     "id": "hacksussex",
@@ -1578,7 +2460,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+    "note": "Edition dates checked against the linked organizer or official event calendar; registration details may change.",
+    "schedule": {
+      "state": "dated",
+      "edition": "HackSussex 2026",
+      "eventStartDate": "2026-02-28",
+      "eventEndDate": "2026-03-01",
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "closed",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://tickets.hacksussex.com/HackSussex26/",
+      "timeZone": "Europe/London",
+      "note": "Event dates are separate from the application deadline. Confirm eligibility and registration on the organizer page."
+    }
   },
   {
     "id": "hackyeah",
@@ -1603,7 +2499,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+    "note": "Edition dates checked against the linked organizer or official event calendar; registration details may change.",
+    "schedule": {
+      "state": "dated",
+      "edition": "HackYeah 2026",
+      "eventStartDate": "2026-10-03",
+      "eventEndDate": "2026-10-04",
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "unconfirmed",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://hackyeah.pl/",
+      "timeZone": "Europe/Warsaw",
+      "note": "Event dates are separate from the application deadline. Confirm eligibility and registration on the organizer page."
+    }
   },
   {
     "id": "vandyhacks",
@@ -1628,7 +2538,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates.",
+    "schedule": {
+      "state": "partial",
+      "edition": "VandyHacks XIII",
+      "eventStartDate": null,
+      "eventEndDate": null,
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "unconfirmed",
+      "dateText": "March 2027 — exact days not announced",
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://vandyhacks.org/",
+      "timeZone": "UTC",
+      "note": "Applications open soon. A countdown is not treated as a confirmed date."
+    }
   },
   {
     "id": "bostonhacks",
@@ -1653,7 +2577,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+    "note": "Edition dates checked against the linked organizer or official event calendar; registration details may change.",
+    "schedule": {
+      "state": "dated",
+      "edition": "BostonHacks 2026",
+      "eventStartDate": "2026-11-21",
+      "eventEndDate": "2026-11-22",
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "unconfirmed",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://bostonhacks.org/",
+      "timeZone": "America/New_York",
+      "note": "Event dates are separate from the application deadline. Confirm eligibility and registration on the organizer page."
+    }
   },
   {
     "id": "hacknc",
@@ -1678,7 +2616,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+    "note": "Edition dates checked against the linked organizer or official event calendar; registration details may change.",
+    "schedule": {
+      "state": "dated",
+      "edition": "HackNC 2026",
+      "eventStartDate": "2026-10-09",
+      "eventEndDate": "2026-10-11",
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "closed",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://hacknc.com/",
+      "timeZone": "America/New_York",
+      "note": "Event dates are separate from the application deadline. Confirm eligibility and registration on the organizer page."
+    }
   },
   {
     "id": "hackuci",
@@ -1703,7 +2655,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+    "note": "Edition dates checked against the linked organizer or official event calendar; registration details may change.",
+    "schedule": {
+      "state": "dated",
+      "edition": "Hack at UCI 2023 (archive)",
+      "eventStartDate": "2023-02-03",
+      "eventEndDate": "2023-02-05",
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "unconfirmed",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://hackuci.com/",
+      "timeZone": "America/Los_Angeles",
+      "note": "The supplied official URL serves the 2023 archive. No 2026 or 2027 edition is assumed."
+    }
   },
   {
     "id": "hackdavis",
@@ -1728,7 +2694,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates.",
+    "schedule": {
+      "state": "unannounced",
+      "edition": "HackDavis 2026",
+      "eventStartDate": null,
+      "eventEndDate": null,
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "closed",
+      "dateText": "Registration closed; next dates not announced",
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://hackdavis.io/",
+      "timeZone": "UTC",
+      "note": "Director applications for 2027 are not hacker registration."
+    }
   },
   {
     "id": "hackutd",
@@ -1753,7 +2733,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+    "note": "Edition dates checked against the linked organizer or official event calendar; registration details may change.",
+    "schedule": {
+      "state": "dated",
+      "edition": "HackUTD 2026",
+      "eventStartDate": "2026-11-07",
+      "eventEndDate": "2026-11-08",
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "unconfirmed",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://www.mlh.com/seasons/2027/events/",
+      "timeZone": "America/Chicago",
+      "note": "Event dates are separate from the application deadline. Confirm eligibility and registration on the organizer page."
+    }
   },
   {
     "id": "hackumass",
@@ -1778,7 +2772,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+    "note": "Edition dates checked against the linked organizer or official event calendar; registration details may change.",
+    "schedule": {
+      "state": "dated",
+      "edition": "HackUMass XIV",
+      "eventStartDate": "2026-11-13",
+      "eventEndDate": "2026-11-15",
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "open",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://hackumass.com/",
+      "timeZone": "America/New_York",
+      "note": "Event dates are separate from the application deadline. Confirm eligibility and registration on the organizer page."
+    }
   },
   {
     "id": "hackcu",
@@ -1803,7 +2811,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+    "note": "Edition dates checked against the linked organizer or official event calendar; registration details may change.",
+    "schedule": {
+      "state": "dated",
+      "edition": "HackCU 2026",
+      "eventStartDate": "2026-03-07",
+      "eventEndDate": "2026-03-08",
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "unconfirmed",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://hackcu.org/",
+      "timeZone": "America/Denver",
+      "note": "Event dates are separate from the application deadline. Confirm eligibility and registration on the organizer page."
+    }
   },
   {
     "id": "dandyhacks",
@@ -1828,7 +2850,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates.",
+    "schedule": {
+      "state": "conflicting",
+      "edition": null,
+      "eventStartDate": null,
+      "eventEndDate": null,
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "unconfirmed",
+      "dateText": "Conflicting dates — verify with organizer",
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://dandyhacks.net/",
+      "timeZone": "UTC",
+      "note": "The page displays January 22–24 and November 14–16 without a consistent edition year. No exact date is selected."
+    }
   },
   {
     "id": "hacksc",
@@ -1853,7 +2889,21 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates.",
+    "schedule": {
+      "state": "unannounced",
+      "edition": null,
+      "eventStartDate": null,
+      "eventEndDate": null,
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "unconfirmed",
+      "dateText": null,
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://hacksc.com/",
+      "timeZone": "UTC",
+      "note": "A complete, current edition schedule could not be confirmed from the accessible organizer page."
+    }
   },
   {
     "id": "hackbeanpot",
@@ -1878,6 +2928,20 @@
     "deadline": null,
     "prizeINR": null,
     "publishedAt": null,
-    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates.",
+    "schedule": {
+      "state": "partial",
+      "edition": "HackBeanpot 2026",
+      "eventStartDate": null,
+      "eventEndDate": null,
+      "registrationOpensDate": null,
+      "registrationDeadlineDate": null,
+      "registration": "closed",
+      "dateText": "2026 edition completed; next dates not announced",
+      "checkedOn": "2026-11-11",
+      "sourceUrl": "https://hackbeanpot.com/",
+      "timeZone": "UTC",
+      "note": "Official site thanks 2026 participants and invites newsletter signup."
+    }
   }
 ]
