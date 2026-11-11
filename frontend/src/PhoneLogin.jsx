@@ -13,6 +13,11 @@ export function phoneNumber(value) {
 }
 export function otpError(error) {
   const messages = {
+    "auth/billing-not-enabled": "SMS login requires active billing on this Firebase project. Ask the administrator to check its Blaze billing account.",
+    "auth/invalid-app-credential": "Firebase could not verify this website. Retry reCAPTCHA; if this continues, ask the administrator to check authorized domains and app verification settings.",
+    "auth/missing-app-credential": "Website verification is missing. Reload this page and complete reCAPTCHA again.",
+    "auth/app-not-authorized": "This website is not authorized to use Firebase Authentication. Ask the administrator to check the web app configuration and API key restrictions.",
+    "auth/invalid-api-key": "Firebase Authentication configuration needs attention. Ask the administrator to check the web API key.",
     "auth/invalid-verification-code": "Incorrect code. Check the SMS and try again.",
     "auth/code-expired": "This code has expired. Request a new code.",
     "auth/session-expired": "This code has expired. Request a new code.",
@@ -25,7 +30,11 @@ export function otpError(error) {
     "auth/network-request-failed": "Check your connection and try again.",
     "app/auth-timeout": "Verification could not be confirmed. Check your connection and retry.",
   };
-  return messages[error.code] || "Could not sign in. Please retry or use email or Google login.";
+  // Display only bounded SDK codes, never raw errors that may contain request data.
+  const code = typeof error?.code === "string" && /^auth\/[a-z-]{1,64}$/.test(error.code)
+    ? error.code : null;
+  const message = messages[code || error?.code] || "Could not sign in. Please retry or use email or Google login.";
+  return code ? `${message} (${code})` : message;
 }
 
 export function PhoneLogin() {

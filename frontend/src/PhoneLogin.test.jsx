@@ -8,7 +8,7 @@ vi.mock("firebase/auth", () => ({
   RecaptchaVerifier: vi.fn(function () { this.clear = state.clear; }),
   signInWithPhoneNumber: state.send,
 }));
-import { PhoneLogin, phoneNumber } from "./PhoneLogin";
+import { PhoneLogin, phoneNumber, otpError } from "./PhoneLogin";
 beforeEach(() => {
   vi.clearAllMocks();
   state.send.mockResolvedValue({ confirm: state.confirm });
@@ -50,4 +50,13 @@ it("reports disabled phone authentication and releases reCAPTCHA", async () => {
   open(); fireEvent.click(screen.getByRole("button", { name: "Send OTP" }));
   expect(await screen.findByRole("alert")).toHaveTextContent("Phone login is not enabled");
   expect(state.clear).toHaveBeenCalled();
+});
+
+it("explains billing and website verification failures without exposing raw request data", () => {
+  expect(otpError({ code: "auth/billing-not-enabled" })).toContain("active billing");
+  expect(otpError({ code: "auth/invalid-app-credential" })).toContain("authorized domains");
+  expect(otpError({ code: "auth/unrecognized-error", message: "private request" })).toContain("auth/unrecognized-error");
+  expect(otpError({ code: "auth/unrecognized-error", message: "private request" })).not.toContain("private request");
+  expect(otpError(null)).toContain("Could not sign in");
+  expect(otpError({ code: "private request" })).not.toContain("private request");
 });
