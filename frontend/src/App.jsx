@@ -102,6 +102,7 @@ import { PhoneLogin } from "./PhoneLogin";
 import { PasswordRecovery } from "./PasswordRecovery";
 import { Mentoring, BookingAdmin, Updates } from "./Growth";
 import { Notifications, NotificationNav, AdminOverview } from "./Notifications";
+import { useOpportunityCounts } from "./opportunityCounts.js";
 import { OpportunityResources } from "./OpportunityResources.jsx";
 import { HackathonDirectory } from "./HackathonDirectory.jsx";
 import { hackathonDirectory } from "./hackathonCatalog.js";
@@ -364,6 +365,7 @@ function Card({ item, saved = false, onSave }) {
   );
 }
 function Home({ catalog }) {
+  const liveCounts = useOpportunityCounts();
   const [search, setSearch] = useState("");
   const [activeType, setActiveType] = useState("all");
   const navigate = useNavigate();
@@ -485,14 +487,17 @@ function Home({ catalog }) {
                 <Icon size={20} />
               </span>
               <h2>{typeLabel[type]}</h2>
-              <span className="category-count">
-                {open.filter((o) => o.type === type).length}
+              <span className="category-count" aria-live="polite">
+                <strong>{Number.isInteger(liveCounts.counts[type]) ? liveCounts.counts[type].toLocaleString("en-IN") : liveCounts.loading ? "…" : "—"}</strong>
+                <small>{Number.isInteger(liveCounts.counts[type]) ? "active listings" : liveCounts.loading ? "Loading count" : "Count unavailable"}</small>
+                {type === "hackathon" && <small>{hackathonDirectory.length} directory resources</small>}
               </span>
               <ArrowUpRight size={16} />
             </Link>
           );
         })}
       </section>
+      <p className="container hint category-count-note">Counts cover active listings published on Codovate and refresh every minute. Hackathon directory resources are shown separately.</p>
       <section className="opportunities-section container">
         <div className="section-heading">
           <div>
