@@ -8,7 +8,7 @@ export function CareerPortals() {
   const term = search.trim().toLowerCase();
   const visible = groups.filter(group => !category || group.title === category)
     .map(group => ({ ...group, companies: group.companies.filter(company =>
-      [company.name, group.title, ...company.roles].join(" ").toLowerCase().includes(term),
+      [company.name, company.description, group.title, ...company.roles].join(" ").toLowerCase().includes(term),
     ) })).filter(group => group.companies.length);
   const count = visible.reduce((total, group) => total + group.companies.length, 0);
   return <div className="career-portals">
@@ -36,6 +36,7 @@ export function CareerPortals() {
       <div className="placement-grid">
         {group.companies.map(company => <article className="panel career-portal-card" key={company.name}>
           <h4>{company.name}</h4>
+          <p className="career-company-intro">{company.description}</p>
           <ul className="career-portal-roles" aria-label={`${company.name} role areas`}>
             {company.roles.map(role => <li className="pill" key={role}>{role}</li>)}
           </ul>

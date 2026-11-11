@@ -27,3 +27,14 @@ it("keeps external links safe and identifies unconfirmed destinations", () => {
   expect(groups).toHaveLength(19);
   for (const group of groups) expect(new Set(group.companies.map(c => c.name)).size).toBe(group.companies.length);
 });
+it("introduces every listed company and makes its business searchable", () => {
+  for (const group of groups) for (const company of group.companies) {
+    expect(company.description.length).toBeGreaterThan(50);
+    expect(company.description.length).toBeLessThan(300);
+  }
+  render(<CareerPortals />);
+  fireEvent.change(screen.getByRole("searchbox"), { target: { value: "robotic vacuum" } });
+  expect(screen.getByRole("heading", { name: "iRobot" })).toBeInTheDocument();
+  expect(screen.getByText(groups.flatMap(group=>group.companies).find(company=>company.name==="iRobot").description)).toBeInTheDocument();
+  expect(screen.queryByRole("heading", { name: "Google" })).toBeNull();
+});

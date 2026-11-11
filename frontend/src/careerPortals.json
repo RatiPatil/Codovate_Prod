@@ -11,7 +11,8 @@
           "PM",
           "DevRel"
         ],
-        "url": "https://www.google.com/about/careers/applications/"
+        "url": "https://www.google.com/about/careers/applications/",
+        "description": "Google develops internet products including Search, Android, YouTube and Google Cloud, combining software engineering, data and artificial intelligence."
       },
       {
         "name": "Meta",
@@ -21,7 +22,8 @@
           "Infrastructure",
           "PM"
         ],
-        "url": "https://www.metacareers.com/"
+        "url": "https://www.metacareers.com/",
+        "description": "Meta builds social and communication platforms such as Facebook, Instagram and WhatsApp, alongside AI and immersive computing technologies."
       },
       {
         "name": "Apple",
@@ -31,7 +33,8 @@
           "AI/ML",
           "Design"
         ],
-        "url": "https://jobs.apple.com/"
+        "url": "https://jobs.apple.com/",
+        "description": "Apple designs consumer devices, operating systems and digital services, bringing together hardware engineering, software and product design."
       },
       {
         "name": "Amazon",
@@ -42,7 +45,8 @@
           "PM",
           "Cloud"
         ],
-        "url": "https://www.amazon.jobs/"
+        "url": "https://www.amazon.jobs/",
+        "description": "Amazon operates e-commerce, logistics, cloud computing and digital services businesses, with engineering teams supporting large-scale consumer and enterprise products."
       },
       {
         "name": "Netflix",
@@ -52,7 +56,8 @@
           "Security",
           "Content Engineering"
         ],
-        "url": "https://explore.jobs.netflix.net/"
+        "url": "https://explore.jobs.netflix.net/",
+        "description": "Netflix is an entertainment company offering streaming films and series, supported by technology for content delivery, personalization and production."
       },
       {
         "name": "Microsoft",
@@ -63,7 +68,8 @@
           "PM",
           "Support"
         ],
-        "url": "https://careers.microsoft.com/"
+        "url": "https://careers.microsoft.com/",
+        "description": "Microsoft creates software, cloud platforms and developer tools, including Windows, Microsoft 365, Azure and GitHub."
       },
       {
         "name": "Alphabet / DeepMind",
@@ -72,7 +78,8 @@
           "AI",
           "Engineering"
         ],
-        "url": "https://deepmind.google/careers/"
+        "url": "https://deepmind.google/careers/",
+        "description": "Google DeepMind is an AI research organization within Alphabet, developing machine learning systems and applying them to scientific and real-world problems."
       },
       {
         "name": "OpenAI",
@@ -82,7 +89,8 @@
           "Safety",
           "Policy"
         ],
-        "url": "https://openai.com/careers/"
+        "url": "https://openai.com/careers/",
+        "description": "OpenAI researches and develops artificial intelligence models and products, including ChatGPT and APIs used to build AI applications."
       },
       {
         "name": "Anthropic",
@@ -91,7 +99,8 @@
           "SWE",
           "Safety"
         ],
-        "url": "https://www.anthropic.com/careers"
+        "url": "https://www.anthropic.com/careers",
+        "description": "Anthropic is an AI research and product company developing the Claude family of models, with a focus on reliable and interpretable AI systems."
       },
       {
         "name": "ByteDance",
@@ -101,7 +110,8 @@
           "ML",
           "Product"
         ],
-        "url": "https://jobs.bytedance.com/en/"
+        "url": "https://jobs.bytedance.com/en/",
+        "description": "ByteDance develops digital content and technology platforms, including TikTok, with teams working on recommendations, infrastructure and creative tools."
       }
     ]
   },
@@ -116,7 +126,8 @@
           "PM",
           "Ops"
         ],
-        "url": "https://www.flipkartcareers.com/"
+        "url": "https://www.flipkartcareers.com/",
+        "description": "Flipkart is an Indian e-commerce marketplace connecting shoppers and sellers through online retail, payments and delivery technology."
       },
       {
         "name": "Razorpay",
@@ -126,7 +137,8 @@
           "FinTech",
           "PM"
         ],
-        "url": "https://razorpay.com/jobs/"
+        "url": "https://razorpay.com/jobs/",
+        "description": "Razorpay builds payment and financial technology tools that help businesses accept payments and manage money movement."
       },
       {
         "name": "Zepto",
@@ -135,7 +147,8 @@
           "Data",
           "Supply Chain"
         ],
-        "url": "https://www.zepto.com/careers"
+        "url": "https://www.zepto.com/careers",
+        "description": "Zepto is an Indian quick-commerce company using mobile shopping, inventory systems and delivery networks to fulfill everyday purchases."
       },
       {
         "name": "Meesho",
@@ -145,7 +158,8 @@
           "Growth",
           "PM"
         ],
-        "url": "https://www.meesho.io/jobs"
+        "url": "https://www.meesho.io/jobs",
+        "description": "Meesho is an Indian e-commerce marketplace focused on connecting consumers with sellers, supported by commerce, logistics and recommendation technology."
       },
       {
         "name": "CRED",
@@ -154,7 +168,8 @@
           "Data",
           "Product"
         ],
-        "url": "https://careers.cred.club/"
+        "url": "https://careers.cred.club/",
+        "description": "CRED is an Indian fintech platform offering credit-card management and related payment and financial services for its members."
       },
       {
         "name": "PhonePe",
@@ -164,7 +179,8 @@
           "UX",
           "PM"
         ],
-        "url": "https://www.phonepe.com/careers/"
+        "url": "https://www.phonepe.com/careers/",
+        "description": "PhonePe builds digital payments and financial services products, including a widely used UPI payments application in India."
       },
       {
         "name": "Swiggy",
@@ -174,7 +190,8 @@
           "Ops",
           "PM"
         ],
-        "url": "https://careers.swiggy.com/"
+        "url": "https://careers.swiggy.com/",
+        "description": "Swiggy operates food-delivery and quick-commerce services, using technology to connect consumers, merchants and delivery partners."
       },
       {
         "name": "Zomato",
@@ -184,7 +201,8 @@
           "Product",
           "Ops"
         ],
-        "url": "https://www.zomato.com/careers"
+        "url": "https://www.zomato.com/careers",
+        "description": "Zomato is a restaurant-discovery and food-delivery brand, using consumer software and logistics systems to connect diners with restaurants."
       },
       {
         "name": "Ola",
@@ -194,7 +212,8 @@
           "EV Tech",
           "PM"
         ],
-        "url": "https://www.olacabs.com/careers"
+        "url": "https://www.olacabs.com/careers",
+        "description": "Ola is a mobility platform known for app-based ride booking and transportation services; its ride-hailing business is distinct from Ola Electric."
       },
       {
         "name": "Paytm",
@@ -204,7 +223,8 @@
           "FinTech",
           "PM"
         ],
-        "url": "https://paytm.com/careers/"
+        "url": "https://paytm.com/careers/",
+        "description": "Paytm provides digital payments and merchant technology, including mobile payments, payment devices and financial-service distribution."
       },
       {
         "name": "Dream11",
@@ -213,7 +233,8 @@
           "Data",
           "Platform"
         ],
-        "url": "https://www.dreamsports.group/careers/"
+        "url": "https://www.dreamsports.group/careers/",
+        "description": "Dream11 is a fantasy-sports platform within Dream Sports, with technology supporting sports experiences, user engagement and large-scale digital products."
       },
       {
         "name": "Groww",
@@ -223,7 +244,8 @@
           "FinTech",
           "PM"
         ],
-        "url": "https://groww.in/careers"
+        "url": "https://groww.in/careers",
+        "description": "Groww is an Indian investing platform offering access to financial products such as stocks and mutual funds through digital applications."
       },
       {
         "name": "Nykaa",
@@ -232,7 +254,8 @@
           "Data",
           "E-Commerce"
         ],
-        "url": "https://www.nykaa.com/careers"
+        "url": "https://www.nykaa.com/careers",
+        "description": "Nykaa is an Indian beauty, personal-care and fashion retailer combining e-commerce technology with physical retail operations."
       },
       {
         "name": "upGrad",
@@ -242,7 +265,8 @@
           "EdTech",
           "PM"
         ],
-        "url": "https://www.upgrad.com/careers/"
+        "url": "https://www.upgrad.com/careers/",
+        "description": "upGrad is an education technology company offering professional learning and higher-education programs with academic and industry partners."
       },
       {
         "name": "BrowserStack",
@@ -251,7 +275,8 @@
           "QA",
           "DevRel"
         ],
-        "url": "https://www.browserstack.com/careers"
+        "url": "https://www.browserstack.com/careers",
+        "description": "BrowserStack provides cloud-based software testing tools that help developers test websites and applications across browsers and devices."
       },
       {
         "name": "Postman",
@@ -260,7 +285,8 @@
           "DevRel",
           "PM"
         ],
-        "url": "https://www.postman.com/company/careers/"
+        "url": "https://www.postman.com/company/careers/",
+        "description": "Postman builds an API development platform used by teams to design, test, document and collaborate on application interfaces."
       },
       {
         "name": "Freshworks",
@@ -270,7 +296,8 @@
           "CS",
           "PM"
         ],
-        "url": "https://www.freshworks.com/company/careers/"
+        "url": "https://www.freshworks.com/company/careers/",
+        "description": "Freshworks develops business software for customer support, sales and IT service management, delivered through cloud applications."
       },
       {
         "name": "Zoho",
@@ -279,7 +306,8 @@
           "QA",
           "Support"
         ],
-        "url": "https://www.zoho.com/careers/"
+        "url": "https://www.zoho.com/careers/",
+        "description": "Zoho creates business software covering customer relationships, finance, collaboration and enterprise operations, alongside development and automation tools."
       },
       {
         "name": "InMobi",
@@ -288,7 +316,8 @@
           "Data",
           "AdTech"
         ],
-        "url": "https://www.inmobi.com/company/careers"
+        "url": "https://www.inmobi.com/company/careers",
+        "description": "InMobi develops mobile advertising and marketing technology, helping advertisers and publishers connect with audiences and measure campaigns."
       },
       {
         "name": "MPL",
@@ -298,7 +327,8 @@
           "Gaming"
         ],
         "url": "https://www.mpl.live/",
-        "note": "Official company site; a dedicated hiring portal is not confirmed."
+        "note": "Official company site; a dedicated hiring portal is not confirmed.",
+        "description": "Mobile Premier League is a digital gaming platform bringing together mobile games, competitions and technology for player experiences."
       },
       {
         "name": "Lenskart",
@@ -307,7 +337,8 @@
           "Data",
           "Supply Chain"
         ],
-        "url": "https://www.lenskart.com/careers"
+        "url": "https://www.lenskart.com/careers",
+        "description": "Lenskart is an eyewear company combining online shopping, physical stores and manufacturing with technology for vision care and retail."
       },
       {
         "name": "Dunzo",
@@ -317,7 +348,8 @@
           "Data"
         ],
         "url": "",
-        "note": "A current official hiring portal has not been confirmed."
+        "note": "A current official hiring portal has not been confirmed.",
+        "description": "Dunzo is known for its Indian hyperlocal delivery business connecting consumers with nearby merchants. Check its operating and recruitment status before applying."
       },
       {
         "name": "Delhivery",
@@ -326,7 +358,8 @@
           "Data",
           "Logistics"
         ],
-        "url": "https://www.delhivery.com/company/careers"
+        "url": "https://www.delhivery.com/company/careers",
+        "description": "Delhivery is an Indian logistics company providing parcel delivery, freight and supply-chain services supported by routing and operations technology."
       },
       {
         "name": "Cars24",
@@ -335,7 +368,8 @@
           "Data",
           "Automotive"
         ],
-        "url": "https://www.cars24.com/careers/"
+        "url": "https://www.cars24.com/careers/",
+        "description": "CARS24 is an automotive commerce platform focused on buying and selling used vehicles, with technology supporting inspection, pricing and transactions."
       }
     ]
   },
@@ -350,7 +384,8 @@
           "Data",
           "Testing"
         ],
-        "url": "https://www.tcs.com/careers"
+        "url": "https://www.tcs.com/careers",
+        "description": "Tata Consultancy Services provides IT services, consulting and business solutions, helping organizations build and operate enterprise technology systems."
       },
       {
         "name": "Infosys",
@@ -360,7 +395,8 @@
           "Data",
           "BPO"
         ],
-        "url": "https://www.infosys.com/careers/"
+        "url": "https://www.infosys.com/careers/",
+        "description": "Infosys provides IT consulting, software development and digital transformation services to organizations across industries."
       },
       {
         "name": "Wipro",
@@ -370,7 +406,8 @@
           "Cloud",
           "Security"
         ],
-        "url": "https://careers.wipro.com/"
+        "url": "https://careers.wipro.com/",
+        "description": "Wipro delivers technology consulting and IT services, including cloud, engineering, cybersecurity and enterprise application development."
       },
       {
         "name": "HCL Technologies",
@@ -380,7 +417,8 @@
           "Data",
           "SAP"
         ],
-        "url": "https://www.hcltech.com/careers"
+        "url": "https://www.hcltech.com/careers",
+        "description": "HCLTech provides IT services, engineering and software solutions, supporting enterprise infrastructure, applications and digital transformation."
       },
       {
         "name": "Tech Mahindra",
@@ -390,7 +428,8 @@
           "Data",
           "BPO"
         ],
-        "url": "https://careers.techmahindra.com/"
+        "url": "https://careers.techmahindra.com/",
+        "description": "Tech Mahindra provides IT consulting and digital engineering services, with expertise spanning telecom, enterprise software and business operations."
       },
       {
         "name": "Cognizant",
@@ -400,7 +439,8 @@
           "Data",
           "BPO"
         ],
-        "url": "https://careers.cognizant.com/"
+        "url": "https://careers.cognizant.com/",
+        "description": "Cognizant is a professional services company offering IT consulting, application development and business process services across industries."
       },
       {
         "name": "Capgemini",
@@ -410,7 +450,8 @@
           "Cloud",
           "SAP"
         ],
-        "url": "https://www.capgemini.com/careers/"
+        "url": "https://www.capgemini.com/careers/",
+        "description": "Capgemini provides consulting, technology and engineering services, helping organizations modernize systems and develop digital products."
       },
       {
         "name": "Accenture",
@@ -420,7 +461,8 @@
           "Data",
           "Cloud"
         ],
-        "url": "https://www.accenture.com/careers"
+        "url": "https://www.accenture.com/careers",
+        "description": "Accenture delivers consulting, technology and operations services, including enterprise transformation, cloud implementation and data-driven business solutions."
       },
       {
         "name": "Mphasis",
@@ -430,7 +472,8 @@
           "BFSI",
           "Cloud"
         ],
-        "url": "https://www.mphasis.com/home/careers.html"
+        "url": "https://www.mphasis.com/home/careers.html",
+        "description": "Mphasis provides IT services focused on enterprise applications, cloud and digital transformation, including work for financial-services organizations."
       },
       {
         "name": "LTIMindtree",
@@ -440,7 +483,8 @@
           "Cloud",
           "SAP"
         ],
-        "url": "https://www.ltimindtree.com/careers/"
+        "url": "https://www.ltimindtree.com/careers/",
+        "description": "LTIMindtree provides technology consulting and digital solutions, covering enterprise applications, cloud services, data and business transformation."
       },
       {
         "name": "Persistent Systems",
@@ -449,7 +493,8 @@
           "Data",
           "Cloud"
         ],
-        "url": "https://www.persistent.com/careers/"
+        "url": "https://www.persistent.com/careers/",
+        "description": "Persistent Systems specializes in digital engineering and enterprise technology, helping companies develop software products and modernize business platforms."
       },
       {
         "name": "KPIT Technologies",
@@ -458,7 +503,8 @@
           "Automotive",
           "SWE"
         ],
-        "url": "https://www.kpit.com/careers/"
+        "url": "https://www.kpit.com/careers/",
+        "description": "KPIT develops software and engineering solutions for the automotive industry, including vehicle electronics, electrification and connected mobility."
       },
       {
         "name": "Hexaware",
@@ -468,7 +514,8 @@
           "BPO",
           "Cloud"
         ],
-        "url": "https://hexaware.com/careers/"
+        "url": "https://hexaware.com/careers/",
+        "description": "Hexaware provides IT and business process services, including application modernization, cloud solutions, data engineering and automation."
       },
       {
         "name": "Zensar Technologies",
@@ -477,7 +524,8 @@
           "Data",
           "Digital"
         ],
-        "url": "https://www.zensar.com/careers"
+        "url": "https://www.zensar.com/careers",
+        "description": "Zensar provides digital engineering and technology services, working on enterprise applications, customer experiences, cloud and data platforms."
       },
       {
         "name": "EPAM Systems",
@@ -486,7 +534,8 @@
           "Data",
           "Cloud"
         ],
-        "url": "https://www.epam.com/careers"
+        "url": "https://www.epam.com/careers",
+        "description": "EPAM provides software engineering, product development and digital consulting services for organizations building or modernizing technology products."
       },
       {
         "name": "Virtusa",
@@ -495,7 +544,8 @@
           "BFSI",
           "Data"
         ],
-        "url": "https://www.virtusa.com/careers"
+        "url": "https://www.virtusa.com/careers",
+        "description": "Virtusa provides digital engineering and IT consulting services, helping enterprises develop applications and transform technology operations."
       }
     ]
   },
@@ -510,7 +560,8 @@
           "Risk",
           "Data"
         ],
-        "url": "https://www.goldmansachs.com/careers"
+        "url": "https://www.goldmansachs.com/careers",
+        "description": "Goldman Sachs is a financial institution offering investment banking, asset management and related services, supported by engineering and quantitative teams."
       },
       {
         "name": "JP Morgan Chase",
@@ -520,7 +571,8 @@
           "Quant",
           "Risk"
         ],
-        "url": "https://careers.jpmorgan.com/"
+        "url": "https://careers.jpmorgan.com/",
+        "description": "JPMorgan Chase is a financial-services firm spanning banking, payments and investment services, with technology teams supporting global financial operations."
       },
       {
         "name": "Morgan Stanley",
@@ -530,7 +582,8 @@
           "Risk",
           "Data"
         ],
-        "url": "https://www.morganstanley.com/people-opportunities"
+        "url": "https://www.morganstanley.com/people-opportunities",
+        "description": "Morgan Stanley provides investment banking, wealth management and investment management services, supported by technology, analytics and risk systems."
       },
       {
         "name": "Citi",
@@ -540,7 +593,8 @@
           "Risk",
           "Compliance"
         ],
-        "url": "https://jobs.citi.com/"
+        "url": "https://jobs.citi.com/",
+        "description": "Citi provides banking and financial services, including institutional banking, payments and wealth services, supported by enterprise technology and risk operations."
       },
       {
         "name": "Bank of America",
@@ -550,7 +604,8 @@
           "Risk",
           "Analytics"
         ],
-        "url": "https://careers.bankofamerica.com/"
+        "url": "https://careers.bankofamerica.com/",
+        "description": "Bank of America offers consumer, business and institutional financial services, with technology supporting banking, markets and payment systems."
       },
       {
         "name": "Barclays",
@@ -560,7 +615,8 @@
           "Quant",
           "Risk"
         ],
-        "url": "https://search.jobs.barclays/"
+        "url": "https://search.jobs.barclays/",
+        "description": "Barclays is a banking group offering consumer, corporate and investment banking services, supported by engineering, data and financial risk teams."
       },
       {
         "name": "Deutsche Bank",
@@ -570,7 +626,8 @@
           "Quant",
           "Risk"
         ],
-        "url": "https://careers.db.com/"
+        "url": "https://careers.db.com/",
+        "description": "Deutsche Bank provides corporate and investment banking, asset management and private banking services, with technology supporting financial products and operations."
       },
       {
         "name": "HSBC",
@@ -580,7 +637,8 @@
           "Risk",
           "Compliance"
         ],
-        "url": "https://www.hsbc.com/careers"
+        "url": "https://www.hsbc.com/careers",
+        "description": "HSBC is an international banking group serving individuals and businesses through banking, payments, trade and wealth-management services."
       },
       {
         "name": "UBS",
@@ -590,7 +648,8 @@
           "Data",
           "Risk"
         ],
-        "url": "https://www.ubs.com/global/en/careers.html"
+        "url": "https://www.ubs.com/global/en/careers.html",
+        "description": "UBS provides wealth management, investment banking and asset management services, supported by financial technology, analytics and risk infrastructure."
       },
       {
         "name": "Credit Suisse / UBS",
@@ -600,7 +659,8 @@
           "Risk"
         ],
         "url": "https://www.ubs.com/global/en/careers.html",
-        "note": "Recruitment is handled through UBS."
+        "note": "Recruitment is handled through UBS.",
+        "description": "Credit Suisse is a financial-services name integrated into UBS. Use the UBS careers portal to explore the relevant business and technology opportunities."
       },
       {
         "name": "BNY Mellon",
@@ -609,7 +669,8 @@
           "Data",
           "Risk"
         ],
-        "url": "https://www.bny.com/corporate/global/en/careers.html"
+        "url": "https://www.bny.com/corporate/global/en/careers.html",
+        "description": "BNY provides financial infrastructure services such as asset custody, investment servicing and wealth solutions, supported by technology and data platforms."
       },
       {
         "name": "State Street",
@@ -618,7 +679,8 @@
           "Data",
           "Risk"
         ],
-        "url": "https://careers.statestreet.com/"
+        "url": "https://careers.statestreet.com/",
+        "description": "State Street provides investment servicing and investment management services, with technology supporting custody, fund administration and institutional finance."
       },
       {
         "name": "Wells Fargo",
@@ -628,7 +690,8 @@
           "Risk",
           "Compliance"
         ],
-        "url": "https://www.wellsfargojobs.com/"
+        "url": "https://www.wellsfargojobs.com/",
+        "description": "Wells Fargo is a financial-services company offering consumer and commercial banking, lending and related financial products."
       },
       {
         "name": "American Express",
@@ -638,7 +701,8 @@
           "Risk",
           "PM"
         ],
-        "url": "https://www.americanexpress.com/en-us/careers/"
+        "url": "https://www.americanexpress.com/en-us/careers/",
+        "description": "American Express is a payments and financial-services company known for card products and its merchant and customer network."
       }
     ]
   },
@@ -653,7 +717,8 @@
           "Systems",
           "Research"
         ],
-        "url": "https://www.deshaw.com/careers"
+        "url": "https://www.deshaw.com/careers",
+        "description": "The D. E. Shaw group is an investment and technology firm applying research, quantitative methods and software to investment management."
       },
       {
         "name": "Two Sigma",
@@ -663,7 +728,8 @@
           "Data",
           "Research"
         ],
-        "url": "https://www.twosigma.com/careers/"
+        "url": "https://www.twosigma.com/careers/",
+        "description": "Two Sigma is an investment firm that applies data science, quantitative research and engineering to financial markets and investment decisions."
       },
       {
         "name": "Citadel",
@@ -673,7 +739,8 @@
           "Research",
           "Risk"
         ],
-        "url": "https://www.citadel.com/careers/"
+        "url": "https://www.citadel.com/careers/",
+        "description": "Citadel is an investment-management firm using research, quantitative analysis and technology across investment strategies; it is distinct from Citadel Securities."
       },
       {
         "name": "Jane Street",
@@ -683,7 +750,8 @@
           "Research",
           "Trading"
         ],
-        "url": "https://www.janestreet.com/join-jane-street/"
+        "url": "https://www.janestreet.com/join-jane-street/",
+        "description": "Jane Street is a quantitative trading firm combining research, software engineering and market expertise to trade financial instruments."
       },
       {
         "name": "Jump Trading",
@@ -692,7 +760,8 @@
           "Quant",
           "Systems"
         ],
-        "url": "https://www.jumptrading.com/careers/"
+        "url": "https://www.jumptrading.com/careers/",
+        "description": "Jump Trading is a quantitative trading firm that uses research, software and computing infrastructure to participate in financial markets."
       },
       {
         "name": "Hudson River Trading",
@@ -701,7 +770,8 @@
           "Quant",
           "Research"
         ],
-        "url": "https://www.hudsonrivertrading.com/careers/"
+        "url": "https://www.hudsonrivertrading.com/careers/",
+        "description": "Hudson River Trading develops automated trading systems using quantitative research, software engineering and computing infrastructure."
       },
       {
         "name": "Optiver",
@@ -711,7 +781,8 @@
           "Trading",
           "Research"
         ],
-        "url": "https://optiver.com/working-at-optiver/career-opportunities/"
+        "url": "https://optiver.com/working-at-optiver/career-opportunities/",
+        "description": "Optiver is a market-making firm using trading expertise, quantitative research and technology to provide liquidity in financial markets."
       },
       {
         "name": "Flow Traders",
@@ -721,7 +792,8 @@
           "Trading"
         ],
         "url": "https://www.flowtraders.com/careers",
-        "note": "Flow Traders portal; the supplied AlphaTensor reference is not a separate employer listing."
+        "note": "Flow Traders portal; the supplied AlphaTensor reference is not a separate employer listing.",
+        "description": "Flow Traders is a trading and liquidity-provider firm active in financial markets, with technology supporting pricing, trading and risk management."
       },
       {
         "name": "IMC Trading",
@@ -730,7 +802,8 @@
           "Quant",
           "Trading"
         ],
-        "url": "https://www.imc.com/us/careers/"
+        "url": "https://www.imc.com/us/careers/",
+        "description": "IMC is a trading firm and liquidity provider combining quantitative research, software engineering and financial-market expertise."
       }
     ]
   },
@@ -745,7 +818,8 @@
           "Data",
           "Tech"
         ],
-        "url": "https://www.mckinsey.com/careers"
+        "url": "https://www.mckinsey.com/careers",
+        "description": "McKinsey is a management consulting firm advising organizations on strategy, operations and transformation, with specialist analytics and technology practices."
       },
       {
         "name": "Boston Consulting Group",
@@ -755,7 +829,8 @@
           "Data",
           "Tech"
         ],
-        "url": "https://careers.bcg.com/"
+        "url": "https://careers.bcg.com/",
+        "description": "Boston Consulting Group advises organizations on strategy and transformation, combining management consulting with digital, technology and analytics expertise."
       },
       {
         "name": "Bain & Company",
@@ -764,7 +839,8 @@
           "Consulting",
           "Data"
         ],
-        "url": "https://www.bain.com/careers/"
+        "url": "https://www.bain.com/careers/",
+        "description": "Bain is a management consulting firm helping organizations address strategy, performance improvement, customer experience and business transformation."
       },
       {
         "name": "Deloitte",
@@ -775,7 +851,8 @@
           "Data",
           "Risk"
         ],
-        "url": "https://www.deloitte.com/global/en/careers.html"
+        "url": "https://www.deloitte.com/global/en/careers.html",
+        "description": "Deloitte is a professional-services network offering consulting, audit, tax and risk-related services, including enterprise technology implementation."
       },
       {
         "name": "PwC",
@@ -785,7 +862,8 @@
           "Tax",
           "Data"
         ],
-        "url": "https://www.pwc.com/gx/en/careers.html"
+        "url": "https://www.pwc.com/gx/en/careers.html",
+        "description": "PwC is a professional-services network providing assurance, tax and advisory services, including business transformation and technology consulting."
       },
       {
         "name": "EY",
@@ -795,7 +873,8 @@
           "Tax",
           "Data"
         ],
-        "url": "https://www.ey.com/en_gl/careers"
+        "url": "https://www.ey.com/en_gl/careers",
+        "description": "EY is a professional-services organization offering assurance, consulting, tax and strategy services, with teams spanning technology and business transformation."
       },
       {
         "name": "KPMG",
@@ -805,7 +884,8 @@
           "Risk",
           "Data"
         ],
-        "url": "https://kpmg.com/xx/en/careers.html"
+        "url": "https://kpmg.com/xx/en/careers.html",
+        "description": "KPMG is a professional-services network offering audit, tax and advisory services, including risk, data and technology consulting."
       },
       {
         "name": "Oliver Wyman",
@@ -814,7 +894,8 @@
           "Data",
           "Risk"
         ],
-        "url": "https://www.oliverwyman.com/careers.html"
+        "url": "https://www.oliverwyman.com/careers.html",
+        "description": "Oliver Wyman is a management consulting firm focused on strategy, operations and risk, serving organizations across financial services and other industries."
       },
       {
         "name": "A.T. Kearney",
@@ -822,7 +903,8 @@
           "Consulting",
           "Data"
         ],
-        "url": "https://www.kearney.com/careers"
+        "url": "https://www.kearney.com/careers",
+        "description": "Kearney is a management consulting firm advising organizations on strategy, operations, procurement and business transformation."
       },
       {
         "name": "Strategy&",
@@ -830,7 +912,8 @@
           "Consulting",
           "Strategy"
         ],
-        "url": "https://www.strategyand.pwc.com/gx/en/careers.html"
+        "url": "https://www.strategyand.pwc.com/gx/en/careers.html",
+        "description": "Strategy& is PwC's strategy consulting business, helping organizations develop business strategies and translate them into operational change."
       }
     ]
   },
@@ -845,7 +928,8 @@
           "ML",
           "SWE"
         ],
-        "url": "https://careers.qualcomm.com/"
+        "url": "https://careers.qualcomm.com/",
+        "description": "Qualcomm develops semiconductor and wireless technologies used in smartphones, connected devices, automotive systems and other computing products."
       },
       {
         "name": "Intel",
@@ -856,7 +940,8 @@
           "Hardware",
           "Data"
         ],
-        "url": "https://jobs.intel.com/"
+        "url": "https://jobs.intel.com/",
+        "description": "Intel develops processors, semiconductor technologies and computing platforms used across personal computers, data centers and embedded systems."
       },
       {
         "name": "NVIDIA",
@@ -866,7 +951,8 @@
           "SWE",
           "Hardware"
         ],
-        "url": "https://www.nvidia.com/en-us/about-nvidia/careers/"
+        "url": "https://www.nvidia.com/en-us/about-nvidia/careers/",
+        "description": "NVIDIA develops accelerated computing technologies, including GPUs and software platforms used in AI, graphics, simulation and scientific computing."
       },
       {
         "name": "AMD",
@@ -876,7 +962,8 @@
           "Hardware",
           "ML"
         ],
-        "url": "https://careers.amd.com/"
+        "url": "https://careers.amd.com/",
+        "description": "AMD designs processors and graphics technologies for personal computers, gaming, data centers and embedded computing applications."
       },
       {
         "name": "Texas Instruments",
@@ -886,7 +973,8 @@
           "VLSI",
           "SWE"
         ],
-        "url": "https://careers.ti.com/"
+        "url": "https://careers.ti.com/",
+        "description": "Texas Instruments designs and manufactures analog and embedded-processing semiconductors used in industrial, automotive and electronic products."
       },
       {
         "name": "Broadcom",
@@ -895,7 +983,8 @@
           "Networking",
           "SWE"
         ],
-        "url": "https://www.broadcom.com/company/careers"
+        "url": "https://www.broadcom.com/company/careers",
+        "description": "Broadcom develops semiconductor and infrastructure software products spanning networking, connectivity, storage and enterprise computing."
       },
       {
         "name": "Marvell",
@@ -904,7 +993,8 @@
           "Networking",
           "SWE"
         ],
-        "url": "https://www.marvell.com/company/careers.html"
+        "url": "https://www.marvell.com/company/careers.html",
+        "description": "Marvell develops semiconductor solutions for data infrastructure, including networking, storage, connectivity and cloud computing systems."
       },
       {
         "name": "MediaTek",
@@ -913,7 +1003,8 @@
           "SWE",
           "ML"
         ],
-        "url": "https://careers.mediatek.com/"
+        "url": "https://careers.mediatek.com/",
+        "description": "MediaTek designs chips for smartphones, smart devices, connectivity and other consumer and computing applications."
       },
       {
         "name": "Samsung R&D",
@@ -923,7 +1014,8 @@
           "SWE",
           "Hardware"
         ],
-        "url": "https://research.samsung.com/careers"
+        "url": "https://research.samsung.com/careers",
+        "description": "Samsung research and development teams work on technologies supporting consumer electronics, mobile devices, communications, AI and connected products."
       },
       {
         "name": "NXP Semiconductors",
@@ -932,7 +1024,8 @@
           "VLSI",
           "SWE"
         ],
-        "url": "https://www.nxp.com/company/about-nxp/careers:CAREERS"
+        "url": "https://www.nxp.com/company/about-nxp/careers:CAREERS",
+        "description": "NXP develops semiconductors for automotive, industrial and connected-device applications, including embedded processing and secure connectivity."
       },
       {
         "name": "STMicroelectronics",
@@ -941,7 +1034,8 @@
           "Embedded",
           "SWE"
         ],
-        "url": "https://www.st.com/content/st_com/en/about/careers.html"
+        "url": "https://www.st.com/content/st_com/en/about/careers.html",
+        "description": "STMicroelectronics develops and manufactures semiconductor products for automotive, industrial, consumer and embedded electronic systems."
       },
       {
         "name": "Cadence Design Systems",
@@ -950,7 +1044,8 @@
           "SWE",
           "VLSI"
         ],
-        "url": "https://www.cadence.com/en_US/home/company/careers.html"
+        "url": "https://www.cadence.com/en_US/home/company/careers.html",
+        "description": "Cadence provides software, hardware and intellectual property used to design and verify semiconductors and electronic systems."
       },
       {
         "name": "Synopsys",
@@ -959,7 +1054,8 @@
           "SWE",
           "VLSI"
         ],
-        "url": "https://careers.synopsys.com/"
+        "url": "https://careers.synopsys.com/",
+        "description": "Synopsys develops electronic design automation tools and semiconductor intellectual property used in chip and system development."
       },
       {
         "name": "Micron Technology",
@@ -968,7 +1064,8 @@
           "Hardware",
           "Data"
         ],
-        "url": "https://careers.micron.com/"
+        "url": "https://careers.micron.com/",
+        "description": "Micron develops memory and storage technologies, including DRAM and NAND products used in computing, mobile and data-center applications."
       }
     ]
   },
@@ -983,7 +1080,8 @@
           "SWE",
           "Security"
         ],
-        "url": "https://www.amazon.jobs/content/en/teams/amazon-web-services"
+        "url": "https://www.amazon.jobs/content/en/teams/amazon-web-services",
+        "description": "Amazon Web Services provides cloud computing services for infrastructure, storage, databases, analytics and application development."
       },
       {
         "name": "Google Cloud",
@@ -993,7 +1091,8 @@
           "SWE",
           "PM"
         ],
-        "url": "https://www.google.com/about/careers/applications/teams/google-cloud/"
+        "url": "https://www.google.com/about/careers/applications/teams/google-cloud/",
+        "description": "Google Cloud provides cloud infrastructure, data platforms and AI services that organizations use to develop and operate applications."
       },
       {
         "name": "Microsoft Azure",
@@ -1002,7 +1101,8 @@
           "SRE",
           "SWE"
         ],
-        "url": "https://careers.microsoft.com/"
+        "url": "https://careers.microsoft.com/",
+        "description": "Microsoft Azure is a cloud platform offering computing, storage, networking, data and AI services for businesses and developers."
       },
       {
         "name": "Salesforce",
@@ -1012,7 +1112,8 @@
           "CRM",
           "PM"
         ],
-        "url": "https://careers.salesforce.com/"
+        "url": "https://careers.salesforce.com/",
+        "description": "Salesforce develops cloud software for customer relationship management, helping businesses manage sales, service, marketing and related workflows."
       },
       {
         "name": "ServiceNow",
@@ -1022,7 +1123,8 @@
           "ITSM",
           "PM"
         ],
-        "url": "https://careers.servicenow.com/"
+        "url": "https://careers.servicenow.com/",
+        "description": "ServiceNow provides a cloud platform for enterprise workflows, including IT services, employee experiences and business process automation."
       },
       {
         "name": "Datadog",
@@ -1032,7 +1134,8 @@
           "Cloud",
           "SRE"
         ],
-        "url": "https://careers.datadoghq.com/"
+        "url": "https://careers.datadoghq.com/",
+        "description": "Datadog provides monitoring and security tools that help teams observe applications, infrastructure and cloud services."
       },
       {
         "name": "HashiCorp",
@@ -1041,7 +1144,8 @@
           "DevOps",
           "Cloud"
         ],
-        "url": "https://www.hashicorp.com/en/careers"
+        "url": "https://www.hashicorp.com/en/careers",
+        "description": "HashiCorp develops tools for infrastructure automation and security, including Terraform and Vault, used to manage cloud and enterprise environments."
       },
       {
         "name": "Atlassian",
@@ -1050,7 +1154,8 @@
           "DevOps",
           "PM"
         ],
-        "url": "https://www.atlassian.com/company/careers"
+        "url": "https://www.atlassian.com/company/careers",
+        "description": "Atlassian builds collaboration and work-management software, including Jira and Confluence, used by software and business teams."
       },
       {
         "name": "GitHub",
@@ -1059,7 +1164,8 @@
           "DevOps",
           "PM"
         ],
-        "url": "https://www.github.careers/"
+        "url": "https://www.github.careers/",
+        "description": "GitHub provides a platform for hosting code, collaborating on software and automating development workflows, including tools for AI-assisted coding."
       },
       {
         "name": "GitLab",
@@ -1069,7 +1175,8 @@
           "Cloud",
           "Remote"
         ],
-        "url": "https://about.gitlab.com/jobs/"
+        "url": "https://about.gitlab.com/jobs/",
+        "description": "GitLab provides a software development platform covering source control, continuous integration, security and application delivery workflows."
       },
       {
         "name": "Cloudflare",
@@ -1078,7 +1185,8 @@
           "Network",
           "Security"
         ],
-        "url": "https://www.cloudflare.com/careers/"
+        "url": "https://www.cloudflare.com/careers/",
+        "description": "Cloudflare provides networking, security and performance services that help protect and deliver websites, applications and internet infrastructure."
       },
       {
         "name": "Fastly",
@@ -1087,7 +1195,8 @@
           "CDN",
           "Network"
         ],
-        "url": "https://www.fastly.com/about/careers"
+        "url": "https://www.fastly.com/about/careers",
+        "description": "Fastly provides an edge cloud platform for content delivery, application performance and security close to end users."
       },
       {
         "name": "Confluent",
@@ -1097,7 +1206,8 @@
           "Cloud",
           "Kafka"
         ],
-        "url": "https://careers.confluent.io/"
+        "url": "https://careers.confluent.io/",
+        "description": "Confluent develops data-streaming infrastructure built around Apache Kafka, helping organizations move and process data across applications."
       },
       {
         "name": "Snowflake",
@@ -1106,7 +1216,8 @@
           "Data",
           "Cloud"
         ],
-        "url": "https://careers.snowflake.com/"
+        "url": "https://careers.snowflake.com/",
+        "description": "Snowflake provides a cloud data platform used for data storage, analytics, engineering and AI application development."
       }
     ]
   },
@@ -1120,7 +1231,8 @@
           "SWE",
           "Threat Intel"
         ],
-        "url": "https://jobs.paloaltonetworks.com/"
+        "url": "https://jobs.paloaltonetworks.com/",
+        "description": "Palo Alto Networks develops cybersecurity platforms covering network security, cloud protection and security operations."
       },
       {
         "name": "CrowdStrike",
@@ -1130,7 +1242,8 @@
           "Data",
           "Threat Intel"
         ],
-        "url": "https://www.crowdstrike.com/en-us/careers/"
+        "url": "https://www.crowdstrike.com/en-us/careers/",
+        "description": "CrowdStrike provides cybersecurity products and services focused on endpoint protection, threat intelligence and security operations."
       },
       {
         "name": "Zscaler",
@@ -1139,7 +1252,8 @@
           "SWE",
           "Cloud"
         ],
-        "url": "https://www.zscaler.com/careers"
+        "url": "https://www.zscaler.com/careers",
+        "description": "Zscaler delivers cloud-based security services that help organizations secure access to applications, data and internet resources."
       },
       {
         "name": "SentinelOne",
@@ -1148,7 +1262,8 @@
           "SWE",
           "ML"
         ],
-        "url": "https://www.sentinelone.com/careers/"
+        "url": "https://www.sentinelone.com/careers/",
+        "description": "SentinelOne develops cybersecurity software for protecting endpoints, cloud environments and identities, using automation and machine learning."
       },
       {
         "name": "Darktrace",
@@ -1157,7 +1272,8 @@
           "SWE",
           "ML"
         ],
-        "url": "https://www.darktrace.com/careers"
+        "url": "https://www.darktrace.com/careers",
+        "description": "Darktrace develops AI-based cybersecurity tools designed to detect and respond to threats across enterprise technology environments."
       },
       {
         "name": "Cisco Security",
@@ -1166,7 +1282,8 @@
           "Security",
           "SWE"
         ],
-        "url": "https://jobs.cisco.com/"
+        "url": "https://jobs.cisco.com/",
+        "description": "Cisco's security business develops products for protecting networks, applications, identities and endpoints as part of its broader enterprise technology portfolio."
       },
       {
         "name": "Check Point",
@@ -1175,7 +1292,8 @@
           "SWE",
           "Network"
         ],
-        "url": "https://careers.checkpoint.com/"
+        "url": "https://careers.checkpoint.com/",
+        "description": "Check Point develops cybersecurity solutions for networks, cloud environments and devices, including threat prevention and security management."
       },
       {
         "name": "Fortinet",
@@ -1184,7 +1302,8 @@
           "Security",
           "SWE"
         ],
-        "url": "https://www.fortinet.com/corporate/careers"
+        "url": "https://www.fortinet.com/corporate/careers",
+        "description": "Fortinet provides cybersecurity and networking products, including firewalls and tools for securing distributed enterprise infrastructure."
       },
       {
         "name": "Tenable",
@@ -1193,7 +1312,8 @@
           "SWE",
           "Vulnerability Mgmt"
         ],
-        "url": "https://www.tenable.com/careers"
+        "url": "https://www.tenable.com/careers",
+        "description": "Tenable develops exposure-management and vulnerability-assessment tools that help organizations identify and prioritize security risks."
       },
       {
         "name": "Rapid7",
@@ -1202,7 +1322,8 @@
           "SWE",
           "SIEM"
         ],
-        "url": "https://careers.rapid7.com/"
+        "url": "https://careers.rapid7.com/",
+        "description": "Rapid7 provides cybersecurity software and services for vulnerability management, threat detection and security operations."
       }
     ]
   },
@@ -1217,7 +1338,8 @@
           "Research",
           "DevRel"
         ],
-        "url": "https://huggingface.co/join-us"
+        "url": "https://huggingface.co/join-us",
+        "description": "Hugging Face builds an ecosystem of AI models, datasets and developer tools that supports machine learning research and application development."
       },
       {
         "name": "Cohere",
@@ -1226,7 +1348,8 @@
           "SWE",
           "Research"
         ],
-        "url": "https://cohere.com/careers"
+        "url": "https://cohere.com/careers",
+        "description": "Cohere develops enterprise AI models and tools for language understanding, generation, search and business applications."
       },
       {
         "name": "Mistral AI",
@@ -1235,7 +1358,8 @@
           "Research",
           "SWE"
         ],
-        "url": "https://mistral.ai/careers"
+        "url": "https://mistral.ai/careers",
+        "description": "Mistral AI develops language models and AI tools for developers and organizations building generative AI applications."
       },
       {
         "name": "Stability AI",
@@ -1244,7 +1368,8 @@
           "Research",
           "SWE"
         ],
-        "url": "https://stability.ai/careers"
+        "url": "https://stability.ai/careers",
+        "description": "Stability AI develops generative AI technologies, including models for creating and working with visual and other media content."
       },
       {
         "name": "Perplexity AI",
@@ -1254,7 +1379,8 @@
           "Research",
           "PM"
         ],
-        "url": "https://www.perplexity.ai/hub/careers"
+        "url": "https://www.perplexity.ai/hub/careers",
+        "description": "Perplexity develops AI-powered search and answer products that help users discover information and explore sources."
       },
       {
         "name": "Inflection AI",
@@ -1263,7 +1389,8 @@
           "SWE",
           "Research"
         ],
-        "url": "https://inflection.ai/careers"
+        "url": "https://inflection.ai/careers",
+        "description": "Inflection AI develops conversational AI technology and solutions for personal and enterprise applications."
       },
       {
         "name": "Scale AI",
@@ -1273,7 +1400,8 @@
           "SWE",
           "Ops"
         ],
-        "url": "https://scale.com/careers"
+        "url": "https://scale.com/careers",
+        "description": "Scale AI provides data and AI infrastructure services, including tools for preparing training data and evaluating AI systems."
       },
       {
         "name": "DataRobot",
@@ -1283,7 +1411,8 @@
           "Data",
           "PM"
         ],
-        "url": "https://www.datarobot.com/careers/"
+        "url": "https://www.datarobot.com/careers/",
+        "description": "DataRobot develops an enterprise AI platform for building, deploying and managing machine learning and generative AI applications."
       },
       {
         "name": "C3.ai",
@@ -1293,7 +1422,8 @@
           "Data",
           "PM"
         ],
-        "url": "https://c3.ai/careers/"
+        "url": "https://c3.ai/careers/",
+        "description": "C3.ai develops enterprise AI software used to build and operate applications for business and industrial use cases."
       },
       {
         "name": "Databricks",
@@ -1303,7 +1433,8 @@
           "ML",
           "Cloud"
         ],
-        "url": "https://www.databricks.com/company/careers"
+        "url": "https://www.databricks.com/company/careers",
+        "description": "Databricks provides a data and AI platform for data engineering, analytics, machine learning and application development."
       }
     ]
   },
@@ -1319,7 +1450,8 @@
           "PM",
           "Infrastructure"
         ],
-        "url": "https://stripe.com/jobs"
+        "url": "https://stripe.com/jobs",
+        "description": "Stripe builds financial infrastructure for businesses, including online payments, billing and tools for managing digital commerce."
       },
       {
         "name": "PayPal",
@@ -1329,7 +1461,8 @@
           "FinTech",
           "Risk"
         ],
-        "url": "https://careers.pypl.com/"
+        "url": "https://careers.pypl.com/",
+        "description": "PayPal provides digital payment services for consumers and merchants, supporting online purchases and money transfers."
       },
       {
         "name": "Square / Block",
@@ -1339,7 +1472,8 @@
           "FinTech",
           "PM"
         ],
-        "url": "https://block.xyz/careers"
+        "url": "https://block.xyz/careers",
+        "description": "Block develops financial technology products, including Square's business payment tools and Cash App's consumer financial services."
       },
       {
         "name": "Plaid",
@@ -1349,7 +1483,8 @@
           "FinTech",
           "PM"
         ],
-        "url": "https://plaid.com/careers/"
+        "url": "https://plaid.com/careers/",
+        "description": "Plaid builds financial data connectivity tools that help applications connect with users' financial accounts and services."
       },
       {
         "name": "Shopify",
@@ -1359,7 +1494,8 @@
           "E-Commerce",
           "PM"
         ],
-        "url": "https://www.shopify.com/careers"
+        "url": "https://www.shopify.com/careers",
+        "description": "Shopify provides a commerce platform that helps businesses create online stores, manage sales and operate retail workflows."
       },
       {
         "name": "Klarna",
@@ -1369,7 +1505,8 @@
           "FinTech",
           "PM"
         ],
-        "url": "https://www.klarna.com/careers/"
+        "url": "https://www.klarna.com/careers/",
+        "description": "Klarna provides payment and shopping services, including installment-payment options and merchant tools for digital commerce."
       },
       {
         "name": "Revolut",
@@ -1379,7 +1516,8 @@
           "FinTech",
           "PM"
         ],
-        "url": "https://www.revolut.com/careers/"
+        "url": "https://www.revolut.com/careers/",
+        "description": "Revolut is a financial technology company offering digital money-management, payment and other financial products across supported markets."
       },
       {
         "name": "Robinhood",
@@ -1389,7 +1527,8 @@
           "FinTech",
           "Risk"
         ],
-        "url": "https://careers.robinhood.com/"
+        "url": "https://careers.robinhood.com/",
+        "description": "Robinhood develops digital financial platforms for investing and trading, with product availability depending on the market and applicable rules."
       },
       {
         "name": "Coinbase",
@@ -1399,7 +1538,8 @@
           "Web3",
           "PM"
         ],
-        "url": "https://www.coinbase.com/careers"
+        "url": "https://www.coinbase.com/careers",
+        "description": "Coinbase provides cryptocurrency infrastructure and services, including trading, custody and developer tools for blockchain applications."
       },
       {
         "name": "Binance",
@@ -1409,7 +1549,8 @@
           "Web3",
           "Trading"
         ],
-        "url": "https://www.binance.com/en/careers"
+        "url": "https://www.binance.com/en/careers",
+        "description": "Binance operates a cryptocurrency platform offering digital-asset trading and related services, subject to local availability and regulation."
       }
     ]
   },
@@ -1424,7 +1565,8 @@
           "Embedded",
           "Hardware"
         ],
-        "url": "https://www.tesla.com/careers"
+        "url": "https://www.tesla.com/careers",
+        "description": "Tesla develops electric vehicles, energy-storage products and related software, combining manufacturing, engineering and automation."
       },
       {
         "name": "Waymo",
@@ -1434,7 +1576,8 @@
           "Robotics",
           "Hardware"
         ],
-        "url": "https://waymo.com/careers/"
+        "url": "https://waymo.com/careers/",
+        "description": "Waymo develops autonomous driving technology and ride-hailing services using self-driving vehicles in supported locations."
       },
       {
         "name": "Rivian",
@@ -1444,7 +1587,8 @@
           "Embedded",
           "Data"
         ],
-        "url": "https://careers.rivian.com/"
+        "url": "https://careers.rivian.com/",
+        "description": "Rivian develops electric vehicles and related software, including consumer vehicles and commercial delivery vans."
       },
       {
         "name": "Lucid Motors",
@@ -1453,7 +1597,8 @@
           "Hardware",
           "Embedded"
         ],
-        "url": "https://careers.lucidmotors.com/"
+        "url": "https://careers.lucidmotors.com/",
+        "description": "Lucid designs and manufactures electric vehicles, with engineering work spanning electric powertrains, batteries, software and vehicle systems."
       },
       {
         "name": "Ola Electric",
@@ -1463,7 +1608,8 @@
           "EV",
           "Data"
         ],
-        "url": "https://www.olaelectric.com/careers"
+        "url": "https://www.olaelectric.com/careers",
+        "description": "Ola Electric develops electric mobility products, including electric two-wheelers, with work across vehicle engineering, batteries and manufacturing."
       },
       {
         "name": "Ather Energy",
@@ -1472,7 +1618,8 @@
           "Embedded",
           "EV"
         ],
-        "url": "https://www.atherenergy.com/careers"
+        "url": "https://www.atherenergy.com/careers",
+        "description": "Ather Energy designs electric scooters and connected mobility technology, including vehicle software and charging infrastructure."
       },
       {
         "name": "Bosch",
@@ -1482,7 +1629,8 @@
           "Automotive",
           "VLSI"
         ],
-        "url": "https://www.bosch.com/careers/"
+        "url": "https://www.bosch.com/careers/",
+        "description": "Bosch develops technology across mobility, industrial systems, consumer products and energy, combining hardware, software and engineering."
       },
       {
         "name": "Continental",
@@ -1491,7 +1639,8 @@
           "SWE",
           "Automotive"
         ],
-        "url": "https://jobs.continental.com/"
+        "url": "https://jobs.continental.com/",
+        "description": "Continental develops automotive and mobility technologies, with products and engineering capabilities spanning vehicle components and tire systems."
       },
       {
         "name": "Aptiv",
@@ -1500,7 +1649,8 @@
           "SWE",
           "Automotive"
         ],
-        "url": "https://www.aptiv.com/en/careers"
+        "url": "https://www.aptiv.com/en/careers",
+        "description": "Aptiv develops automotive technology focused on vehicle electronics, electrical systems, connectivity and software-enabled mobility."
       },
       {
         "name": "Mahindra",
@@ -1510,7 +1660,8 @@
           "EV",
           "Automotive"
         ],
-        "url": "https://www.mahindra.com/careers"
+        "url": "https://www.mahindra.com/careers",
+        "description": "The Mahindra group operates across industries including automotive, farm equipment and technology, with engineering supporting vehicles and industrial products."
       }
     ]
   },
@@ -1524,7 +1675,8 @@
           "SWE",
           "Electronics"
         ],
-        "url": "https://www.isro.gov.in/Careers.html"
+        "url": "https://www.isro.gov.in/Careers.html",
+        "description": "The Indian Space Research Organisation is India's national space agency, developing launch vehicles, satellites and space applications."
       },
       {
         "name": "SpaceX",
@@ -1534,7 +1686,8 @@
           "Embedded",
           "Hardware"
         ],
-        "url": "https://www.spacex.com/careers/"
+        "url": "https://www.spacex.com/careers/",
+        "description": "SpaceX develops launch vehicles, spacecraft and satellite systems, including technologies for space transportation and satellite internet."
       },
       {
         "name": "Boeing",
@@ -1544,7 +1697,8 @@
           "Data",
           "Systems"
         ],
-        "url": "https://jobs.boeing.com/"
+        "url": "https://jobs.boeing.com/",
+        "description": "Boeing designs and supports commercial aircraft, defense products and space systems, with work across engineering, manufacturing and software."
       },
       {
         "name": "Airbus",
@@ -1553,7 +1707,8 @@
           "SWE",
           "Data"
         ],
-        "url": "https://www.airbus.com/en/careers"
+        "url": "https://www.airbus.com/en/careers",
+        "description": "Airbus develops aerospace products including commercial aircraft, helicopters and defense and space systems."
       },
       {
         "name": "Lockheed Martin",
@@ -1562,7 +1717,8 @@
           "SWE",
           "Systems"
         ],
-        "url": "https://www.lockheedmartinjobs.com/"
+        "url": "https://www.lockheedmartinjobs.com/",
+        "description": "Lockheed Martin develops aerospace, defense and security technologies, with engineering across aircraft, space systems and advanced electronics."
       },
       {
         "name": "HAL",
@@ -1572,7 +1728,8 @@
           "SWE"
         ],
         "url": "https://hal-india.co.in/",
-        "note": "Official company site; check its careers or recruitment section."
+        "note": "Official company site; check its careers or recruitment section.",
+        "description": "Hindustan Aeronautics Limited is an Indian aerospace and defense company involved in aircraft, helicopter and related systems development and production."
       },
       {
         "name": "DRDO",
@@ -1581,7 +1738,8 @@
           "Electronics",
           "SWE"
         ],
-        "url": "https://www.drdo.gov.in/drdo/careers"
+        "url": "https://www.drdo.gov.in/drdo/careers",
+        "description": "India's Defence Research and Development Organisation develops technologies and systems for defense through specialized research laboratories."
       }
     ]
   },
@@ -1596,7 +1754,8 @@
           "Hardware",
           "AI"
         ],
-        "url": "https://www.careers.philips.com/"
+        "url": "https://www.careers.philips.com/",
+        "description": "Philips' health technology businesses develop medical imaging, patient monitoring and connected-care solutions for healthcare organizations and consumers."
       },
       {
         "name": "GE Healthcare",
@@ -1606,7 +1765,8 @@
           "AI",
           "Hardware"
         ],
-        "url": "https://careers.gehealthcare.com/"
+        "url": "https://careers.gehealthcare.com/",
+        "description": "GE HealthCare develops medical technology, diagnostics and digital solutions used in imaging, patient care and healthcare operations."
       },
       {
         "name": "Siemens Healthineers",
@@ -1615,7 +1775,8 @@
           "Data",
           "Hardware"
         ],
-        "url": "https://www.siemens-healthineers.com/careers"
+        "url": "https://www.siemens-healthineers.com/careers",
+        "description": "Siemens Healthineers develops medical technology and services spanning imaging, diagnostics, cancer care and digital healthcare."
       },
       {
         "name": "Abbott",
@@ -1625,7 +1786,8 @@
           "Regulatory",
           "Data"
         ],
-        "url": "https://www.jobs.abbott/"
+        "url": "https://www.jobs.abbott/",
+        "description": "Abbott develops healthcare products across medical devices, diagnostics, nutrition and established medicines."
       },
       {
         "name": "Medtronic",
@@ -1635,7 +1797,8 @@
           "Data",
           "Regulatory"
         ],
-        "url": "https://www.medtronic.com/en-us/our-company/careers.html"
+        "url": "https://www.medtronic.com/en-us/our-company/careers.html",
+        "description": "Medtronic develops medical devices and healthcare technologies used to diagnose, monitor and treat a range of medical conditions."
       },
       {
         "name": "3M Health",
@@ -1645,7 +1808,8 @@
           "Hardware"
         ],
         "url": "https://www.solventum.com/en-us/home/our-company/careers/",
-        "note": "Healthcare careers are now listed through Solventum."
+        "note": "Healthcare careers are now listed through Solventum.",
+        "description": "Solventum is the healthcare business separated from 3M, developing products and technologies for clinical care and healthcare operations."
       },
       {
         "name": "HealthStream",
@@ -1654,7 +1818,8 @@
           "Data",
           "EdTech"
         ],
-        "url": "https://www.healthstream.com/about/careers"
+        "url": "https://www.healthstream.com/about/careers",
+        "description": "HealthStream provides workforce development and technology solutions for healthcare organizations, including training, credentialing and staff support tools."
       },
       {
         "name": "Practo",
@@ -1663,7 +1828,8 @@
           "Data",
           "HealthTech"
         ],
-        "url": "https://www.practo.com/company/careers"
+        "url": "https://www.practo.com/company/careers",
+        "description": "Practo develops digital healthcare services that connect patients with healthcare providers and support clinic and practice operations."
       },
       {
         "name": "PharmEasy",
@@ -1672,7 +1838,8 @@
           "Data",
           "HealthTech"
         ],
-        "url": "https://pharmeasy.in/careers"
+        "url": "https://pharmeasy.in/careers",
+        "description": "PharmEasy is an Indian digital healthcare platform known for online pharmacy and diagnostic-service access."
       },
       {
         "name": "1mg",
@@ -1681,7 +1848,8 @@
           "Data",
           "HealthTech"
         ],
-        "url": "https://www.1mg.com/jobs"
+        "url": "https://www.1mg.com/jobs",
+        "description": "Tata 1mg provides digital healthcare services, including medicine access, diagnostic booking and health information in India."
       }
     ]
   },
@@ -1695,7 +1863,8 @@
           "Data",
           "Streaming"
         ],
-        "url": "https://explore.jobs.netflix.net/"
+        "url": "https://explore.jobs.netflix.net/",
+        "description": "Netflix's technology teams build the systems behind streaming, content discovery, production workflows and large-scale entertainment delivery."
       },
       {
         "name": "Spotify",
@@ -1705,7 +1874,8 @@
           "ML",
           "PM"
         ],
-        "url": "https://www.lifeatspotify.com/"
+        "url": "https://www.lifeatspotify.com/",
+        "description": "Spotify develops an audio streaming platform for music, podcasts and other audio content, supported by recommendation and media-delivery technology."
       },
       {
         "name": "Electronic Arts",
@@ -1715,7 +1885,8 @@
           "Data",
           "Gaming"
         ],
-        "url": "https://www.ea.com/careers"
+        "url": "https://www.ea.com/careers",
+        "description": "Electronic Arts develops and publishes video games, with teams spanning gameplay engineering, graphics, online services and player experiences."
       },
       {
         "name": "Riot Games",
@@ -1725,7 +1896,8 @@
           "Data",
           "Gaming"
         ],
-        "url": "https://www.riotgames.com/en/work-with-us"
+        "url": "https://www.riotgames.com/en/work-with-us",
+        "description": "Riot Games develops and publishes games such as League of Legends and VALORANT, alongside technology supporting online play and esports."
       },
       {
         "name": "Epic Games",
@@ -1734,7 +1906,8 @@
           "Graphics",
           "Gaming"
         ],
-        "url": "https://www.epicgames.com/site/en-US/careers"
+        "url": "https://www.epicgames.com/site/en-US/careers",
+        "description": "Epic Games develops games and creative technology, including Fortnite and Unreal Engine, used for interactive entertainment and real-time graphics."
       },
       {
         "name": "Niantic",
@@ -1743,7 +1916,8 @@
           "AR/VR",
           "Data"
         ],
-        "url": "https://careers.nianticlabs.com/"
+        "url": "https://careers.nianticlabs.com/",
+        "description": "Niantic is known for location-based games and augmented-reality technology. Check the linked business and recruiter details as its game and spatial-computing businesses have evolved."
       },
       {
         "name": "Unity Technologies",
@@ -1752,7 +1926,8 @@
           "Graphics",
           "AR/VR"
         ],
-        "url": "https://unity.com/careers"
+        "url": "https://unity.com/careers",
+        "description": "Unity develops a real-time development platform used to create games and interactive 2D, 3D and immersive applications."
       },
       {
         "name": "Adobe",
@@ -1762,7 +1937,8 @@
           "Design",
           "PM"
         ],
-        "url": "https://careers.adobe.com/"
+        "url": "https://careers.adobe.com/",
+        "description": "Adobe develops software for creative work, documents and digital experiences, including tools used by designers, businesses and content creators."
       },
       {
         "name": "Canva",
@@ -1772,7 +1948,8 @@
           "Design",
           "PM"
         ],
-        "url": "https://www.lifeatcanva.com/"
+        "url": "https://www.lifeatcanva.com/",
+        "description": "Canva provides a visual communication and design platform for creating presentations, graphics, documents and other digital content."
       },
       {
         "name": "Figma",
@@ -1782,7 +1959,8 @@
           "Design",
           "PM"
         ],
-        "url": "https://www.figma.com/careers/"
+        "url": "https://www.figma.com/careers/",
+        "description": "Figma builds collaborative design tools that help teams create interfaces, prototype ideas and work together on digital products."
       }
     ]
   },
@@ -1797,7 +1975,8 @@
           "Security",
           "Cloud"
         ],
-        "url": "https://jobs.cisco.com/"
+        "url": "https://jobs.cisco.com/",
+        "description": "Cisco develops networking, communications and security technology used to connect and protect enterprise and internet infrastructure."
       },
       {
         "name": "Nokia",
@@ -1807,7 +1986,8 @@
           "Telecom",
           "5G"
         ],
-        "url": "https://www.nokia.com/about-us/careers/"
+        "url": "https://www.nokia.com/about-us/careers/",
+        "description": "Nokia develops network infrastructure and telecommunications technology, including mobile, fixed and cloud-based networking systems."
       },
       {
         "name": "Ericsson",
@@ -1817,7 +1997,8 @@
           "5G",
           "Embedded"
         ],
-        "url": "https://www.ericsson.com/en/careers"
+        "url": "https://www.ericsson.com/en/careers",
+        "description": "Ericsson develops telecommunications equipment, software and services used by mobile network operators and enterprise customers."
       },
       {
         "name": "Juniper Networks",
@@ -1827,7 +2008,8 @@
           "Cloud"
         ],
         "url": "https://careers.hpe.com/",
-        "note": "See HPE careers for Juniper opportunities."
+        "note": "See HPE careers for Juniper opportunities.",
+        "description": "Juniper is an enterprise and service-provider networking brand known for routing, switching and network automation; the linked recruitment route is HPE careers."
       },
       {
         "name": "Arista Networks",
@@ -1836,7 +2018,8 @@
           "SWE",
           "Cloud"
         ],
-        "url": "https://www.arista.com/en/careers"
+        "url": "https://www.arista.com/en/careers",
+        "description": "Arista develops networking products and software for data centers, cloud environments and enterprise networks."
       },
       {
         "name": "Jio Platforms",
@@ -1846,7 +2029,8 @@
           "Data",
           "Cloud"
         ],
-        "url": "https://careers.jio.com/"
+        "url": "https://careers.jio.com/",
+        "description": "Jio Platforms develops digital services and technology associated with India's Jio ecosystem, spanning connectivity, applications and enterprise platforms."
       },
       {
         "name": "Airtel",
@@ -1856,7 +2040,8 @@
           "Data",
           "5G"
         ],
-        "url": "https://careers.airtel.com/"
+        "url": "https://careers.airtel.com/",
+        "description": "Bharti Airtel provides telecommunications services, including mobile connectivity, broadband and enterprise communications solutions."
       },
       {
         "name": "BSNL",
@@ -1865,7 +2050,8 @@
           "SWE"
         ],
         "url": "https://www.bsnl.co.in/",
-        "note": "Official company site; check recruitment notices."
+        "note": "Official company site; check recruitment notices.",
+        "description": "Bharat Sanchar Nigam Limited is an Indian public-sector telecommunications company providing fixed-line, mobile and broadband services."
       }
     ]
   },
@@ -1880,7 +2066,8 @@
           "Risk",
           "Analytics"
         ],
-        "url": "https://www.hdfcbank.com/personal/about-us/careers"
+        "url": "https://www.hdfcbank.com/personal/about-us/careers",
+        "description": "HDFC Bank provides retail and commercial banking services, with technology supporting digital banking, payments and financial operations."
       },
       {
         "name": "ICICI Bank",
@@ -1890,7 +2077,8 @@
           "Risk",
           "Analytics"
         ],
-        "url": "https://www.icicicareers.com/"
+        "url": "https://www.icicicareers.com/",
+        "description": "ICICI Bank offers banking and financial services to individuals and businesses, supported by digital channels and enterprise technology systems."
       },
       {
         "name": "Axis Bank",
@@ -1899,7 +2087,8 @@
           "Data",
           "Risk"
         ],
-        "url": "https://www.axisbank.com/careers"
+        "url": "https://www.axisbank.com/careers",
+        "description": "Axis Bank provides retail, business and corporate banking services, with technology supporting payments, digital products and operations."
       },
       {
         "name": "Kotak Mahindra Bank",
@@ -1909,7 +2098,8 @@
           "Risk",
           "FinTech"
         ],
-        "url": "https://www.kotak.com/en/about-us/careers.html"
+        "url": "https://www.kotak.com/en/about-us/careers.html",
+        "description": "Kotak Mahindra Bank provides banking and financial services, including consumer banking, business banking and related financial solutions."
       },
       {
         "name": "SBI",
@@ -1918,7 +2108,8 @@
           "Data",
           "Systems"
         ],
-        "url": "https://sbi.co.in/web/careers"
+        "url": "https://sbi.co.in/web/careers",
+        "description": "State Bank of India is a public-sector bank providing consumer, business and institutional banking services through branches and digital platforms."
       },
       {
         "name": "IDFC First Bank",
@@ -1927,7 +2118,8 @@
           "Data",
           "Risk"
         ],
-        "url": "https://www.idfcfirstbank.com/careers"
+        "url": "https://www.idfcfirstbank.com/careers",
+        "description": "IDFC FIRST Bank offers banking and lending services, with digital systems supporting customer products, payments and business operations."
       },
       {
         "name": "Bajaj Finserv",
@@ -1936,7 +2128,8 @@
           "Data",
           "FinTech"
         ],
-        "url": "https://www.bajajfinserv.in/careers"
+        "url": "https://www.bajajfinserv.in/careers",
+        "description": "Bajaj Finserv is a financial-services group spanning lending, insurance and related products, supported by digital platforms and analytics."
       },
       {
         "name": "Zerodha",
@@ -1945,7 +2138,8 @@
           "Data",
           "FinTech"
         ],
-        "url": "https://zerodha.com/careers/"
+        "url": "https://zerodha.com/careers/",
+        "description": "Zerodha is an Indian brokerage and financial technology company providing online platforms for investing and trading."
       },
       {
         "name": "Angel One",
@@ -1954,7 +2148,8 @@
           "Data",
           "FinTech"
         ],
-        "url": "https://www.angelone.in/careers"
+        "url": "https://www.angelone.in/careers",
+        "description": "Angel One is an Indian brokerage and fintech company providing digital investing, trading and related financial-service platforms."
       },
       {
         "name": "Groww",
@@ -1963,7 +2158,8 @@
           "Data",
           "FinTech"
         ],
-        "url": "https://groww.in/careers"
+        "url": "https://groww.in/careers",
+        "description": "Groww is an Indian investing platform offering access to financial products such as stocks and mutual funds through digital applications."
       }
     ]
   },
@@ -1978,7 +2174,8 @@
           "ML",
           "Hardware"
         ],
-        "url": "https://bostondynamics.com/careers/"
+        "url": "https://bostondynamics.com/careers/",
+        "description": "Boston Dynamics develops advanced robots, combining mechanical engineering, controls, perception and software for real-world mobility and automation."
       },
       {
         "name": "iRobot",
@@ -1987,7 +2184,8 @@
           "SWE",
           "Embedded"
         ],
-        "url": "https://careers.irobot.com/"
+        "url": "https://careers.irobot.com/",
+        "description": "iRobot develops consumer robots, including robotic vacuum cleaners, using software, sensing and hardware to automate household tasks."
       },
       {
         "name": "ABB Robotics",
@@ -1996,7 +2194,8 @@
           "SWE",
           "Embedded"
         ],
-        "url": "https://careers.abb/global/en"
+        "url": "https://careers.abb/global/en",
+        "description": "ABB Robotics develops industrial robots and automation software used in manufacturing, logistics and other production environments."
       },
       {
         "name": "Fanuc",
@@ -2005,7 +2204,8 @@
           "Embedded",
           "SWE"
         ],
-        "url": "https://www.fanucindia.com/careers"
+        "url": "https://www.fanucindia.com/careers",
+        "description": "FANUC develops industrial automation technology, including robots, computer numerical control systems and factory automation equipment."
       },
       {
         "name": "Siemens IoT",
@@ -2015,7 +2215,8 @@
           "Embedded",
           "Cloud"
         ],
-        "url": "https://www.siemens.com/global/en/company/jobs.html"
+        "url": "https://www.siemens.com/global/en/company/jobs.html",
+        "description": "Siemens' industrial digitalization businesses connect equipment, software and data to support manufacturing, infrastructure and industrial automation."
       },
       {
         "name": "Honeywell",
@@ -2025,7 +2226,8 @@
           "Embedded",
           "Data"
         ],
-        "url": "https://careers.honeywell.com/"
+        "url": "https://careers.honeywell.com/",
+        "description": "Honeywell develops industrial technology spanning automation, aerospace, building systems and other engineered products and services."
       },
       {
         "name": "Rockwell Automation",
@@ -2034,7 +2236,8 @@
           "SWE",
           "Embedded"
         ],
-        "url": "https://www.rockwellautomation.com/en-us/company/careers.html"
+        "url": "https://www.rockwellautomation.com/en-us/company/careers.html",
+        "description": "Rockwell Automation develops industrial automation and information technology used to control, monitor and improve manufacturing operations."
       },
       {
         "name": "PTC",
@@ -2044,7 +2247,8 @@
           "CAD",
           "Cloud"
         ],
-        "url": "https://www.ptc.com/en/careers"
+        "url": "https://www.ptc.com/en/careers",
+        "description": "PTC provides software for product design, lifecycle management and industrial connectivity, helping organizations develop and manage physical products."
       },
       {
         "name": "Tata Robotics",
@@ -2054,7 +2258,8 @@
           "Embedded"
         ],
         "url": "https://www.tal.co.in/",
-        "note": "Official TAL site; check current recruitment information."
+        "note": "Official TAL site; check current recruitment information.",
+        "description": "TAL is known for industrial robotics and automation, including the BRABO robot developed for manufacturing applications."
       }
     ]
   },
@@ -2069,7 +2274,8 @@
           "Cloud",
           "Consulting"
         ],
-        "url": "https://www.ibm.com/careers"
+        "url": "https://www.ibm.com/careers",
+        "description": "IBM provides enterprise technology and consulting, with products and services spanning hybrid cloud, AI, infrastructure and business systems."
       },
       {
         "name": "SAP",
@@ -2079,7 +2285,8 @@
           "Data",
           "Consulting"
         ],
-        "url": "https://jobs.sap.com/"
+        "url": "https://jobs.sap.com/",
+        "description": "SAP develops enterprise software for managing business processes, including finance, supply chains, human resources and customer operations."
       },
       {
         "name": "Oracle",
@@ -2089,7 +2296,8 @@
           "Cloud",
           "DBA"
         ],
-        "url": "https://www.oracle.com/careers/"
+        "url": "https://www.oracle.com/careers/",
+        "description": "Oracle develops enterprise software, databases and cloud infrastructure used to manage business applications and organizational data."
       },
       {
         "name": "VMware",
@@ -2099,7 +2307,8 @@
           "Virtualization"
         ],
         "url": "https://www.broadcom.com/company/careers",
-        "note": "See Broadcom careers for VMware opportunities."
+        "note": "See Broadcom careers for VMware opportunities.",
+        "description": "VMware is an enterprise software brand known for virtualization and cloud infrastructure; its recruitment route is through Broadcom."
       },
       {
         "name": "Dell Technologies",
@@ -2109,7 +2318,8 @@
           "Data",
           "Sales"
         ],
-        "url": "https://jobs.dell.com/"
+        "url": "https://jobs.dell.com/",
+        "description": "Dell develops computing products and IT infrastructure, including personal computers, servers, storage and enterprise technology services."
       },
       {
         "name": "HP",
@@ -2119,7 +2329,8 @@
           "Data",
           "PM"
         ],
-        "url": "https://jobs.hp.com/"
+        "url": "https://jobs.hp.com/",
+        "description": "HP develops personal computing and printing products, with engineering spanning devices, software and related services."
       },
       {
         "name": "Lenovo",
@@ -2128,7 +2339,8 @@
           "Hardware",
           "Data"
         ],
-        "url": "https://jobs.lenovo.com/"
+        "url": "https://jobs.lenovo.com/",
+        "description": "Lenovo develops computing devices and infrastructure, including personal computers, servers and technology solutions for businesses and consumers."
       },
       {
         "name": "Siemens",
@@ -2138,7 +2350,8 @@
           "Data",
           "Automation"
         ],
-        "url": "https://www.siemens.com/global/en/company/jobs.html"
+        "url": "https://www.siemens.com/global/en/company/jobs.html",
+        "description": "Siemens develops industrial and infrastructure technology, combining automation, software and engineering for manufacturing, buildings and transport-related systems."
       },
       {
         "name": "3M",
@@ -2148,7 +2361,8 @@
           "Hardware",
           "Research"
         ],
-        "url": "https://www.3m.com/3M/en_US/careers-us/"
+        "url": "https://www.3m.com/3M/en_US/careers-us/",
+        "description": "3M develops materials and industrial products for areas such as manufacturing, electronics, safety and consumer applications."
       },
       {
         "name": "Philips",
@@ -2158,7 +2372,8 @@
           "Hardware",
           "AI"
         ],
-        "url": "https://www.careers.philips.com/"
+        "url": "https://www.careers.philips.com/",
+        "description": "Philips is a health technology company developing products and services for diagnosis, treatment, connected care and personal health."
       },
       {
         "name": "GE Digital",
@@ -2169,7 +2384,8 @@
           "Industrial IoT"
         ],
         "url": "https://careers.gevernova.com/",
-        "note": "See GE Vernova careers for digital opportunities."
+        "note": "See GE Vernova careers for digital opportunities.",
+        "description": "GE Digital is associated with industrial software for operations and asset performance; the linked GE Vernova portal covers the relevant energy technology businesses."
       },
       {
         "name": "Harman International",
@@ -2179,7 +2395,8 @@
           "Audio",
           "Automotive"
         ],
-        "url": "https://jobs.harman.com/"
+        "url": "https://jobs.harman.com/",
+        "description": "HARMAN develops connected products and technologies for automotive, audio and digital experiences, combining embedded systems, software and hardware."
       },
       {
         "name": "Unilever",
@@ -2189,7 +2406,8 @@
           "SWE",
           "PM"
         ],
-        "url": "https://careers.unilever.com/"
+        "url": "https://careers.unilever.com/",
+        "description": "Unilever develops and markets consumer products across categories such as personal care, home care and foods, supported by supply-chain and digital operations."
       },
       {
         "name": "Procter & Gamble",
@@ -2199,7 +2417,8 @@
           "SWE",
           "PM"
         ],
-        "url": "https://www.pgcareers.com/"
+        "url": "https://www.pgcareers.com/",
+        "description": "Procter & Gamble develops consumer products across household and personal-care categories, with technology supporting research, manufacturing and business operations."
       },
       {
         "name": "L&T Technology Services",
@@ -2209,7 +2428,8 @@
           "Automotive",
           "Aerospace"
         ],
-        "url": "https://www.ltts.com/careers"
+        "url": "https://www.ltts.com/careers",
+        "description": "L&T Technology Services provides engineering and research services across industries, including transportation, industrial products and connected technologies."
       },
       {
         "name": "Tata Elxsi",
@@ -2219,7 +2439,8 @@
           "Design",
           "Automotive"
         ],
-        "url": "https://www.tataelxsi.com/careers"
+        "url": "https://www.tataelxsi.com/careers",
+        "description": "Tata Elxsi provides design and technology services for products and experiences, including work in automotive, media and healthcare."
       },
       {
         "name": "Tata Consultancy Services (TCS)",
@@ -2228,7 +2449,8 @@
           "Data",
           "Consulting"
         ],
-        "url": "https://www.tcs.com/careers"
+        "url": "https://www.tcs.com/careers",
+        "description": "Tata Consultancy Services provides IT services, consulting and business solutions, helping organizations build and operate enterprise technology systems."
       },
       {
         "name": "Mahindra Tech",
@@ -2237,7 +2459,8 @@
           "Data",
           "Automotive"
         ],
-        "url": "https://careers.techmahindra.com/"
+        "url": "https://careers.techmahindra.com/",
+        "description": "This listing refers to Tech Mahindra, an IT services and consulting company working across telecom, enterprise software and digital transformation."
       }
     ]
   }
