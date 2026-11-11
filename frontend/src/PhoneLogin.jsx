@@ -5,6 +5,15 @@ import { auth, configured } from "./firebase";
 import { useSession } from "./session";
 import { safeReturnPath, withTimeout } from "./authSupport";
 
+export function fullName(value) {
+  const normalized = value.trim().replace(/\s+/gu, " ");
+  const parts = normalized.split(" ");
+  if (normalized.length > 100 || parts.length < 2 ||
+      parts.some(part => !/^[\p{L}\p{M}][\p{L}\p{M}'’.-]*$/u.test(part)))
+    throw new Error("Enter your full name, including your first and last name.");
+  return normalized;
+}
+
 export function phoneNumber(value) {
   const number = value.trim().replace(/[\s()-]/g, "");
   if (!/^\+[1-9]\d{7,14}$/.test(number))
@@ -59,7 +68,7 @@ export function PhoneLogin() {
     event.preventDefault();
     if (pending.current || cooldown || !configured) return;
     let address;
-    try { address = phoneNumber(number); } catch (e) { setError(e.message); return; }
+    try { fullName(name); address = phoneNumber(number); } catch (e) { setError(e.message); return; }
     pending.current = true; setBusy(true); setError("");
     // Invalidate the previous challenge before attempting another SMS.
     setConfirmation(null); setCode("");
@@ -81,12 +90,14 @@ export function PhoneLogin() {
     event.preventDefault();
     if (pending.current || !confirmation) return;
     if (!/^\d{6}$/.test(code)) { setError("Enter the six-digit code from your SMS."); return; }
+    let validatedName;
+    try { validatedName = fullName(name); } catch (e) { setError(e.message); return; }
     pending.current = true; setBusy(true); setError("");
     let signedIn = false;
     try {
       const result = await withTimeout(confirmation.confirm(code), "app/auth-timeout", 25000);
       signedIn = true;
-      await createProfile(result.user, name.trim());
+      await createProfile(result.user, validatedName);
       if (mounted.current) navigate(destination, { replace: true });
     } catch (e) {
       if (mounted.current) setError(signedIn ? "You're signed in, but your profile could not be loaded. Retry the account connection." : otpError(e));
@@ -104,7 +115,7 @@ export function PhoneLogin() {
       {error && <p className="notice error" role="alert">{error}</p>}
       {sessionError && !busy ? <div className="notice error" role="alert"><p>You're signed in, but the account connection needs attention.</p><button className="button secondary" onClick={() => { setError(""); retrySession(); }}>Retry account connection</button><button className="button secondary" onClick={() => logout().catch(() => setError("Could not sign out. Please retry."))}>Sign out</button></div> : <>
         <form onSubmit={send}>
-          <label>Your name<input name="name" autoComplete="name" required maxLength={100} value={name} disabled={busy || !!confirmation} onChange={e => setName(e.target.value)} /></label>
+          <label>Your full name<input name="name" placeholder="First and last name" autoComplete="name" required maxLength={100} value={name} disabled={busy || !!confirmation} onChange={e => setName(e.target.value)} /></label>
           <label>Phone number<input name="phone" type="tel" autoComplete="tel" required maxLength={24} value={number} disabled={busy || !!confirmation} onChange={e => setNumber(e.target.value)} /></label>
           <p className="hint">By requesting a code, you agree to receive a verification SMS. Carrier charges may apply. Google processes phone numbers for spam and abuse prevention.</p>
           <div ref={captchaNode} />

@@ -8,7 +8,7 @@ vi.mock("firebase/auth", () => ({
   RecaptchaVerifier: vi.fn(function () { this.clear = state.clear; }),
   signInWithPhoneNumber: state.send,
 }));
-import { PhoneLogin, phoneNumber, otpError } from "./PhoneLogin";
+import { PhoneLogin, phoneNumber, otpError, fullName } from "./PhoneLogin";
 beforeEach(() => {
   vi.clearAllMocks();
   state.send.mockResolvedValue({ confirm: state.confirm });
@@ -18,7 +18,7 @@ beforeEach(() => {
 afterEach(cleanup);
 function open() {
   render(<MemoryRouter><PhoneLogin /></MemoryRouter>);
-  fireEvent.change(screen.getByLabelText("Your name"), { target: { value: "Student" } });
+  fireEvent.change(screen.getByLabelText("Your full name"), { target: { value: "Student Patil" } });
   fireEvent.change(screen.getByLabelText("Phone number"), { target: { value: "+91 98765 43210" } });
 }
 it("requires a country code and normalizes phone formatting", () => {
@@ -34,7 +34,7 @@ it("verifies the SMS before creating the profile and limits resends", async () =
   expect(screen.getByRole("button", { name: /Resend in/ })).toBeDisabled();
   fireEvent.change(screen.getByLabelText("Verification code"), { target: { value: "123456" } });
   fireEvent.click(screen.getByRole("button", { name: "Verify and sign in" }));
-  await waitFor(() => expect(state.createProfile).toHaveBeenCalledWith({ uid: "phone-user", email: null }, "Student"));
+  await waitFor(() => expect(state.createProfile).toHaveBeenCalledWith({ uid: "phone-user", email: null }, "Student Patil"));
 });
 it("keeps an incorrect code from creating a profile", async () => {
   state.confirm.mockRejectedValue({ code: "auth/invalid-verification-code" });
@@ -59,4 +59,18 @@ it("explains billing and website verification failures without exposing raw requ
   expect(otpError({ code: "auth/unrecognized-error", message: "private request" })).not.toContain("private request");
   expect(otpError(null)).toContain("Could not sign in");
   expect(otpError({ code: "private request" })).not.toContain("private request");
+});
+
+it.each(["", "   ", "Vivek", "Vivek   ", "123 456", "Vivek 123"])("blocks SMS requests when full name is invalid: %j", async (name) => {
+  open();
+  fireEvent.change(screen.getByLabelText("Your full name"), { target: { value: name } });
+  fireEvent.submit(screen.getByRole("button", { name: "Send OTP" }).closest("form"));
+  expect(await screen.findByRole("alert")).toHaveTextContent("Enter your full name");
+  expect(state.send).not.toHaveBeenCalled();
+  expect(state.createProfile).not.toHaveBeenCalled();
+});
+it("accepts international names and normalizes whitespace", () => {
+  expect(fullName("  Vivek   Chavan  ")).toBe("Vivek Chavan");
+  expect(fullName("विवेक चव्हाण")).toBe("विवेक चव्हाण");
+  expect(fullName("Anne-Marie O’Neill")).toBe("Anne-Marie O’Neill");
 });
