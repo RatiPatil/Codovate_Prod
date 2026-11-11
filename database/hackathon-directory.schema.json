@@ -231,6 +231,25 @@
             "maxLength": 1000
           }
         }
+      },
+      "logo": {
+        "type": "string",
+        "pattern": "^/(hackathon-logos|company-logos)/[a-z0-9-]+\\.svg$"
+      },
+      "logoSource": {
+        "type": "string",
+        "format": "uri",
+        "pattern": "^https://[^/@]+(?:/|$)"
+      },
+      "logoKind": {
+        "enum": [
+          "event-brand",
+          "organizer-brand",
+          "platform-brand"
+        ]
+      },
+      "logoDark": {
+        "type": "boolean"
       }
     }
   }

@@ -1,5 +1,6 @@
 import { ExternalLink } from "lucide-react";
 import { hackathonDirectory, filterHackathonDirectory, directoryStatus, eventStatus } from "./hackathonCatalog.js";
+import { CompanyLogo } from "./CareerPortals.jsx";
 import { money, dateLabel } from "./domain";
 import "./placement.css";
 const statusLabels = { open: "Registration open — check organizer", upcoming: "Coming soon — check registration", ongoing: "Event in progress — check registration", closed: "Registration / edition closed", unverified: "Dates / registration unconfirmed" };
@@ -25,7 +26,7 @@ export function HackathonDirectory({ filters = {} }) {
       <div className="placement-grid">
         {rows.filter(row => row.group === group).map(row => <article className="panel career-portal-card" key={row.id}>
           <span className="pill">{row.kind === "event-series" ? "Recurring event" : row.kind === "platform" ? "Discovery platform" : "Program / resource"}</span>
-          <h4>{row.title}</h4><p>{row.summary}</p>
+          <div className="career-company-brand"><CompanyLogo company={{ name:row.title, logo:row.logo, logoDark:row.logoDark }} /><h4>{row.title}</h4></div><p>{row.summary}</p>
           <span className="pill">{statusLabels[directoryStatus(row)]}</span>
           {row.schedule && <div className="hackathon-schedule">
             {row.schedule.edition && <strong>{row.schedule.edition}</strong>}

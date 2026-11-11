@@ -486,7 +486,7 @@ function Home({ catalog }) {
               </span>
               <h2>{typeLabel[type]}</h2>
               <span className="category-count">
-                {open.filter((o) => o.type === type).length || "Browse"}
+                {open.filter((o) => o.type === type).length}
               </span>
               <ArrowUpRight size={16} />
             </Link>
@@ -540,8 +540,12 @@ function Home({ catalog }) {
               <Card key={o.id} item={o} />
             ))}
           </div>
-        ) : (
+        ) : ["all", "hackathon"].includes(activeType) ? (
           <OpportunityResources type={activeType} />
+        ) : (
+          <Empty title="No published listings in this category yet">
+            New verified listings will appear here when published.
+          </Empty>
         )}
       </section>
       <CareerSpotlight />
@@ -709,7 +713,9 @@ function Explore({ catalog }) {
               ))}
             </div>
           ) : type === "hackathon" ? null : (
-            <OpportunityResources type={type} search={filters.search} />
+            <Empty title="No matching opportunities">
+              Try another skill or remove a filter. New listings appear here when published.
+            </Empty>
           )}
           {type === "hackathon" && <HackathonDirectory filters={filters} />}
           {configured && (

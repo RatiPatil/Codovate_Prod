@@ -115,7 +115,10 @@
       "sourceUrl": "https://www.treehacks.com/",
       "timeZone": "America/Los_Angeles",
       "note": "Event dates are separate from the application deadline. Confirm eligibility and registration on the organizer page."
-    }
+    },
+    "logo": "/hackathon-logos/treehacks.svg",
+    "logoSource": "https://www.treehacks.com/assets/icon-light.png",
+    "logoKind": "event-brand"
   },
   {
     "id": "pennapps",
@@ -154,7 +157,10 @@
       "sourceUrl": "https://pennapps.com/",
       "timeZone": "America/New_York",
       "note": "Priority deadline: 6 December 2026. Regular deadline: 6 January 2027; no cutoff time inferred."
-    }
+    },
+    "logo": "/hackathon-logos/pennapps.svg",
+    "logoSource": "https://pennapps.com/icon.png?icon.02nlmor9udl4m.png",
+    "logoKind": "event-brand"
   },
   {
     "id": "hackgt",
@@ -232,7 +238,10 @@
       "sourceUrl": "https://mhacks.org/",
       "timeZone": "America/Detroit",
       "note": "Event dates are separate from the application deadline. Confirm eligibility and registration on the organizer page."
-    }
+    },
+    "logo": "/hackathon-logos/mhacks.svg",
+    "logoSource": "https://mhacks.org/apple-icon.png?apple-icon.095y5irlt6r4-.png",
+    "logoKind": "event-brand"
   },
   {
     "id": "calhacks",
@@ -271,7 +280,10 @@
       "sourceUrl": "https://www.mlh.com/seasons/2027/events/",
       "timeZone": "America/Los_Angeles",
       "note": "Event dates are separate from the application deadline. Confirm eligibility and registration on the organizer page."
-    }
+    },
+    "logo": "/hackathon-logos/calhacks.svg",
+    "logoSource": "https://www.calhacks.io/favicon.ico?favicon.2rh6bt52m1660.ico",
+    "logoKind": "event-brand"
   },
   {
     "id": "angelhack",
@@ -311,7 +323,10 @@
       "sourceUrl": "https://angelhack.com/",
       "timeZone": "UTC",
       "note": "Multiple events or resources; consult the linked calendar for edition-specific dates."
-    }
+    },
+    "logo": "/hackathon-logos/angelhack.svg",
+    "logoSource": "https://angelhack.com/wp-content/uploads/Group.png",
+    "logoKind": "organizer-brand"
   },
   {
     "id": "hacktx",
@@ -350,7 +365,10 @@
       "sourceUrl": "https://www.mlh.com/seasons/2027/events/",
       "timeZone": "America/Chicago",
       "note": "Event dates are separate from the application deadline. Confirm eligibility and registration on the organizer page."
-    }
+    },
+    "logo": "/hackathon-logos/hacktx.svg",
+    "logoSource": "https://hacktx.com/logo.png",
+    "logoKind": "event-brand"
   },
   {
     "id": "hackillinois",
@@ -467,7 +485,10 @@
       "sourceUrl": "https://imaginecup.microsoft.com/",
       "timeZone": "UTC",
       "note": "Application deadline is published; event/finals dates are not confirmed here."
-    }
+    },
+    "logo": "/company-logos/microsoft.svg",
+    "logoSource": "https://www.microsoft.com/favicon.ico?v2",
+    "logoKind": "organizer-brand"
   },
   {
     "id": "nasa-space-apps-challenge",
@@ -585,7 +606,10 @@
       "sourceUrl": "https://hackprinceton.com/",
       "timeZone": "America/New_York",
       "note": "Event dates are separate from the application deadline. Confirm eligibility and registration on the organizer page."
-    }
+    },
+    "logo": "/hackathon-logos/hackprinceton.svg",
+    "logoSource": "https://hackprinceton.com/apple-icon.png?apple-icon.07tb6978jfu7r.png",
+    "logoKind": "event-brand"
   },
   {
     "id": "smart-india-hackathon",
@@ -625,7 +649,10 @@
       "sourceUrl": "https://www.sih.gov.in/",
       "timeZone": "Asia/Kolkata",
       "note": "Team nomination and idea-submission deadline only; grand-finale dates are not inferred from it."
-    }
+    },
+    "logo": "/hackathon-logos/smart-india-hackathon.svg",
+    "logoSource": "https://www.sih.gov.in/img/favicon-sih.png",
+    "logoKind": "event-brand"
   },
   {
     "id": "hackindia",
@@ -664,7 +691,10 @@
       "sourceUrl": "https://hackindia.org/2026/agentverse-26-supported-by-openai",
       "timeZone": "Asia/Kolkata",
       "note": "Selected online edition from a multi-event platform. Event end is not assumed to be the registration deadline."
-    }
+    },
+    "logo": "/hackathon-logos/hackindia.svg",
+    "logoSource": "https://hackindia.org/apple-touch-icon.png",
+    "logoKind": "event-brand"
   },
   {
     "id": "inout",
@@ -703,7 +733,10 @@
       "sourceUrl": "https://hackinout.co/",
       "timeZone": "UTC",
       "note": "The linked official site is the 2020 edition. No new edition is implied."
-    }
+    },
+    "logo": "/hackathon-logos/inout.svg",
+    "logoSource": "https://hackinout.co/meta/apple-touch-icon-152x152.png",
+    "logoKind": "event-brand"
   },
   {
     "id": "hackwithinfy",
@@ -742,7 +775,10 @@
       "sourceUrl": "https://www.infosys.com/careers/hackwithinfy.html",
       "timeZone": "UTC",
       "note": "Organizer lists January–March registration, March/April qualifiers and November finale; no exact day inferred."
-    }
+    },
+    "logo": "/company-logos/infosys.svg",
+    "logoSource": "https://www.infosys.com/content/dam/infosys-web/en/global-resource/icons/apple-touch-icon.png",
+    "logoKind": "organizer-brand"
   },
   {
     "id": "tcs-codevita",
@@ -781,7 +817,10 @@
       "sourceUrl": "https://codevita.tcsapps.com/",
       "timeZone": "UTC",
       "note": "A complete, current edition schedule could not be confirmed from the accessible organizer page."
-    }
+    },
+    "logo": "/company-logos/tcs.svg",
+    "logoSource": "https://www.tcs.com/etc.clientlibs/tcs/clientlibs/clientlib-resources/resources/images/tcs_favicon_48.png",
+    "logoKind": "organizer-brand"
   },
   {
     "id": "hackvsit",
@@ -859,7 +898,10 @@
       "sourceUrl": "https://hackcbs.tech/",
       "timeZone": "Asia/Kolkata",
       "note": "Event dates are separate from the application deadline. Confirm eligibility and registration on the organizer page."
-    }
+    },
+    "logo": "/hackathon-logos/hackcbs.svg",
+    "logoSource": "https://hackcbs.tech/assets/img/favicon-32x32.png",
+    "logoKind": "event-brand"
   },
   {
     "id": "hackmanthan",
@@ -1015,7 +1057,10 @@
       "sourceUrl": "https://www.nmithacks.com/",
       "timeZone": "Asia/Kolkata",
       "note": "Event dates are separate from the application deadline. Confirm eligibility and registration on the organizer page."
-    }
+    },
+    "logo": "/hackathon-logos/nmit-hacks.svg",
+    "logoSource": "https://cdn.jsdelivr.net/gh/nmithacks2024/nh26@main/public/assets/Favicon.png",
+    "logoKind": "event-brand"
   },
   {
     "id": "google-hackathons",
@@ -1053,7 +1098,10 @@
       "sourceUrl": "https://developers.google.com/community",
       "timeZone": "UTC",
       "note": "Multiple events or resources; consult the linked calendar for edition-specific dates."
-    }
+    },
+    "logo": "/company-logos/google.svg",
+    "logoSource": "https://www.google.com/favicon.ico",
+    "logoKind": "organizer-brand"
   },
   {
     "id": "amazon-aws-hackathons",
@@ -1091,7 +1139,10 @@
       "sourceUrl": "https://aws.amazon.com/events/",
       "timeZone": "UTC",
       "note": "Multiple events or resources; consult the linked calendar for edition-specific dates."
-    }
+    },
+    "logo": "/company-logos/aws.svg",
+    "logoSource": "https://a0.awsstatic.com/libra-css/images/site/touch-icon-iphone-114-smile.png",
+    "logoKind": "organizer-brand"
   },
   {
     "id": "dell-technologies-hackathon",
@@ -1128,7 +1179,10 @@
       "sourceUrl": "https://www.dell.com/en-us/dt/events/index.htm",
       "timeZone": "UTC",
       "note": "Multiple events or resources; consult the linked calendar for edition-specific dates."
-    }
+    },
+    "logo": "/company-logos/dell-brand.svg",
+    "logoSource": "https://github.com/simple-icons/simple-icons/blob/develop/icons/dell.svg",
+    "logoKind": "organizer-brand"
   },
   {
     "id": "red-hat-hackathons",
@@ -1165,7 +1219,10 @@
       "sourceUrl": "https://developers.redhat.com/events",
       "timeZone": "UTC",
       "note": "Multiple events or resources; consult the linked calendar for edition-specific dates."
-    }
+    },
+    "logo": "/hackathon-logos/red-hat-hackathons.svg",
+    "logoSource": "https://developers.redhat.com/themes/custom/rhdp_fe/favicons/apple-touch-icon-76x76.png",
+    "logoKind": "organizer-brand"
   },
   {
     "id": "paypal-hackathons",
@@ -1203,7 +1260,10 @@
       "sourceUrl": "https://developer.paypal.com/community/",
       "timeZone": "UTC",
       "note": "Multiple events or resources; consult the linked calendar for edition-specific dates."
-    }
+    },
+    "logo": "/company-logos/paypal.svg",
+    "logoSource": "https://www.paypalobjects.com/marketing/web/icons/monogram/pp72.png",
+    "logoKind": "organizer-brand"
   },
   {
     "id": "samsung-prism-hackathon",
@@ -1240,7 +1300,10 @@
       "sourceUrl": "https://www.samsungprism.com/",
       "timeZone": "UTC",
       "note": "Multiple events or resources; consult the linked calendar for edition-specific dates."
-    }
+    },
+    "logo": "/company-logos/samsung-r-d.svg",
+    "logoSource": "https://cdn.samsung.com/etc/designs/smg/global/imgs/favicon.ico",
+    "logoKind": "organizer-brand"
   },
   {
     "id": "intel-india-hackathon",
@@ -1278,7 +1341,10 @@
       "sourceUrl": "https://www.intel.com/content/www/us/en/developer/events/overview.html",
       "timeZone": "UTC",
       "note": "Multiple events or resources; consult the linked calendar for edition-specific dates."
-    }
+    },
+    "logo": "/company-logos/intel.svg",
+    "logoSource": "https://intel.com/sites/sitewide/pix/favicon.ico",
+    "logoKind": "organizer-brand"
   },
   {
     "id": "linkedin-hackathons",
@@ -1315,7 +1381,10 @@
       "sourceUrl": "https://engineering.linkedin.com/",
       "timeZone": "UTC",
       "note": "Multiple events or resources; consult the linked calendar for edition-specific dates."
-    }
+    },
+    "logo": "/hackathon-logos/linkedin-hackathons.svg",
+    "logoSource": "https://static.licdn.com/sc/h/eahiplrwoq61f4uan012ia17i",
+    "logoKind": "organizer-brand"
   },
   {
     "id": "twitter-hackathons",
@@ -1352,7 +1421,10 @@
       "sourceUrl": "https://developer.x.com/",
       "timeZone": "UTC",
       "note": "Multiple events or resources; consult the linked calendar for edition-specific dates."
-    }
+    },
+    "logo": "/hackathon-logos/twitter-hackathons.svg",
+    "logoSource": "https://abs.twimg.com/favicons/twitter.3.ico",
+    "logoKind": "organizer-brand"
   },
   {
     "id": "airbnb-hackathons",
@@ -1389,7 +1461,10 @@
       "sourceUrl": "https://careers.airbnb.com/",
       "timeZone": "UTC",
       "note": "Multiple events or resources; consult the linked calendar for edition-specific dates."
-    }
+    },
+    "logo": "/hackathon-logos/airbnb-hackathons.svg",
+    "logoSource": "https://careers.airbnb.com/wp-content/themes/airbnb-careers/favicon.ico",
+    "logoKind": "organizer-brand"
   },
   {
     "id": "salesforce-hackathons",
@@ -1426,7 +1501,10 @@
       "sourceUrl": "https://developer.salesforce.com/events",
       "timeZone": "UTC",
       "note": "Multiple events or resources; consult the linked calendar for edition-specific dates."
-    }
+    },
+    "logo": "/company-logos/salesforce.svg",
+    "logoSource": "https://salesforce.com/favicon.ico",
+    "logoKind": "organizer-brand"
   },
   {
     "id": "ibm-hackathons",
@@ -1463,7 +1541,10 @@
       "sourceUrl": "https://developer.ibm.com/events/",
       "timeZone": "UTC",
       "note": "Multiple events or resources; consult the linked calendar for edition-specific dates."
-    }
+    },
+    "logo": "/company-logos/ibm.svg",
+    "logoSource": "https://www.ibm.com/content/dam/adobe-cms/default-images/apple-touch-icon-76x76.png",
+    "logoKind": "organizer-brand"
   },
   {
     "id": "devfolio",
@@ -1500,7 +1581,10 @@
       "sourceUrl": "https://devfolio.co/hackathons",
       "timeZone": "UTC",
       "note": "Multiple events or resources; consult the linked calendar for edition-specific dates."
-    }
+    },
+    "logo": "/hackathon-logos/devfolio.svg",
+    "logoSource": "https://devfolio.co/favicons/apple-touch-icon-76x76.png",
+    "logoKind": "platform-brand"
   },
   {
     "id": "devpost-hackathons",
@@ -1537,7 +1621,10 @@
       "sourceUrl": "https://devpost.com/hackathons",
       "timeZone": "UTC",
       "note": "Multiple events or resources; consult the linked calendar for edition-specific dates."
-    }
+    },
+    "logo": "/hackathon-logos/devpost-hackathons-brand.svg",
+    "logoSource": "https://github.com/simple-icons/simple-icons/blob/develop/icons/devpost.svg",
+    "logoKind": "platform-brand"
   },
   {
     "id": "hackerrank-college-competitions",
@@ -1574,7 +1661,10 @@
       "sourceUrl": "https://www.hackerrank.com/contests",
       "timeZone": "UTC",
       "note": "Multiple events or resources; consult the linked calendar for edition-specific dates."
-    }
+    },
+    "logo": "/hackathon-logos/hackerrank-college-competitions.svg",
+    "logoSource": "https://hrcdn.net/hrc/_next/static/next_assets/brand/favicon.png",
+    "logoKind": "platform-brand"
   },
   {
     "id": "github-campus-program",
@@ -1611,7 +1701,10 @@
       "sourceUrl": "https://education.github.com/",
       "timeZone": "UTC",
       "note": "Multiple events or resources; consult the linked calendar for edition-specific dates."
-    }
+    },
+    "logo": "/company-logos/github.svg",
+    "logoSource": "https://github.githubassets.com/favicons/favicon.png",
+    "logoKind": "organizer-brand"
   },
   {
     "id": "kaggle-competitions",
@@ -1650,7 +1743,10 @@
       "sourceUrl": "https://www.kaggle.com/competitions",
       "timeZone": "UTC",
       "note": "Multiple events or resources; consult the linked calendar for edition-specific dates."
-    }
+    },
+    "logo": "/hackathon-logos/kaggle-competitions.svg",
+    "logoSource": "https://www.kaggle.com/static/images/favicon-new.ico",
+    "logoKind": "platform-brand"
   },
   {
     "id": "topcoder-hackathons",
@@ -1687,7 +1783,10 @@
       "sourceUrl": "https://www.topcoder.com/challenges",
       "timeZone": "UTC",
       "note": "Multiple events or resources; consult the linked calendar for edition-specific dates."
-    }
+    },
+    "logo": "/hackathon-logos/topcoder-hackathons.svg",
+    "logoSource": "https://www.topcoder.com/logo_512x512.png",
+    "logoKind": "platform-brand"
   },
   {
     "id": "unstop-dare2compete",
@@ -1724,7 +1823,10 @@
       "sourceUrl": "https://unstop.com/hackathons",
       "timeZone": "UTC",
       "note": "Multiple events or resources; consult the linked calendar for edition-specific dates."
-    }
+    },
+    "logo": "/hackathon-logos/unstop-dare2compete.svg",
+    "logoSource": "https://d8it4huxumps7.cloudfront.net/uploads/images/unstop/favicon/d2c-apple-touch-icon-76x76.png",
+    "logoKind": "platform-brand"
   },
   {
     "id": "skillenza-hackathons",
@@ -1798,7 +1900,10 @@
       "sourceUrl": "https://www.hackerearth.com/challenges/",
       "timeZone": "UTC",
       "note": "Multiple events or resources; consult the linked calendar for edition-specific dates."
-    }
+    },
+    "logo": "/hackathon-logos/hackerearth-challenges-brand.svg",
+    "logoSource": "https://github.com/simple-icons/simple-icons/blob/develop/icons/hackerearth.svg",
+    "logoKind": "platform-brand"
   },
   {
     "id": "drivendata-challenges",
@@ -1837,7 +1942,10 @@
       "sourceUrl": "https://www.drivendata.org/competitions/",
       "timeZone": "UTC",
       "note": "Multiple events or resources; consult the linked calendar for edition-specific dates."
-    }
+    },
+    "logo": "/hackathon-logos/drivendata-challenges.svg",
+    "logoSource": "https://drivendata-prod-public.s3.amazonaws.com/favicon.d9d9c8790050.ico",
+    "logoKind": "platform-brand"
   },
   {
     "id": "technica",
@@ -1877,7 +1985,10 @@
       "sourceUrl": "https://gotechnica.org/",
       "timeZone": "America/New_York",
       "note": "Event dates are separate from the application deadline. Confirm eligibility and registration on the organizer page."
-    }
+    },
+    "logo": "/hackathon-logos/technica.svg",
+    "logoSource": "https://gotechnica.org/static/logo.png",
+    "logoKind": "event-brand"
   },
   {
     "id": "global-game-jam",
@@ -2000,7 +2111,10 @@
       "sourceUrl": "https://aiforgood.itu.int/",
       "timeZone": "UTC",
       "note": "Multiple events or resources; consult the linked calendar for edition-specific dates."
-    }
+    },
+    "logo": "/hackathon-logos/ai-for-good-hackathon.svg",
+    "logoSource": "https://s41721.pcdn.co/wp-content/uploads/2020/12/itu-favicon.ico",
+    "logoKind": "event-brand"
   },
   {
     "id": "ethglobal-hackathons",
@@ -2041,7 +2155,10 @@
       "sourceUrl": "https://ethglobal.com/events/cannes2027",
       "timeZone": "Europe/Paris",
       "note": "Selected next listed hackathon from a multi-event series; other editions have different dates."
-    }
+    },
+    "logo": "/hackathon-logos/ethglobal-hackathons.svg",
+    "logoSource": "https://ethglobal.com/favicon.ico",
+    "logoKind": "event-brand"
   },
   {
     "id": "solana-hackathons",
@@ -2082,7 +2199,10 @@
       "sourceUrl": "https://solana.com/hackathon",
       "timeZone": "UTC",
       "note": "Multiple events or resources; consult the linked calendar for edition-specific dates."
-    }
+    },
+    "logo": "/hackathon-logos/solana-hackathons.svg",
+    "logoSource": "https://solana.com/_next/static/media/apple-touch-icon.e9b82e54.png",
+    "logoKind": "event-brand"
   },
   {
     "id": "openai-hackathons",
@@ -2123,7 +2243,10 @@
       "sourceUrl": "https://developers.openai.com/",
       "timeZone": "UTC",
       "note": "Multiple events or resources; consult the linked calendar for edition-specific dates."
-    }
+    },
+    "logo": "/company-logos/openai.svg",
+    "logoSource": "https://openai.com/apple-icon.png?apple-icon.3o0tf8iy4mx7y.png",
+    "logoKind": "organizer-brand"
   },
   {
     "id": "hackzurich",
@@ -2162,7 +2285,10 @@
       "sourceUrl": "https://hackzurich.com/",
       "timeZone": "UTC",
       "note": "Organizer says the event is on hiatus; no new edition dates are announced."
-    }
+    },
+    "logo": "/hackathon-logos/hackzurich.svg",
+    "logoSource": "https://hackzurich.com/assets/favicon/apple-touch-icon.png",
+    "logoKind": "event-brand"
   },
   {
     "id": "junction",
@@ -2201,7 +2327,10 @@
       "sourceUrl": "https://hackjunction.app/hackathons/junction-2026",
       "timeZone": "Europe/Helsinki",
       "note": "Event dates are separate from the application deadline. Confirm eligibility and registration on the organizer page."
-    }
+    },
+    "logo": "/hackathon-logos/junction.svg",
+    "logoSource": "https://www.hackjunction.com/favicon.ico",
+    "logoKind": "event-brand"
   },
   {
     "id": "hackthenorth",
@@ -2240,7 +2369,10 @@
       "sourceUrl": "https://www.mlh.com/seasons/2027/events/",
       "timeZone": "America/Toronto",
       "note": "Event dates are separate from the application deadline. Confirm eligibility and registration on the organizer page."
-    }
+    },
+    "logo": "/hackathon-logos/hackthenorth.svg",
+    "logoSource": "https://hackthenorth.com/apple-touch-icon.png",
+    "logoKind": "event-brand"
   },
   {
     "id": "la-hacks",
@@ -2279,7 +2411,10 @@
       "sourceUrl": "https://www.mlh.com/seasons/2027/events/",
       "timeZone": "America/Los_Angeles",
       "note": "Event dates are separate from the application deadline. Confirm eligibility and registration on the organizer page."
-    }
+    },
+    "logo": "/hackathon-logos/la-hacks.svg",
+    "logoSource": "https://lahacks.com/favicon.ico?favicon.b8d63037.ico",
+    "logoKind": "event-brand"
   },
   {
     "id": "hack-the-6ix",
@@ -2396,7 +2531,10 @@
       "sourceUrl": "https://hackupc.com/",
       "timeZone": "Europe/Madrid",
       "note": "Event dates are separate from the application deadline. Confirm eligibility and registration on the organizer page."
-    }
+    },
+    "logo": "/hackathon-logos/hackupc.svg",
+    "logoSource": "https://hackupc.com/favicon.ico",
+    "logoKind": "event-brand"
   },
   {
     "id": "deltahacks",
@@ -2435,7 +2573,10 @@
       "sourceUrl": "https://deltahacks.com/",
       "timeZone": "America/Toronto",
       "note": "Event dates are separate from the application deadline. Confirm eligibility and registration on the organizer page."
-    }
+    },
+    "logo": "/hackathon-logos/deltahacks.svg",
+    "logoSource": "https://deltahacks.com/favicon.ico",
+    "logoKind": "event-brand"
   },
   {
     "id": "hacksussex",
@@ -2474,7 +2615,10 @@
       "sourceUrl": "https://tickets.hacksussex.com/HackSussex26/",
       "timeZone": "Europe/London",
       "note": "Event dates are separate from the application deadline. Confirm eligibility and registration on the organizer page."
-    }
+    },
+    "logo": "/hackathon-logos/hacksussex.svg",
+    "logoSource": "https://hacksussex.com/hs-logo.png",
+    "logoKind": "event-brand"
   },
   {
     "id": "hackyeah",
@@ -2513,7 +2657,11 @@
       "sourceUrl": "https://hackyeah.pl/",
       "timeZone": "Europe/Warsaw",
       "note": "Event dates are separate from the application deadline. Confirm eligibility and registration on the organizer page."
-    }
+    },
+    "logo": "/hackathon-logos/hackyeah.svg",
+    "logoSource": "https://hackyeah.pl/favicon.ico",
+    "logoKind": "event-brand",
+    "logoDark": true
   },
   {
     "id": "vandyhacks",
@@ -2630,7 +2778,10 @@
       "sourceUrl": "https://hacknc.com/",
       "timeZone": "America/New_York",
       "note": "Event dates are separate from the application deadline. Confirm eligibility and registration on the organizer page."
-    }
+    },
+    "logo": "/hackathon-logos/hacknc.svg",
+    "logoSource": "https://hacknc.com/apple-icon.png?apple-icon.12ow47zf9c7of.png",
+    "logoKind": "event-brand"
   },
   {
     "id": "hackuci",
@@ -2669,7 +2820,11 @@
       "sourceUrl": "https://hackuci.com/",
       "timeZone": "America/Los_Angeles",
       "note": "The supplied official URL serves the 2023 archive. No 2026 or 2027 edition is assumed."
-    }
+    },
+    "logo": "/hackathon-logos/hackuci.svg",
+    "logoSource": "https://hackuci.com/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Ficssc.e06551ee.png&w=640&q=75",
+    "logoKind": "event-brand",
+    "logoDark": true
   },
   {
     "id": "hackdavis",
@@ -2708,7 +2863,10 @@
       "sourceUrl": "https://hackdavis.io/",
       "timeZone": "UTC",
       "note": "Director applications for 2027 are not hacker registration."
-    }
+    },
+    "logo": "/hackathon-logos/hackdavis.svg",
+    "logoSource": "https://hackdavis.io/icons/hd26-icon.ico",
+    "logoKind": "event-brand"
   },
   {
     "id": "hackutd",
@@ -2747,7 +2905,10 @@
       "sourceUrl": "https://www.mlh.com/seasons/2027/events/",
       "timeZone": "America/Chicago",
       "note": "Event dates are separate from the application deadline. Confirm eligibility and registration on the organizer page."
-    }
+    },
+    "logo": "/hackathon-logos/hackutd.svg",
+    "logoSource": "https://hackutd.co/favicon.ico?favicon.0iqslgapz3pgo.ico",
+    "logoKind": "event-brand"
   },
   {
     "id": "hackumass",
@@ -2786,7 +2947,10 @@
       "sourceUrl": "https://hackumass.com/",
       "timeZone": "America/New_York",
       "note": "Event dates are separate from the application deadline. Confirm eligibility and registration on the organizer page."
-    }
+    },
+    "logo": "/hackathon-logos/hackumass.svg",
+    "logoSource": "https://hackumass.com/assets/hum_logos/xiv_logos/Gears.png",
+    "logoKind": "event-brand"
   },
   {
     "id": "hackcu",
@@ -2825,7 +2989,10 @@
       "sourceUrl": "https://hackcu.org/",
       "timeZone": "America/Denver",
       "note": "Event dates are separate from the application deadline. Confirm eligibility and registration on the organizer page."
-    }
+    },
+    "logo": "/hackathon-logos/hackcu.svg",
+    "logoSource": "https://hackcu.org/icons/icon-96x96.png?v=dd0c787e64d572545f22135c8639d66f",
+    "logoKind": "event-brand"
   },
   {
     "id": "dandyhacks",
@@ -2864,7 +3031,10 @@
       "sourceUrl": "https://dandyhacks.net/",
       "timeZone": "UTC",
       "note": "The page displays January 22–24 and November 14–16 without a consistent edition year. No exact date is selected."
-    }
+    },
+    "logo": "/hackathon-logos/dandyhacks.svg",
+    "logoSource": "https://dandyhacks.net/favicon.png",
+    "logoKind": "event-brand"
   },
   {
     "id": "hacksc",
@@ -2903,7 +3073,10 @@
       "sourceUrl": "https://hacksc.com/",
       "timeZone": "UTC",
       "note": "A complete, current edition schedule could not be confirmed from the accessible organizer page."
-    }
+    },
+    "logo": "/hackathon-logos/hacksc.svg",
+    "logoSource": "https://hacksc.com/favicon.ico",
+    "logoKind": "event-brand"
   },
   {
     "id": "hackbeanpot",
@@ -2942,6 +3115,9 @@
       "sourceUrl": "https://hackbeanpot.com/",
       "timeZone": "UTC",
       "note": "Official site thanks 2026 participants and invites newsletter signup."
-    }
+    },
+    "logo": "/hackathon-logos/hackbeanpot.svg",
+    "logoSource": "https://hackbeanpot.com/icon.ico?c351e390f00754b7",
+    "logoKind": "event-brand"
   }
 ]
