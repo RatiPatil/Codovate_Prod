@@ -118,6 +118,8 @@ try {
     assertSucceeds(setDoc(doc(alice.firestore(), "users", "alice"), profile)),
   );
   for (const patch of [
+    { program: "x".repeat(181) },
+    { suggestedSkills: [7] },
     { graduationYear: "abcd" },
     { graduationYear: "1999" },
     { skills: [7] },
@@ -1918,6 +1920,44 @@ try {
   await check('private discovery preferences remain owner-only',assertFails(getDoc(doc(bob.firestore(),'discoveryPreferences','onboarding-student'))));
   await check('consented name and skills remain discoverable',assertSucceeds(getDoc(doc(bob.firestore(),'memberProfiles','onboarding-student'))));
   await check('completed users can still edit their private profile',assertSucceeds(updateDoc(onboardRef,{bio:'Updated introduction',updatedAt:serverTimestamp()})));
+
+  const legacyUser = env.authenticatedContext('legacy-onboarding', { email: 'legacy@example.com' });
+  const legacyRef = doc(legacyUser.firestore(), 'users', 'legacy-onboarding');
+  const legacyCreated = Timestamp.fromDate(new Date('2025-01-01T00:00:00Z'));
+  await env.withSecurityRulesDisabled(async c => {
+    await setDoc(doc(c.firestore(), 'users', 'legacy-onboarding'), {
+      ...profile, name: 'Existing Student', email: 'legacy@example.com', createdAt: legacyCreated,
+      resumePath: 'resumes/legacy-onboarding/resume.pdf', portfolio:'https://example.com/portfolio', accountStatus:'invited', importSource:'manual',
+      mobile:'+919876543210', taluka:'Pune', suggestedSkills:Array.from({length:20},(_,index)=>`Skill ${index}`), skillSuggestionsSource:'manual',
+    });
+  });
+  const legacyMarker = { version:1, status:'in-progress', step:2, startedAt:legacyCreated, completedAt:null };
+  await check('existing student cannot claim completion without enrolling', assertFails(updateDoc(legacyRef, {
+    onboarding:{...legacyMarker, status:'completed', step:4, completedAt:serverTimestamp()}, updatedAt:serverTimestamp(),
+  })));
+  await check('another student cannot enroll the owner', assertFails(updateDoc(doc(bob.firestore(), 'users', 'legacy-onboarding'), {
+    onboarding:legacyMarker, updatedAt:serverTimestamp(),
+  })));
+  const enrollBatch = writeBatch(legacyUser.firestore());
+  enrollBatch.update(legacyRef, { name:'EXISTING STUDENT', onboarding:legacyMarker, updatedAt:serverTimestamp() });
+  enrollBatch.set(doc(legacyUser.firestore(), 'adminUsers', 'legacy-onboarding'), {
+    uid:'legacy-onboarding', fullName:'EXISTING STUDENT', joinedAt:legacyCreated, updatedAt:serverTimestamp(),
+  });
+  await check('existing student enrolls with original identity and imported metadata intact', assertSucceeds(enrollBatch.commit()));
+  const enrolled = (await getDoc(legacyRef)).data();
+  if (!enrolled.createdAt.isEqual(legacyCreated) || enrolled.email !== 'legacy@example.com' || enrolled.resumePath !== 'resumes/legacy-onboarding/resume.pdf' || enrolled.importSource !== 'manual') throw new Error('Enrollment replaced existing account fields');
+  const { onboarding: omittedMarker, ...withoutMarker } = enrolled;
+  await check('enrolled student cannot remove onboarding to bypass it', assertFails(setDoc(legacyRef, { ...withoutMarker, updatedAt:serverTimestamp() })));
+  await check('existing student completes onboarding once', assertSucceeds(updateDoc(legacyRef, {
+    city:'Pune', program:'Computer Science', bio:'I enjoy collaborating on web projects.', careerPreferences:preferences,
+    onboarding:{...legacyMarker, status:'completed', step:4, completedAt:serverTimestamp()}, updatedAt:serverTimestamp(),
+  })));
+  await check('completed existing student can update their resume link with import metadata retained', assertSucceeds(updateDoc(legacyRef, {
+    resumeUrl:'https://example.com/resume.pdf', updatedAt:serverTimestamp(),
+  })));
+  await check('existing completed student cannot restart onboarding', assertFails(updateDoc(legacyRef, {
+    onboarding:{...legacyMarker, step:1}, updatedAt:serverTimestamp(),
+  })));
 
   console.log(`${checks} Firebase security checks passed.`);
 } finally {

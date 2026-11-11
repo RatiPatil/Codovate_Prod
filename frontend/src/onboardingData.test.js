@@ -62,9 +62,9 @@ beforeEach(() => {
     },
   };
 });
-it("marks only explicitly new or unfinished profiles for onboarding", () => {
+it("requires onboarding for registered profiles until explicitly completed", () => {
   expect(needsOnboarding(null)).toBe(false);
-  expect(needsOnboarding({ name: "Legacy Student" })).toBe(false);
+  expect(needsOnboarding({ name: "Legacy Student" })).toBe(true);
   expect(needsOnboarding({ onboarding: initialOnboarding("created") })).toBe(
     true,
   );
@@ -146,15 +146,12 @@ it("completes atomically, saves private team preferences, and shares only approv
   ]);
   expect(publicProfile.name).toBe("VIVEK CHAVAN");
 });
-it("never publishes discovery by default and never resets completed or legacy accounts", async () => {
+it("never publishes discovery by default and never resets completed accounts", async () => {
   await saveOnboarding(user, draft(), 4, { complete: true });
   expect(
     state.set.mock.calls.some(([ref]) => ref.collection === "memberProfiles"),
   ).toBe(false);
-  for (const profile of [
-    { name: "Existing Student", createdAt: "created" },
-    { onboarding: { status: "completed" } },
-  ]) {
+  for (const profile of [{ onboarding: { status: "completed" } }]) {
     vi.clearAllMocks();
     state.docs.users = profile;
     await saveOnboarding(user, draft(), 4, { complete: true });
@@ -187,4 +184,27 @@ it("requires city, specialization, introduction and teammate interests before fi
       true,
     ),
   ).toThrow("teammate");
+});
+
+it("enrolls a registered profile atomically without replacing identity, resume or community counts", async () => {
+  state.docs.users = {
+    name: "Existing Student",
+    email: user.email,
+    createdAt: "original-created",
+    resumePath: "resumes/student/resume.pdf",
+    college: "Regional College",
+  };
+  await saveOnboarding(user, draft(), 1);
+  expect(state.update.mock.calls[0][1].onboarding).toEqual({
+    version: 1,
+    status: "in-progress",
+    step: 2,
+    startedAt: "original-created",
+    completedAt: null,
+  });
+  for (const key of ["email", "createdAt", "resumePath"])
+    expect(state.update.mock.calls[0][1]).not.toHaveProperty(key);
+  expect(
+    state.set.mock.calls.some(([ref]) => ref.collection === "publicStats"),
+  ).toBe(false);
 });

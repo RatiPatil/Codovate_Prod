@@ -53,8 +53,8 @@ it("routes an unfinished account to onboarding before profile or public return d
   ).toBeInTheDocument();
   expect(screen.queryByText("Profile ready")).toBeNull();
 });
-it.each([undefined, { version: 1, status: "completed", step: 4 }])(
-  "does not repeat onboarding for legacy or completed accounts",
+it.each([{ version: 1, status: "completed", step: 4 }])(
+  "does not repeat onboarding for completed accounts",
   async (onboarding) => {
     state.session.profile.onboarding = onboarding;
     open("/profile");
@@ -150,4 +150,22 @@ it("reveals the celebration only after a successful save and completed profile s
   expect(
     screen.getByRole("link", { name: /Enter my workspace/ }),
   ).toHaveAttribute("href", "/dashboard");
+});
+
+it("requires existing registered users without a marker to finish onboarding and prefills their profile", () => {
+  state.session.profile = {
+    name: "Existing Student",
+    city: "Pune",
+    college: "Regional College",
+    skills: ["React"],
+  };
+  open("/profile");
+  fireEvent.click(
+    screen.getByRole("button", { name: "Let’s build my profile" }),
+  );
+  expect(screen.getByLabelText("Your full name")).toHaveValue(
+    "Existing Student",
+  );
+  expect(screen.getByLabelText("City", { exact: true })).toHaveValue("Pune");
+  expect(screen.queryByText("Profile ready")).toBeNull();
 });

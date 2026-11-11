@@ -12,6 +12,7 @@ import {
   collaborationModes,
   needsOnboarding,
   emptyCareerPreferences,
+  initialOnboarding,
 } from "./onboardingContract";
 export {
   careerGoals,
@@ -168,7 +169,7 @@ export async function saveOnboarding(
           "Your profile is not ready. Retry the account connection.",
         );
       const existing = snapshot.data();
-      // Legacy profiles and completed accounts are never reset or overwritten here.
+      // Completed accounts stay complete. Existing profiles enroll on their first save.
       if (!needsOnboarding(existing)) return;
       const preferenceRef = doc(db, "discoveryPreferences", user.uid);
       const memberRef = doc(db, "memberProfiles", user.uid);
@@ -178,7 +179,7 @@ export async function saveOnboarding(
       tx.update(profileRef, {
         ...values,
         onboarding: {
-          ...existing.onboarding,
+          ...(existing.onboarding || initialOnboarding(existing.createdAt)),
           step: complete ? 4 : partial ? step : Math.min(step + 1, 4),
           status: complete ? "completed" : "in-progress",
           completedAt: complete ? updatedAt : null,

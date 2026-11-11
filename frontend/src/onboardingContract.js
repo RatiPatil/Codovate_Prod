@@ -23,7 +23,7 @@ export const availabilityOptions = [
 ];
 export const collaborationModes = ["Remote", "On-site", "Hybrid"];
 export const needsOnboarding = (profile) =>
-  profile?.onboarding?.status === "in-progress";
+  Boolean(profile) && profile.onboarding?.status !== "completed";
 export const initialOnboarding = (startedAt) => ({
   version: 1,
   status: "in-progress",
