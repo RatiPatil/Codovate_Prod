@@ -21,6 +21,12 @@ export function isOpen(item, now = Date.now()) {
     item.status === "published" && Number.isFinite(deadline) && deadline > now
   );
 }
+export function opportunityStatus(item, now = Date.now()) {
+  if (item.status === "draft") return "draft";
+  if (item.status === "closed" || deadlineMillis(item) <= now) return "closed";
+  if (isOpen(item, now)) return "open";
+  return "unverified";
+}
 export function filterOpportunities(
   items,
   {
@@ -30,16 +36,24 @@ export function filterOpportunities(
     category = "all",
     sort = "newest",
     openOnly = true,
+    availability = "all",
   } = {},
 ) {
   const term = search.trim().toLowerCase();
+  const now = Date.now();
+  const closingRank = item => {
+    const deadline = deadlineMillis(item);
+    return Number.isFinite(deadline) && deadline > now ? deadline : Infinity;
+  };
   return items
     .filter(
       (o) =>
         (type === "all" || o.type === type) &&
         (mode === "all" || o.mode === mode) &&
         (category === "all" || o.category === category) &&
-        (!openOnly || isOpen(o)) &&
+        (!openOnly || isOpen(o, now)) &&
+        (availability === "all" || opportunityStatus(o, now) === availability) &&
+        o.status !== "draft" &&
         [o.title, o.organization, o.location, ...(o.skills || [])]
           .join(" ")
           .toLowerCase()
@@ -47,9 +61,9 @@ export function filterOpportunities(
     )
     .sort((a, b) =>
       sort === "deadline"
-        ? deadlineMillis(a) - deadlineMillis(b)
+        ? closingRank(a) - closingRank(b)
         : sort === "stipend"
-          ? b.stipend - a.stipend
+          ? (b.stipend ?? -1) - (a.stipend ?? -1)
           : (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0),
     );
 }

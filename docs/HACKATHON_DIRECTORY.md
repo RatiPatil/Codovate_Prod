@@ -1,0 +1,14 @@
+# Hackathon discovery and data contract
+
+The Hackathons tab (`/explore?type=hackathon`) combines two clearly distinguished sources:
+
+- Published dated opportunities loaded from Firestore `opportunities` through the existing bounded, cursor-based catalog. `closesAt` remains authoritative for expiry and application eligibility. Expired published entries may be viewed with Closed or All statuses; they cannot accept internal applications. Firestore rules continue to hide drafts and manually closed records from public queries.
+- The uploaded reference list, normalized into 76 stable-ID records and seven groups in `frontend/src/hackathonDirectory.json`. Its executable contract is `database/hackathon-directory.schema.json`. These bundled references are not imported as open Firestore opportunities. No cloud data is overwritten or seeded.
+
+Both sources use the shared mode, interest, search, status and sorting controls. The seven-section selector applies to references, since existing Firestore opportunities have no reference-group field. Mode labels on references describe the supplied typical format, not verified mode for a particular edition. Both means Remote and On-site discovery, not necessarily a simultaneous Hybrid event. Existing category values are retained; reference interest tags are editorial suggestions.
+
+No dates, edition-specific registration windows or numeric prizes were supplied. `registrationOpensAt`, `deadline`, `publishedAt` and `prizeINR` are explicitly null, never synthetic future timestamps, zero-value prizes or invented publication dates. References are therefore labeled Dates not announced / verify edition and do not match Open, Coming soon or Closed filters. Populate an edition only after checking organizer evidence. Registration opens and deadline must be timezone-qualified ISO timestamps. At the deadline boundary the status is Closed; before a known registration opening it is Coming soon. A record with only incomplete date evidence remains unverified. INR prize rankings must use confirmed INR cash amounts; don't mix currencies, perks or credits into the numeric prize field. Keep unavailable amounts null.
+
+Platforms, company programs and developer communities are not represented as confirmed public competitions. Unconfirmed official URLs stay null, and company/developer resource destinations are labeled with an explanatory note. Employer names do not imply an active official event. Directory links do not submit applications or create student activity records.
+
+Tests cover source completeness, combined filters, date boundaries, unknown prize ranking, safe links, schema rejection of malformed dates/prizes/URLs, and expired opportunity discovery. Publish with the standard Hosting deploy; this addition does not require Firestore schema migrations, indexes or security-rule changes. Actual cloud event imports remain administrator-controlled.

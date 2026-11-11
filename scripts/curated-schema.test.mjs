@@ -38,3 +38,13 @@ test("curated schema rejects unsafe URLs and fabricated field types", () => {
   assert.equal(validate([{ ...records[0], deadline: "rolling" }]), false);
   assert.equal(validate([{ ...records[0], salary: 999999 }]), false);
 });
+test("hackathon references match their schema without fabricated event metadata", async () => {
+  const schema = await read("../database/hackathon-directory.schema.json");
+  const records = await read("../frontend/src/hackathonDirectory.json");
+  const valid = ajv.compile(schema);
+  assert.equal(valid(records), true, JSON.stringify(valid.errors));
+  assert.equal(new Set(records.map(r => r.id)).size, records.length);
+  assert.equal(valid([{...records[0], deadline:"coming soon"}]), false);
+  assert.equal(valid([{...records[0], prizeINR:-1}]), false);
+  assert.equal(valid([{...records[0], sourceUrl:"javascript:alert(1)"}]), false);
+});

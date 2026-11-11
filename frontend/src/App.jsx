@@ -71,6 +71,8 @@ import {
   types,
   typeLabel,
   filterOpportunities,
+  opportunityStatus,
+  deadlineMillis,
   completion,
   isOpen,
   money,
@@ -100,6 +102,8 @@ import { PhoneLogin } from "./PhoneLogin";
 import { PasswordRecovery } from "./PasswordRecovery";
 import { Mentoring, BookingAdmin, Updates } from "./Growth";
 import { Notifications, NotificationNav, AdminOverview } from "./Notifications";
+import { HackathonDirectory } from "./HackathonDirectory";
+import { hackathonDirectory } from "./hackathonDirectory";
 import { externalById } from "./externalCatalog";
 import { ExternalDetails } from "./ExternalDetails";
 import { ResumeBuilder } from "./ResumeBuilder";
@@ -326,7 +330,8 @@ function Card({ item, saved = false, onSave }) {
       </div>
       <div className="card-deadline">
         <span className="availability-dot" />{" "}
-        {item.external ? "Check official availability" : "Applications open"}
+        {item.external ? "Check official availability" : opportunityStatus(item) === "closed" ? "Closed" : "Applications open"}
+        {item.type === "hackathon" && Number.isFinite(deadlineMillis(item)) && <> · Closes {dateLabel(deadlineMillis(item))}</>}
       </div>
       <div className="card-bottom">
         <div>
@@ -566,6 +571,7 @@ function Explore({ catalog }) {
     mode: params.get("mode") || "all",
     category: params.get("category") || "all",
     sort: params.get("sort") || "newest",
+    ...(type === "hackathon" ? { availability: params.get("availability") || "all", group: params.get("group") || "all", openOnly: false } : {}),
   };
   const rows = filterOpportunities(catalog.items, filters);
   const saved = new Set(bookmarks.items.map((b) => b.opportunityId));
@@ -640,7 +646,15 @@ function Explore({ catalog }) {
               ))}
             </select>
           </label>
-          <button className="text-link" onClick={() => setParams({})}>
+          {type === "hackathon" && <>
+            <label>Registration status<select value={filters.availability} onChange={e => change("availability", e.target.value)}>
+              <option value="all">All statuses</option><option value="open">Open now</option><option value="upcoming">Coming soon</option><option value="closed">Closed</option><option value="unverified">Dates not announced / verify</option>
+            </select></label>
+            <label>Hackathon section<select value={filters.group} onChange={e => change("group", e.target.value)}>
+              <option value="all">All sections</option>{[...new Set(hackathonDirectory.map(row => row.group))].map(group => <option key={group}>{group}</option>)}
+            </select></label>
+          </>}
+          <button className="text-link" onClick={() => setParams(type === "hackathon" ? { type: "hackathon" } : {})}>
             Clear all filters
           </button>
         </aside>
@@ -665,6 +679,7 @@ function Explore({ catalog }) {
               <option value="stipend">Highest stipend / prize</option>
             </select>
           </div>
+          {type === "hackathon" && <p className="hint">Listing filters apply to loaded opportunities. Section filters below apply to the reference directory; dated opportunities remain visible separately.</p>}
           <p className="result-count">
             {rows.length} matching loaded opportunities
           </p>
@@ -691,12 +706,15 @@ function Explore({ catalog }) {
                 />
               ))}
             </div>
+          ) : type === "hackathon" ? (
+            <p className="notice">No dated hackathon listings match these filters. Browse the reference resources below or refresh the published listings.</p>
           ) : (
             <Empty title="No matching opportunities">
               Try another skill or remove a filter. New listings appear here
               when published.
             </Empty>
           )}
+          {type === "hackathon" && <HackathonDirectory filters={filters} />}
           {configured && (
             <div className="career-controls">
               <button

@@ -137,3 +137,8 @@ it("a resume link contributes to profile completion like a PDF path", () => {
     100,
   );
 });
+it("allows closed event discovery only when requested and keeps unknown compensation last", () => {
+  expect(filterOpportunities(items,{type:"internship",openOnly:false,availability:"closed"}).map(row=>row.id)).toEqual(["c"]);
+  expect(filterOpportunities([...items,{...items[0],id:"unknown",stipend:null}],{sort:"stipend"}).map(row=>row.id)).toEqual(["b","a","unknown"]);
+  expect(filterOpportunities(items,{sort:"deadline",openOnly:false}).map(row=>row.id)).toEqual(["a","b","c"]);
+});

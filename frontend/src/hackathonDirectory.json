@@ -1,0 +1,1883 @@
+[
+  {
+    "id": "mlh-major-league-hacking",
+    "title": "MLH (Major League Hacking)",
+    "group": "Global & Major Hackathons",
+    "kind": "platform",
+    "summary": "World's largest community of student hackathons",
+    "modes": [
+      "Remote",
+      "On-site"
+    ],
+    "location": "Both",
+    "interests": [
+      "Technology",
+      "Design",
+      "Business"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://mlh.io/seasons/2027/events",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition."
+  },
+  {
+    "id": "hackmit",
+    "title": "HackMIT",
+    "group": "Global & Major Hackathons",
+    "kind": "event-series",
+    "summary": "MIT's annual hackathon focused on innovation",
+    "modes": [
+      "On-site"
+    ],
+    "location": "Offline (Boston, MA)",
+    "interests": [
+      "Technology",
+      "Design",
+      "Business"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://hackmit.org/",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+  },
+  {
+    "id": "treehacks",
+    "title": "TreeHacks",
+    "group": "Global & Major Hackathons",
+    "kind": "event-series",
+    "summary": "Stanford University's premier hackathon",
+    "modes": [
+      "On-site"
+    ],
+    "location": "Offline (Stanford, CA)",
+    "interests": [
+      "Technology",
+      "Design",
+      "Business"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://www.treehacks.com/",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+  },
+  {
+    "id": "pennapps",
+    "title": "PennApps",
+    "group": "Global & Major Hackathons",
+    "kind": "event-series",
+    "summary": "The original college hackathon at UPenn",
+    "modes": [
+      "On-site"
+    ],
+    "location": "Offline (Philadelphia, PA)",
+    "interests": [
+      "Technology",
+      "Design",
+      "Business"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://pennapps.com/",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+  },
+  {
+    "id": "hackgt",
+    "title": "HackGT",
+    "group": "Global & Major Hackathons",
+    "kind": "event-series",
+    "summary": "Georgia Tech's flagship hackathon",
+    "modes": [
+      "On-site"
+    ],
+    "location": "Offline (Atlanta, GA)",
+    "interests": [
+      "Technology",
+      "Design",
+      "Business"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://hack.gt/",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+  },
+  {
+    "id": "mhacks",
+    "title": "MHacks",
+    "group": "Global & Major Hackathons",
+    "kind": "event-series",
+    "summary": "University of Michigan's premier hackathon",
+    "modes": [
+      "On-site"
+    ],
+    "location": "Offline (Ann Arbor, MI)",
+    "interests": [
+      "Technology",
+      "Design",
+      "Business"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://mhacks.org/",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+  },
+  {
+    "id": "calhacks",
+    "title": "CalHacks",
+    "group": "Global & Major Hackathons",
+    "kind": "event-series",
+    "summary": "UC Berkeley's largest hackathon",
+    "modes": [
+      "On-site"
+    ],
+    "location": "Offline (Berkeley, CA)",
+    "interests": [
+      "Technology",
+      "Design",
+      "Business"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://www.calhacks.io/",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+  },
+  {
+    "id": "angelhack",
+    "title": "AngelHack",
+    "group": "Global & Major Hackathons",
+    "kind": "program",
+    "summary": "Global hackathon series in 50+ cities",
+    "modes": [
+      "Remote",
+      "On-site"
+    ],
+    "location": "Both",
+    "interests": [
+      "Technology",
+      "Design",
+      "Business"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://angelhack.com/",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition."
+  },
+  {
+    "id": "hacktx",
+    "title": "HackTX",
+    "group": "Global & Major Hackathons",
+    "kind": "event-series",
+    "summary": "UT Austin's largest hackathon",
+    "modes": [
+      "On-site"
+    ],
+    "location": "Offline (Austin, TX)",
+    "interests": [
+      "Technology",
+      "Design",
+      "Business"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://hacktx.com/",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+  },
+  {
+    "id": "hackillinois",
+    "title": "HackIllinois",
+    "group": "Global & Major Hackathons",
+    "kind": "event-series",
+    "summary": "University of Illinois' open source hackathon",
+    "modes": [
+      "On-site"
+    ],
+    "location": "Offline (Champaign, IL)",
+    "interests": [
+      "Technology",
+      "Design",
+      "Business"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://hackillinois.org/",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+  },
+  {
+    "id": "hacknyu",
+    "title": "HackNYU",
+    "group": "Global & Major Hackathons",
+    "kind": "event-series",
+    "summary": "NYU's annual global hackathon",
+    "modes": [
+      "On-site"
+    ],
+    "location": "Offline (New York, NY)",
+    "interests": [
+      "Technology",
+      "Design",
+      "Business"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://hacknyu.org/",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+  },
+  {
+    "id": "microsoft-imagine-cup",
+    "title": "Microsoft Imagine Cup",
+    "group": "Global & Major Hackathons",
+    "kind": "event-series",
+    "summary": "Global technology competition for students",
+    "modes": [
+      "Hybrid"
+    ],
+    "location": "Online (Finals Offline)",
+    "interests": [
+      "Technology",
+      "Design",
+      "Business"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://imaginecup.microsoft.com/",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+  },
+  {
+    "id": "nasa-space-apps-challenge",
+    "title": "NASA Space Apps Challenge",
+    "group": "Global & Major Hackathons",
+    "kind": "event-series",
+    "summary": "Space-related challenges hackathon",
+    "modes": [
+      "Remote",
+      "On-site"
+    ],
+    "location": "Both",
+    "interests": [
+      "Technology",
+      "Design",
+      "Business"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://www.spaceappschallenge.org/",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+  },
+  {
+    "id": "hackduke",
+    "title": "HackDuke",
+    "group": "Global & Major Hackathons",
+    "kind": "event-series",
+    "summary": "Duke's \"code for good\" hackathon",
+    "modes": [
+      "On-site"
+    ],
+    "location": "Offline (Durham, NC)",
+    "interests": [
+      "Technology",
+      "Design",
+      "Business"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://www.hackduke.org/",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+  },
+  {
+    "id": "hackprinceton",
+    "title": "HackPrinceton",
+    "group": "Global & Major Hackathons",
+    "kind": "event-series",
+    "summary": "Princeton University's biannual hackathon",
+    "modes": [
+      "On-site"
+    ],
+    "location": "Offline (Princeton, NJ)",
+    "interests": [
+      "Technology",
+      "Design",
+      "Business"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://hackprinceton.com/",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+  },
+  {
+    "id": "smart-india-hackathon",
+    "title": "Smart India Hackathon",
+    "group": "Indian Hackathons",
+    "kind": "event-series",
+    "summary": "India's largest national-level hackathon",
+    "modes": [
+      "Remote",
+      "On-site"
+    ],
+    "location": "Both",
+    "interests": [
+      "Technology",
+      "Design",
+      "Business"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://www.sih.gov.in/",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+  },
+  {
+    "id": "hackindia",
+    "title": "HackIndia",
+    "group": "Indian Hackathons",
+    "kind": "event-series",
+    "summary": "One of India's largest student-run hackathons",
+    "modes": [
+      "On-site"
+    ],
+    "location": "Offline (Multiple Cities)",
+    "interests": [
+      "Technology",
+      "Design",
+      "Business"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://hackindia.xyz/",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+  },
+  {
+    "id": "inout",
+    "title": "InOut",
+    "group": "Indian Hackathons",
+    "kind": "event-series",
+    "summary": "India's premier independent hackathon",
+    "modes": [
+      "On-site"
+    ],
+    "location": "Offline (Bangalore)",
+    "interests": [
+      "Technology",
+      "Design",
+      "Business"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://hackinout.co/",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+  },
+  {
+    "id": "hackwithinfy",
+    "title": "HackWithInfy",
+    "group": "Indian Hackathons",
+    "kind": "event-series",
+    "summary": "Infosys' flagship coding competition",
+    "modes": [
+      "Remote"
+    ],
+    "location": "Online",
+    "interests": [
+      "Technology",
+      "Design",
+      "Business"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://www.infosys.com/careers/hackwithinfy.html",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+  },
+  {
+    "id": "tcs-codevita",
+    "title": "TCS CodeVita",
+    "group": "Indian Hackathons",
+    "kind": "event-series",
+    "summary": "Global coding contest by TCS",
+    "modes": [
+      "Remote"
+    ],
+    "location": "Online",
+    "interests": [
+      "Technology",
+      "Design",
+      "Business"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://codevita.tcsapps.com/",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+  },
+  {
+    "id": "hackvsit",
+    "title": "HackVsit",
+    "group": "Indian Hackathons",
+    "kind": "event-series",
+    "summary": "VIPS Delhi's premier hackathon",
+    "modes": [
+      "On-site"
+    ],
+    "location": "Offline (Delhi)",
+    "interests": [
+      "Technology",
+      "Design",
+      "Business"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://hackvsit.tech/",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+  },
+  {
+    "id": "hackcbs",
+    "title": "HackCBS",
+    "group": "Indian Hackathons",
+    "kind": "event-series",
+    "summary": "CBS Delhi's annual hackathon",
+    "modes": [
+      "On-site"
+    ],
+    "location": "Offline (Delhi)",
+    "interests": [
+      "Technology",
+      "Design",
+      "Business"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://hackcbs.tech/",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+  },
+  {
+    "id": "hackmanthan",
+    "title": "Hackmanthan",
+    "group": "Indian Hackathons",
+    "kind": "event-series",
+    "summary": "GoI cybersecurity hackathon",
+    "modes": [
+      "On-site"
+    ],
+    "location": "Offline (Multiple)",
+    "interests": [
+      "Technology",
+      "Design",
+      "Business"
+    ],
+    "skills": [
+      "Cybersecurity"
+    ],
+    "sourceUrl": null,
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "The supplied name does not identify a confirmed current edition or official registration page."
+  },
+  {
+    "id": "hacknitr",
+    "title": "HackNITR",
+    "group": "Indian Hackathons",
+    "kind": "event-series",
+    "summary": "NIT Rourkela's largest hackathon",
+    "modes": [
+      "On-site"
+    ],
+    "location": "Offline (Rourkela)",
+    "interests": [
+      "Technology",
+      "Design",
+      "Business"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://hacknitr.com/",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+  },
+  {
+    "id": "codeshastra-djsce",
+    "title": "Codeshastra (DJSCE)",
+    "group": "Indian Hackathons",
+    "kind": "event-series",
+    "summary": "24-hour coding competition",
+    "modes": [
+      "On-site"
+    ],
+    "location": "Offline (Mumbai)",
+    "interests": [
+      "Technology",
+      "Design",
+      "Business"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://www.djsce.ac.in/",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+  },
+  {
+    "id": "nmit-hacks",
+    "title": "NMIT Hacks",
+    "group": "Indian Hackathons",
+    "kind": "event-series",
+    "summary": "24-hour hackathon by NMIT",
+    "modes": [
+      "On-site"
+    ],
+    "location": "Offline (Bangalore)",
+    "interests": [
+      "Technology",
+      "Design",
+      "Business"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://nmithacks.com/",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+  },
+  {
+    "id": "google-hackathons",
+    "title": "Google Hackathons",
+    "group": "Tech Company Hackathons",
+    "kind": "program",
+    "summary": "Themed hackathons using Google tech",
+    "modes": [
+      "Remote",
+      "On-site"
+    ],
+    "location": "Both",
+    "interests": [
+      "Technology"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://developers.google.com/community",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition."
+  },
+  {
+    "id": "amazon-aws-hackathons",
+    "title": "Amazon AWS Hackathons",
+    "group": "Tech Company Hackathons",
+    "kind": "program",
+    "summary": "Cloud computing challenges",
+    "modes": [
+      "Remote"
+    ],
+    "location": "Online",
+    "interests": [
+      "Technology"
+    ],
+    "skills": [
+      "Cloud",
+      "AWS"
+    ],
+    "sourceUrl": "https://aws.amazon.com/events/",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition."
+  },
+  {
+    "id": "dell-technologies-hackathon",
+    "title": "Dell Technologies Hackathon",
+    "group": "Tech Company Hackathons",
+    "kind": "program",
+    "summary": "Enterprise solutions innovations",
+    "modes": [
+      "Remote"
+    ],
+    "location": "Online",
+    "interests": [
+      "Technology"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://www.dell.com/en-us/dt/events/index.htm",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition."
+  },
+  {
+    "id": "red-hat-hackathons",
+    "title": "Red Hat Hackathons",
+    "group": "Tech Company Hackathons",
+    "kind": "program",
+    "summary": "Open source development",
+    "modes": [
+      "Remote"
+    ],
+    "location": "Online",
+    "interests": [
+      "Technology"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://developers.redhat.com/events",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition."
+  },
+  {
+    "id": "paypal-hackathons",
+    "title": "PayPal Hackathons",
+    "group": "Tech Company Hackathons",
+    "kind": "program",
+    "summary": "Fintech innovation challenges",
+    "modes": [
+      "Remote"
+    ],
+    "location": "Online",
+    "interests": [
+      "Technology",
+      "Finance"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://developer.paypal.com/community/",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition."
+  },
+  {
+    "id": "samsung-prism-hackathon",
+    "title": "Samsung PRISM Hackathon",
+    "group": "Tech Company Hackathons",
+    "kind": "program",
+    "summary": "Electronics and software integration",
+    "modes": [
+      "Remote"
+    ],
+    "location": "Online",
+    "interests": [
+      "Technology"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://www.samsungprism.com/",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition."
+  },
+  {
+    "id": "intel-india-hackathon",
+    "title": "Intel India Hackathon",
+    "group": "Tech Company Hackathons",
+    "kind": "program",
+    "summary": "Hardware and software optimization",
+    "modes": [
+      "Remote",
+      "On-site"
+    ],
+    "location": "Both",
+    "interests": [
+      "Technology"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://www.intel.com/content/www/us/en/developer/events/overview.html",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition."
+  },
+  {
+    "id": "linkedin-hackathons",
+    "title": "LinkedIn Hackathons",
+    "group": "Tech Company Hackathons",
+    "kind": "program",
+    "summary": "Professional network innovations",
+    "modes": [
+      "Remote"
+    ],
+    "location": "Online",
+    "interests": [
+      "Technology"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://engineering.linkedin.com/",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition."
+  },
+  {
+    "id": "twitter-hackathons",
+    "title": "Twitter Hackathons",
+    "group": "Tech Company Hackathons",
+    "kind": "program",
+    "summary": "Social media platform challenges",
+    "modes": [
+      "Remote"
+    ],
+    "location": "Online",
+    "interests": [
+      "Technology"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://developer.x.com/",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "X developer resources; a current public hackathon is not confirmed."
+  },
+  {
+    "id": "airbnb-hackathons",
+    "title": "Airbnb Hackathons",
+    "group": "Tech Company Hackathons",
+    "kind": "program",
+    "summary": "Travel and hospitality solutions",
+    "modes": [
+      "Remote"
+    ],
+    "location": "Online",
+    "interests": [
+      "Technology"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://careers.airbnb.com/",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Official company careers page; a public student hackathon is not confirmed."
+  },
+  {
+    "id": "salesforce-hackathons",
+    "title": "Salesforce Hackathons",
+    "group": "Tech Company Hackathons",
+    "kind": "program",
+    "summary": "CRM and cloud solutions",
+    "modes": [
+      "Remote"
+    ],
+    "location": "Online",
+    "interests": [
+      "Technology"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://developer.salesforce.com/events",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition."
+  },
+  {
+    "id": "ibm-hackathons",
+    "title": "IBM Hackathons",
+    "group": "Tech Company Hackathons",
+    "kind": "program",
+    "summary": "Enterprise tech challenges",
+    "modes": [
+      "Remote"
+    ],
+    "location": "Online",
+    "interests": [
+      "Technology"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://developer.ibm.com/events/",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition."
+  },
+  {
+    "id": "devfolio",
+    "title": "Devfolio",
+    "group": "Platform-Based Hackathons",
+    "kind": "platform",
+    "summary": "Platform powering Indian hackathons",
+    "modes": [
+      "Remote"
+    ],
+    "location": "Online",
+    "interests": [
+      "Technology"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://devfolio.co/hackathons",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition."
+  },
+  {
+    "id": "devpost-hackathons",
+    "title": "Devpost Hackathons",
+    "group": "Platform-Based Hackathons",
+    "kind": "platform",
+    "summary": "Platform hosting global hackathons",
+    "modes": [
+      "Remote"
+    ],
+    "location": "Online",
+    "interests": [
+      "Technology"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://devpost.com/hackathons",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition."
+  },
+  {
+    "id": "hackerrank-college-competitions",
+    "title": "HackerRank College Competitions",
+    "group": "Platform-Based Hackathons",
+    "kind": "platform",
+    "summary": "Coding challenges for students",
+    "modes": [
+      "Remote"
+    ],
+    "location": "Online",
+    "interests": [
+      "Technology"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://www.hackerrank.com/contests",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition."
+  },
+  {
+    "id": "github-campus-program",
+    "title": "GitHub Campus Program",
+    "group": "Platform-Based Hackathons",
+    "kind": "platform",
+    "summary": "Resources for student developers",
+    "modes": [
+      "Remote"
+    ],
+    "location": "Online",
+    "interests": [
+      "Technology"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://education.github.com/",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition."
+  },
+  {
+    "id": "kaggle-competitions",
+    "title": "Kaggle Competitions",
+    "group": "Platform-Based Hackathons",
+    "kind": "platform",
+    "summary": "Data science and ML challenges",
+    "modes": [
+      "Remote"
+    ],
+    "location": "Online",
+    "interests": [
+      "Technology"
+    ],
+    "skills": [
+      "AI",
+      "Machine learning",
+      "Data science"
+    ],
+    "sourceUrl": "https://www.kaggle.com/competitions",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition."
+  },
+  {
+    "id": "topcoder-hackathons",
+    "title": "Topcoder Hackathons",
+    "group": "Platform-Based Hackathons",
+    "kind": "platform",
+    "summary": "Competitive programming",
+    "modes": [
+      "Remote"
+    ],
+    "location": "Online",
+    "interests": [
+      "Technology"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://www.topcoder.com/challenges",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition."
+  },
+  {
+    "id": "unstop-dare2compete",
+    "title": "Unstop (Dare2Compete)",
+    "group": "Platform-Based Hackathons",
+    "kind": "platform",
+    "summary": "Platform for campus challenges",
+    "modes": [
+      "Remote"
+    ],
+    "location": "Online",
+    "interests": [
+      "Technology"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://unstop.com/hackathons",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition."
+  },
+  {
+    "id": "skillenza-hackathons",
+    "title": "Skillenza Hackathons",
+    "group": "Platform-Based Hackathons",
+    "kind": "platform",
+    "summary": "Skill-based challenges",
+    "modes": [
+      "Remote"
+    ],
+    "location": "Online",
+    "interests": [
+      "Technology"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://skillenza.com/",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition."
+  },
+  {
+    "id": "hackerearth-challenges",
+    "title": "HackerEarth Challenges",
+    "group": "Platform-Based Hackathons",
+    "kind": "platform",
+    "summary": "University-focused hackathons",
+    "modes": [
+      "Remote"
+    ],
+    "location": "Online",
+    "interests": [
+      "Technology"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://www.hackerearth.com/challenges/",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition."
+  },
+  {
+    "id": "drivendata-challenges",
+    "title": "DrivenData Challenges",
+    "group": "Platform-Based Hackathons",
+    "kind": "platform",
+    "summary": "Data science for social impact",
+    "modes": [
+      "Remote"
+    ],
+    "location": "Online",
+    "interests": [
+      "Technology"
+    ],
+    "skills": [
+      "AI",
+      "Machine learning",
+      "Data science"
+    ],
+    "sourceUrl": "https://www.drivendata.org/competitions/",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Organizer, program or discovery resource; this is not a confirmed open hackathon edition."
+  },
+  {
+    "id": "technica",
+    "title": "Technica",
+    "group": "Specialty Hackathons",
+    "kind": "event-series",
+    "summary": "Largest all-women hackathon",
+    "modes": [
+      "Remote",
+      "On-site"
+    ],
+    "location": "Both",
+    "interests": [
+      "Technology",
+      "Design",
+      "Business"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://gotechnica.org/",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+  },
+  {
+    "id": "global-game-jam",
+    "title": "Global Game Jam",
+    "group": "Specialty Hackathons",
+    "kind": "event-series",
+    "summary": "Worldwide game development",
+    "modes": [
+      "Remote",
+      "On-site"
+    ],
+    "location": "Both",
+    "interests": [
+      "Technology",
+      "Design",
+      "Business"
+    ],
+    "skills": [
+      "Game development",
+      "Design"
+    ],
+    "sourceUrl": "https://globalgamejam.org/",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+  },
+  {
+    "id": "blockchain-hackathon",
+    "title": "Blockchain Hackathon",
+    "group": "Specialty Hackathons",
+    "kind": "program",
+    "summary": "Web3 development",
+    "modes": [
+      "Remote"
+    ],
+    "location": "Online",
+    "interests": [
+      "Technology",
+      "Design",
+      "Business"
+    ],
+    "skills": [
+      "Web3",
+      "Blockchain",
+      "Smart contracts"
+    ],
+    "sourceUrl": null,
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "The supplied name does not identify a confirmed current edition or official registration page."
+  },
+  {
+    "id": "ai-for-good-hackathon",
+    "title": "AI for Good Hackathon",
+    "group": "Specialty Hackathons",
+    "kind": "event-series",
+    "summary": "AI solutions for UN SDGs",
+    "modes": [
+      "Remote"
+    ],
+    "location": "Online",
+    "interests": [
+      "Technology",
+      "Design",
+      "Business"
+    ],
+    "skills": [
+      "AI",
+      "Machine learning",
+      "Data science"
+    ],
+    "sourceUrl": "https://aiforgood.itu.int/",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+  },
+  {
+    "id": "ethglobal-hackathons",
+    "title": "EthGlobal Hackathons",
+    "group": "Specialty Hackathons",
+    "kind": "event-series",
+    "summary": "Ethereum ecosystem development",
+    "modes": [
+      "Remote"
+    ],
+    "location": "Online",
+    "interests": [
+      "Technology",
+      "Design",
+      "Business"
+    ],
+    "skills": [
+      "Web3",
+      "Blockchain",
+      "Smart contracts"
+    ],
+    "sourceUrl": "https://ethglobal.com/events",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+  },
+  {
+    "id": "solana-hackathons",
+    "title": "Solana Hackathons",
+    "group": "Specialty Hackathons",
+    "kind": "event-series",
+    "summary": "Solana blockchain development",
+    "modes": [
+      "Remote"
+    ],
+    "location": "Online",
+    "interests": [
+      "Technology",
+      "Design",
+      "Business"
+    ],
+    "skills": [
+      "Web3",
+      "Blockchain",
+      "Smart contracts"
+    ],
+    "sourceUrl": "https://solana.com/hackathon",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+  },
+  {
+    "id": "openai-hackathons",
+    "title": "OpenAI Hackathons",
+    "group": "Specialty Hackathons",
+    "kind": "program",
+    "summary": "AI applications development",
+    "modes": [
+      "Remote"
+    ],
+    "location": "Online",
+    "interests": [
+      "Technology",
+      "Design",
+      "Business"
+    ],
+    "skills": [
+      "AI",
+      "Machine learning",
+      "Data science"
+    ],
+    "sourceUrl": "https://developers.openai.com/",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "OpenAI developer resources; this is not an announcement of an official hackathon."
+  },
+  {
+    "id": "hackzurich",
+    "title": "HackZurich",
+    "group": "Regional & International Hackathons",
+    "kind": "event-series",
+    "summary": "Europe's largest hackathon",
+    "modes": [
+      "On-site"
+    ],
+    "location": "Offline (Zurich)",
+    "interests": [
+      "Technology",
+      "Design",
+      "Business"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://hackzurich.com/",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+  },
+  {
+    "id": "junction",
+    "title": "Junction",
+    "group": "Regional & International Hackathons",
+    "kind": "event-series",
+    "summary": "Europe's leading hackathon",
+    "modes": [
+      "On-site"
+    ],
+    "location": "Offline (Helsinki)",
+    "interests": [
+      "Technology",
+      "Design",
+      "Business"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://www.hackjunction.com/",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+  },
+  {
+    "id": "hackthenorth",
+    "title": "HackTheNorth",
+    "group": "Regional & International Hackathons",
+    "kind": "event-series",
+    "summary": "Canada's biggest hackathon",
+    "modes": [
+      "On-site"
+    ],
+    "location": "Offline (Waterloo)",
+    "interests": [
+      "Technology",
+      "Design",
+      "Business"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://hackthenorth.com/",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+  },
+  {
+    "id": "la-hacks",
+    "title": "LA Hacks",
+    "group": "Regional & International Hackathons",
+    "kind": "event-series",
+    "summary": "West Coast's premier hackathon",
+    "modes": [
+      "On-site"
+    ],
+    "location": "Offline (Los Angeles)",
+    "interests": [
+      "Technology",
+      "Design",
+      "Business"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://lahacks.com/",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+  },
+  {
+    "id": "hack-the-6ix",
+    "title": "Hack the 6ix",
+    "group": "Regional & International Hackathons",
+    "kind": "event-series",
+    "summary": "Toronto's largest summer hackathon",
+    "modes": [
+      "On-site"
+    ],
+    "location": "Offline (Toronto)",
+    "interests": [
+      "Technology",
+      "Design",
+      "Business"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://hackthe6ix.com/",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+  },
+  {
+    "id": "mchacks",
+    "title": "McHacks",
+    "group": "Regional & International Hackathons",
+    "kind": "event-series",
+    "summary": "McGill University's hackathon",
+    "modes": [
+      "On-site"
+    ],
+    "location": "Offline (Montreal)",
+    "interests": [
+      "Technology",
+      "Design",
+      "Business"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://mchacks.ca/",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+  },
+  {
+    "id": "hackupc",
+    "title": "HackUPC",
+    "group": "Regional & International Hackathons",
+    "kind": "event-series",
+    "summary": "Barcelona's student hackathon",
+    "modes": [
+      "On-site"
+    ],
+    "location": "Offline (Barcelona)",
+    "interests": [
+      "Technology",
+      "Design",
+      "Business"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://hackupc.com/",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+  },
+  {
+    "id": "deltahacks",
+    "title": "DeltaHacks",
+    "group": "Regional & International Hackathons",
+    "kind": "event-series",
+    "summary": "McMaster's hackathon for change",
+    "modes": [
+      "On-site"
+    ],
+    "location": "Offline (Hamilton, ON)",
+    "interests": [
+      "Technology",
+      "Design",
+      "Business"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://deltahacks.com/",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+  },
+  {
+    "id": "hacksussex",
+    "title": "HackSussex",
+    "group": "Regional & International Hackathons",
+    "kind": "event-series",
+    "summary": "University of Sussex hackathon",
+    "modes": [
+      "On-site"
+    ],
+    "location": "Offline (Brighton, UK)",
+    "interests": [
+      "Technology",
+      "Design",
+      "Business"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://hacksussex.com/",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+  },
+  {
+    "id": "hackyeah",
+    "title": "HackYeah",
+    "group": "Regional & International Hackathons",
+    "kind": "event-series",
+    "summary": "Central Europe's biggest hackathon",
+    "modes": [
+      "On-site"
+    ],
+    "location": "Offline (Poland)",
+    "interests": [
+      "Technology",
+      "Design",
+      "Business"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://hackyeah.pl/",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+  },
+  {
+    "id": "vandyhacks",
+    "title": "VandyHacks",
+    "group": "University Hackathons (US & Global)",
+    "kind": "event-series",
+    "summary": "Vanderbilt University's hackathon",
+    "modes": [
+      "On-site"
+    ],
+    "location": "Offline (Nashville, TN)",
+    "interests": [
+      "Technology",
+      "Design",
+      "Business"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://vandyhacks.org/",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+  },
+  {
+    "id": "bostonhacks",
+    "title": "BostonHacks",
+    "group": "University Hackathons (US & Global)",
+    "kind": "event-series",
+    "summary": "Boston University's hackathon",
+    "modes": [
+      "On-site"
+    ],
+    "location": "Offline (Boston, MA)",
+    "interests": [
+      "Technology",
+      "Design",
+      "Business"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://bostonhacks.org/",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+  },
+  {
+    "id": "hacknc",
+    "title": "HackNC",
+    "group": "University Hackathons (US & Global)",
+    "kind": "event-series",
+    "summary": "UNC's annual hackathon",
+    "modes": [
+      "On-site"
+    ],
+    "location": "Offline (Chapel Hill, NC)",
+    "interests": [
+      "Technology",
+      "Design",
+      "Business"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://hacknc.com/",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+  },
+  {
+    "id": "hackuci",
+    "title": "HackUCI",
+    "group": "University Hackathons (US & Global)",
+    "kind": "event-series",
+    "summary": "UC Irvine's largest hackathon",
+    "modes": [
+      "On-site"
+    ],
+    "location": "Offline (Irvine, CA)",
+    "interests": [
+      "Technology",
+      "Design",
+      "Business"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://hackuci.com/",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+  },
+  {
+    "id": "hackdavis",
+    "title": "HackDavis",
+    "group": "University Hackathons (US & Global)",
+    "kind": "event-series",
+    "summary": "UC Davis social good hackathon",
+    "modes": [
+      "On-site"
+    ],
+    "location": "Offline (Davis, CA)",
+    "interests": [
+      "Technology",
+      "Design",
+      "Business"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://hackdavis.io/",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+  },
+  {
+    "id": "hackutd",
+    "title": "HackUTD",
+    "group": "University Hackathons (US & Global)",
+    "kind": "event-series",
+    "summary": "UT Dallas' largest hackathon",
+    "modes": [
+      "On-site"
+    ],
+    "location": "Offline (Dallas, TX)",
+    "interests": [
+      "Technology",
+      "Design",
+      "Business"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://hackutd.co/",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+  },
+  {
+    "id": "hackumass",
+    "title": "HackUMass",
+    "group": "University Hackathons (US & Global)",
+    "kind": "event-series",
+    "summary": "UMass Amherst's annual hackathon",
+    "modes": [
+      "On-site"
+    ],
+    "location": "Offline (Amherst, MA)",
+    "interests": [
+      "Technology",
+      "Design",
+      "Business"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://hackumass.com/",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+  },
+  {
+    "id": "hackcu",
+    "title": "HackCU",
+    "group": "University Hackathons (US & Global)",
+    "kind": "event-series",
+    "summary": "University of Colorado's hackathon",
+    "modes": [
+      "On-site"
+    ],
+    "location": "Offline (Boulder, CO)",
+    "interests": [
+      "Technology",
+      "Design",
+      "Business"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://hackcu.org/",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+  },
+  {
+    "id": "dandyhacks",
+    "title": "DandyHacks",
+    "group": "University Hackathons (US & Global)",
+    "kind": "event-series",
+    "summary": "University of Rochester's hackathon",
+    "modes": [
+      "On-site"
+    ],
+    "location": "Offline (Rochester, NY)",
+    "interests": [
+      "Technology",
+      "Design",
+      "Business"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://dandyhacks.net/",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+  },
+  {
+    "id": "hacksc",
+    "title": "HackSC",
+    "group": "University Hackathons (US & Global)",
+    "kind": "event-series",
+    "summary": "USC's premiere hackathon",
+    "modes": [
+      "On-site"
+    ],
+    "location": "Offline (Los Angeles, CA)",
+    "interests": [
+      "Technology",
+      "Design",
+      "Business"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://hacksc.com/",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+  },
+  {
+    "id": "hackbeanpot",
+    "title": "HackBeanpot",
+    "group": "University Hackathons (US & Global)",
+    "kind": "event-series",
+    "summary": "Boston intercollegiate hackathon",
+    "modes": [
+      "On-site"
+    ],
+    "location": "Offline (Boston, MA)",
+    "interests": [
+      "Technology",
+      "Design",
+      "Business"
+    ],
+    "skills": [
+      "Software development"
+    ],
+    "sourceUrl": "https://hackbeanpot.com/",
+    "registrationOpensAt": null,
+    "deadline": null,
+    "prizeINR": null,
+    "publishedAt": null,
+    "note": "Check the organizer for the next edition, eligibility, exact mode and registration dates."
+  }
+]

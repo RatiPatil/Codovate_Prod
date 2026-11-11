@@ -210,3 +210,8 @@
 .career-portal-roles { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; padding: 0; margin: 0; }
 .career-portal-card .hint { margin: 0; }
 .career-portal-card > .button { margin-top: auto; }
+
+.hackathon-directory { margin-top: 32px; }
+.hackathon-directory > .panel { margin-bottom: 20px; }
+.hackathon-directory details { margin-top: 16px; }
+.hackathon-directory summary { cursor: pointer; }
