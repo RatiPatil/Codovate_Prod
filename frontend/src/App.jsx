@@ -102,6 +102,7 @@ import { PhoneLogin } from "./PhoneLogin";
 import { PasswordRecovery } from "./PasswordRecovery";
 import { Mentoring, BookingAdmin, Updates } from "./Growth";
 import { Notifications, NotificationNav, AdminOverview } from "./Notifications";
+import { OpportunityResources } from "./OpportunityResources.jsx";
 import { HackathonDirectory } from "./HackathonDirectory.jsx";
 import { hackathonDirectory } from "./hackathonCatalog.js";
 import { externalById } from "./externalCatalog";
@@ -485,7 +486,7 @@ function Home({ catalog }) {
               </span>
               <h2>{typeLabel[type]}</h2>
               <span className="category-count">
-                {open.filter((o) => o.type === type).length}
+                {open.filter((o) => o.type === type).length || "Browse"}
               </span>
               <ArrowUpRight size={16} />
             </Link>
@@ -524,7 +525,7 @@ function Home({ catalog }) {
               </button>
             ))}
           </div>
-          <span className="board-note">Recently added</span>
+          <span className="board-note">{featured.length ? "Recently added" : "Explore trusted sources"}</span>
         </div>
         {catalog.loading && !featured.length ? (
           <Loading />
@@ -540,9 +541,7 @@ function Home({ catalog }) {
             ))}
           </div>
         ) : (
-          <Empty title="Nothing here just yet">
-            Try another category or check back for new listings.
-          </Empty>
+          <OpportunityResources type={activeType} />
         )}
       </section>
       <CareerSpotlight />
@@ -683,7 +682,7 @@ function Explore({ catalog }) {
             </select>
           </div>
           {type === "hackathon" && <p className="hint">Listing filters apply to loaded opportunities. Section filters below apply to the reference directory; dated opportunities remain visible separately.</p>}
-          {(type !== "hackathon" || rows.length > 0) && <p className="result-count">
+          {rows.length > 0 && <p className="result-count">
             {rows.length} matching loaded opportunities
           </p>}
           {notice && (
@@ -710,10 +709,7 @@ function Explore({ catalog }) {
               ))}
             </div>
           ) : type === "hackathon" ? null : (
-            <Empty title="No matching opportunities">
-              Try another skill or remove a filter. New listings appear here
-              when published.
-            </Empty>
+            <OpportunityResources type={type} search={filters.search} />
           )}
           {type === "hackathon" && <HackathonDirectory filters={filters} />}
           {configured && (

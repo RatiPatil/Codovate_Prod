@@ -118,3 +118,35 @@ describe("main opportunity catalog without Firebase", () => {
     ).not.toBeInTheDocument();
   });
 });
+describe("homepage discovery after verified snapshots expire", () => {
+  beforeEach(() => {
+    vi.mocked(Date.now).mockReturnValue(Date.parse("2026-11-11T12:00:00Z"));
+  });
+  it("keeps each homepage tab useful without inventing open listings", async () => {
+    renderAt("/");
+    expect(screen.queryByText("Nothing here just yet")).toBeNull();
+    expect(screen.getByRole("link",{name:"Explore Top Companies – Careers"})).toHaveAttribute("href","/placement?section=career-portals");
+    fireEvent.click(screen.getByRole("button",{name:"Jobs",exact:true}));
+    expect(screen.getByRole("link",{name:"Visit Google",exact:true})).toHaveAttribute("href","https://www.google.com/about/careers/applications/");
+    expect(document.querySelectorAll(".opportunity-card .card-deadline")).toHaveLength(0);
+    fireEvent.click(screen.getByRole("button",{name:"Competitions",exact:true}));
+    expect(screen.getByRole("link",{name:"Visit Kaggle Competitions",exact:true})).toHaveAttribute("href","https://www.kaggle.com/competitions");
+    fireEvent.click(screen.getByRole("button",{name:"Hackathons",exact:true}));
+    expect(screen.getByRole("link",{name:"Browse all hackathon resources"})).toHaveAttribute("href","/explore?type=hackathon");
+  });
+  it.each([['internship','Internships'],['job','Jobs'],['competition','Competitions'],['hackathon','Hackathons']])("opens the %s category box with useful content", async(type,title) => {
+    renderAt("/");
+    fireEvent.click(document.querySelector(`.path-card.${type}`));
+    await waitFor(()=>expect(screen.getByRole("heading",{level:1})).toHaveTextContent(title));
+    expect(screen.queryByText("No matching opportunities")).toBeNull();
+    if(type==='hackathon') expect(screen.getByRole('heading',{name:'Hackathons to explore'})).toBeInTheDocument();
+    else expect(screen.getByRole('region',{name:'Opportunity discovery resources'})).toBeInTheDocument();
+  });
+});
+it("opens a homepage resource by clicking its heading", async () => {
+  vi.mocked(Date.now).mockReturnValue(Date.parse("2026-11-11T12:00:00Z"));
+  renderAt("/");
+  fireEvent.click(screen.getByRole("heading",{name:"Hackathons and event dates"}));
+  await waitFor(()=>expect(screen.getByRole("heading",{level:1})).toHaveTextContent("Hackathons"));
+  expect(screen.getByRole("heading",{name:"Hackathons to explore"})).toBeInTheDocument();
+});

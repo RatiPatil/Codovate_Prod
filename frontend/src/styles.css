@@ -3618,3 +3618,6 @@ button:disabled:hover {
 .loading::after { content: ""; position: absolute; bottom: 20px; width: 100px; height: 3px; border-radius: 3px; background: linear-gradient(90deg,transparent,#5b50e655,transparent); animation: loading-glide 1.4s ease-in-out infinite; }
 @keyframes loading-glide { 0%,100% { transform:translateX(-35px); opacity:.3; } 50% { transform:translateX(35px); opacity:1; } }
 @media(prefers-reduced-motion:reduce) { .loading::after,.spinner { animation: none; } }
+
+.discovery-resource-card { display: block; color: inherit; text-decoration: none; }
+.discovery-resource-card:focus-visible { outline: 2px solid var(--primary, #554ee7); outline-offset: 4px; }
