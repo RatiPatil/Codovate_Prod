@@ -2,6 +2,13 @@ import { ExternalLink } from "lucide-react";
 import { useState } from "react";
 import groups from "./careerPortals.json";
 
+export function CompanyLogo({ company }) {
+  const [failed, setFailed] = useState(false);
+  return <span className={"career-company-logo" + (company.logoDark ? " dark" : "")} aria-hidden="true">
+    {company.logo && !failed ? <img src={company.logo} alt="" width="48" height="48" loading="lazy" decoding="async" onError={() => setFailed(true)} /> : <span>{company.name.replace(/[^\p{L}\p{N} ]/gu, "").split(/\s+/).filter(Boolean).slice(0, 2).map(word => word[0]).join("").toUpperCase()}</span>}
+  </span>;
+}
+
 export function CareerPortals() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
@@ -35,7 +42,7 @@ export function CareerPortals() {
       <div className="career-portals-group"><h3>{group.title}</h3><span className="pill">{group.companies.length} listings</span></div>
       <div className="placement-grid">
         {group.companies.map(company => <article className="panel career-portal-card" key={company.name}>
-          <h4>{company.name}</h4>
+          <div className="career-company-brand"><CompanyLogo company={company} /><h4>{company.name}</h4></div>
           <p className="career-company-intro">{company.description}</p>
           <ul className="career-portal-roles" aria-label={`${company.name} role areas`}>
             {company.roles.map(role => <li className="pill" key={role}>{role}</li>)}

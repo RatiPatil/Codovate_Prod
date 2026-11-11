@@ -219,3 +219,11 @@
 .hackathon-schedule p { margin: 8px 0; }
 
 .career-company-intro { margin: 0; color: var(--muted, #73798d); line-height: 1.65; }
+
+.career-company-brand { display: flex; align-items: center; gap: 12px; min-height: 50px; width: 100%; }
+.career-company-brand h4 { min-width: 0; overflow-wrap: anywhere; }
+.career-company-logo { display: grid; place-items: center; width: 50px; height: 50px; flex: 0 0 50px; border: 1px solid var(--border); border-radius: 12px; background: #fff; overflow: hidden; }
+.career-company-logo img { display: block; width: 40px; height: 40px; object-fit: contain; }
+.career-company-logo > span { color: var(--muted, #73798d); font-weight: 700; font-size: 16px; }
+
+.career-company-logo.dark { background: #252733; }
