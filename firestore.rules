@@ -15,8 +15,8 @@ service cloud.firestore {
      && joined.matches('[^\\n\\r]{1,60}(\\n[^\\n\\r]{1,60}){0,19}')));
   }
   function validCareerPreferences(p) {
-   return p is map && p.keys().hasAll(['desiredRole','domain','experience','goals','seeking','availability','mode','yearOfStudy','justStarting'])
-    && p.keys().hasOnly(['desiredRole','domain','experience','goals','seeking','availability','mode','yearOfStudy','justStarting'])
+   // Every required field is read below; a missing field fails closed.
+   return p is map && p.keys().hasOnly(['desiredRole','domain','experience','goals','seeking','availability','mode','yearOfStudy','justStarting'])
     && text(p.desiredRole,100)
     && p.domain in ['','Web Development','AI/ML','Data Science','Cyber Security','Startups','Research','Hackathons','Other']
     && p.experience in ['','Beginner','Intermediate','Advanced']
@@ -38,8 +38,7 @@ service cloud.firestore {
   }
   function validOnboarding(d) {
    let o = d.onboarding;
-   return o is map && o.keys().hasAll(['version','status','step','startedAt','completedAt'])
-    && o.keys().hasOnly(['version','status','step','startedAt','completedAt'])
+   return o is map && o.keys().hasOnly(['version','status','step','startedAt','completedAt'])
     && o.version==1 && o.step is int && o.step>=1 && o.step<=4 && o.startedAt is timestamp && o.startedAt==d.createdAt
     && ((o.status=='in-progress' && o.completedAt==null)
       || (o.status=='completed' && o.step==4 && o.completedAt is timestamp && onboardingCompleteProfile(d)));
@@ -47,12 +46,16 @@ service cloud.firestore {
   function onboardingTransition() {
    let before = resource.data.get('onboarding',{});
    let after = request.resource.data.get('onboarding',{});
-   return (!resource.data.keys().hasAny(['onboarding']) && !request.resource.data.keys().hasAny(['onboarding']))
-    || (resource.data.keys().hasAny(['onboarding']) && request.resource.data.keys().hasAny(['onboarding'])
-      && before.version==after.version && before.startedAt==after.startedAt
-      && ((before.status=='completed' && before==after)
-        || (before.status=='in-progress' && (after.status=='in-progress' || (after.status=='completed' && after.completedAt==request.time)))));
+   // validProfile checks the resulting map; absent maps retain legacy behavior.
+   return before == {} ? after == {} : (
+     before.version==after.version && before.startedAt==after.startedAt
+     && ((before.status=='completed' && before==after)
+       || (before.status=='in-progress' && (after.status=='in-progress'
+         || (after.status=='completed' && after.completedAt==request.time
+           && request.resource.data.city.size()>0 && request.resource.data.get('program','').size()>0
+           && request.resource.data.bio.size()>0 && request.resource.data.careerPreferences.seeking.size()>0)))));
   }
+
   function validProfile(d) {
    return d.keys().hasAll(['name','email','college','degree','graduationYear','city','bio','skills','portfolio','resumePath','createdAt','updatedAt'])
     && d.keys().hasOnly(['name','email','college','degree','graduationYear','city','bio','skills','portfolio','resumePath','resumeUrl','mobile','taluka','program','suggestedSkills','skillSuggestionsSource','onboarding','careerPreferences','discoveryEnabled','accountStatus','mobileVerified','importSource','createdAt','updatedAt'])

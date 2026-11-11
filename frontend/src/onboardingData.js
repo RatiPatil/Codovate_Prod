@@ -121,15 +121,17 @@ export function onboardingInput(raw, step, complete = false, partial = false) {
   };
   if (!partial) {
     normalizeFullName(profile.name);
+    if (!profile.city) throw new Error("Enter your city to continue.");
     if (
       (complete || step >= 2) &&
       (!profile.college ||
         !profile.degree ||
+        !profile.program ||
         !profile.graduationYear ||
         !p.yearOfStudy)
     )
       throw new Error(
-        "Add your college, course, study stage and graduation year.",
+        "Add your college, course, specialization, study stage and graduation year.",
       );
     if (
       (complete || step >= 3) &&
@@ -137,11 +139,14 @@ export function onboardingInput(raw, step, complete = false, partial = false) {
         !details.domain ||
         !details.experience ||
         !p.goals.length ||
+        !profile.bio ||
         (!profile.skills.length && !p.justStarting))
     )
       throw new Error(
-        "Choose your role, interest and goals. Add skills or select Just starting.",
+        "Choose your role, interest and goals. Write a short introduction and add skills or select Just starting.",
       );
+    if ((complete || step === 4) && !details.seeking.length)
+      throw new Error("Choose at least one type of teammate you want to find.");
   }
   return profile;
 }

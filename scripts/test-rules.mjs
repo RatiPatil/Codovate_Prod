@@ -1895,8 +1895,18 @@ try {
   await check('onboarding cannot expose arbitrary privilege fields in preferences',assertFails(updateDoc(onboardRef,{careerPreferences:{...preferences,admin:true},updatedAt:serverTimestamp()})));
   await check('onboarding completion requires uppercase full name',assertFails(updateDoc(onboardRef,{name:'Vivek Chavan',careerPreferences:preferences,onboarding:completion,updatedAt:serverTimestamp()})));
   await check('onboarding cannot replace its start timestamp',assertFails(updateDoc(onboardRef,{onboarding:{...onboardingProfile.onboarding,startedAt:Timestamp.fromDate(new Date('2020-01-01'))},updatedAt:serverTimestamp()})));
+  for (const [field, value] of [["city", ""], ["program", ""], ["bio", ""]]) {
+    await check(`onboarding completion requires ${field}`, assertFails(updateDoc(onboardRef, {
+      city:"Pune", program:"Computer Science", bio:"I enjoy building with my peers.",
+      careerPreferences:preferences, onboarding:completion, updatedAt:serverTimestamp(), [field]:value,
+    })));
+  }
+  await check('onboarding completion requires a teammate interest', assertFails(updateDoc(onboardRef, {
+    city:"Pune", program:"Computer Science", bio:"I enjoy building with my peers.",
+    careerPreferences:{...preferences,seeking:[]}, onboarding:completion, updatedAt:serverTimestamp(),
+  })));
   const completeBatch=writeBatch(onboardUser.firestore());
-  completeBatch.update(onboardRef,{careerPreferences:preferences,onboarding:completion,updatedAt:serverTimestamp()});
+  completeBatch.update(onboardRef,{city:"Pune",program:"Computer Science",bio:"I enjoy building with my peers.",careerPreferences:preferences,onboarding:completion,updatedAt:serverTimestamp()});
   completeBatch.set(doc(onboardUser.firestore(),'adminUsers','onboarding-student'),{uid:'onboarding-student',fullName:'VIVEK CHAVAN',joinedAt:onboardingProfile.createdAt,updatedAt:serverTimestamp()});
   completeBatch.set(doc(onboardUser.firestore(),'discoveryPreferences','onboarding-student'),{
     uid:'onboarding-student',details:{desiredRole:preferences.desiredRole,domain:preferences.domain,experience:preferences.experience,college:profile.college,year:preferences.yearOfStudy,location:profile.city,photoUrl:'',achievements:[],seeking:preferences.seeking,passions:[]},shareDetails:false,updatedAt:serverTimestamp(),

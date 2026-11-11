@@ -45,6 +45,9 @@ function open(path = "/onboarding") {
 }
 it("routes an unfinished account to onboarding before profile or public return destinations", async () => {
   open("/profile");
+  fireEvent.click(
+    await screen.findByRole("button", { name: "Let’s build my profile" }),
+  );
   expect(
     await screen.findByRole("heading", { name: "About you" }),
   ).toBeInTheDocument();
@@ -60,8 +63,13 @@ it.each([undefined, { version: 1, status: "completed", step: 4 }])(
 );
 it("prefills the name and shows its uppercase profile preview", () => {
   open();
+  fireEvent.click(
+    screen.getByRole("button", { name: "Let’s build my profile" }),
+  );
   expect(screen.getByLabelText("Your full name")).toHaveValue("vivek chavan");
-  expect(screen.getByText("VIVEK CHAVAN")).toBeInTheDocument();
+  expect(
+    screen.getByRole("heading", { name: "VIVEK CHAVAN" }),
+  ).toBeInTheDocument();
 });
 it("resumes the saved education step and keeps users on the step when saving fails", async () => {
   state.session.profile.onboarding.step = 2;
@@ -95,7 +103,51 @@ it("keeps discovery opt-in off and waits for persisted completion", async () => 
     ),
   );
   expect(await screen.findByRole("status")).toHaveTextContent(
-    "Opening your workspace",
+    "Preparing your welcome",
   );
   expect(screen.queryByText("Workspace ready")).toBeNull();
+});
+
+it("greets new students with a welcome illustration before collecting details", () => {
+  open();
+  expect(
+    screen.getByRole("heading", { name: /Welcome, VIVEK/ }),
+  ).toBeInTheDocument();
+  expect(
+    screen.getByRole("img", { name: /illustrated student profile/ }),
+  ).toBeInTheDocument();
+  expect(screen.queryByLabelText("Your full name")).toBeNull();
+});
+
+it("reveals the celebration only after a successful save and completed profile snapshot", async () => {
+  state.session.profile.onboarding.step = 4;
+  const view = open();
+  fireEvent.click(screen.getByRole("button", { name: /Complete setup/ }));
+  await screen.findByRole("status");
+  expect(
+    screen.queryByRole("heading", { name: "Your next chapter is ready." }),
+  ).toBeNull();
+  state.session = {
+    ...state.session,
+    profile: {
+      ...state.session.profile,
+      onboarding: { status: "completed", step: 4 },
+    },
+  };
+  view.rerender(
+    <MemoryRouter initialEntries={["/onboarding"]}>
+      <OnboardingGate>
+        <Routes>
+          <Route path="/onboarding" element={<Onboarding />} />
+          <Route path="/dashboard" element={<p>Workspace ready</p>} />
+        </Routes>
+      </OnboardingGate>
+    </MemoryRouter>,
+  );
+  expect(
+    await screen.findByRole("heading", { name: "Your next chapter is ready." }),
+  ).toBeInTheDocument();
+  expect(
+    screen.getByRole("link", { name: /Enter my workspace/ }),
+  ).toHaveAttribute("href", "/dashboard");
 });

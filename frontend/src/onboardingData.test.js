@@ -35,6 +35,9 @@ const user = {
 const draft = () => ({
   ...onboardingDraft(null, user),
   college: "Regional College",
+  city: "Pune",
+  program: "Computer Science",
+  bio: "I enjoy building accessible web applications.",
   degree: "MCA",
   graduationYear: "2027",
   skillsText: "React, React, Design",
@@ -167,4 +170,21 @@ it("can save an unfinished first step and resume without pretending setup is com
     name: "V",
     onboarding: { step: 1, status: "in-progress" },
   });
+});
+
+it("requires city, specialization, introduction and teammate interests before finishing", () => {
+  for (const [key, step] of [
+    ["city", 1],
+    ["program", 2],
+    ["bio", 3],
+  ]) {
+    expect(() => onboardingInput({ ...draft(), [key]: "" }, step)).toThrow();
+  }
+  expect(() =>
+    onboardingInput(
+      { ...draft(), preferences: { ...draft().preferences, seeking: [] } },
+      4,
+      true,
+    ),
+  ).toThrow("teammate");
 });
