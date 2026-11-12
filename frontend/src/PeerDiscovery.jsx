@@ -190,7 +190,12 @@ export function PeerDiscovery({
       fieldOfStudy,
     ]),
   ]
-    .filter(Boolean)
+    .filter(
+      (value) =>
+        value &&
+        !["OTHER", "UNKNOWN", "NONE", "N/A", "NOT SPECIFIED"].includes(value) &&
+        /\p{L}.*\p{L}/u.test(value),
+    )
     .sort((a, b) => studyFieldLabel(a).localeCompare(studyFieldLabel(b)));
   const update = (key, value) => setDraft((d) => ({ ...d, [key]: value }));
   return (

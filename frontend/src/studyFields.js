@@ -7,6 +7,9 @@ export const knownStudyFields = [
   "MECHANICAL ENGINEERING",
   "MASTER OF BUSINESS ADMINISTRATION",
   "DESIGN ENGINEERING",
+  "MASTER OF COMPUTER APPLICATIONS",
+  "ARTIFICIAL INTELLIGENCE AND MACHINE LEARNING",
+  "DATA SCIENCE",
 ];
 export function normalizeStudyField(value) {
   const field = String(value || "")
