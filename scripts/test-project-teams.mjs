@@ -50,6 +50,7 @@ const details = {
   domain: "Web Development",
   experience: "Beginner",
   college: "Example College",
+  degree: "MCA",
   year: "Second year",
   location: "Example City",
   photoUrl: "",
@@ -131,6 +132,7 @@ try {
   const maximumSkills = Array.from({ length: 20 }, (_, i) => "Skill " + i),
     maximumDetails = {
       ...details,
+      degree: "D".repeat(100),
       achievements: Array.from({ length: 6 }, (_, i) => "Achievement " + i),
       seeking: [
         "Hackathon Teammates",

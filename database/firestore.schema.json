@@ -338,6 +338,9 @@
               "pattern": "^(?:[\\p{L}\\p{M}][\\p{L}\\p{M}'’ .-]*|)$"
             }
           }
+        },
+        "teammateCard": {
+          "$ref": "#/$defs/teammateCard"
         }
       },
       "additionalProperties": false
@@ -1967,6 +1970,10 @@
               "Community Projects"
             ]
           }
+        },
+        "degree": {
+          "type": "string",
+          "maxLength": 100
         }
       },
       "additionalProperties": false
@@ -2431,6 +2438,48 @@
         }
       },
       "additionalProperties": false
+    },
+    "teammateCard": {
+      "type": "object",
+      "required": [
+        "photoUrl",
+        "achievements",
+        "passions"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "photoUrl": {
+          "type": "string",
+          "maxLength": 500,
+          "pattern": "^$|^https://(avatars[.]githubusercontent[.]com|lh3[.]googleusercontent[.]com)/.*$"
+        },
+        "achievements": {
+          "type": "array",
+          "maxItems": 6,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "maxLength": 60,
+            "minLength": 1,
+            "pattern": "^[^\\r\\n]+$"
+          }
+        },
+        "passions": {
+          "type": "array",
+          "uniqueItems": true,
+          "maxItems": 6,
+          "items": {
+            "enum": [
+              "AI Products",
+              "Hackathons",
+              "Open Source",
+              "Research",
+              "Entrepreneurship",
+              "Community Projects"
+            ]
+          }
+        }
+      }
     }
   }
 }

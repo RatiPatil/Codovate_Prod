@@ -3,7 +3,12 @@ import { Navigate, useLocation } from "react-router-dom";
 import { ArrowRight, CheckCircle2, Eye } from "lucide-react";
 import { useSession } from "./session";
 import { safeReturnPath } from "./authSupport";
-import { domains, experienceLevels, seekingOptions } from "./discoveryData";
+import {
+  domains,
+  experienceLevels,
+  seekingOptions,
+  passionOptions,
+} from "./discoveryData";
 import {
   fullNameFromParts,
   onboardingFieldErrors,
@@ -14,6 +19,7 @@ import {
   collaborationModes,
   needsOnboarding,
   onboardingDraft,
+  loadOnboardingCard,
   saveOnboarding,
   studyYears,
 } from "./onboardingData";
@@ -45,6 +51,8 @@ const fieldLabels = {
   "nameParts.first": "First name",
   "nameParts.middle": "Middle name",
   "nameParts.last": "Last name",
+  photoUrl: "Google or GitHub avatar link",
+  achievementsText: "Achievements",
   city: "City",
   mobile: "Mobile number",
   college: "College / institution",
@@ -139,6 +147,11 @@ export function Onboarding() {
   );
   const [step, setStep] = useState(resumeStep(profile, user));
   const [discoverable, setDiscoverable] = useState(false);
+  const [shareDetails, setShareDetails] = useState(false);
+  const [cardReady, setCardReady] = useState(!!profile?.teammateCard);
+  const [cardError, setCardError] = useState("");
+  const [cardRetry, setCardRetry] = useState(0);
+  const cardEdited = useRef(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -167,9 +180,43 @@ export function Onboarding() {
   }, [profile, user, createProfile]);
 
   useEffect(() => {
+    if (!user || !profile) return;
+    if (profile.teammateCard) {
+      setCardReady(true);
+      return;
+    }
+    let active = true;
+    setCardReady(false);
+    setCardError("");
+    loadOnboardingCard(user)
+      .then((card) => {
+        if (!active) return;
+        if (card && !cardEdited.current)
+          setDraft((current) => ({
+            ...current,
+            photoUrl: card.photoUrl,
+            achievementsText: card.achievements.join(", "),
+            passions: card.passions,
+          }));
+        setCardReady(true);
+      })
+      .catch(() => {
+        if (active)
+          setCardError(
+            "Your saved teammate details could not be loaded. Retry to keep your existing details intact.",
+          );
+      });
+    return () => {
+      active = false;
+    };
+  }, [user?.uid, !!profile, !!profile?.teammateCard, cardRetry]);
+
+  useEffect(() => {
     heading.current?.focus();
   }, [step, showWelcome]);
   function field(key, value) {
+    if (["photoUrl", "achievementsText", "passions"].includes(key))
+      cardEdited.current = true;
     setError("");
     setDraft((current) => {
       if (key.startsWith("nameParts.")) {
@@ -213,7 +260,7 @@ export function Onboarding() {
   }
   async function save(event, leave = false) {
     event?.preventDefault();
-    if (busy || waitingForProfile) return;
+    if (busy || waitingForProfile || (step >= 3 && !cardReady)) return;
     const errors = onboardingFieldErrors(draft, step, leave);
     setFieldErrors(errors);
     if (Object.keys(errors).length) {
@@ -221,6 +268,8 @@ export function Onboarding() {
       const first = document.querySelector(
         `[data-field="${Object.keys(errors)[0]}"]`,
       );
+      const folded = first?.closest("details");
+      if (folded) folded.open = true;
       first?.focus();
       return;
     }
@@ -232,6 +281,7 @@ export function Onboarding() {
         complete,
         partial: leave,
         discoverable,
+        shareDetails: discoverable && shareDetails,
       });
       if (leave) await logout();
       else if (complete) setWaitingForProfile(true);
@@ -255,6 +305,7 @@ export function Onboarding() {
         draft={draft}
         destination={safeReturnPath(location.state?.from)}
         discoverable={discoverable}
+        shareDetails={discoverable && shareDetails}
       />
     );
   if (profile && !needsOnboarding(profile) && !busy)
@@ -311,7 +362,7 @@ export function Onboarding() {
         ))}
       </ol>
       <div className="onboarding-toolbar">
-        <span>All profile fields are required</span>
+        <span>Core profile fields are required</span>
         <button
           type="button"
           className="text-link onboarding-preview-toggle"
@@ -343,8 +394,22 @@ export function Onboarding() {
           <h2 ref={heading} tabIndex={-1}>
             {steps[step - 1]}
           </h2>
+          {step >= 3 && !cardReady && (
+            <p role={cardError ? "alert" : "status"}>
+              {cardError || "Loading your saved teammate details…"}
+              {cardError && (
+                <button
+                  type="button"
+                  className="text-link"
+                  onClick={() => setCardRetry((value) => value + 1)}
+                >
+                  Retry loading details
+                </button>
+              )}
+            </p>
+          )}
           <fieldset
-            disabled={busy || waitingForProfile}
+            disabled={busy || waitingForProfile || (step >= 3 && !cardReady)}
             className="onboarding-fields"
           >
             {step === 1 && (
@@ -584,6 +649,51 @@ export function Onboarding() {
                   />
                   {inlineError("bio")}
                 </label>
+                <details className="onboarding-team-details">
+                  <summary>
+                    Your teammate card: photo, achievements & interests
+                  </summary>
+                  <p className="hint">
+                    These details stay private until you choose to share them.
+                    If you’re just starting, you can leave achievements blank.
+                  </p>
+                  <label>
+                    Google or GitHub avatar link
+                    <input
+                      {...inputProps("photoUrl")}
+                      type="url"
+                      maxLength={500}
+                      value={draft.photoUrl}
+                      placeholder="https://…"
+                      onChange={(event) =>
+                        field("photoUrl", event.target.value)
+                      }
+                    />
+                    {inlineError("photoUrl")}
+                  </label>
+                  <label>
+                    Achievements
+                    <input
+                      {...inputProps("achievementsText")}
+                      maxLength={365}
+                      value={draft.achievementsText}
+                      placeholder="SIH Participant, Research Publication"
+                      onChange={(event) =>
+                        field("achievementsText", event.target.value)
+                      }
+                    />
+                    {inlineError("achievementsText")}
+                  </label>
+                  <Choices
+                    label="Passionate about"
+                    options={passionOptions}
+                    value={draft.passions}
+                    fieldKey="passions"
+                    invalid={!!fieldErrors.passions}
+                    onChange={(value) => field("passions", value)}
+                  />
+                  {inlineError("passions")}
+                </details>
               </>
             )}
             {step === 4 && (
@@ -633,16 +743,29 @@ export function Onboarding() {
                   <input
                     type="checkbox"
                     checked={discoverable}
-                    onChange={(event) => setDiscoverable(event.target.checked)}
+                    onChange={(event) => {
+                      setDiscoverable(event.target.checked);
+                      if (!event.target.checked) setShareDetails(false);
+                    }}
                   />
                   Make my name and skills discoverable to other signed-in
                   members
                 </label>
+                <label className="onboarding-check">
+                  <input
+                    type="checkbox"
+                    checked={shareDetails}
+                    disabled={!discoverable || !cardReady}
+                    onChange={(event) => setShareDetails(event.target.checked)}
+                  />
+                  Also share my role, course, college, study year, city, photo,
+                  achievements and interests on my teammate card
+                </label>
                 <p className="hint">
                   You control visibility. Turn discovery on to share only your
-                  name and skills. Your contact information, résumé, education
-                  details and collaboration preferences stay private. You can
-                  manage discovery later in Find a team.
+                  name and skills. Education and teammate details appear only if
+                  you select the second option. Your email, phone and résumé
+                  stay private. Manage discovery later in Find a team.
                 </p>
               </>
             )}
@@ -660,7 +783,9 @@ export function Onboarding() {
               <button
                 className="button secondary"
                 type="button"
-                disabled={busy || waitingForProfile}
+                disabled={
+                  busy || waitingForProfile || (step >= 3 && !cardReady)
+                }
                 onClick={() => {
                   setError("");
                   setStep((current) => current - 1);
@@ -669,7 +794,10 @@ export function Onboarding() {
                 Back
               </button>
             )}
-            <button className="button" disabled={busy || waitingForProfile}>
+            <button
+              className="button"
+              disabled={busy || waitingForProfile || (step >= 3 && !cardReady)}
+            >
               {busy
                 ? "Saving…"
                 : step === 4
@@ -680,7 +808,7 @@ export function Onboarding() {
             <button
               className="text-link"
               type="button"
-              disabled={busy || waitingForProfile}
+              disabled={busy || waitingForProfile || (step >= 3 && !cardReady)}
               onClick={() => save(null, true)}
             >
               Save and sign out

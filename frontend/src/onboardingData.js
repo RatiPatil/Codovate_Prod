@@ -1,6 +1,11 @@
-import { doc, runTransaction, serverTimestamp } from "firebase/firestore";
+import {
+  doc,
+  getDoc,
+  runTransaction,
+  serverTimestamp,
+} from "firebase/firestore";
 import { db } from "./firebase";
-import { discoveryDetails } from "./discoveryData";
+import { discoveryDetails, approvedAvatar } from "./discoveryData";
 import { withTimeout } from "./authSupport";
 import { skillInputError } from "./domain";
 import {
@@ -28,8 +33,29 @@ export {
   needsOnboarding,
 };
 
+export async function loadOnboardingCard(user) {
+  if (!db || !user?.uid) return null;
+  const snapshot = await getDoc(doc(db, "discoveryPreferences", user.uid));
+  const d = snapshot.data()?.details;
+  return d
+    ? {
+        photoUrl: d.photoUrl || "",
+        achievements: d.achievements || [],
+        passions: d.passions || [],
+      }
+    : null;
+}
+
 export function onboardingDraft(profile, user) {
+  const card = profile?.teammateCard || {};
   return {
+    photoUrl: approvedAvatar(
+      Object.hasOwn(card, "photoUrl") ? card.photoUrl : user?.photoURL,
+    ),
+    achievementsText: Array.isArray(card.achievements)
+      ? card.achievements.join(", ")
+      : "",
+    passions: Array.isArray(card.passions) ? card.passions : [],
     name: profile?.name || user?.displayName || "",
     nameParts:
       profile?.nameParts || splitFullName(profile?.name || user?.displayName),
@@ -95,6 +121,18 @@ export function onboardingInput(raw, step, complete = false, partial = false) {
     !/^(20\d{2}|2100)$/.test(profile.graduationYear)
   )
     throw new Error("Enter a graduation year between 2000 and 2100.");
+  if (step >= 3) {
+    const card = discoveryDetails({
+      photoUrl: raw.photoUrl || "",
+      achievements: raw.achievementsText || "",
+      passions: raw.passions || [],
+    });
+    profile.teammateCard = {
+      photoUrl: card.photoUrl,
+      achievements: card.achievements,
+      passions: card.passions,
+    };
+  }
   const p = { ...emptyCareerPreferences, ...raw.preferences };
   const details = discoveryDetails({
     desiredRole: p.desiredRole,
@@ -181,7 +219,12 @@ export async function saveOnboarding(
   user,
   raw,
   step,
-  { complete = false, discoverable = false, partial = false } = {},
+  {
+    complete = false,
+    discoverable = false,
+    partial = false,
+    shareDetails = false,
+  } = {},
 ) {
   if (!db || !user?.uid) throw new Error("Sign in before saving your profile.");
   const values = onboardingInput(raw, step, complete, partial);
@@ -241,6 +284,8 @@ export async function saveOnboarding(
             domain: values.careerPreferences.domain,
             experience: values.careerPreferences.experience,
             college: values.college,
+            degree: values.degree,
+            ...values.teammateCard,
             year: values.careerPreferences.yearOfStudy,
             location: values.city,
             seeking: values.careerPreferences.seeking,
@@ -248,7 +293,7 @@ export async function saveOnboarding(
           tx.set(preferenceRef, {
             uid: user.uid,
             details,
-            shareDetails: false,
+            shareDetails: !!(discoverable && shareDetails),
             updatedAt,
           });
           if (discoverable)
@@ -256,6 +301,7 @@ export async function saveOnboarding(
               uid: user.uid,
               name: values.name,
               skills: values.skills,
+              ...(shareDetails ? { details } : {}),
               updatedAt,
             });
           else if (member?.exists()) tx.delete(memberRef);

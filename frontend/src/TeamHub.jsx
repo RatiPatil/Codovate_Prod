@@ -203,6 +203,8 @@ export function TeamHub() {
           profile={profile}
           people={people}
           connections={connections}
+          connectionsReady={!sent.loading && !received.loading && !sent.error && !received.error}
+          connectionsError={sent.error || received.error}
           myPublic={myPublic}
           act={act}
           busy={busy}

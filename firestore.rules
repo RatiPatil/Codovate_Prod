@@ -85,12 +85,19 @@ service cloud.firestore {
     && (!changed.hasAny(['importSource']) || text(d.get('importSource',''),100))
     && (!changed.hasAny(['skillSuggestionsSource']) || text(d.get('skillSuggestionsSource',''),100));
   }
+  function validTeammateCard(c) {
+   return c is map && c.keys().hasOnly(['photoUrl','achievements','passions'])
+    && text(c.photoUrl,500) && (c.photoUrl=='' || c.photoUrl.matches('https://(avatars[.]githubusercontent[.]com|lh3[.]googleusercontent[.]com)/.*'))
+    && validSkills(c.achievements) && c.achievements.size()<=6
+    && c.passions is list && c.passions.size()<=6 && c.passions.toSet().size()==c.passions.size()
+    && c.passions.hasOnly(['AI Products','Hackathons','Open Source','Research','Entrepreneurship','Community Projects']);
+  }
   function validProfile(d) {
    // New documents have a strict shape. Legacy unknown fields may remain, but cannot change.
    // Every changed supported field is validated; required fields must exist after the update.
    let changed = request.method=='update' ? d.diff(resource.data).affectedKeys() : d.keys().toSet();
    return d.keys().hasAll(['name','email','college','degree','graduationYear','city','bio','skills','portfolio','resumePath','createdAt','updatedAt'])
-    && (request.method=='update' ? changed : d.keys().toSet()).hasOnly(['name','email','college','degree','graduationYear','city','bio','skills','portfolio','resumePath','resumeUrl','mobile','taluka','program','suggestedSkills','skillSuggestionsSource','onboarding','careerPreferences','nameParts','discoveryEnabled','accountStatus','mobileVerified','importSource','createdAt','updatedAt'])
+    && (request.method=='update' ? changed : d.keys().toSet()).hasOnly(['name','email','college','degree','graduationYear','city','bio','skills','portfolio','resumePath','resumeUrl','mobile','taluka','program','suggestedSkills','skillSuggestionsSource','onboarding','careerPreferences','nameParts','teammateCard','discoveryEnabled','accountStatus','mobileVerified','importSource','createdAt','updatedAt'])
     && (!changed.hasAny(['name']) || text(d.name,100))
     && (!changed.hasAny(['email']) || text(d.email,320))
     && (!changed.hasAny(['college']) || text(d.college,180))
@@ -104,6 +111,7 @@ service cloud.firestore {
     && (!changed.hasAny(['resumePath']) || d.resumePath=='' || d.resumePath=='resumes/'+request.auth.uid+'/resume.pdf')
     && (!changed.hasAny(['resumeUrl','mobile','taluka','suggestedSkills','discoveryEnabled','mobileVerified','accountStatus','importSource','skillSuggestionsSource']) || validProfileExtras(d,changed))
     && (!changed.hasAny(['nameParts']) || !d.keys().hasAny(['nameParts']) || validNameParts(d.nameParts))
+    && (!changed.hasAny(['teammateCard']) || !d.keys().hasAny(['teammateCard']) || validTeammateCard(d.teammateCard))
     && (!changed.hasAny(['careerPreferences']) || !d.keys().hasAny(['careerPreferences']) || validCareerPreferences(d.careerPreferences))
     && (!d.keys().hasAny(['onboarding']) || (changed.hasAny(['onboarding']) ? validOnboarding(d) : (d.onboarding.status!='completed' || onboardingCompleteProfile(d))))
     && d.createdAt is timestamp && d.updatedAt is timestamp;
@@ -469,8 +477,8 @@ service cloud.firestore {
   }
   function validDiscoveryDetails(d) {
    return d is map && d.keys().hasAll(['desiredRole','domain','experience','college','year','location','photoUrl','achievements','seeking','passions'])
-    && d.keys().hasOnly(['desiredRole','domain','experience','college','year','location','photoUrl','achievements','seeking','passions'])
-    && text(d.desiredRole,100) && text(d.college,180) && text(d.year,40) && text(d.location,100)
+    && d.keys().hasOnly(['desiredRole','domain','experience','college','degree','year','location','photoUrl','achievements','seeking','passions'])
+    && text(d.desiredRole,100) && text(d.college,180) && text(d.get('degree',''),100) && text(d.year,40) && text(d.location,100)
     && d.domain in ['','Web Development','AI/ML','Data Science','Cyber Security','Startups','Research','Hackathons','Other']
     && d.experience in ['','Beginner','Intermediate','Advanced']
     && text(d.photoUrl,500) && (d.photoUrl=='' || d.photoUrl.matches('https://(avatars[.]githubusercontent[.]com|lh3[.]googleusercontent[.]com)/.*'))
@@ -516,7 +524,7 @@ service cloud.firestore {
     && request.resource.data.skills == getAfter(/databases/$(database)/documents/users/$(uid)).data.skills;
    allow delete: if own(uid);
   }
-  function connectionParty(d) { return signedIn() && request.auth.uid in [d.fromId,d.toId]; }
+  function connectionParty(d) { return signedIn() && (d.fromId==request.auth.uid || d.toId==request.auth.uid); }
   function acceptedConnection(id) {
    return exists(/databases/$(database)/documents/connections/$(id))
     && get(/databases/$(database)/documents/connections/$(id)).data.status == 'accepted'

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   ArrowRight,
@@ -8,9 +8,16 @@ import {
   Sparkles,
   Users,
 } from "lucide-react";
+import { approvedAvatar } from "./discoveryData";
 import { normalizeName } from "./profileNames";
 
 export function StudentPreview({ draft, complete = false }) {
+  const [failedPhoto, setFailedPhoto] = useState("");
+  const photo = approvedAvatar(draft.photoUrl);
+  const achievements = String(draft.achievementsText || "")
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean);
   const skills = [
     ...new Set(
       draft.skillsText
@@ -31,12 +38,22 @@ export function StudentPreview({ draft, complete = false }) {
         </span>
       </div>
       <div className="onboarding-avatar" aria-hidden="true">
-        {normalizeName(draft.name)
-          .split(" ")
-          .filter(Boolean)
-          .map((part) => part[0])
-          .slice(0, 2)
-          .join("") || "CV"}
+        {photo && photo !== failedPhoto ? (
+          <img
+            className="onboarding-card-photo"
+            src={photo}
+            alt=""
+            referrerPolicy="no-referrer"
+            onError={() => setFailedPhoto(photo)}
+          />
+        ) : (
+          normalizeName(draft.name)
+            .split(" ")
+            .filter(Boolean)
+            .map((part) => part[0])
+            .slice(0, 2)
+            .join("") || "CV"
+        )}
       </div>
       <h2>{normalizeName(draft.name) || "YOUR FULL NAME"}</h2>
       <p className="onboarding-role">
@@ -44,7 +61,7 @@ export function StudentPreview({ draft, complete = false }) {
       </p>
       <p className="onboarding-card-line">
         <GraduationCap size={16} aria-hidden="true" />
-        {[draft.college, draft.preferences.yearOfStudy]
+        {[draft.degree, draft.college, draft.preferences.yearOfStudy]
           .filter(Boolean)
           .join(" · ") || "Your college & study year"}
       </p>
@@ -80,6 +97,26 @@ export function StudentPreview({ draft, complete = false }) {
           <div className="onboarding-tags">
             {draft.preferences.seeking.map((item) => (
               <span key={item}>{item}</span>
+            ))}
+          </div>
+        </div>
+      )}
+      {achievements.length > 0 && (
+        <div className="onboarding-card-section">
+          <h3>Achievements</h3>
+          <div className="onboarding-tags">
+            {achievements.map((value) => (
+              <span key={value}>{value}</span>
+            ))}
+          </div>
+        </div>
+      )}
+      {draft.passions?.length > 0 && (
+        <div className="onboarding-card-section">
+          <h3>Passionate about</h3>
+          <div className="onboarding-tags">
+            {draft.passions.map((value) => (
+              <span key={value}>{value}</span>
             ))}
           </div>
         </div>
@@ -149,7 +186,12 @@ export function OnboardingWelcome({ name, onStart }) {
   );
 }
 
-export function OnboardingSuccess({ draft, destination, discoverable }) {
+export function OnboardingSuccess({
+  draft,
+  destination,
+  discoverable,
+  shareDetails,
+}) {
   const title = useRef(null);
   useEffect(() => {
     title.current?.focus();
@@ -195,7 +237,9 @@ export function OnboardingSuccess({ draft, destination, discoverable }) {
       <StudentPreview draft={draft} complete />
       <p className="hint">
         {discoverable
-          ? "Your name and skills are discoverable. Your other details remain private."
+          ? shareDetails
+            ? "Your teammate card is discoverable with the details you chose to share. Your email, phone and résumé stay private."
+            : "Your name and skills are discoverable. Your other details remain private."
           : "Your profile is private. You can turn on teammate discovery in Find a team."}
       </p>
       <Link className="button" to={destination} replace>

@@ -16,6 +16,7 @@ vi.mock("./session", () => ({ useSession: () => state.session }));
 vi.mock("./onboardingData", async (importOriginal) => ({
   ...(await importOriginal()),
   saveOnboarding: state.save,
+  loadOnboardingCard: vi.fn().mockResolvedValue(null),
 }));
 import { Onboarding, OnboardingGate, saveFailureMessage } from "./Onboarding";
 import { initialOnboarding } from "./onboardingContract";
@@ -122,13 +123,23 @@ it("keeps discovery opt-in off and waits for persisted completion", async () => 
     name: /Make my name and skills discoverable/,
   });
   expect(checkbox).not.toBeChecked();
+  await waitFor(() =>
+    expect(
+      screen.getByRole("button", { name: /Complete setup/ }),
+    ).toBeEnabled(),
+  );
   fireEvent.click(screen.getByRole("button", { name: /Complete setup/ }));
   await waitFor(() =>
     expect(state.save).toHaveBeenCalledWith(
       state.session.user,
       expect.any(Object),
       4,
-      { complete: true, partial: false, discoverable: false },
+      {
+        complete: true,
+        partial: false,
+        discoverable: false,
+        shareDetails: false,
+      },
     ),
   );
   expect(await screen.findByRole("status")).toHaveTextContent(
@@ -151,6 +162,11 @@ it("greets new students with a welcome illustration before collecting details", 
 it("reveals the celebration only after a successful save and completed profile snapshot", async () => {
   state.session.profile.onboarding.step = 4;
   const view = open();
+  await waitFor(() =>
+    expect(
+      screen.getByRole("button", { name: /Complete setup/ }),
+    ).toBeEnabled(),
+  );
   fireEvent.click(screen.getByRole("button", { name: /Complete setup/ }));
   await screen.findByRole("status");
   expect(
@@ -255,5 +271,44 @@ it("includes the denied operation in the support code without exposing user data
   );
   expect(saveFailureMessage("permission-denied", "WRITE_PROFILE")).toContain(
     "PROFILE_ACCESS_WRITE_PROFILE",
+  );
+});
+
+it("adds teammate details to onboarding and requires explicit expanded sharing", async () => {
+  state.session.profile.onboarding.step = 3;
+  open();
+  await waitFor(() =>
+    expect(
+      screen.getByRole("button", { name: /Save and continue/ }),
+    ).toBeEnabled(),
+  );
+  fireEvent.click(
+    screen.getByText("Your teammate card: photo, achievements & interests"),
+  );
+  fireEvent.change(screen.getByLabelText("Achievements"), {
+    target: { value: "SIH Participant" },
+  });
+  fireEvent.click(screen.getByLabelText("Open Source", { exact: true }));
+  fireEvent.click(screen.getByRole("button", { name: /Save and continue/ }));
+  await screen.findByRole("heading", { name: "Collaboration", exact: true });
+  const sharing = screen.getByRole("checkbox", { name: /Also share my role/ });
+  expect(sharing).toBeDisabled();
+  fireEvent.click(
+    screen.getByRole("checkbox", {
+      name: /Make my name and skills discoverable/,
+    }),
+  );
+  fireEvent.click(sharing);
+  fireEvent.click(screen.getByRole("button", { name: /Complete setup/ }));
+  await waitFor(() =>
+    expect(state.save).toHaveBeenLastCalledWith(
+      state.session.user,
+      expect.objectContaining({
+        achievementsText: "SIH Participant",
+        passions: ["Open Source"],
+      }),
+      4,
+      expect.objectContaining({ discoverable: true, shareDetails: true }),
+    ),
   );
 });

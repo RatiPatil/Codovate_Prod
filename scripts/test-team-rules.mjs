@@ -224,6 +224,12 @@ try {
     "connection invitation created",
     assertSucceeds(setDoc(doc(a, "connections", cid), connection)),
   );
+  await pass("sender can query their own sent requests",assertSucceeds(getDocs(query(collection(a,"connections"),where("fromId","==","team-a")))).then(snapshot=>{if(!snapshot.docs.some(doc=>doc.id===cid))throw new Error("Sent request missing from query");}));
+  await pass("recipient can query their incoming requests",assertSucceeds(getDocs(query(collection(b,"connections"),where("toId","==","team-b")))).then(snapshot=>{if(!snapshot.docs.some(doc=>doc.id===cid))throw new Error("Incoming request missing from query");}));
+  await pass("other members cannot query another sender's requests",assertFails(getDocs(query(collection(c,"connections"),where("fromId","==","team-a")))));
+  await pass("unfiltered private request queries are denied",assertFails(getDocs(collection(c,"connections"))));
+  await pass("administrators cannot query private student requests",assertFails(getDocs(query(collection(admin,"connections"),where("fromId","==","team-a")))));
+
   await pass(
     "reverse duplicate invitation rejected",
     assertFails(

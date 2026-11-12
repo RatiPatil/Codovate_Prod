@@ -137,3 +137,98 @@ it("restoring a dismissed profile updates state without replacing its original t
   );
   expect(fake.set).not.toHaveBeenCalled();
 });
+
+it("scores shared profile evidence, including a genuine 95 percent match", async () => {
+  const { profileMatch } = await import("./discoveryData");
+  const mine = {
+    skills: ["React"],
+    details: {
+      domain: "AI/ML",
+      passions: ["Open Source"],
+      seeking: ["Project Collaborators"],
+      college: "Example College",
+      year: "Final year",
+      experience: "Beginner",
+    },
+  };
+  const other = {
+    skills: ["React"],
+    details: { ...mine.details, year: "Third year" },
+  };
+  expect(profileMatch(mine, other)).toEqual({
+    score: 95,
+    labels: ["AI/ML Match"],
+  });
+  expect(profileMatch({}, {}).score).toBe(0);
+  expect(profileMatch({ skills: ["React"] }, { skills: ["React"] }).score).toBe(
+    30,
+  );
+});
+it("uses exact canonical skills and combines comma-separated filters", () => {
+  const items = [
+    {
+      uid: "js",
+      name: "JS Student",
+      skills: ["JavaScript", "React.js"],
+      details: {},
+    },
+    {
+      uid: "java",
+      name: "Java Student",
+      skills: ["Java", "Python"],
+      details: {},
+    },
+    {
+      uid: "ml",
+      name: "ML Student",
+      skills: ["Machine Learning", "Python"],
+      details: { college: "Regional College" },
+    },
+  ];
+  expect(
+    discoverPeers(items, { uid: "me", skill: "Java" }).map((p) => p.uid),
+  ).toEqual(["java"]);
+  expect(
+    discoverPeers(items, { uid: "me", skill: "ML, Python" }).map((p) => p.uid),
+  ).toEqual(["ml"]);
+  expect(
+    discoverPeers(items, { uid: "me", skill: "React" }).map((p) => p.uid),
+  ).toEqual(["js"]);
+  expect(
+    discoverPeers(items, { uid: "me", search: "Regional College" }).map(
+      (p) => p.uid,
+    ),
+  ).toEqual(["ml"]);
+});
+it("prefills discovery from onboarding while respecting explicitly cleared saved values", async () => {
+  const { discoveryDraft } = await import("./discoveryData");
+  const profile = {
+    college: "Regional College",
+    degree: "MCA",
+    city: "Solapur",
+    careerPreferences: {
+      desiredRole: "AI Engineer",
+      domain: "AI/ML",
+      yearOfStudy: "Final year",
+      seeking: ["Project Collaborators"],
+    },
+    teammateCard: {
+      photoUrl: "",
+      achievements: ["SIH Participant"],
+      passions: ["Open Source"],
+    },
+  };
+  expect(discoveryDraft(profile, {}, null)).toMatchObject({
+    desiredRole: "AI Engineer",
+    degree: "MCA",
+    college: "Regional College",
+    achievements: ["SIH Participant"],
+    passions: ["Open Source"],
+  });
+  expect(
+    discoveryDraft(profile, {}, { ...emptyDetails, desiredRole: "" }),
+  ).toMatchObject({ desiredRole: "", degree: "" });
+  expect(
+    discoveryDraft(profile, {}, { desiredRole: "Researcher" }).degree,
+  ).toBe("MCA");
+});

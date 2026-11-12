@@ -1,8 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "./firebase";
 import { useTeamFeed, connectMember } from "./teamHubData";
 import {
+  approvedAvatar,
+  discoveryDraft,
   domains,
   experienceLevels,
   seekingOptions,
@@ -12,11 +14,38 @@ import {
   dismissPeer,
   discoverPeers,
 } from "./discoveryData";
+function PeerAvatar({ name, photoUrl }) {
+  const [failed, setFailed] = useState("");
+  const url = approvedAvatar(photoUrl);
+  return url && failed !== url ? (
+    <img
+      src={url}
+      referrerPolicy="no-referrer"
+      alt={`${name} profile photo`}
+      loading="lazy"
+      width={64}
+      height={64}
+      onError={() => setFailed(url)}
+    />
+  ) : (
+    <div className="hub-avatar" aria-hidden="true">
+      {String(name || "Student")
+        .split(" ")
+        .filter(Boolean)
+        .map((v) => v[0])
+        .slice(0, 2)
+        .join("")
+        .toUpperCase()}
+    </div>
+  );
+}
 export function PeerDiscovery({
   user,
   profile,
   people,
   connections,
+  connectionsReady = true,
+  connectionsError = "",
   myPublic,
   act,
   busy,
@@ -33,6 +62,7 @@ export function PeerDiscovery({
     [saved, setSaved] = useState(emptyDetails),
     [prefError, setPrefError] = useState(""),
     [prefReady, setPrefReady] = useState(false);
+  const savedSignature = useRef("");
   const dismissed = useTeamFeed(
     "discoveryDismissals/" + user.uid + "/members",
     user.uid,
@@ -40,6 +70,8 @@ export function PeerDiscovery({
     1000,
   );
   useEffect(() => {
+    setPrefReady(false);
+    savedSignature.current = "";
     if (!db) return;
     return onSnapshot(
       doc(db, "discoveryPreferences", user.uid),
@@ -50,10 +82,15 @@ export function PeerDiscovery({
           return;
         }
         setPrefReady(true);
-        const d = s.data()?.details || emptyDetails;
-        setDraft({ ...emptyDetails, ...d });
-        setSaved(d);
-        setShare(s.data()?.shareDetails || false);
+        const d = discoveryDraft(profile, user, s.data()?.details);
+        const shared = !!s.data()?.shareDetails;
+        const signature = JSON.stringify([d, shared]);
+        if (signature !== savedSignature.current) {
+          savedSignature.current = signature;
+          setDraft(d);
+          setSaved(d);
+          setShare(shared);
+        }
         setPrefError("");
       },
       () => {
@@ -98,6 +135,7 @@ export function PeerDiscovery({
           {[
             ["desiredRole", "Desired role", 100],
             ["college", "College", 180],
+            ["degree", "Course / degree", 100],
             ["year", "Year of study", 40],
             ["location", "Location", 100],
             ["photoUrl", "Google or GitHub avatar link", 500],
@@ -189,8 +227,8 @@ export function PeerDiscovery({
       </details>
       {suggested && (
         <p>
-          These teammates are suggested from your skills and saved goals. Each
-          card explains its matches; no percentage score is invented.
+          These teammates are recommended based on your skills, career goals,
+          and experience level.
         </p>
       )}
       <div className="discovery-filters">
@@ -208,12 +246,16 @@ export function PeerDiscovery({
           <input
             value={skill}
             onChange={(e) => setSkill(e.target.value)}
-            placeholder="React, Java, Python…"
+            placeholder="React, Java, Python, ML"
           />
         </label>
         <label>
           Domain / goal
-          <select value={domain} onChange={(e) => setDomain(e.target.value)}>
+          <select
+            aria-label="Filter by domain or goal"
+            value={domain}
+            onChange={(e) => setDomain(e.target.value)}
+          >
             <option value="">All domains</option>
             {domains.map((v) => (
               <option key={v}>{v}</option>
@@ -223,6 +265,7 @@ export function PeerDiscovery({
         <label>
           Experience level
           <select
+            aria-label="Filter by experience level"
             value={experience}
             onChange={(e) => setExperience(e.target.value)}
           >
@@ -233,18 +276,39 @@ export function PeerDiscovery({
           </select>
         </label>
       </div>
-      {(people.error || dismissed.error) && (
+      {(search || skill || domain || experience) && (
+        <button
+          className="text-link"
+          onClick={() => {
+            setSearch("");
+            setSkill("");
+            setDomain("");
+            setExperience("");
+          }}
+        >
+          Clear filters
+        </button>
+      )}
+      <p className="hint">
+        Separate skills with commas to match every listed skill. Match scores
+        reflect shared profile details; missing details earn no points.
+      </p>
+      {(people.error ||
+        dismissed.error ||
+        connectionsError ||
+        (suggested && prefError)) && (
         <p role="alert" className="hub-error">
-          {people.error || dismissed.error}
+          {people.error || dismissed.error || connectionsError || prefError}
         </p>
       )}
-      {(people.loading || dismissed.loading) && (
+      {(people.loading || dismissed.loading || (suggested && !prefReady)) && (
         <p role="status">Loading discovery…</p>
       )}
       {!people.loading &&
         !dismissed.loading &&
         !people.error &&
         !dismissed.error &&
+        (!suggested || prefReady) &&
         !items.length && (
           <section className="panel">
             <h3>No teammates found matching your criteria.</h3>
@@ -257,6 +321,8 @@ export function PeerDiscovery({
         )}
       <div className="hub-people">
         {!dismissed.error &&
+          !dismissed.loading &&
+          (!suggested || prefReady) &&
           items.map((p) => {
             const d = p.details || {},
               relation = connections.find((c) =>
@@ -264,37 +330,29 @@ export function PeerDiscovery({
               );
             return (
               <article className="panel peer-card" key={p.uid}>
-                {d.photoUrl ? (
-                  <img
-                    src={d.photoUrl}
-                    referrerPolicy="no-referrer"
-                    alt=""
-                    loading="lazy"
-                    onError={(e) => {
-                      e.currentTarget.hidden = true;
-                    }}
-                  />
-                ) : (
-                  <div className="hub-avatar" aria-hidden="true">
-                    {p.name.slice(0, 1)}
-                  </div>
-                )}
+                <PeerAvatar name={p.name} photoUrl={d.photoUrl} />
                 <h3>{p.name}</h3>
                 <p className="peer-role">
                   {d.desiredRole || "Student collaborator"}
                 </p>
-                {(d.college || d.year) && (
-                  <p>{[d.college, d.year].filter(Boolean).join(" • ")}</p>
+                {(d.degree || d.college || d.year) && (
+                  <p>
+                    {[d.degree, d.college, d.year].filter(Boolean).join(" • ")}
+                  </p>
                 )}
                 {d.location && <p>{d.location}</p>}
+                <h4>Skills</h4>
                 <div className="skill-row">
-                  {p.skills.map((v) => (
+                  {(p.skills || []).map((v) => (
                     <span key={v}>{v}</span>
                   ))}
                 </div>
                 {suggested && (
                   <div className="skill-row">
-                    {p.reasons.map((v) => (
+                    <span title="Shared-profile similarity: skills 30%, domain 20%, interests 15%, collaboration goals 10%, college 10%, year 5%, experience 10%">
+                      {p.match.score}% Match
+                    </span>
+                    {[...p.reasons, ...p.match.labels].map((v) => (
                       <span key={v}>{v}</span>
                     ))}
                   </div>
@@ -333,7 +391,7 @@ export function PeerDiscovery({
                   ) : (
                     <button
                       className="button"
-                      disabled={busy || !myPublic}
+                      disabled={busy || !myPublic || !connectionsReady}
                       onClick={() =>
                         act(
                           () => connectMember(user.uid, p.uid),

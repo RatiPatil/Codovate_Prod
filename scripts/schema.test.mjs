@@ -248,3 +248,9 @@ test("accepts private structured name drafts and rejects invalid name fields", (
   assert.equal(validateDocument("users",user.id,{...user.data,nameParts:{first:"VIVEK",middle:"",last:""}}).valid,true);
   for (const bad of [{...nameParts,first:"VIVEK1"},{...nameParts,middle:"---"},{...nameParts,admin:true},{first:"VIVEK",last:"CHAVAN"}]) assert.equal(validateDocument("users",user.id,{...user.data,nameParts:bad}).valid,false);
 });
+
+test("teammate card data is bounded and excludes private contact details",()=>{
+ const teammateCard={photoUrl:"https://avatars.githubusercontent.com/u/123",achievements:["SIH Participant"],passions:["Open Source"]};
+ assert.equal(validateDocument("users",user.id,{...user.data,teammateCard}).valid,true);
+ for(const bad of [{...teammateCard,mobile:"9999999999"},{...teammateCard,photoUrl:"https://example.com/tracker"},{...teammateCard,passions:["Unknown"]}]) assert.equal(validateDocument("users",user.id,{...user.data,teammateCard:bad}).valid,false);
+});

@@ -2003,6 +2003,13 @@ try {
   await check('older phone-only account can initialize an empty email safely',assertSucceeds(updateDoc(oldPhoneRef,{...oldIdentity,email:'',college:'',degree:'',graduationYear:'',bio:'',skills:[],portfolio:'',resumePath:'',createdAt:serverTimestamp(),onboarding:{...oldIdentity.onboarding,startedAt:serverTimestamp()}})));
   await check('phone-only account cannot claim an unverified email',assertFails(updateDoc(oldPhoneRef,{email:'forged@example.com',updatedAt:serverTimestamp()})));
 
+  const teammateCard={photoUrl:'https://avatars.githubusercontent.com/u/123',achievements:['SIH Participant'],passions:['Open Source']};
+  await check('owner can save private teammate card details',assertSucceeds(updateDoc(oldRef,{teammateCard,updatedAt:serverTimestamp()})));
+  await check('other students cannot read private teammate card',assertFails(getDoc(doc(bob.firestore(),'users','legacy-extra'))));
+  for(const invalid of [{...teammateCard,email:'private@example.com'},{...teammateCard,photoUrl:'https://example.com/tracker'},{...teammateCard,passions:['Unlisted interest']},{...teammateCard,achievements:Array.from({length:7},(_,i)=>'Achievement '+i)}]) {
+    await check('private teammate card rejects invalid or contact fields',assertFails(updateDoc(oldRef,{teammateCard:invalid,updatedAt:serverTimestamp()})));
+  }
+
   console.log(`${checks} Firebase security checks passed.`);
 } finally {
   await env.cleanup();

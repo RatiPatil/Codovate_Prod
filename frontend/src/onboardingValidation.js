@@ -1,4 +1,10 @@
-import { domains, experienceLevels, seekingOptions } from "./discoveryData";
+import {
+  domains,
+  experienceLevels,
+  seekingOptions,
+  passionOptions,
+  approvedAvatar,
+} from "./discoveryData";
 import {
   careerGoals,
   studyYears,
@@ -93,6 +99,27 @@ export function onboardingFieldErrors(raw, step, partial = false) {
       errors["preferences.yearOfStudy"] = "Choose your study stage.";
   }
   if (step >= 3) {
+    if (raw.photoUrl && !approvedAvatar(raw.photoUrl))
+      errors.photoUrl =
+        "Use a valid Google or GitHub avatar link, or leave it blank to use initials.";
+    const achievements = String(raw.achievementsText || "")
+      .split(",")
+      .map((value) => value.trim())
+      .filter(Boolean);
+    if (
+      achievements.length > 6 ||
+      achievements.some((value) => value.length > 60 || /[\r\n]/.test(value))
+    )
+      errors.achievementsText =
+        "Add up to six achievements of 1–60 characters, separated by commas.";
+    if (
+      raw.passions &&
+      (!Array.isArray(raw.passions) ||
+        raw.passions.length > 6 ||
+        new Set(raw.passions).size !== raw.passions.length ||
+        raw.passions.some((value) => !passionOptions.includes(value)))
+    )
+      errors.passions = "Choose passions from the listed options.";
     const role = String(raw.preferences?.desiredRole || "").trim();
     if (
       (!partial || role) &&

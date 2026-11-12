@@ -350,3 +350,44 @@ it("tags denied commits with a safe stage code while keeping the Firebase error 
     onboardingStage: "WRITE_PROFILE",
   });
 });
+
+it("keeps teammate details private unless expanded sharing is explicitly selected", async () => {
+  const raw = {
+    ...draft(),
+    photoUrl: "https://avatars.githubusercontent.com/u/123",
+    achievementsText: "SIH Participant, Research Publication",
+    passions: ["Open Source"],
+  };
+  await saveOnboarding(user, raw, 4, { complete: true, discoverable: true });
+  const privateProfile = state.update.mock.calls[0][1];
+  expect(privateProfile.teammateCard).toMatchObject({
+    achievements: ["SIH Participant", "Research Publication"],
+    passions: ["Open Source"],
+  });
+  expect(
+    state.set.mock.calls.find(
+      ([ref]) => ref.collection === "memberProfiles",
+    )[1],
+  ).not.toHaveProperty("details");
+  vi.clearAllMocks();
+  await saveOnboarding(user, raw, 4, {
+    complete: true,
+    discoverable: true,
+    shareDetails: true,
+  });
+  const publicCard = state.set.mock.calls.find(
+    ([ref]) => ref.collection === "memberProfiles",
+  )[1];
+  expect(publicCard.details).toMatchObject({
+    degree: "MCA",
+    achievements: ["SIH Participant", "Research Publication"],
+    passions: ["Open Source"],
+  });
+  expect(publicCard).not.toHaveProperty("email");
+  expect(publicCard).not.toHaveProperty("mobile");
+  expect(
+    state.set.mock.calls.find(
+      ([ref]) => ref.collection === "discoveryPreferences",
+    )[1].shareDetails,
+  ).toBe(true);
+});

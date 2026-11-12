@@ -31,6 +31,7 @@ export const emptyDetails = {
   domain: "",
   experience: "",
   college: "",
+  degree: "",
   year: "",
   location: "",
   photoUrl: "",
@@ -38,11 +39,50 @@ export const emptyDetails = {
   seeking: [],
   passions: [],
 };
+export function approvedAvatar(value) {
+  try {
+    const url = new URL(String(value || ""));
+    return url.protocol === "https:" &&
+      !url.username &&
+      !url.password &&
+      !url.port &&
+      ["avatars.githubusercontent.com", "lh3.googleusercontent.com"].includes(
+        url.hostname,
+      ) &&
+      url.href.length <= 500
+      ? url.href
+      : "";
+  } catch {
+    return "";
+  }
+}
+export function discoveryDraft(profile, user, saved) {
+  const p = profile?.careerPreferences || {},
+    card = profile?.teammateCard || {};
+  return {
+    ...emptyDetails,
+    desiredRole: p.desiredRole || "",
+    domain: p.domain || "",
+    experience: p.experience || "",
+    college: profile?.college || "",
+    degree: profile?.degree || "",
+    year: p.yearOfStudy || "",
+    location: profile?.city || "",
+    seeking: p.seeking || [],
+    photoUrl: approvedAvatar(
+      Object.hasOwn(card, "photoUrl") ? card.photoUrl : user?.photoURL,
+    ),
+    achievements: card.achievements || [],
+    passions: card.passions || [],
+    ...saved,
+  };
+}
 export function discoveryDetails(raw) {
   const d = { ...emptyDetails, ...raw };
   for (const [key, max] of Object.entries({
     desiredRole: 100,
     college: 180,
+    degree: 100,
     year: 40,
     location: 100,
     photoUrl: 500,
@@ -73,19 +113,12 @@ export function discoveryDetails(raw) {
   )
     throw new Error("Choose the listed collaboration goals and interests.");
   if (d.photoUrl) {
-    const u = new URL(d.photoUrl);
-    if (
-      u.protocol !== "https:" ||
-      u.username ||
-      u.password ||
-      !["avatars.githubusercontent.com", "lh3.googleusercontent.com"].includes(
-        u.hostname,
-      )
-    )
+    const photo = approvedAvatar(d.photoUrl);
+    if (!photo)
       throw new Error(
         "Use a Google or GitHub avatar link, or leave the photo blank.",
       );
-    d.photoUrl = u.href;
+    d.photoUrl = photo;
   }
   return Object.fromEntries(
     Object.keys(emptyDetails).map((key) => [key, d[key]]),
@@ -133,10 +166,10 @@ const normalized = (v) =>
 export function matchReasons(mine, other) {
   const a = mine?.details || {},
     b = other?.details || {},
-    skills = new Set((mine?.skills || []).map(normalized)),
+    skills = new Set((mine?.skills || []).map(canonicalSkill)),
     shared = [
       ...new Set(
-        (other.skills || []).map(normalized).filter((v) => skills.has(v)),
+        (other.skills || []).map(canonicalSkill).filter((v) => skills.has(v)),
       ),
     ],
     reasons = [];
@@ -157,6 +190,53 @@ export function matchReasons(mine, other) {
     reasons.push("Similar experience level");
   return reasons;
 }
+const canonicalSkill = (value) => {
+  const key = normalized(value).replace(/[.\s_-]/g, "");
+  return (
+    {
+      reactjs: "react",
+      js: "javascript",
+      machinelearning: "ml",
+      artificialintelligence: "ai",
+      python3: "python",
+      node: "nodejs",
+    }[key] || key
+  );
+};
+export function profileMatch(mine, other) {
+  const a = mine?.details || {},
+    b = other?.details || {};
+  const mineSkills = new Set((mine?.skills || []).map(canonicalSkill));
+  const otherSkills = new Set((other?.skills || []).map(canonicalSkill));
+  const union = new Set([...mineSkills, ...otherSkills]);
+  const common = [...mineSkills].filter((value) => otherSkills.has(value));
+  let score = union.size ? (30 * common.length) / union.size : 0;
+  if (a.domain && a.domain === b.domain) score += 20;
+  if ((a.passions || []).some((value) => (b.passions || []).includes(value)))
+    score += 15;
+  if ((a.seeking || []).some((value) => (b.seeking || []).includes(value)))
+    score += 10;
+  if (a.college && normalized(a.college) === normalized(b.college)) score += 10;
+  if (a.year && normalized(a.year) === normalized(b.year)) score += 5;
+  if (a.experience && a.experience === b.experience) score += 10;
+  const labels = [];
+  if (a.domain === "AI/ML" && b.domain === "AI/ML") labels.push("AI/ML Match");
+  if (
+    ((a.passions || []).includes("Hackathons") &&
+      (b.passions || []).includes("Hackathons")) ||
+    (a.domain === "Hackathons" && b.domain === "Hackathons") ||
+    ((a.seeking || []).includes("Hackathon Teammates") &&
+      (b.seeking || []).includes("Hackathon Teammates"))
+  )
+    labels.push("Hackathon Enthusiast");
+  if (
+    (a.domain === "Startups" && b.domain === "Startups") ||
+    ((a.seeking || []).includes("Startup Co-founders") &&
+      (b.seeking || []).includes("Startup Co-founders"))
+  )
+    labels.push("Startup Builder");
+  return { score: Math.round(score), labels };
+}
 export function discoverPeers(
   items,
   {
@@ -176,24 +256,47 @@ export function discoverPeers(
       (p) =>
         p.uid !== uid && !dismissed.includes(p.uid) && !blocked.includes(p.uid),
     )
-    .map((p) => ({ ...p, reasons: matchReasons(mine, p) }))
+    .map((p) => ({
+      ...p,
+      reasons: matchReasons(mine, p),
+      match: profileMatch(mine, p),
+    }))
     .filter((p) => {
       const d = p.details || {};
       return (
         (!search ||
           normalized(
-            p.name + " " + (d.desiredRole || "") + " " + p.skills.join(" "),
+            [
+              p.name,
+              d.desiredRole,
+              d.college,
+              d.degree,
+              d.location,
+              ...(p.skills || []),
+            ]
+              .filter(Boolean)
+              .join(" "),
           ).includes(normalized(search))) &&
         (!skill ||
-          p.skills.some((v) => normalized(v).includes(normalized(skill)))) &&
+          skill
+            .split(",")
+            .map((v) => v.trim())
+            .filter(Boolean)
+            .every((term) =>
+              (p.skills || []).some(
+                (value) => canonicalSkill(value) === canonicalSkill(term),
+              ),
+            )) &&
         (!domain || d.domain === domain) &&
         (!experience || d.experience === experience) &&
-        (!suggested || p.reasons.length > 0)
+        (!suggested || p.match.score > 0)
       );
     })
     .sort((a, b) =>
       suggested
-        ? b.reasons.length - a.reasons.length || a.name.localeCompare(b.name)
+        ? b.match.score - a.match.score ||
+          b.reasons.length - a.reasons.length ||
+          a.name.localeCompare(b.name)
         : a.name.localeCompare(b.name),
     );
 }
