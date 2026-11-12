@@ -283,8 +283,9 @@ it("adds teammate details to onboarding and requires explicit expanded sharing",
     ).toBeEnabled(),
   );
   fireEvent.click(
-    screen.getByText("Your teammate card: photo, achievements & interests"),
+    screen.getByText("Achievements & interests"),
   );
+  expect(screen.queryByLabelText("Google or GitHub avatar link")).toBeNull();
   fireEvent.change(screen.getByLabelText("Achievements"), {
     target: { value: "SIH Participant" },
   });

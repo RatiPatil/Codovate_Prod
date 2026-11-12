@@ -12,7 +12,6 @@ import {
   teamStatus,
 } from "./projectTeamsData";
 import { MemberName, FeedStatus } from "./TeamWidgets";
-import { TeamChat } from "./TeamChat";
 function TeamForm({ team, onSave, busy }) {
   return (
     <form
@@ -25,8 +24,8 @@ function TeamForm({ team, onSave, busy }) {
     >
       <p className="hint">
         The team name, description, required skills and recruitment details are
-        visible to signed-in students. Member identities, roles, chat and
-        history stay private to authorized participants.
+        visible to signed-in students. Member identities, roles and history stay
+        private to team members.
       </p>
       <label>
         Team name
@@ -56,7 +55,11 @@ function TeamForm({ team, onSave, busy }) {
       </label>
       <label>
         Team capacity
-        <select name="capacity" defaultValue={team?.capacity || 6}>
+        <select
+          aria-label="Team capacity"
+          name="capacity"
+          defaultValue={team?.capacity || 6}
+        >
           {Array.from({ length: 11 }, (_, i) => i + 2).map((v) => (
             <option key={v}>{v}</option>
           ))}
@@ -66,6 +69,7 @@ function TeamForm({ team, onSave, busy }) {
         Recruitment status
         <select
           name="recruitment"
+          aria-label="Recruitment status"
           defaultValue={team?.recruitment || "recruiting"}
         >
           <option value="open">Open</option>
@@ -79,7 +83,15 @@ function TeamForm({ team, onSave, busy }) {
     </form>
   );
 }
-export function ModernTeams({ user, act, busy, onLegacy, legacyGroups }) {
+export function ModernTeams({
+  user,
+  act,
+  busy,
+  onLegacy,
+  legacyGroups,
+  myPublic,
+}) {
+  const [joiningTeams, setJoiningTeams] = useState(false);
   const teams = useTeamFeed("projectTeams", user.uid, [
       ["members", "array-contains", user.uid],
     ]),
@@ -108,11 +120,35 @@ export function ModernTeams({ user, act, busy, onLegacy, legacyGroups }) {
     );
   return (
     <>
-      <details className="panel">
+      <div className="hub-section-heading">
+        <div>
+          <h2>My Teams</h2>
+          <p className="hint">Your teams, invitations and shared goals.</p>
+        </div>
+        <button
+          className="button secondary"
+          aria-expanded={joiningTeams}
+          onClick={() => setJoiningTeams((v) => !v)}
+        >
+          {joiningTeams ? "Close team directory" : "Join team"}
+        </button>
+      </div>
+      {joiningTeams && (
+        <section className="panel">
+          <h3>Find a team to join</h3>
+          <ProjectTeamBoard
+            user={user}
+            act={act}
+            busy={busy}
+            myPublic={myPublic}
+          />
+        </section>
+      )}
+      <details className="panel team-create">
         <summary>Create team</summary>
         <p>
-          One shared workspace for members, team roles and chat. Every team
-          change records a new history revision.
+          Bring your idea and invite the skills you need. You can manage members
+          and roles from your team workspace.
         </p>
         <TeamForm
           busy={busy}
@@ -408,6 +444,7 @@ function ProjectWorkspace({ id, user, act, busy, onClose }) {
                   <label>
                     Team role
                     <select
+                      aria-label="Team role"
                       value={team.roles[uid]}
                       disabled={busy}
                       onChange={(e) =>
@@ -533,7 +570,11 @@ function ProjectWorkspace({ id, user, act, busy, onClose }) {
           >
             <label>
               Discoverable student
-              <select name="studentId" required>
+              <select
+                name="studentId"
+                aria-label="Discoverable student"
+                required
+              >
                 <option value="">Choose a student</option>
                 {people.items
                   .filter((p) => !team.members.includes(p.uid))
@@ -647,7 +688,13 @@ function ProjectWorkspace({ id, user, act, busy, onClose }) {
             ))}
         </section>
       )}
-      <TeamChat key={id} id={id} team={team} onClose={onClose} />
+      <section className="panel chat-coming-soon">
+        <h3>Team chat</h3>
+        <p className="hint">
+          Realtime chat is under development and will be available in upcoming
+          releases.
+        </p>
+      </section>
       <details
         className="panel"
         onToggle={(e) => setHistoryOpen(e.currentTarget.open)}
@@ -703,14 +750,18 @@ function ProjectWorkspace({ id, user, act, busy, onClose }) {
   );
 }
 export function ProjectTeamBoard({ user, act, busy, myPublic }) {
+  const [listingLimit, setListingLimit] = useState(48);
   const feed = useTeamFeed(
       "teamListings",
       user.uid,
       [["lifecycle", "==", "active"]],
-      100,
+      listingLimit,
     ),
     mine = useTeamFeed("projectTeams", user.uid, [
       ["members", "array-contains", user.uid],
+    ]),
+    requests = useTeamFeed("projectTeamRequests", user.uid, [
+      ["studentId", "==", user.uid],
     ]),
     [search, setSearch] = useState(""),
     [joining, setJoining] = useState(null);
@@ -730,6 +781,14 @@ export function ProjectTeamBoard({ user, act, busy, myPublic }) {
         />
       </label>
       <FeedStatus feed={feed} />
+      <FeedStatus feed={mine} />
+      <FeedStatus feed={requests} />
+      {!myPublic && (
+        <p className="hint">
+          Make your discovery profile visible above before requesting to join a
+          team.
+        </p>
+      )}
       {joining && (
         <form
           className="panel discovery-form"
@@ -739,7 +798,7 @@ export function ProjectTeamBoard({ user, act, busy, myPublic }) {
             act(async () => {
               await requestProjectJoin(user.uid, joining, note);
               setJoining(null);
-            }, "Join request sent. The leader must accept before you gain chat access.");
+            }, "Join request sent. The leader will review your introduction.");
           }}
         >
           <h3>Request to join {joining.title}</h3>
@@ -748,7 +807,17 @@ export function ProjectTeamBoard({ user, act, busy, myPublic }) {
             <textarea name="note" maxLength={1000} required rows={3} />
           </label>
           <div className="hub-actions">
-            <button className="button" disabled={busy}>
+            <button
+              className="button"
+              disabled={
+                busy ||
+                !myPublic ||
+                feed.loading ||
+                mine.loading ||
+                requests.loading ||
+                !!(feed.error || mine.error || requests.error)
+              }
+            >
               Send join request
             </button>
             <button
@@ -779,6 +848,16 @@ export function ProjectTeamBoard({ user, act, busy, myPublic }) {
               className="button secondary"
               disabled={
                 busy ||
+                !myPublic ||
+                feed.loading ||
+                mine.loading ||
+                requests.loading ||
+                !!(feed.error || mine.error || requests.error) ||
+                requests.items.some(
+                  (r) =>
+                    r.teamId === t.teamId &&
+                    ["pending", "accepted"].includes(r.status),
+                ) ||
                 t.ownerId === user.uid ||
                 mine.items.some((x) => x.id === t.teamId) ||
                 t.memberCount >= t.capacity ||
@@ -786,11 +865,31 @@ export function ProjectTeamBoard({ user, act, busy, myPublic }) {
               }
               onClick={() => setJoining(t)}
             >
-              Request to join
+              {mine.items.some((x) => x.id === t.teamId) ||
+              t.ownerId === user.uid
+                ? "Already a member"
+                : requests.items.some(
+                      (r) => r.teamId === t.teamId && r.status === "pending",
+                    )
+                  ? "Request sent"
+                  : t.memberCount >= t.capacity
+                    ? "Team full"
+                    : t.recruitment === "closed"
+                      ? "Team closed"
+                      : "Request to join"}
             </button>
           </article>
         ))}
       </div>
+      {feed.items.length === listingLimit && listingLimit < 1968 && (
+        <button
+          className="button secondary"
+          disabled={feed.loading}
+          onClick={() => setListingLimit((n) => n + 48)}
+        >
+          Load more teams
+        </button>
+      )}
       {!feed.loading && !feed.error && !feed.cached && !rows.length && (
         <p className="panel">
           No recruiting teams match these criteria. Create a team from My Teams.

@@ -39,6 +39,30 @@ function PeerAvatar({ name, photoUrl }) {
     </div>
   );
 }
+function PeerTags({ values = [], label }) {
+  const [expanded, setExpanded] = useState(false);
+  if (!values.length) return null;
+  const shown = expanded ? values : values.slice(0, 3);
+  return (
+    <div className="skill-row peer-tags" aria-label={label}>
+      {shown.map((value) => (
+        <span key={value}>{value}</span>
+      ))}
+      {values.length > 3 && (
+        <button
+          type="button"
+          className="peer-tag-toggle"
+          aria-expanded={expanded}
+          aria-label={`${expanded ? "Show fewer" : "Show all"} ${label.toLowerCase()}`}
+          onClick={() => setExpanded((v) => !v)}
+        >
+          {expanded ? "Show less" : `+${values.length - 3} more`}
+        </button>
+      )}
+    </div>
+  );
+}
+
 export function PeerDiscovery({
   user,
   profile,
@@ -231,68 +255,72 @@ export function PeerDiscovery({
           and experience level.
         </p>
       )}
-      <div className="discovery-filters">
-        <label>
-          Search students
-          <input
-            type="search"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Name or desired role"
-          />
-        </label>
-        <label>
-          Skill
-          <input
-            value={skill}
-            onChange={(e) => setSkill(e.target.value)}
-            placeholder="React, Java, Python, ML"
-          />
-        </label>
-        <label>
-          Domain / goal
-          <select
-            aria-label="Filter by domain or goal"
-            value={domain}
-            onChange={(e) => setDomain(e.target.value)}
+      <section
+        className="panel discovery-search"
+        aria-label="Find teammates filters"
+      >
+        <div className="discovery-filters">
+          <label>
+            Search students
+            <input
+              type="search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Name or desired role"
+            />
+          </label>
+          <label>
+            Skill
+            <input
+              value={skill}
+              onChange={(e) => setSkill(e.target.value)}
+              placeholder="React, Java, Python, ML"
+            />
+          </label>
+          <label>
+            Domain / goal
+            <select
+              aria-label="Filter by domain or goal"
+              value={domain}
+              onChange={(e) => setDomain(e.target.value)}
+            >
+              <option value="">All domains</option>
+              {domains.map((v) => (
+                <option key={v}>{v}</option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Experience level
+            <select
+              aria-label="Filter by experience level"
+              value={experience}
+              onChange={(e) => setExperience(e.target.value)}
+            >
+              <option value="">All levels</option>
+              {experienceLevels.map((v) => (
+                <option key={v}>{v}</option>
+              ))}
+            </select>
+          </label>
+        </div>
+        {(search || skill || domain || experience) && (
+          <button
+            className="text-link"
+            onClick={() => {
+              setSearch("");
+              setSkill("");
+              setDomain("");
+              setExperience("");
+            }}
           >
-            <option value="">All domains</option>
-            {domains.map((v) => (
-              <option key={v}>{v}</option>
-            ))}
-          </select>
-        </label>
-        <label>
-          Experience level
-          <select
-            aria-label="Filter by experience level"
-            value={experience}
-            onChange={(e) => setExperience(e.target.value)}
-          >
-            <option value="">All levels</option>
-            {experienceLevels.map((v) => (
-              <option key={v}>{v}</option>
-            ))}
-          </select>
-        </label>
-      </div>
-      {(search || skill || domain || experience) && (
-        <button
-          className="text-link"
-          onClick={() => {
-            setSearch("");
-            setSkill("");
-            setDomain("");
-            setExperience("");
-          }}
-        >
-          Clear filters
-        </button>
-      )}
-      <p className="hint">
-        Separate skills with commas to match every listed skill. Match scores
-        reflect shared profile details; missing details earn no points.
-      </p>
+            Clear filters
+          </button>
+        )}
+        <p className="hint">
+          Separate skills with commas to match all selected skills.
+        </p>
+      </section>
       {(people.error ||
         dismissed.error ||
         connectionsError ||
@@ -336,25 +364,29 @@ export function PeerDiscovery({
                   {d.desiredRole || "Student collaborator"}
                 </p>
                 {(d.degree || d.college || d.year) && (
-                  <p>
+                  <p className="peer-academic">
                     {[d.degree, d.college, d.year].filter(Boolean).join(" • ")}
                   </p>
                 )}
-                {d.location && <p>{d.location}</p>}
-                <h4>Skills</h4>
-                <div className="skill-row">
-                  {(p.skills || []).map((v) => (
-                    <span key={v}>{v}</span>
-                  ))}
-                </div>
+                {d.location && <p className="peer-location">{d.location}</p>}
+                <section className="peer-section">
+                  <h4>Skills</h4>
+                  {p.skills?.length ? (
+                    <PeerTags values={p.skills} label="Skills" />
+                  ) : (
+                    <p className="hint">Skills not shared yet.</p>
+                  )}
+                </section>
                 {suggested && (
-                  <div className="skill-row">
+                  <div className="skill-row peer-match">
                     <span title="Shared-profile similarity: skills 30%, domain 20%, interests 15%, collaboration goals 10%, college 10%, year 5%, experience 10%">
                       {p.match.score}% Match
                     </span>
-                    {[...p.reasons, ...p.match.labels].map((v) => (
-                      <span key={v}>{v}</span>
-                    ))}
+                    {[...new Set([...p.match.labels, ...p.reasons])]
+                      .slice(0, 2)
+                      .map((v) => (
+                        <span key={v}>{v}</span>
+                      ))}
                   </div>
                 )}
                 {[
@@ -363,17 +395,13 @@ export function PeerDiscovery({
                   ["passions", "Passionate about"],
                 ].map(([key, label]) =>
                   d[key]?.length ? (
-                    <section key={key}>
+                    <section className="peer-section" key={key}>
                       <h4>{label}</h4>
-                      <div className="skill-row">
-                        {d[key].map((v) => (
-                          <span key={v}>{v}</span>
-                        ))}
-                      </div>
+                      <PeerTags values={d[key]} label={label} />
                     </section>
                   ) : null,
                 )}
-                <div className="hub-actions">
+                <div className="hub-actions peer-actions">
                   <button
                     className="button secondary"
                     disabled={busy}
@@ -387,7 +415,18 @@ export function PeerDiscovery({
                     Dismiss
                   </button>
                   {relation ? (
-                    <span className="hint">Connection: {relation.status}</span>
+                    <a
+                      className="peer-connection-state"
+                      href="/teams?hub=connections"
+                    >
+                      {relation.status === "accepted"
+                        ? "Connected"
+                        : relation.status === "pending"
+                          ? relation.toId === user.uid
+                            ? "Respond to request"
+                            : "Request sent"
+                          : "View connection"}
+                    </a>
                   ) : (
                     <button
                       className="button"
@@ -413,8 +452,9 @@ export function PeerDiscovery({
         </button>
       )}
       <p className="hint">
-        Filters and suggestions use loaded profiles. Make your own card
-        discoverable before connecting. No online status is inferred.
+        {items.length} matching students in loaded profiles.
+        {!myPublic &&
+          " Make your profile discoverable above to send connection requests."}
       </p>
       {dismissed.items.length > 0 && (
         <details className="panel">

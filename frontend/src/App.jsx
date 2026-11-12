@@ -2407,8 +2407,8 @@ export default function App() {
             element={
               <Guard>
                 <Workspace
-                  title="The student community"
-                  subtitle="Find teammates who share your curiosity."
+                  title="Codovate Teams"
+                  subtitle="Discover peers, make connections and build together."
                 >
                   <TeamHub />
                 </Workspace>
@@ -2466,8 +2466,8 @@ export default function App() {
             path="/placement"
             element={
               <Workspace
-                title="Placement Preparation"
-                subtitle="A clear path from learning to your next opportunity."
+                title="Placement preparation"
+                subtitle="Explore topics, open a folder and learn at your own pace."
               >
                 <Guard>
                   <Placement />

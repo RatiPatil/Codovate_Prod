@@ -2,9 +2,18 @@
 
 Open **Teams → My Teams** after signing in. The expanded model and history contracts are documented in [Teams data model](TEAMS_DATA_MODEL.md). Earlier recruiting boards and private workspaces remain accessible with their original records. The sections below describe the retained original collaboration workflow.
 
+## Current phase-one interface
+
+The four primary views are My Teams, Connections, Find Teammates and Suggested for You. My Teams offers Create team and a directly accessible Join team directory. Membership changes remain transactional; the leader approves join requests, team capacity is checked again at approval, and each change records immutable history. Member and mentor roles do not grant leader or platform-admin permissions. Pending requests, full teams and missing discovery consent disable join actions.
+
+Discovery uses centered student cards and explicit opt-in profile projections. Photo, role, course, college, year, city, achievements, seeking preferences and passions are published only after separate expanded-detail consent. Private phone/email/résumé never enter the directory. Long tag lists show three values initially with an accessible expand control. Filters and actual weighted match scores apply to loaded profiles; they are not global search or compatibility guarantees.
+
+Accepted connections are shown under Connected students. The current phase-one UI does not open direct or new-team chats. Active chats displays the under-development notice; its 24h Limit badge is explicitly marked planned because expiry is not enforced. Existing conversation records and rules are preserved for earlier private workspaces. No presence, typing indicators, notifications or fabricated online status are added.
+
+
 ## Discovery and consent
 
-Existing/imported accounts are not automatically made public. A student selects **Make my profile discoverable** to publish a separate document containing only their UID, full name, confirmed skills and update timestamp. There is no email, mobile, résumé, college, location, suggested skill, role or private note field in that projection. Students can hide it at any time. Profile saves update an existing projection and private profile in one transaction, preserving opt-out during concurrent edits. Branch-derived skill suggestions are not presented as confirmed experience. Skill labels are single-line strings of 1–60 characters, with at most 20 unique labels. Boundary and mixed-type tests enforce this contract without exceeding Firestore rule expression limits.
+Existing/imported accounts are not automatically made public. A student selects **Make my profile discoverable** to publish a separate document containing only their UID, full name, confirmed skills and update timestamp. Email, mobile, résumé and private notes are never in that projection. With separate expanded-detail consent, the optional discovery card can include education, location, desired role and self-reported achievements/interests. Students can hide it at any time. Profile saves update an existing projection and private profile in one transaction, preserving opt-out during concurrent edits. Branch-derived skill suggestions are not presented as confirmed experience. Skill labels are single-line strings of 1–60 characters, with at most 20 unique labels. Boundary and mixed-type tests enforce this contract without exceeding Firestore rule expression limits.
 
 Discovery is available only to signed-in accounts. Search applies to loaded profiles; 48 profiles load initially and another 48 can be loaded at a time, up to 1,968. Member-name lookups used in conversations read only the discovery projection. A hidden profile shows a generic member label; past chat messages retain the name the sender chose when sending.
 
@@ -29,7 +38,7 @@ Groups, connection lists and invitation lists are bounded to 100 documents per s
 | Authentication | Sign-in identity and password credentials managed by Firebase | Firebase Auth; no plaintext passwords in Firestore or source |
 | `users/{uid}` | Private full profile, email/mobile and imported fields | Account owner only |
 | `adminUsers/{uid}` | Administrator name/UID index | Owner and verified administrators |
-| `memberProfiles/{uid}` | Opt-in name and confirmed skills only | Signed-in members |
+| `memberProfiles/{uid}` | Opt-in name and confirmed skills; separately consented card details | Signed-in members |
 | `connections/{fromId}_{toId}` | Two UIDs, request state, blocker and timestamps | The two participants |
 | `conversations/{id}` | Direct-connection reference or group title, membership, owner/state | Participants; pending group invitees can preview group metadata |
 | `conversations/{id}/messages/{id}` | Sender UID/name, text, server timestamp | Current group members or an accepted direct connection |

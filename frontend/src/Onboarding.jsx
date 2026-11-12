@@ -651,26 +651,12 @@ export function Onboarding() {
                 </label>
                 <details className="onboarding-team-details">
                   <summary>
-                    Your teammate card: photo, achievements & interests
+                    Achievements & interests
                   </summary>
                   <p className="hint">
                     These details stay private until you choose to share them.
                     If you’re just starting, you can leave achievements blank.
                   </p>
-                  <label>
-                    Google or GitHub avatar link
-                    <input
-                      {...inputProps("photoUrl")}
-                      type="url"
-                      maxLength={500}
-                      value={draft.photoUrl}
-                      placeholder="https://…"
-                      onChange={(event) =>
-                        field("photoUrl", event.target.value)
-                      }
-                    />
-                    {inlineError("photoUrl")}
-                  </label>
                   <label>
                     Achievements
                     <input

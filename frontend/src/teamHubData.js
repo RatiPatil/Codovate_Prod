@@ -83,9 +83,9 @@ export function useTeamFeed(
             loading: false,
             error:
               error.code === "failed-precondition"
-                ? "The required Firebase index is missing or still building. Deploy firestore:indexes and wait for it to become ready."
+                ? "Team information is temporarily unavailable. Please try again later."
                 : error.code === "permission-denied"
-                  ? "Firebase denied this read. Deploy the latest firestore:rules, then sign out and sign in again."
+                  ? "This information is unavailable for your account. Refresh or sign in again."
                   : "Could not load live records. Check your connection and try again.",
             cached: false,
           });

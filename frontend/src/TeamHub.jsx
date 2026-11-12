@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Users, UserRoundSearch, Sparkles, Handshake } from "lucide-react";
 import { useSearchParams, Link } from "react-router-dom";
 import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "./firebase";
@@ -58,14 +59,26 @@ export function TeamHub() {
     ["studentId", "==", user?.uid || ""],
   ]);
   const [myPublic, setMyPublic] = useState(false);
+  const [visibilityReady, setVisibilityReady] = useState(false);
   useEffect(() => {
     setSelected("");
     setMyPublic(false);
+    setVisibilityReady(false);
     if (!db || !user) return;
     return onSnapshot(
       doc(db, "memberProfiles", user.uid),
-      (s) => setMyPublic(s.exists()),
-      () => setMyPublic(false),
+      { includeMetadataChanges: true },
+      (s) => {
+        if (s.metadata?.fromCache && !s.exists()) return;
+        setMyPublic(s.exists());
+        setVisibilityReady(true);
+      },
+      () => {
+        setVisibilityReady(false);
+        setError(
+          "Your discovery visibility could not be confirmed. Please refresh and try again.",
+        );
+      },
     );
   }, [user?.uid]);
   const members = new Map(people.items.map((p) => [p.uid, p]));
@@ -94,7 +107,7 @@ export function TeamHub() {
     } catch (e) {
       setError(
         e.code === "permission-denied"
-          ? "Access changed. Check membership and deployed Firebase rules."
+          ? "This action is no longer available. Refresh the page or check your membership."
           : e.message || "Request failed. Please retry.",
       );
     } finally {
@@ -108,20 +121,15 @@ export function TeamHub() {
       {tab !== "recruiting" && (
         <section className="panel hub-intro">
           <span className="eyebrow">BUILD TOGETHER</span>
-          <h2>Good people. Shared ambition.</h2>
+          <h2>Your next team starts here.</h2>
           <p>
-            Find complementary skills, make real connections and collaborate in
-            private group chats.
-          </p>
-          <p className="hint">
-            Share your name and confirmed skills, with optional details you
-            choose. Email, mobile, résumé and private learning records stay
-            hidden.
+            Meet students who share your goals. Connect, find your role and
+            build something together.
           </p>
           <div className="hub-actions">
             <button
               className="button secondary"
-              disabled={busy || !db}
+              disabled={busy || !db || !visibilityReady}
               onClick={() =>
                 act(
                   () =>
@@ -150,11 +158,11 @@ export function TeamHub() {
         aria-label="Collaboration views"
       >
         {[
-          ["teams", "My Teams"],
-          ["connections", "Connections"],
-          ["people", "Find Teammates"],
-          ["suggested", "Suggested for You"],
-        ].map(([id, label]) => (
+          ["teams", "My Teams", Users],
+          ["connections", "Connections", Handshake],
+          ["people", "Find Teammates", UserRoundSearch],
+          ["suggested", "Suggested for You", Sparkles],
+        ].map(([id, label, Icon]) => (
           <button
             key={id}
             className={tab === id ? "active" : ""}
@@ -166,6 +174,7 @@ export function TeamHub() {
               setNotice("");
             }}
           >
+            <Icon size={17} aria-hidden="true" />
             {label}
             {id === "connections" &&
             received.items.some((c) => c.status === "pending")
@@ -190,6 +199,7 @@ export function TeamHub() {
           act={act}
           busy={busy}
           legacyGroups={groups}
+          myPublic={myPublic}
           onLegacy={(id, room, view) => {
             setParams({ hub: id, ...(view ? { view } : {}) });
             setSelected(room || "");
@@ -203,7 +213,9 @@ export function TeamHub() {
           profile={profile}
           people={people}
           connections={connections}
-          connectionsReady={!sent.loading && !received.loading && !sent.error && !received.error}
+          connectionsReady={
+            !sent.loading && !received.loading && !sent.error && !received.error
+          }
           connectionsError={sent.error || received.error}
           myPublic={myPublic}
           act={act}

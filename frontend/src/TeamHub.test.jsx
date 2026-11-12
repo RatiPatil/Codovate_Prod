@@ -9,6 +9,7 @@ import {
 import { MemoryRouter } from "react-router-dom";
 const fake = vi.hoisted(() => ({
   published: false,
+  visibilityCached: false,
   publish: vi.fn(),
   hide: vi.fn(),
   connect: vi.fn(),
@@ -31,7 +32,7 @@ vi.mock("firebase/firestore", () => ({
     const fn = typeof options === "function" ? options : next;
     fn({
       exists: () => fake.published,
-      metadata: { fromCache: false },
+      metadata: { fromCache: fake.visibilityCached },
       data: () => ({ name: path.endsWith("bob") ? "Bob" : "Alice" }),
     });
     return () => {};
@@ -71,6 +72,7 @@ afterEach(() => {
   vi.clearAllMocks();
   fake.feeds = {};
   fake.published = false;
+  fake.visibilityCached = false;
 });
 it("shows only name and skills, filters loaded members and keeps publishing opt-in", async () => {
   fake.feeds.memberProfiles = [
@@ -158,4 +160,51 @@ it("keeps earlier private workspaces visible in My Teams without rewriting their
   expect(
     screen.getByRole("button", { name: "Open earlier workspace" }),
   ).toBeTruthy();
+});
+
+it("keeps phase-one chat unavailable without inventing active chats or timers", () => {
+  fake.feeds.fromId = [
+    { id: "alice_bob", fromId: "alice", toId: "bob", status: "accepted" },
+  ];
+  render(
+    <MemoryRouter initialEntries={["/teams?hub=connections"]}>
+      <TeamHub />
+    </MemoryRouter>,
+  );
+  expect(
+    screen.getByRole("heading", { name: "Connected students" }),
+  ).toBeTruthy();
+  expect(
+    screen.getByText(
+      "Realtime chat is under development and will be available in upcoming releases.",
+    ),
+  ).toBeTruthy();
+  expect(screen.getByText("No active chats.")).toBeTruthy();
+  expect(screen.queryByRole("button", { name: "Open chat" })).toBeNull();
+});
+it("lets students browse joinable teams directly from My Teams", () => {
+  render(
+    <MemoryRouter initialEntries={["/teams"]}>
+      <TeamHub />
+    </MemoryRouter>,
+  );
+  fireEvent.click(
+    screen.getByRole("button", { name: "Join team", exact: true }),
+  );
+  expect(
+    screen.getByRole("heading", { name: "Find a team to join" }),
+  ).toBeTruthy();
+  expect(screen.getByLabelText("Search recruiting project teams")).toBeTruthy();
+});
+
+it("does not change discovery visibility before an empty cached profile is confirmed", () => {
+  fake.visibilityCached = true;
+  render(
+    <MemoryRouter initialEntries={["/teams"]}>
+      <TeamHub />
+    </MemoryRouter>,
+  );
+  expect(
+    screen.getByRole("button", { name: "Make my profile discoverable" }),
+  ).toBeDisabled();
 });

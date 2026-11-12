@@ -97,7 +97,8 @@ export function Placement({ manage = false }) {
     setEditing(null);
     setMessage("");
   }
-  const showCareerPortals = section?.id === "career-portals" && !folder && !article;
+  const showCareerPortals =
+    section?.id === "career-portals" && !folder && !article;
   const current = items.find((i) => i.id === (article || folder));
   const children = items
     .filter((i) => i.parentId === folder)
@@ -169,18 +170,22 @@ export function Placement({ manage = false }) {
     return <p role="alert">Administrator access required.</p>;
   return (
     <section className="placement-module" aria-label="Placement Preparation">
-      <div className="placement-heading">
-        <div>
-          <span className="eyebrow">BUILD YOUR NEXT STEP</span>
-          <h2>{manage ? "Content library" : "Your preparation library"}</h2>
-          <p>Explore topics, open a folder and learn at your own pace.</p>
+      {(manage || admin) && (
+        <div className="placement-heading">
+          {manage && (
+            <div>
+              <span className="eyebrow">BUILD YOUR NEXT STEP</span>
+              <h2>Content library</h2>
+              <p>Explore topics, open a folder and learn at your own pace.</p>
+            </div>
+          )}
+          {!manage && admin && (
+            <Link className="button secondary" to="/admin?tab=placement">
+              Manage content
+            </Link>
+          )}
         </div>
-        {!manage && admin && (
-          <Link className="button secondary" to="/admin?tab=placement">
-            Manage content
-          </Link>
-        )}
-      </div>
+      )}
       {manage && (
         <p className="notice">
           Create folders and readable articles here. Add material one topic at a

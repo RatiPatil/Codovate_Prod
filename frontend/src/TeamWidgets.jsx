@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "./firebase";
 export function FeedStatus({ feed }) {
+  if (!feed.error && !feed.loading && !feed.cached) return null;
   return feed.error ? (
     <p role="alert" className="hub-error">
       {feed.error}

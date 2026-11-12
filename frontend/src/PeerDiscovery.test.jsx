@@ -153,7 +153,10 @@ it("does not create duplicate requests for a pending connection", () => {
   expect(
     screen.queryByRole("button", { name: "Connect", exact: true }),
   ).toBeNull();
-  expect(screen.getByText("Connection: pending")).toBeInTheDocument();
+  expect(screen.getByRole("link", { name: "Request sent" })).toHaveAttribute(
+    "href",
+    "/teams?hub=connections",
+  );
 });
 
 it("combines domain and experience filters with an explicit all-level reset", () => {
@@ -183,4 +186,19 @@ it("waits for connection state before allowing duplicate-prone connect actions",
   expect(screen.getByRole("alert")).toHaveTextContent(
     "Connection requests could not be loaded.",
   );
+});
+
+it("keeps long skill lists compact and reveals all values on request", () => {
+  open({
+    people: {
+      items: [{ ...bob, skills: ["React", "Java", "Python", "ML", "Design"] }],
+      loading: false,
+      error: "",
+    },
+  });
+  expect(screen.queryByText("Design", { exact: true })).toBeNull();
+  const toggle = screen.getByRole("button", { name: "Show all skills" });
+  fireEvent.click(toggle);
+  expect(screen.getByText("Design", { exact: true })).toBeInTheDocument();
+  expect(toggle).toHaveAttribute("aria-expanded", "true");
 });
