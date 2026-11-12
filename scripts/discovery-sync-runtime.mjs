@@ -30,7 +30,7 @@ export function safeSyncError(error, stage) {
       "The operation did not finish within 45 seconds. Check your connection and Admin credentials, then retry. Completed cards are safe to skip on reruns.";
   else if (error?.message?.startsWith("Privacy policy mismatch"))
     guidance =
-      "Run npm run deploy:onboarding from this checkout before syncing.";
+      "Run npm run deploy from this checkout before syncing.";
   else if (error?.message?.startsWith("Firebase Admin credentials unavailable"))
     guidance =
       "Firebase CLI login is separate from Firebase Admin credentials. Use the application-default credentials configured for your student imports.";

@@ -24,7 +24,7 @@ Text fields, graduation year, skill bounds and enum selections validate before s
 
 ## Releasing and troubleshooting
 
-Run `npm run deploy:onboarding` from the repository root to build, deploy Firestore rules to codovate-dev, then release Hosting. It stops before Hosting if the build or rules deployment fails. A Hosting-only release can leave the new nameParts client incompatible with older rules and cause a permission rejection. The screenshot's generic banner alone cannot identify the deployed rules version. Permission failures now show the support code PROFILE_ACCESS; network/timeouts have separate retry messages. Entries remain on screen after a failed save.
+Run `npm run deploy` from the repository root to build, deploy Firestore rules to codovate-dev, then release Hosting. It stops before Hosting if the build or rules deployment fails. A Hosting-only release can leave the new nameParts client incompatible with older rules and cause a permission rejection. The screenshot's generic banner alone cannot identify the deployed rules version. Permission failures now show the support code PROFILE_ACCESS; network/timeouts have separate retry messages. Entries remain on screen after a failed save.
 
 The setup form is centered by default. Desktop users can open and close Preview profile; mobile/tablet users see the form only. First-step writes contain only identity/contact/city plus the progress marker. Later steps add the data collected so far. Existing résumé, portfolio and unreached profile fields are not rewritten. The name directory is updated only when missing or when the full name changes.
 

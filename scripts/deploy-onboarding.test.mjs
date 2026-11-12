@@ -64,6 +64,6 @@ test("Windows direct invocation gives guidance when npm is not located", () => {
   assert.throws(
     () =>
       commandInvocation("npm", [], { platform: "win32", npmExecPath: null }),
-    /npm run deploy:onboarding/,
+    /npm run deploy/,
   );
 });

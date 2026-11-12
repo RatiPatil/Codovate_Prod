@@ -77,7 +77,7 @@ To create cards for already registered accounts, run from a trusted checkout usi
 ```powershell
 git pull origin main
 npm --prefix scripts ci
-npm run deploy:onboarding
+npm run deploy
 npm run discovery:sync
 npm run discovery:sync -- --apply
 ```
@@ -112,7 +112,7 @@ The bookmark action stores only student/peer IDs, a saved flag and server timest
 
 `projectTeams/{teamId}/tasks/{taskId}` stores title, description, current-member assignment, optional calendar due date, todo/doing/done status, creator and immutable creation timestamp. Current members can create tasks and update status; the creator or leader can edit details or delete. Removal revokes access immediately. Archived teams retain read access and reject writes. Client validation and rules enforce field bounds, real calendar dates, membership, immutable authorship and timestamps. New-task retries reuse an ID. The board supports assigned-to-me filtering, editing and progress for the displayed tasks. It loads the latest 100 records, with load-more up to 500, so it does not claim an all-history task total.
 
-Deploy with `npm run deploy:onboarding`. The helper now builds, deploys Firestore rules **and indexes**, then releases Hosting. Wait for any newly created index to finish building before using queries that depend on it. No student-data migration or discovery sync is required for these messaging, task or shortlist features.
+Deploy with `npm run deploy`. The helper now builds, deploys Firestore rules **and indexes**, then releases Hosting. Wait for any newly created index to finish building before using queries that depend on it. No student-data migration or discovery sync is required for these messaging, task or shortlist features.
 
 ## Field of study discovery filter
 

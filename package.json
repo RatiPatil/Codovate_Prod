@@ -14,7 +14,7 @@
     "firebase:setup": "node scripts/firebase-setup.mjs",
     "firebase:configure": "node scripts/firebase-setup.mjs --configure-only",
     "test:setup": "node --test scripts/firebase-setup.test.mjs scripts/deploy-onboarding.test.mjs",
-    "deploy:onboarding": "node scripts/deploy-onboarding.mjs",
+    "deploy": "node scripts/deploy-onboarding.mjs",
     "discovery:sync": "node scripts/sync-student-discovery.mjs --project=codovate-dev"
   }
 }

@@ -42,7 +42,7 @@ export function commandInvocation(
   if (platform !== "win32") return { command, args };
   if (!npmExecPath)
     throw new Error(
-      "Run this script with npm run deploy:onboarding so the npm installation can be located.",
+      "Run this script with npm run deploy so the npm installation can be located.",
     );
   // Invoke npm's JavaScript entry points directly; Windows .cmd wrappers need a shell.
   const cli =
