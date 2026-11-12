@@ -1297,6 +1297,7 @@ function RoleHome({ catalog }) {
 }
 function Dashboard({ catalog }) {
   const { user, profile, admin } = useSession();
+  const profileCompletion = completion(profile);
   const apps = useOwned("applications", user.uid),
     saved = useOwned("bookmarks", user.uid);
   return (
@@ -1308,13 +1309,13 @@ function Dashboard({ catalog }) {
         <div>
           <span className="eyebrow">YOUR PROFILE</span>
           <h2>Ready for your next opportunity?</h2>
-          <p>Add your skills and résumé to start applying.</p>
+          <p>{profileCompletion === 100 ? "Your profile is ready. Keep your details up to date as you grow." : "Add your skills and résumé to start applying."}</p>
           <Link className="button" to="/profile">
-            Complete your profile <ArrowRight size={16} />
+            {profileCompletion === 100 ? "View your profile" : "Complete your profile"} <ArrowRight size={16} />
           </Link>
         </div>
-        <div className="progress-circle">
-          <strong>{completion(profile)}%</strong>
+        <div className="progress-circle" role="progressbar" aria-label="Profile completeness" aria-valuemin={0} aria-valuemax={100} aria-valuenow={profileCompletion} style={{"--progress":`${profileCompletion}%`}}>
+          <strong>{profileCompletion}%</strong>
           <span>profile complete</span>
         </div>
       </section>

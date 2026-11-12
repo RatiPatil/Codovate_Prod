@@ -1214,14 +1214,25 @@ form > label {
 .progress-circle {
   height: 125px;
   width: 125px;
-  border: 8px solid #deddf4;
-  border-top-color: #8985d4;
+  --ring-width: 8px;
+  position: relative;
+  background: conic-gradient(#8985d4 var(--progress, 0%), #deddf4 0);
   border-radius: 50%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+}
+.progress-circle::before {
+  content: "";
+  position: absolute;
+  inset: var(--ring-width);
+  border-radius: inherit;
+  background: #eeedfb;
+}
+.progress-circle > * {
+  position: relative;
 }
 .progress-circle strong {
   font-size: 26px;
@@ -2153,7 +2164,7 @@ pre {
   .progress-circle {
     height: 97px;
     width: 97px;
-    border-width: 6px;
+    --ring-width: 6px;
   }
   .progress-circle strong {
     font-size: 24px;
