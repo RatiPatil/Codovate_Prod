@@ -1,4 +1,4 @@
-import { normalizeStudyField } from "./studyFields";
+import { normalizeStudyField, studyDomains } from "./studyFields";
 import { visibleSkills } from "./profileSkills";
 import { doc, runTransaction, serverTimestamp } from "firebase/firestore";
 import { db } from "./firebase";
@@ -255,6 +255,7 @@ export function discoverPeers(
     search = "",
     skill = "",
     domain = "",
+    city = "",
     fieldOfStudy = "",
     experience = "",
     dismissed = [],
@@ -300,7 +301,8 @@ export function discoverPeers(
                 (value) => canonicalSkill(value) === canonicalSkill(term),
               ),
             )) &&
-        (!domain || d.domain === domain) &&
+        (!city || normalized(d.location || "") === normalized(city)) &&
+        (!domain || d.domain === domain || (!d.domain && studyDomains(d.fieldOfStudy || d.degree).includes(domain))) &&
         (!fieldOfStudy ||
           normalizeStudyField(d.fieldOfStudy) ===
             normalizeStudyField(fieldOfStudy)) &&

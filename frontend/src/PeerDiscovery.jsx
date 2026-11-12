@@ -1,5 +1,6 @@
 import {
   knownStudyFields,
+  studyDomains,
   normalizeStudyField,
   studyFieldLabel,
 } from "./studyFields";
@@ -160,6 +161,7 @@ export function PeerDiscovery({
     skill,
     domain,
     fieldOfStudy,
+    city,
     experience,
     dismissed: dismissed.items.map((x) => x.peerId),
     blocked: connections
@@ -378,7 +380,7 @@ export function PeerDiscovery({
               }}
             />
             <small className="hint">
-              Press Enter to search the saved city across all profiles.
+              Press Enter to search by city. Letter case does not matter.
             </small>
           </label>
           <label>
@@ -389,7 +391,7 @@ export function PeerDiscovery({
               onChange={(e) => setDomain(e.target.value)}
             >
               <option value="">All domains</option>
-              {domains.map((v) => (
+              {(fieldOfStudy ? studyDomains(fieldOfStudy) : domains).map((v) => (
                 <option key={v}>{v}</option>
               ))}
             </select>
@@ -586,6 +588,7 @@ export function PeerDiscovery({
                 <p className="peer-role">
                   {d.desiredRole || "Student collaborator"}
                 </p>
+                {!d.domain && d.fieldOfStudy && <p className="hint">Suggested domains: {studyDomains(d.fieldOfStudy).join(" · ")}</p>}
                 {d.fieldOfStudy && (
                   <p className="peer-study-chip">
                     {studyFieldLabel(d.fieldOfStudy)}

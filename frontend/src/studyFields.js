@@ -46,3 +46,17 @@ export function studyFieldLabel(value) {
     )
     .join(" ");
 }
+
+// Suggestions describe relevant opportunities, not confirmed student interests.
+export function studyDomains(field) {
+  const value = normalizeStudyField(field);
+  if (/COMPUTER|MCA|INFORMATION|ARTIFICIAL|DATA SCIENCE|CYBER/.test(value))
+    return ["Web Development", "AI/ML", "Data Science", "Cyber Security", "Hackathons", "Research"];
+  if (/BUSINESS|MBA|COMMERCE|MANAGEMENT/.test(value))
+    return ["Startups", "Data Science", "Research", "Hackathons"];
+  if (/ELECTRONICS|ELECTRICAL|TELECOMMUNICATION/.test(value))
+    return ["AI/ML", "Data Science", "Cyber Security", "Research", "Hackathons"];
+  if (/MECHANICAL|CIVIL|DESIGN|ENGINEERING/.test(value))
+    return ["Research", "Data Science", "Startups", "Hackathons"];
+  return ["Research", "Startups", "Hackathons"];
+}

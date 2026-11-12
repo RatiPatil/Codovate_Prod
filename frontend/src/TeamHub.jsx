@@ -61,9 +61,9 @@ export function TeamHub() {
     user?.uid,
     [
       ...(fieldOfStudy ? [["details.fieldOfStudy", "==", fieldOfStudy]] : []),
-      ...(city ? [["details.location", "==", city]] : []),
+
     ],
-    size,
+    city ? 1968 : size,
   );
   const sent = useTeamFeed("connections", user?.uid, [
     ["fromId", "==", user?.uid || ""],
