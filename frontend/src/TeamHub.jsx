@@ -31,6 +31,7 @@ export function TeamHub() {
   const { user, profile, admin } = useSession();
   const [params, setParams] = useSearchParams();
   const fieldOfStudy = normalizeStudyField(params.get("study") || "");
+  const city = (params.get("city") || "").trim();
   const tab = [
     "teams",
     "people",
@@ -58,7 +59,10 @@ export function TeamHub() {
   const people = useTeamFeed(
     ["people", "suggested"].includes(tab) ? "memberProfiles" : null,
     user?.uid,
-    fieldOfStudy ? [["details.fieldOfStudy", "==", fieldOfStudy]] : [],
+    [
+      ...(fieldOfStudy ? [["details.fieldOfStudy", "==", fieldOfStudy]] : []),
+      ...(city ? [["details.location", "==", city]] : []),
+    ],
     size,
   );
   const sent = useTeamFeed("connections", user?.uid, [
@@ -211,6 +215,9 @@ export function TeamHub() {
             onClick={() => {
               setParams({
                 hub: id,
+                ...(["people", "suggested"].includes(id) && city
+                  ? { city }
+                  : {}),
                 ...(["people", "suggested"].includes(id) && fieldOfStudy
                   ? { study: fieldOfStudy }
                   : {}),
@@ -260,6 +267,21 @@ export function TeamHub() {
           people={people}
           connections={connections}
           fieldOfStudy={fieldOfStudy}
+          city={city}
+          onCityChange={(value) => {
+            const next = new URLSearchParams(params);
+            if (value.trim()) next.set("city", value.trim());
+            else next.delete("city");
+            setSize(48);
+            setParams(next);
+          }}
+          onClearDirectoryFilters={() => {
+            const next = new URLSearchParams(params);
+            next.delete("city");
+            next.delete("study");
+            setSize(48);
+            setParams(next);
+          }}
           onStudyChange={(value) => {
             const next = new URLSearchParams(params);
             if (value) next.set("study", normalizeStudyField(value));

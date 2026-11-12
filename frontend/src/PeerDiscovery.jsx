@@ -85,6 +85,9 @@ export function PeerDiscovery({
   profile,
   people,
   connections,
+  city = "",
+  onCityChange = () => {},
+  onClearDirectoryFilters,
   fieldOfStudy = "",
   onStudyChange = () => {},
   connectionsReady = true,
@@ -354,6 +357,26 @@ export function PeerDiscovery({
             </select>
           </label>
           <label>
+            City
+            <input
+              aria-label="Filter by city"
+              key={city}
+              defaultValue={city}
+              placeholder="Enter the city shown on a student card"
+              maxLength={120}
+              onBlur={(event) => onCityChange(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  event.preventDefault();
+                  onCityChange(event.currentTarget.value);
+                }
+              }}
+            />
+            <small className="hint">
+              Press Enter to search the saved city across all profiles.
+            </small>
+          </label>
+          <label>
             Domain / goal
             <select
               aria-label="Filter by domain or goal"
@@ -380,7 +403,7 @@ export function PeerDiscovery({
             </select>
           </label>
         </div>
-        {(search || skill || domain || experience || fieldOfStudy) && (
+        {(search || skill || domain || experience || fieldOfStudy || city) && (
           <button
             className="text-link"
             onClick={() => {
@@ -388,7 +411,11 @@ export function PeerDiscovery({
               setSkill("");
               setDomain("");
               setExperience("");
-              onStudyChange("");
+              if (onClearDirectoryFilters) onClearDirectoryFilters();
+              else {
+                onStudyChange("");
+                onCityChange("");
+              }
             }}
           >
             Clear filters

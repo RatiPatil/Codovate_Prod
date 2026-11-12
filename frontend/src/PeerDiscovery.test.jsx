@@ -318,3 +318,15 @@ it("shows readable study labels and sends the selected value to the directory qu
   });
   expect(change).toHaveBeenCalledWith("MECHANICAL ENGINEERING");
 });
+
+it("commits city search on Enter and clears city and study together", () => {
+  const change = vi.fn(),
+    clear = vi.fn();
+  open({ city: "Pune", onCityChange: change, onClearDirectoryFilters: clear });
+  const input = screen.getByLabelText("Filter by city");
+  fireEvent.change(input, { target: { value: "Mumbai" } });
+  fireEvent.keyDown(input, { key: "Enter" });
+  expect(change).toHaveBeenCalledWith("Mumbai");
+  fireEvent.click(screen.getByRole("button", { name: "Clear filters" }));
+  expect(clear).toHaveBeenCalledOnce();
+});
