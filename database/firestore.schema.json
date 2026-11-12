@@ -312,6 +312,32 @@
               }
             }
           ]
+        },
+        "nameParts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "first",
+            "middle",
+            "last"
+          ],
+          "properties": {
+            "first": {
+              "type": "string",
+              "maxLength": 40,
+              "pattern": "^(?:[\\p{L}\\p{M}][\\p{L}\\p{M}'’ .-]*|)$"
+            },
+            "middle": {
+              "type": "string",
+              "maxLength": 40,
+              "pattern": "^(?:[\\p{L}\\p{M}][\\p{L}\\p{M}'’ .-]*|)$"
+            },
+            "last": {
+              "type": "string",
+              "maxLength": 40,
+              "pattern": "^(?:[\\p{L}\\p{M}][\\p{L}\\p{M}'’ .-]*|)$"
+            }
+          }
         }
       },
       "additionalProperties": false

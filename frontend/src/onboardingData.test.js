@@ -30,12 +30,13 @@ import {
 const user = {
   uid: "student",
   email: "private@example.com",
-  displayName: "vivek chavan",
+  displayName: "vivek ashok chavan",
 };
 const draft = () => ({
   ...onboardingDraft(null, user),
   college: "Regional College",
   city: "Pune",
+  mobile: "9876543210",
   program: "Computer Science",
   bio: "I enjoy building accessible web applications.",
   degree: "MCA",
@@ -54,7 +55,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   state.docs = {
     users: {
-      name: "VIVEK CHAVAN",
+      name: "VIVEK ASHOK CHAVAN",
       email: user.email,
       createdAt: "created",
       resumePath: "",
@@ -71,11 +72,17 @@ it("requires onboarding for registered profiles until explicitly completed", () 
   expect(needsOnboarding({ onboarding: { status: "completed" } })).toBe(false);
 });
 it("normalizes full names, validates progress, and supports beginners", () => {
-  expect(onboardingInput(draft(), 4, true).name).toBe("VIVEK CHAVAN");
+  expect(onboardingInput(draft(), 4, true).name).toBe("VIVEK ASHOK CHAVAN");
   expect(onboardingInput(draft(), 4, true).skills).toEqual(["React", "Design"]);
-  expect(() => onboardingInput({ ...draft(), name: "Vivek" }, 1)).toThrow(
-    "full name",
-  );
+  expect(() =>
+    onboardingInput(
+      {
+        ...draft(),
+        nameParts: { first: "Vivek1", middle: "Ashok", last: "Chavan" },
+      },
+      1,
+    ),
+  ).toThrow("First name");
   expect(() => onboardingInput({ ...draft(), college: "" }, 2)).toThrow(
     "college",
   );
@@ -100,7 +107,7 @@ it("normalizes full names, validates progress, and supports beginners", () => {
 it("saves the next step without rewriting account identity or incrementing community counts", async () => {
   await saveOnboarding(user, draft(), 1);
   expect(state.update.mock.calls[0][1]).toMatchObject({
-    name: "VIVEK CHAVAN",
+    name: "VIVEK ASHOK CHAVAN",
     onboarding: {
       step: 2,
       status: "in-progress",
@@ -144,7 +151,7 @@ it("completes atomically, saves private team preferences, and shares only approv
     "uid",
     "updatedAt",
   ]);
-  expect(publicProfile.name).toBe("VIVEK CHAVAN");
+  expect(publicProfile.name).toBe("VIVEK ASHOK CHAVAN");
 });
 it("never publishes discovery by default and never resets completed accounts", async () => {
   await saveOnboarding(user, draft(), 4, { complete: true });
@@ -160,9 +167,18 @@ it("never publishes discovery by default and never resets completed accounts", a
   }
 });
 it("can save an unfinished first step and resume without pretending setup is complete", async () => {
-  await saveOnboarding(user, { ...onboardingDraft(null, user), name: "v" }, 1, {
-    partial: true,
-  });
+  await saveOnboarding(
+    user,
+    {
+      ...onboardingDraft(null, user),
+      name: "v",
+      nameParts: { first: "v", middle: "", last: "" },
+    },
+    1,
+    {
+      partial: true,
+    },
+  );
   expect(state.update.mock.calls[0][1]).toMatchObject({
     name: "V",
     onboarding: { step: 1, status: "in-progress" },

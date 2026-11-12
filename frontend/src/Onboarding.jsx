@@ -6,6 +6,10 @@ import { safeReturnPath } from "./authSupport";
 import { domains, experienceLevels, seekingOptions } from "./discoveryData";
 import { normalizeName } from "./profileNames";
 import {
+  fullNameFromParts,
+  onboardingFieldErrors,
+} from "./onboardingValidation";
+import {
   availabilityOptions,
   careerGoals,
   collaborationModes,
@@ -21,11 +25,52 @@ import {
 } from "./OnboardingVisuals";
 import "./onboarding.css";
 
+function resumeStep(profile, user) {
+  const draft = onboardingDraft(profile, user);
+  return Object.keys(onboardingFieldErrors(draft, 1)).length
+    ? 1
+    : profile?.onboarding?.step || 1;
+}
+
+const fieldLabels = {
+  "nameParts.first": "First name",
+  "nameParts.middle": "Middle name",
+  "nameParts.last": "Last name",
+  city: "City",
+  mobile: "Mobile number",
+  college: "College / institution",
+  degree: "Course / degree",
+  program: "Specialization / field of study",
+  graduationYear: "Graduation year",
+  skillsText: "Skills (comma separated)",
+  bio: "Introduce yourself",
+  "preferences.yearOfStudy": "Study stage",
+  "preferences.desiredRole": "Desired professional role",
+  "preferences.domain": "Area of interest",
+  "preferences.experience": "Experience level",
+  "preferences.availability": "Weekly availability",
+  "preferences.mode": "Preferred collaboration mode",
+};
 const steps = ["About you", "Education", "Skills & goals", "Collaboration"];
 
-function Choices({ label, options, value, onChange, disabled }) {
+function Choices({
+  label,
+  options,
+  value,
+  onChange,
+  disabled,
+  fieldKey,
+  invalid,
+}) {
   return (
-    <fieldset className="onboarding-choices" disabled={disabled}>
+    <fieldset
+      className="onboarding-choices"
+      disabled={disabled}
+      data-field={fieldKey}
+      tabIndex={-1}
+      aria-invalid={invalid || undefined}
+      aria-describedby={invalid ? `error-${fieldKey}` : undefined}
+    >
       <legend>{label}</legend>
       <div>
         {options.map((option) => (
@@ -80,12 +125,13 @@ export function Onboarding() {
   const location = useLocation();
   const [draft, setDraft] = useState(() => onboardingDraft(profile, user));
   const [showWelcome, setShowWelcome] = useState(
-    (profile?.onboarding?.step || 1) === 1,
+    resumeStep(profile, user) === 1,
   );
-  const [step, setStep] = useState(profile?.onboarding?.step || 1);
+  const [step, setStep] = useState(resumeStep(profile, user));
   const [discoverable, setDiscoverable] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
   const [waitingForProfile, setWaitingForProfile] = useState(false);
   const creating = useRef(false);
   const hydrated = useRef(!!profile);
@@ -104,8 +150,8 @@ export function Onboarding() {
     if (profile && !hydrated.current) {
       hydrated.current = true;
       setDraft(onboardingDraft(profile, user));
-      setStep(profile.onboarding?.step || 1);
-      setShowWelcome((profile.onboarding?.step || 1) === 1);
+      setStep(resumeStep(profile, user));
+      setShowWelcome(resumeStep(profile, user) === 1);
     }
   }, [profile, user, createProfile]);
 
@@ -113,9 +159,40 @@ export function Onboarding() {
     heading.current?.focus();
   }, [step, showWelcome]);
   function field(key, value) {
-    setDraft((current) => ({ ...current, [key]: value }));
+    setDraft((current) => {
+      if (key.startsWith("nameParts.")) {
+        const nameParts = { ...current.nameParts, [key.split(".")[1]]: value };
+        return { ...current, nameParts, name: fullNameFromParts(nameParts) };
+      }
+      return { ...current, [key]: value };
+    });
+    setFieldErrors((current) => ({ ...current, [key]: undefined }));
+  }
+  function checkField(key) {
+    const errors = onboardingFieldErrors(draft, step);
+    setFieldErrors((current) => ({ ...current, [key]: errors[key] }));
+  }
+  function inputProps(key) {
+    return {
+      "data-field": key,
+      "aria-label": fieldLabels[key],
+      "aria-invalid": !!fieldErrors[key],
+      "aria-describedby": fieldErrors[key] ? `error-${key}` : undefined,
+      onBlur: () => checkField(key),
+    };
+  }
+  function inlineError(key) {
+    return fieldErrors[key] ? (
+      <span className="onboarding-field-error" id={`error-${key}`}>
+        {fieldErrors[key]}
+      </span>
+    ) : null;
   }
   function preference(key, value) {
+    setFieldErrors((current) => ({
+      ...current,
+      [`preferences.${key}`]: undefined,
+    }));
     setDraft((current) => ({
       ...current,
       preferences: { ...current.preferences, [key]: value },
@@ -124,6 +201,16 @@ export function Onboarding() {
   async function save(event, leave = false) {
     event?.preventDefault();
     if (busy || waitingForProfile) return;
+    const errors = onboardingFieldErrors(draft, step, leave);
+    setFieldErrors(errors);
+    if (Object.keys(errors).length) {
+      setError("Check the highlighted fields before continuing.");
+      const first = document.querySelector(
+        `[data-field="${Object.keys(errors)[0]}"]`,
+      );
+      first?.focus();
+      return;
+    }
     setBusy(true);
     setError("");
     try {
@@ -137,6 +224,7 @@ export function Onboarding() {
       else if (complete) setWaitingForProfile(true);
       else setStep((current) => Math.min(current + 1, 4));
     } catch (failure) {
+      if (failure.fields) setFieldErrors(failure.fields);
       setError(
         failure.code
           ? "Could not save your progress. Check your connection and make sure the latest Firebase rules are deployed, then retry."
@@ -243,22 +331,33 @@ export function Onboarding() {
             {step === 1 && (
               <>
                 <p>
-                  Confirm your full name. We’ll save it in uppercase for your
-                  profile and team identity.
+                  Enter your first, middle and last name as you want them on
+                  your profile. Your full name will be saved in uppercase.
                 </p>
-                <label>
-                  Your full name
-                  <input
-                    name="name"
-                    autoComplete="name"
-                    placeholder="Enter your full name"
-                    maxLength={100}
-                    value={draft.name}
-                    onChange={(event) => field("name", event.target.value)}
-                    required
-                    aria-describedby="name-preview"
-                  />
-                </label>
+                <div className="onboarding-name-fields">
+                  {[
+                    ["first", "First name", "given-name"],
+                    ["middle", "Middle name", "additional-name"],
+                    ["last", "Last name", "family-name"],
+                  ].map(([key, label, autocomplete]) => (
+                    <label key={key}>
+                      {label}
+                      <input
+                        {...inputProps(`nameParts.${key}`)}
+                        name={key}
+                        autoComplete={autocomplete}
+                        placeholder={`Enter your ${label.toLowerCase()}`}
+                        maxLength={40}
+                        value={draft.nameParts[key]}
+                        onChange={(event) =>
+                          field(`nameParts.${key}`, event.target.value)
+                        }
+                        required
+                      />
+                      {inlineError(`nameParts.${key}`)}
+                    </label>
+                  ))}
+                </div>
                 <p className="hint" id="name-preview">
                   Profile name:{" "}
                   <strong>
@@ -270,11 +369,38 @@ export function Onboarding() {
                   <input
                     required
                     placeholder="Enter your city"
+                    {...inputProps("city")}
                     autoComplete="address-level2"
                     maxLength={100}
                     value={draft.city}
                     onChange={(event) => field("city", event.target.value)}
                   />
+                  {inlineError("city")}
+                </label>
+                <label>
+                  Mobile number
+                  <span className="onboarding-phone">
+                    <span aria-hidden="true">+91</span>
+                    <input
+                      {...inputProps("mobile")}
+                      type="tel"
+                      inputMode="numeric"
+                      autoComplete="tel-national"
+                      maxLength={10}
+                      placeholder="10-digit mobile number"
+                      value={draft.mobile}
+                      onChange={(event) =>
+                        field("mobile", event.target.value.replace(/\D/g, ""))
+                      }
+                      required
+                      aria-label="Mobile number"
+                    />
+                  </span>
+                  {inlineError("mobile")}
+                  <span className="hint">
+                    Enter 10 digits without the country code. This is saved
+                    privately as your contact number.
+                  </span>
                 </label>
               </>
             )}
@@ -285,9 +411,11 @@ export function Onboarding() {
                   <input
                     required
                     maxLength={180}
+                    {...inputProps("college")}
                     value={draft.college}
                     onChange={(event) => field("college", event.target.value)}
                   />
+                  {inlineError("college")}
                 </label>
                 <label>
                   Course / degree
@@ -295,9 +423,11 @@ export function Onboarding() {
                     required
                     maxLength={100}
                     placeholder="For example, B.Tech or MCA"
+                    {...inputProps("degree")}
                     value={draft.degree}
                     onChange={(event) => field("degree", event.target.value)}
                   />
+                  {inlineError("degree")}
                 </label>
                 <label>
                   Specialization / field of study
@@ -305,14 +435,17 @@ export function Onboarding() {
                     maxLength={180}
                     required
                     placeholder="For example, Computer Science"
+                    {...inputProps("program")}
                     value={draft.program}
                     onChange={(event) => field("program", event.target.value)}
                   />
+                  {inlineError("program")}
                 </label>
                 <label>
                   Study stage
                   <select
                     required
+                    {...inputProps("preferences.yearOfStudy")}
                     value={draft.preferences.yearOfStudy}
                     onChange={(event) =>
                       preference("yearOfStudy", event.target.value)
@@ -323,6 +456,7 @@ export function Onboarding() {
                       <option key={value}>{value}</option>
                     ))}
                   </select>
+                  {inlineError("preferences.yearOfStudy")}
                 </label>
                 <label>
                   Graduation year
@@ -331,11 +465,13 @@ export function Onboarding() {
                     inputMode="numeric"
                     maxLength={4}
                     placeholder="For example, 2027"
+                    {...inputProps("graduationYear")}
                     value={draft.graduationYear}
                     onChange={(event) =>
                       field("graduationYear", event.target.value)
                     }
                   />
+                  {inlineError("graduationYear")}
                 </label>
               </div>
             )}
@@ -348,16 +484,19 @@ export function Onboarding() {
                       required
                       maxLength={100}
                       placeholder="For example, Frontend Developer"
+                      {...inputProps("preferences.desiredRole")}
                       value={draft.preferences.desiredRole}
                       onChange={(event) =>
                         preference("desiredRole", event.target.value)
                       }
                     />
+                    {inlineError("preferences.desiredRole")}
                   </label>
                   <label>
                     Area of interest
                     <select
                       required
+                      {...inputProps("preferences.domain")}
                       value={draft.preferences.domain}
                       onChange={(event) =>
                         preference("domain", event.target.value)
@@ -368,10 +507,12 @@ export function Onboarding() {
                         <option key={value}>{value}</option>
                       ))}
                     </select>
+                    {inlineError("preferences.domain")}
                   </label>
                   <label>
                     Experience level
                     <select
+                      {...inputProps("preferences.experience")}
                       value={draft.preferences.experience}
                       onChange={(event) =>
                         preference("experience", event.target.value)
@@ -381,6 +522,7 @@ export function Onboarding() {
                         <option key={value}>{value}</option>
                       ))}
                     </select>
+                    {inlineError("preferences.experience")}
                   </label>
                 </div>
                 <label>
@@ -388,11 +530,13 @@ export function Onboarding() {
                   <input
                     maxLength={1200}
                     placeholder="React, Python, Design…"
+                    {...inputProps("skillsText")}
                     value={draft.skillsText}
                     onChange={(event) =>
                       field("skillsText", event.target.value)
                     }
                   />
+                  {inlineError("skillsText")}
                 </label>
                 <label className="onboarding-check">
                   <input
@@ -408,8 +552,11 @@ export function Onboarding() {
                   label="What are your goals? Choose at least one."
                   options={careerGoals}
                   value={draft.preferences.goals}
+                  fieldKey="preferences.goals"
+                  invalid={!!fieldErrors["preferences.goals"]}
                   onChange={(value) => preference("goals", value)}
                 />
+                {inlineError("preferences.goals")}
                 <label>
                   Introduce yourself
                   <textarea
@@ -417,9 +564,11 @@ export function Onboarding() {
                     placeholder="Tell future teammates what you enjoy learning and building."
                     maxLength={1500}
                     rows={3}
+                    {...inputProps("bio")}
                     value={draft.bio}
                     onChange={(event) => field("bio", event.target.value)}
                   />
+                  {inlineError("bio")}
                 </label>
               </>
             )}
@@ -429,6 +578,7 @@ export function Onboarding() {
                   <label>
                     Weekly availability
                     <select
+                      {...inputProps("preferences.availability")}
                       value={draft.preferences.availability}
                       onChange={(event) =>
                         preference("availability", event.target.value)
@@ -438,10 +588,12 @@ export function Onboarding() {
                         <option key={value}>{value}</option>
                       ))}
                     </select>
+                    {inlineError("preferences.availability")}
                   </label>
                   <label>
                     Preferred collaboration mode
                     <select
+                      {...inputProps("preferences.mode")}
                       value={draft.preferences.mode}
                       onChange={(event) =>
                         preference("mode", event.target.value)
@@ -451,14 +603,18 @@ export function Onboarding() {
                         <option key={value}>{value}</option>
                       ))}
                     </select>
+                    {inlineError("preferences.mode")}
                   </label>
                 </div>
                 <Choices
                   label="Who would you like to find? Choose at least one."
                   options={seekingOptions}
                   value={draft.preferences.seeking}
+                  fieldKey="preferences.seeking"
+                  invalid={!!fieldErrors["preferences.seeking"]}
                   onChange={(value) => preference("seeking", value)}
                 />
+                {inlineError("preferences.seeking")}
                 <label className="onboarding-check">
                   <input
                     type="checkbox"

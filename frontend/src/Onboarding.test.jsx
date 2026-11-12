@@ -23,8 +23,26 @@ beforeEach(() => {
   vi.clearAllMocks();
   state.save.mockResolvedValue();
   state.session = {
-    user: { uid: "student", displayName: "vivek chavan" },
-    profile: { name: "vivek chavan", onboarding: initialOnboarding("created") },
+    user: { uid: "student", displayName: "vivek ashok chavan" },
+    profile: {
+      name: "vivek ashok chavan",
+      mobile: "+919876543210",
+      city: "Pune",
+      college: "Regional College",
+      degree: "MCA",
+      program: "Computer Science",
+      graduationYear: "2027",
+      bio: "I enjoy building accessible applications.",
+      skills: ["React"],
+      careerPreferences: {
+        yearOfStudy: "Final year",
+        desiredRole: "Frontend Developer",
+        domain: "Web Development",
+        goals: ["Internships"],
+        seeking: ["Project Collaborators"],
+      },
+      onboarding: initialOnboarding("created"),
+    },
     loading: false,
     logout: state.logout,
   };
@@ -66,9 +84,11 @@ it("prefills the name and shows its uppercase profile preview", () => {
   fireEvent.click(
     screen.getByRole("button", { name: "Let’s build my profile" }),
   );
-  expect(screen.getByLabelText("Your full name")).toHaveValue("vivek chavan");
+  expect(screen.getByLabelText("First name")).toHaveValue("VIVEK");
+  expect(screen.getByLabelText("Middle name")).toHaveValue("ASHOK");
+  expect(screen.getByLabelText("Last name")).toHaveValue("CHAVAN");
   expect(
-    screen.getByRole("heading", { name: "VIVEK CHAVAN" }),
+    screen.getByRole("heading", { name: "VIVEK ASHOK CHAVAN" }),
   ).toBeInTheDocument();
 });
 it("resumes the saved education step and keeps users on the step when saving fails", async () => {
@@ -116,7 +136,7 @@ it("greets new students with a welcome illustration before collecting details", 
   expect(
     screen.getByRole("img", { name: /illustrated student profile/ }),
   ).toBeInTheDocument();
-  expect(screen.queryByLabelText("Your full name")).toBeNull();
+  expect(screen.queryByLabelText("First name")).toBeNull();
 });
 
 it("reveals the celebration only after a successful save and completed profile snapshot", async () => {
@@ -163,9 +183,31 @@ it("requires existing registered users without a marker to finish onboarding and
   fireEvent.click(
     screen.getByRole("button", { name: "Let’s build my profile" }),
   );
-  expect(screen.getByLabelText("Your full name")).toHaveValue(
-    "Existing Student",
-  );
+  expect(screen.getByLabelText("First name")).toHaveValue("EXISTING");
+  expect(screen.getByLabelText("Middle name")).toHaveValue("");
+  expect(screen.getByLabelText("Last name")).toHaveValue("STUDENT");
   expect(screen.getByLabelText("City", { exact: true })).toHaveValue("Pune");
   expect(screen.queryByText("Profile ready")).toBeNull();
+});
+
+it("blocks invalid city and short mobile inline before any save", async () => {
+  open();
+  fireEvent.click(
+    screen.getByRole("button", { name: "Let’s build my profile" }),
+  );
+  fireEvent.change(screen.getByLabelText("City", { exact: true }), {
+    target: { value: "Pune123" },
+  });
+  fireEvent.change(
+    screen.getByRole("textbox", { name: "Mobile number", exact: true }),
+    { target: { value: "98765" } },
+  );
+  fireEvent.click(screen.getByRole("button", { name: /Save and continue/ }));
+  expect(state.save).not.toHaveBeenCalled();
+  expect(screen.getByText(/Numbers are not allowed/)).toBeInTheDocument();
+  expect(screen.getByText(/10-digit Indian mobile/)).toBeInTheDocument();
+  expect(screen.getByLabelText(/^City/)).toHaveAttribute(
+    "aria-invalid",
+    "true",
+  );
 });

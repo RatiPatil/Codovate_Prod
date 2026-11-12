@@ -490,3 +490,106 @@
     width: 190px;
   }
 }
+
+/* Focused setup chrome and responsive identity fields. */
+.onboarding-brand-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  max-width: 1240px;
+  margin: auto;
+  padding: 22px 48px;
+  border-bottom: 1px solid var(--border);
+}
+.onboarding-brand-bar .brand img {
+  width: 90px;
+}
+.onboarding-brand-bar > span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 11px;
+}
+.onboarding-name-fields {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+.onboarding-name-fields label {
+  min-width: 0;
+}
+.onboarding-field-error {
+  color: #b63d49;
+  font-size: 11px;
+  line-height: 1.6;
+  font-weight: 500;
+}
+.onboarding-fields [aria-invalid="true"] {
+  border-color: #ca6270;
+  background: #fffafa;
+}
+.onboarding-phone {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.onboarding-phone > span {
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  color: var(--muted);
+  background: #f5f4fc;
+  border-right: 1px solid var(--border);
+}
+.onboarding-phone input {
+  border: none;
+  border-radius: 0;
+  min-width: 0;
+}
+.onboarding-fields p {
+  line-height: 1.8;
+  color: var(--muted);
+  font-size: 12px;
+}
+.onboarding-form {
+  border-radius: 22px;
+  box-shadow: 0 8px 32px #42369004;
+}
+.onboarding-steps {
+  padding-bottom: 22px;
+  border-bottom: 1px solid var(--border);
+}
+@media (max-width: 1099px) {
+  .onboarding-layout {
+    grid-template-columns: minmax(0, 1fr);
+    max-width: 760px;
+    margin: auto;
+  }
+  .onboarding-preview-column,
+  .onboarding-success .onboarding-student-card {
+    display: none;
+  }
+  .onboarding-heading,
+  .onboarding-steps {
+    max-width: 760px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+@media (max-width: 600px) {
+  .onboarding-name-fields {
+    grid-template-columns: 1fr;
+  }
+  .onboarding-brand-bar {
+    padding: 18px 22px;
+  }
+  .onboarding-brand-bar > span {
+    max-width: 155px;
+    font-size: 10px;
+    text-align: right;
+  }
+}

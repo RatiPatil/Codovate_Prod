@@ -241,3 +241,10 @@ test('onboarding schema preserves legacy profiles and validates resumable and co
     assert.equal(validateDocument('users',user.id,{...complete,...patch}).valid,false,JSON.stringify(patch));
   }
 });
+
+test("accepts private structured name drafts and rejects invalid name fields", () => {
+  const nameParts = {first:"VIVEK",middle:"ASHOK",last:"CHAVAN"};
+  assert.equal(validateDocument("users",user.id,{...user.data,nameParts}).valid,true);
+  assert.equal(validateDocument("users",user.id,{...user.data,nameParts:{first:"VIVEK",middle:"",last:""}}).valid,true);
+  for (const bad of [{...nameParts,first:"VIVEK1"},{...nameParts,middle:"---"},{...nameParts,admin:true},{first:"VIVEK",last:"CHAVAN"}]) assert.equal(validateDocument("users",user.id,{...user.data,nameParts:bad}).valid,false);
+});

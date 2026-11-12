@@ -1886,7 +1886,7 @@ try {
   const onboardUser = env.authenticatedContext('onboarding-student', {email:'onboarding@example.com'});
   const onboardRef = doc(onboardUser.firestore(),'users','onboarding-student');
   await check('new profile starts resumable onboarding',assertSucceeds(setDoc(onboardRef,{
-    ...profile,name:'VIVEK CHAVAN',email:'onboarding@example.com',resumePath:'',
+    ...profile,name:'VIVEK ASHOK CHAVAN',nameParts:{first:'VIVEK',middle:'ASHOK',last:'CHAVAN'},mobile:'+919876543210',email:'onboarding@example.com',resumePath:'',
     onboarding:{version:1,status:'in-progress',step:1,startedAt:serverTimestamp(),completedAt:null},
   })));
   const onboardingProfile=(await getDoc(onboardRef)).data();
@@ -1907,13 +1907,18 @@ try {
     city:"Pune", program:"Computer Science", bio:"I enjoy building with my peers.",
     careerPreferences:{...preferences,seeking:[]}, onboarding:completion, updatedAt:serverTimestamp(),
   })));
+  for (const bad of [{city:'Pune123'},{mobile:'+9198765'},{nameParts:{first:'VIVEK1',middle:'ASHOK',last:'CHAVAN'}},{nameParts:{first:'VIVEK',middle:'',last:'CHAVAN'}}]) {
+    await check('onboarding rejects invalid identity: '+Object.keys(bad)[0], assertFails(updateDoc(onboardRef, {
+      city:'Pune',program:'Computer Science',bio:'I enjoy building with my peers.',careerPreferences:preferences,onboarding:completion,updatedAt:serverTimestamp(),...bad,
+    })));
+  }
   const completeBatch=writeBatch(onboardUser.firestore());
   completeBatch.update(onboardRef,{city:"Pune",program:"Computer Science",bio:"I enjoy building with my peers.",careerPreferences:preferences,onboarding:completion,updatedAt:serverTimestamp()});
-  completeBatch.set(doc(onboardUser.firestore(),'adminUsers','onboarding-student'),{uid:'onboarding-student',fullName:'VIVEK CHAVAN',joinedAt:onboardingProfile.createdAt,updatedAt:serverTimestamp()});
+  completeBatch.set(doc(onboardUser.firestore(),'adminUsers','onboarding-student'),{uid:'onboarding-student',fullName:'VIVEK ASHOK CHAVAN',joinedAt:onboardingProfile.createdAt,updatedAt:serverTimestamp()});
   completeBatch.set(doc(onboardUser.firestore(),'discoveryPreferences','onboarding-student'),{
     uid:'onboarding-student',details:{desiredRole:preferences.desiredRole,domain:preferences.domain,experience:preferences.experience,college:profile.college,year:preferences.yearOfStudy,location:profile.city,photoUrl:'',achievements:[],seeking:preferences.seeking,passions:[]},shareDetails:false,updatedAt:serverTimestamp(),
   });
-  completeBatch.set(doc(onboardUser.firestore(),'memberProfiles','onboarding-student'),{uid:'onboarding-student',name:'VIVEK CHAVAN',skills:profile.skills,updatedAt:serverTimestamp()});
+  completeBatch.set(doc(onboardUser.firestore(),'memberProfiles','onboarding-student'),{uid:'onboarding-student',name:'VIVEK ASHOK CHAVAN',skills:profile.skills,updatedAt:serverTimestamp()});
   await check('onboarding completion and consented discovery commit atomically',assertSucceeds(completeBatch.commit()));
   await check('completed onboarding cannot be reset',assertFails(updateDoc(onboardRef,{onboarding:{...onboardingProfile.onboarding,step:1},updatedAt:serverTimestamp()})));
   await check('other students cannot read onboarding or private career preferences',assertFails(getDoc(doc(bob.firestore(),'users','onboarding-student'))));
@@ -1949,7 +1954,7 @@ try {
   const { onboarding: omittedMarker, ...withoutMarker } = enrolled;
   await check('enrolled student cannot remove onboarding to bypass it', assertFails(setDoc(legacyRef, { ...withoutMarker, updatedAt:serverTimestamp() })));
   await check('existing student completes onboarding once', assertSucceeds(updateDoc(legacyRef, {
-    city:'Pune', program:'Computer Science', bio:'I enjoy collaborating on web projects.', careerPreferences:preferences,
+    city:'Pune', program:'Computer Science', bio:'I enjoy collaborating on web projects.', name:'EXISTING ASHOK STUDENT', nameParts:{first:'EXISTING',middle:'ASHOK',last:'STUDENT'}, careerPreferences:preferences,
     onboarding:{...legacyMarker, status:'completed', step:4, completedAt:serverTimestamp()}, updatedAt:serverTimestamp(),
   })));
   await check('completed existing student can update their resume link with import metadata retained', assertSucceeds(updateDoc(legacyRef, {

@@ -104,6 +104,7 @@ import { Mentoring, BookingAdmin, Updates } from "./Growth";
 import { Notifications, NotificationNav, AdminOverview } from "./Notifications";
 import { useOpportunityCounts } from "./opportunityCounts.js";
 import { Onboarding, OnboardingGate } from "./Onboarding.jsx";
+import { splitFullName } from "./onboardingValidation";
 import { needsOnboarding } from "./onboardingContract";
 import { normalizeFullName } from "./profileNames";
 import { OpportunityResources } from "./OpportunityResources.jsx";
@@ -1549,7 +1550,7 @@ function Profile() {
     const values = new FormData(e.currentTarget);
     const data = Object.fromEntries(values);
     delete data.resume;
-    try { data.name = normalizeFullName(data.name); }
+    try { data.name = normalizeFullName(data.name); if (profile?.nameParts) data.nameParts = splitFullName(data.name); }
     catch (failure) { setError(failure.message); return; }
     const skillsError = skillInputError(data.skills);
     if (skillsError) {
@@ -2292,6 +2293,7 @@ export default function App() {
   const catalog = useOpportunities();
   const location = useLocation();
   const adminScreen = admin && location.pathname === "/admin";
+  const onboardingScreen = location.pathname === "/onboarding";
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" });
     document.title = adminScreen
@@ -2303,8 +2305,9 @@ export default function App() {
       <a className="skip-link" href="#main">
         Skip to content
       </a>
-      {!adminScreen && <Header />}
-      {!adminScreen && <PreviewBanner />}
+      {onboardingScreen && <header className="onboarding-brand-bar"><Logo /><span><ShieldCheck size={15} aria-hidden="true" />Your profile. Your next chapter.</span></header>}
+      {!adminScreen && !onboardingScreen && <Header />}
+      {!adminScreen && !onboardingScreen && <PreviewBanner />}
       <main id="main">
         <OnboardingGate>
         <Routes>
@@ -2486,7 +2489,7 @@ export default function App() {
         </Routes>
         </OnboardingGate>
       </main>
-      {!adminScreen && <Footer />}
+      {!adminScreen && !onboardingScreen && <Footer />}
     </>
   );
 }

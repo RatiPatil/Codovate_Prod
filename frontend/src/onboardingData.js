@@ -1,9 +1,16 @@
 import { doc, runTransaction, serverTimestamp } from "firebase/firestore";
 import { db } from "./firebase";
-import { normalizeName, normalizeFullName } from "./profileNames";
+import { normalizeFullName } from "./profileNames";
 import { discoveryDetails } from "./discoveryData";
 import { withTimeout } from "./authSupport";
 import { skillInputError } from "./domain";
+import {
+  splitFullName,
+  normalizedNameParts,
+  fullNameFromParts,
+  localMobile,
+  onboardingFieldErrors,
+} from "./onboardingValidation";
 
 import {
   careerGoals,
@@ -25,6 +32,9 @@ export {
 export function onboardingDraft(profile, user) {
   return {
     name: profile?.name || user?.displayName || "",
+    nameParts:
+      profile?.nameParts || splitFullName(profile?.name || user?.displayName),
+    mobile: localMobile(profile?.mobile || user?.phoneNumber),
     city: profile?.city || "",
     college: profile?.college || "",
     degree: profile?.degree || "",
@@ -40,6 +50,12 @@ export function onboardingDraft(profile, user) {
 export function onboardingInput(raw, step, complete = false, partial = false) {
   if (!Number.isInteger(step) || step < 1 || step > 4)
     throw new Error("Choose a valid onboarding step.");
+  const fieldErrors = onboardingFieldErrors(raw, complete ? 4 : step, partial);
+  if (Object.keys(fieldErrors).length)
+    throw Object.assign(new Error(Object.values(fieldErrors)[0]), {
+      fields: fieldErrors,
+    });
+  const nameParts = normalizedNameParts(raw);
   const limits = {
     name: 100,
     city: 100,
@@ -54,13 +70,15 @@ export function onboardingInput(raw, step, complete = false, partial = false) {
     Object.entries(limits).map(([key, limit]) => {
       const value =
         key === "name"
-          ? normalizeName(raw[key])
+          ? fullNameFromParts(nameParts)
           : String(raw[key] || "").trim();
       if (value.length > limit)
         throw new Error(`Keep ${key} within ${limit} characters.`);
       return [key, value];
     }),
   );
+  profile.nameParts = nameParts;
+  profile.mobile = raw.mobile ? `+91${raw.mobile}` : "";
   const skillError = skillInputError(String(raw.skillsText || ""));
   if (skillError) throw new Error(skillError);
   profile.skills = [
