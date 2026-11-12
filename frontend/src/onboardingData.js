@@ -1,3 +1,4 @@
+import { normalizeStudyField } from "./studyFields";
 import { programSkills } from "./profileSkills";
 import {
   doc,
@@ -288,6 +289,9 @@ export async function saveOnboarding(
             experience: values.careerPreferences.experience,
             college: values.college,
             degree: values.degree,
+            fieldOfStudy: normalizeStudyField(
+              values.program || existing.program,
+            ),
             ...values.teammateCard,
             year: values.careerPreferences.yearOfStudy,
             location: values.city,

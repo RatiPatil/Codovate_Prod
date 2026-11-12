@@ -477,8 +477,8 @@ service cloud.firestore {
   }
   function validDiscoveryDetails(d) {
    return d is map && d.keys().hasAll(['desiredRole','domain','experience','college','year','location','photoUrl','achievements','seeking','passions'])
-    && d.keys().hasOnly(['desiredRole','domain','experience','college','degree','year','location','photoUrl','achievements','seeking','passions'])
-    && text(d.desiredRole,100) && text(d.college,180) && text(d.get('degree',''),100) && text(d.year,40) && text(d.location,100)
+    && d.keys().hasOnly(['desiredRole','domain','experience','college','degree','fieldOfStudy','year','location','photoUrl','achievements','seeking','passions'])
+    && text(d.desiredRole,100) && text(d.college,180) && text(d.get('degree',''),100) && text(d.get('fieldOfStudy',''),180) && text(d.year,40) && text(d.location,100)
     && d.domain in ['','Web Development','AI/ML','Data Science','Cyber Security','Startups','Research','Hackathons','Other']
     && d.experience in ['','Beginner','Intermediate','Advanced']
     && text(d.photoUrl,500) && (d.photoUrl=='' || d.photoUrl.matches('https://(avatars[.]githubusercontent[.]com|lh3[.]googleusercontent[.]com)/.*'))

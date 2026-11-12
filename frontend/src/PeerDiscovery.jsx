@@ -1,4 +1,9 @@
 import {
+  knownStudyFields,
+  normalizeStudyField,
+  studyFieldLabel,
+} from "./studyFields";
+import {
   GraduationCap,
   MapPin,
   Handshake,
@@ -80,6 +85,8 @@ export function PeerDiscovery({
   profile,
   people,
   connections,
+  fieldOfStudy = "",
+  onStudyChange = () => {},
   connectionsReady = true,
   connectionsError = "",
   myPublic,
@@ -149,6 +156,7 @@ export function PeerDiscovery({
     search,
     skill,
     domain,
+    fieldOfStudy,
     experience,
     dismissed: dismissed.items.map((x) => x.peerId),
     blocked: connections
@@ -170,6 +178,17 @@ export function PeerDiscovery({
           ? b.match.score - a.match.score || a.name.localeCompare(b.name)
           : a.name.localeCompare(b.name),
   );
+  const studyOptions = [
+    ...new Set([
+      ...knownStudyFields,
+      ...people.items.map((person) =>
+        normalizeStudyField(person.details?.fieldOfStudy),
+      ),
+      fieldOfStudy,
+    ]),
+  ]
+    .filter(Boolean)
+    .sort((a, b) => studyFieldLabel(a).localeCompare(studyFieldLabel(b)));
   const update = (key, value) => setDraft((d) => ({ ...d, [key]: value }));
   return (
     <>
@@ -302,7 +321,7 @@ export function PeerDiscovery({
           </span>
         </header>
         <div className="discovery-filters">
-          <label>
+          <label className="discovery-name-search">
             Search students
             <input
               type="search"
@@ -318,6 +337,21 @@ export function PeerDiscovery({
               onChange={(e) => setSkill(e.target.value)}
               placeholder="React, Java, Python, ML"
             />
+          </label>
+          <label>
+            Field of study
+            <select
+              aria-label="Filter by field of study"
+              value={fieldOfStudy}
+              onChange={(event) => onStudyChange(event.target.value)}
+            >
+              <option value="">All fields of study</option>
+              {studyOptions.map((field) => (
+                <option key={field} value={field}>
+                  {studyFieldLabel(field)}
+                </option>
+              ))}
+            </select>
           </label>
           <label>
             Domain / goal
@@ -346,7 +380,7 @@ export function PeerDiscovery({
             </select>
           </label>
         </div>
-        {(search || skill || domain || experience) && (
+        {(search || skill || domain || experience || fieldOfStudy) && (
           <button
             className="text-link"
             onClick={() => {
@@ -354,6 +388,7 @@ export function PeerDiscovery({
               setSkill("");
               setDomain("");
               setExperience("");
+              onStudyChange("");
             }}
           >
             Clear filters
@@ -519,6 +554,11 @@ export function PeerDiscovery({
                 <p className="peer-role">
                   {d.desiredRole || "Student collaborator"}
                 </p>
+                {d.fieldOfStudy && (
+                  <p className="peer-study-chip">
+                    {studyFieldLabel(d.fieldOfStudy)}
+                  </p>
+                )}
                 {(d.degree || d.college || d.year) && (
                   <p className="peer-academic">
                     <GraduationCap size={16} aria-hidden="true" />{" "}
@@ -536,7 +576,7 @@ export function PeerDiscovery({
                     {p.skills?.length
                       ? "Skills"
                       : p.suggestedSkills?.length
-                        ? "Program-based skills"
+                        ? "Study-based skills"
                         : "Skills"}
                     {!p.skills?.length && !!p.suggestedSkills?.length && (
                       <span
@@ -550,9 +590,7 @@ export function PeerDiscovery({
                   {visibleSkills(p).length ? (
                     <PeerTags
                       values={visibleSkills(p)}
-                      label={
-                        p.skills?.length ? "Skills" : "Program-based skills"
-                      }
+                      label={p.skills?.length ? "Skills" : "Study-based skills"}
                     />
                   ) : (
                     <p className="hint">Skills not shared yet.</p>

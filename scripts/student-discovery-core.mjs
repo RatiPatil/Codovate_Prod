@@ -1,3 +1,4 @@
+import { normalizeStudyField } from "../frontend/src/studyFields.js";
 import { programSkills } from "../frontend/src/profileSkills.js";
 // Admin-only projection. Never copies contacts or credentials; program defaults stay separate from confirmed skills.
 const blankDetails = () => ({
@@ -6,6 +7,7 @@ const blankDetails = () => ({
   experience: "",
   college: "",
   degree: "",
+  fieldOfStudy: "",
   year: "",
   location: "",
   photoUrl: "",
@@ -101,6 +103,7 @@ export function studentCard(uid, profile) {
       : "",
     college: text(profile.college, 180),
     degree: text(profile.degree, 100),
+    fieldOfStudy: normalizeStudyField(text(profile.program, 180)),
     year: text(career.yearOfStudy, 40),
     location: text(profile.city, 100) || text(profile.taluka, 100),
     photoUrl: avatar(card.photoUrl),
@@ -135,20 +138,30 @@ export async function publishStudent({ db, uid, timestamp, apply = false }) {
     const card = studentCard(uid, profile.data());
     if (!card) return "ineligible";
     if (current.exists) {
+      const patch = {};
       if (
         !current.data().skills?.length &&
         card.suggestedSkills?.length &&
         JSON.stringify(current.data().suggestedSkills) !==
           JSON.stringify(card.suggestedSkills)
-      ) {
-        if (apply)
-          tx.update(publicRef, {
-            suggestedSkills: card.suggestedSkills,
-            updatedAt: timestamp(),
-          });
-        return apply ? "updated" : "eligible";
+      )
+        patch.suggestedSkills = card.suggestedSkills;
+      const field = card.details.fieldOfStudy;
+      const shareField =
+        preferences.data()?.shareDetails === true &&
+        current.data().details &&
+        field &&
+        (current.data().details.fieldOfStudy !== field ||
+          preferences.data()?.details?.fieldOfStudy !== field);
+      if (shareField) patch["details.fieldOfStudy"] = field;
+      if (!Object.keys(patch).length) return "student_managed";
+      if (apply) {
+        const updatedAt = timestamp();
+        if (shareField)
+          tx.update(prefRef, { "details.fieldOfStudy": field, updatedAt });
+        tx.update(publicRef, { ...patch, updatedAt });
       }
-      return "student_managed";
+      return apply ? "updated" : "eligible";
     }
     if (apply) {
       const updatedAt = timestamp();
@@ -157,6 +170,7 @@ export async function publishStudent({ db, uid, timestamp, apply = false }) {
       const details = raw
         ? studentCard(uid, {
             ...profile.data(),
+            program: profile.data().program || raw.fieldOfStudy || "",
             college: raw.college,
             degree: raw.degree,
             city: raw.location,

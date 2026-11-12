@@ -40,7 +40,14 @@ function database(p = profile(), extra = {}) {
           data: () => records.get(path),
         }),
         update: (path, value) => {
-          records.set(path, { ...records.get(path), ...value });
+          const record = structuredClone(records.get(path));
+          for (const [key, item] of Object.entries(value)) {
+            const parts = key.split(".");
+            let target = record;
+            for (const part of parts.slice(0, -1)) target = target[part] ||= {};
+            target[parts.at(-1)] = item;
+          }
+          records.set(path, record);
           writes.push(path);
         },
         set: (path, value) => {
@@ -215,4 +222,61 @@ test("adds program defaults to existing imported cards without changing confirme
     }),
     "student_managed",
   );
+});
+
+test("backfills existing shared study fields atomically and respects privacy", async () => {
+  const p = { ...profile(), program: "MECHANICAL ENGINEERING" };
+  const old = studentCard("import_example", p);
+  delete old.details.fieldOfStudy;
+  const { db, records } = database(p, {
+    "memberProfiles/import_example": old,
+    "discoveryPreferences/import_example": {
+      shareDetails: true,
+      discoverable: true,
+      details: structuredClone(old.details),
+    },
+  });
+  assert.equal(
+    await publishStudent({
+      db,
+      uid: "import_example",
+      apply: true,
+      timestamp: () => "TIME",
+    }),
+    "updated",
+  );
+  assert.equal(
+    records.get("memberProfiles/import_example").details.fieldOfStudy,
+    "MECHANICAL ENGINEERING",
+  );
+  assert.equal(
+    records.get("discoveryPreferences/import_example").details.fieldOfStudy,
+    "MECHANICAL ENGINEERING",
+  );
+  assert.equal(
+    await publishStudent({
+      db,
+      uid: "import_example",
+      apply: true,
+      timestamp: () => "TIME",
+    }),
+    "student_managed",
+  );
+  const hidden = database(p, {
+    "discoveryPreferences/import_example": {
+      shareDetails: true,
+      discoverable: false,
+      details: old.details,
+    },
+  });
+  assert.equal(
+    await publishStudent({
+      db: hidden.db,
+      uid: "import_example",
+      apply: true,
+      timestamp: () => "TIME",
+    }),
+    "student_managed",
+  );
+  assert.equal(hidden.records.has("memberProfiles/import_example"), false);
 });

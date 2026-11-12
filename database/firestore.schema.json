@@ -1984,6 +1984,10 @@
         "degree": {
           "type": "string",
           "maxLength": 100
+        },
+        "fieldOfStudy": {
+          "type": "string",
+          "maxLength": 180
         }
       },
       "additionalProperties": false

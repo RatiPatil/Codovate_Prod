@@ -112,7 +112,27 @@ try {
       updatedAt: serverTimestamp(),
     }),
   );
-  console.log("8 default-discovery security checks passed.");
+  batch = writeBatch(db);
+  batch.update(pref, {
+    "details.fieldOfStudy": "F".repeat(180),
+    updatedAt: serverTimestamp(),
+  });
+  batch.update(member, {
+    "details.fieldOfStudy": "F".repeat(180),
+    updatedAt: serverTimestamp(),
+  });
+  await assertSucceeds(batch.commit());
+  batch = writeBatch(db);
+  batch.update(pref, {
+    "details.fieldOfStudy": "F".repeat(181),
+    updatedAt: serverTimestamp(),
+  });
+  batch.update(member, {
+    "details.fieldOfStudy": "F".repeat(181),
+    updatedAt: serverTimestamp(),
+  });
+  await assertFails(batch.commit());
+  console.log("10 default-discovery security checks passed.");
 } finally {
   await env.cleanup();
 }

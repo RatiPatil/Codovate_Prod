@@ -133,6 +133,7 @@ try {
     maximumDetails = {
       ...details,
       degree: "D".repeat(100),
+      fieldOfStudy: "F".repeat(180),
       achievements: Array.from({ length: 6 }, (_, i) => "Achievement " + i),
       seeking: [
         "Hackathon Teammates",

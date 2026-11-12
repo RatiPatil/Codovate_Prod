@@ -229,7 +229,7 @@ it("shows imported default skills as suggested and makes them searchable", () =>
     },
   });
   expect(
-    screen.getByText("Program-based skills", { exact: true }),
+    screen.getByText("Study-based skills", { exact: true }),
   ).toBeInTheDocument();
   expect(screen.getByText("Suggested", { exact: true })).toBeInTheDocument();
   fireEvent.change(screen.getByLabelText("Skill", { exact: true }), {
@@ -293,4 +293,28 @@ it("renders saved teammates without copying private profile fields", () => {
   expect(
     screen.getByRole("button", { name: "Unsave Bob", exact: true }),
   ).toHaveAttribute("aria-pressed", "true");
+});
+
+it("shows readable study labels and sends the selected value to the directory query", () => {
+  const change = vi.fn();
+  open({
+    onStudyChange: change,
+    people: {
+      items: [
+        {
+          ...bob,
+          details: { ...bob.details, fieldOfStudy: "MECHANICAL ENGINEERING" },
+        },
+      ],
+      loading: false,
+      error: "",
+    },
+  });
+  expect(screen.getAllByText("Mechanical Engineering").length).toBeGreaterThan(
+    0,
+  );
+  fireEvent.change(screen.getByLabelText("Filter by field of study"), {
+    target: { value: "MECHANICAL ENGINEERING" },
+  });
+  expect(change).toHaveBeenCalledWith("MECHANICAL ENGINEERING");
 });

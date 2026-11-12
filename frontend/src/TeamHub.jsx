@@ -1,3 +1,4 @@
+import { normalizeStudyField } from "./studyFields";
 import { useEffect, useRef, useState } from "react";
 import {
   Users,
@@ -29,6 +30,7 @@ import { ConnectionSections } from "./ConnectionSections";
 export function TeamHub() {
   const { user, profile, admin } = useSession();
   const [params, setParams] = useSearchParams();
+  const fieldOfStudy = normalizeStudyField(params.get("study") || "");
   const tab = [
     "teams",
     "people",
@@ -49,14 +51,14 @@ export function TeamHub() {
     [browseTeams, setBrowseTeams] = useState(false);
   const lock = useRef(false);
   useEffect(() => {
-    if(!notice) return;
-    const timer=setTimeout(()=>setNotice(""),5000);
-    return ()=>clearTimeout(timer);
-  },[notice]);
+    if (!notice) return;
+    const timer = setTimeout(() => setNotice(""), 5000);
+    return () => clearTimeout(timer);
+  }, [notice]);
   const people = useTeamFeed(
     ["people", "suggested"].includes(tab) ? "memberProfiles" : null,
     user?.uid,
-    [],
+    fieldOfStudy ? [["details.fieldOfStudy", "==", fieldOfStudy]] : [],
     size,
   );
   const sent = useTeamFeed("connections", user?.uid, [
@@ -207,7 +209,12 @@ export function TeamHub() {
             className={tab === id ? "active" : ""}
             aria-pressed={tab === id}
             onClick={() => {
-              setParams({ hub: id });
+              setParams({
+                hub: id,
+                ...(["people", "suggested"].includes(id) && fieldOfStudy
+                  ? { study: fieldOfStudy }
+                  : {}),
+              });
               setSelected("");
               setError("");
               setNotice("");
@@ -252,6 +259,14 @@ export function TeamHub() {
           profile={profile}
           people={people}
           connections={connections}
+          fieldOfStudy={fieldOfStudy}
+          onStudyChange={(value) => {
+            const next = new URLSearchParams(params);
+            if (value) next.set("study", normalizeStudyField(value));
+            else next.delete("study");
+            setSize(48);
+            setParams(next);
+          }}
           connectionsReady={
             !sent.loading && !received.loading && !sent.error && !received.error
           }
@@ -305,6 +320,14 @@ export function TeamHub() {
             />
             <ConnectionSections
               connections={connections}
+              fieldOfStudy={fieldOfStudy}
+              onStudyChange={(value) => {
+                const next = new URLSearchParams(params);
+                if (value) next.set("study", normalizeStudyField(value));
+                else next.delete("study");
+                setSize(48);
+                setParams(next);
+              }}
               user={user}
               act={act}
               busy={busy}

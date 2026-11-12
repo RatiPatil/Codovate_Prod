@@ -1337,3 +1337,21 @@
 .chat-heading-icon {
   flex-shrink: 0;
 }
+.peer-study-chip {
+  align-self: center;
+  max-width: 100%;
+  margin: 0;
+  padding: 5px 10px;
+  border: 1px solid #e8e2f6;
+  border-radius: 20px;
+  color: #75628e;
+  background: #faf8ff;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.discovery-filters .discovery-name-search {
+  grid-column: 1 / -1;
+}

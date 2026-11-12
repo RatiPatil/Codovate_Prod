@@ -1,3 +1,4 @@
+import { normalizeStudyField } from "./studyFields";
 import { visibleSkills } from "./profileSkills";
 import { doc, runTransaction, serverTimestamp } from "firebase/firestore";
 import { db } from "./firebase";
@@ -33,6 +34,7 @@ export const emptyDetails = {
   experience: "",
   college: "",
   degree: "",
+  fieldOfStudy: "",
   year: "",
   location: "",
   photoUrl: "",
@@ -76,6 +78,9 @@ export function discoveryDraft(profile, user, saved) {
     achievements: card.achievements || [],
     passions: card.passions || [],
     ...saved,
+    fieldOfStudy: normalizeStudyField(
+      profile?.program || saved?.fieldOfStudy || "",
+    ),
   };
 }
 export function discoveryDetails(raw) {
@@ -84,6 +89,7 @@ export function discoveryDetails(raw) {
     desiredRole: 100,
     college: 180,
     degree: 100,
+    fieldOfStudy: 180,
     year: 40,
     location: 100,
     photoUrl: 500,
@@ -92,6 +98,9 @@ export function discoveryDetails(raw) {
     if (d[key].length > max)
       throw new Error("Keep " + key + " within " + max + " characters.");
   }
+  d.fieldOfStudy = normalizeStudyField(d.fieldOfStudy);
+  if (d.fieldOfStudy.length > 180)
+    throw new Error("Keep your field of study within 180 characters.");
   if (
     (d.domain && !domains.includes(d.domain)) ||
     (d.experience && !experienceLevels.includes(d.experience))
@@ -246,6 +255,7 @@ export function discoverPeers(
     search = "",
     skill = "",
     domain = "",
+    fieldOfStudy = "",
     experience = "",
     dismissed = [],
     blocked = [],
@@ -273,6 +283,7 @@ export function discoverPeers(
               d.desiredRole,
               d.college,
               d.degree,
+              d.fieldOfStudy,
               d.location,
               ...visibleSkills(p),
             ]
@@ -290,6 +301,9 @@ export function discoverPeers(
               ),
             )) &&
         (!domain || d.domain === domain) &&
+        (!fieldOfStudy ||
+          normalizeStudyField(d.fieldOfStudy) ===
+            normalizeStudyField(fieldOfStudy)) &&
         (!experience || d.experience === experience) &&
         (!suggested || p.match.score > 0)
       );

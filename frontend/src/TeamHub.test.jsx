@@ -15,6 +15,7 @@ const fake = vi.hoisted(() => ({
   connect: vi.fn(),
   decision: vi.fn(),
   feeds: {},
+  feedCalls: [],
 }));
 vi.mock("./firebase", () => ({ db: {} }));
 vi.mock("./session", () => ({
@@ -45,15 +46,18 @@ vi.mock("firebase/firestore", () => ({
   startAfter: vi.fn(),
 }));
 vi.mock("./teamHubData", () => ({
-  useTeamFeed: (path, _uid, filters = []) => ({
-    items:
-      path === "connections"
-        ? fake.feeds[filters[0]?.[0]] || []
-        : fake.feeds[path] || [],
-    loading: false,
-    error: "",
-    cached: false,
-  }),
+  useTeamFeed: (path, _uid, filters = []) => {
+    fake.feedCalls.push({ path, filters });
+    return {
+      items:
+        path === "connections"
+          ? fake.feeds[filters[0]?.[0]] || []
+          : fake.feeds[path] || [],
+      loading: false,
+      error: "",
+      cached: false,
+    };
+  },
   publishMember: fake.publish,
   hideMember: fake.hide,
   connectMember: fake.connect,
@@ -75,6 +79,7 @@ afterEach(() => {
   cleanup();
   vi.clearAllMocks();
   fake.feeds = {};
+  fake.feedCalls = [];
   fake.published = false;
   fake.visibilityCached = false;
 });
@@ -205,4 +210,45 @@ it("does not change discovery visibility before an empty cached profile is confi
   expect(
     screen.getByRole("button", { name: "Make my profile discoverable" }),
   ).toBeDisabled();
+});
+
+it("queries the selected field of study across the directory", () => {
+  fake.feeds.memberProfiles = [
+    {
+      uid: "mech",
+      name: "Mechanical Student",
+      skills: [],
+      details: { fieldOfStudy: "MECHANICAL ENGINEERING" },
+    },
+    {
+      uid: "cs",
+      name: "Computer Student",
+      skills: [],
+      details: { fieldOfStudy: "COMPUTER SCIENCE AND ENGINEERING" },
+    },
+  ];
+  render(
+    <MemoryRouter
+      initialEntries={["/teams?hub=people&study=mechanical%20engineering"]}
+    >
+      <TeamHub />
+    </MemoryRouter>,
+  );
+  expect(
+    screen.getByRole("heading", { name: "Mechanical Student" }),
+  ).toBeTruthy();
+  expect(
+    screen.queryByRole("heading", { name: "Computer Student" }),
+  ).toBeNull();
+  expect(screen.getByLabelText("Filter by field of study")).toHaveValue(
+    "MECHANICAL ENGINEERING",
+  );
+  expect(
+    fake.feedCalls.some(
+      (call) =>
+        call.path === "memberProfiles" &&
+        call.filters[0]?.[0] === "details.fieldOfStudy" &&
+        call.filters[0]?.[2] === "MECHANICAL ENGINEERING",
+    ),
+  ).toBe(true);
 });

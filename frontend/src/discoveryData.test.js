@@ -276,3 +276,30 @@ it("program suggestions are searchable without becoming confirmed-skill match sc
     }),
   ).toHaveLength(0);
 });
+
+it("matches canonical study fields without inferring private academic data", () => {
+  const peers = [
+    {
+      uid: "one",
+      name: "One",
+      skills: [],
+      details: { fieldOfStudy: "MECHANICAL ENGINEERING" },
+    },
+    {
+      uid: "two",
+      name: "Two",
+      skills: [],
+      details: { fieldOfStudy: "COMPUTER SCIENCE AND ENGINEERING" },
+    },
+    { uid: "three", name: "Three", skills: [], details: {} },
+  ];
+  expect(
+    discoverPeers(peers, {
+      uid: "me",
+      fieldOfStudy: " mechanical   engineering ",
+    }).map((p) => p.uid),
+  ).toEqual(["one"]);
+  expect(
+    discoverPeers(peers, { uid: "me", search: "mechanical" }).map((p) => p.uid),
+  ).toEqual(["one"]);
+});
