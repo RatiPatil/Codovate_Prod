@@ -303,3 +303,30 @@ it("matches canonical study fields without inferring private academic data", () 
     discoverPeers(peers, { uid: "me", search: "mechanical" }).map((p) => p.uid),
   ).toEqual(["one"]);
 });
+
+it("matches student searches and combined skills regardless of letter case", () => {
+  const people = [
+    {
+      uid: "peer",
+      name: "VIVEK CHAVAN",
+      skills: ["React.js", "Python"],
+      details: { desiredRole: "AI Engineer" },
+    },
+  ];
+  for (const search of [
+    "vivek chavan",
+    "VIVEK CHAVAN",
+    "ViVeK   ChAvAn",
+    "ai ENGINEER",
+  ]) {
+    expect(
+      discoverPeers(people, { uid: "me", search }).map((p) => p.uid),
+    ).toEqual(["peer"]);
+  }
+  for (const skill of ["react, python", "REACT, PYTHON", "ReAcT, pYtHoN"]) {
+    expect(
+      discoverPeers(people, { uid: "me", skill }).map((p) => p.uid),
+    ).toEqual(["peer"]);
+  }
+  expect(discoverPeers(people, { uid: "me", skill: "Java" })).toEqual([]);
+});

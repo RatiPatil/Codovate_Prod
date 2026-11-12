@@ -172,7 +172,9 @@ export async function dismissPeer(uid, peerId, dismissed = true) {
 }
 const normalized = (v) =>
   String(v || "")
+    .normalize("NFKC")
     .trim()
+    .replace(/\s+/g, " ")
     .toLowerCase();
 export function matchReasons(mine, other) {
   const a = mine?.details || {},
@@ -302,7 +304,10 @@ export function discoverPeers(
               ),
             )) &&
         (!city || normalized(d.location || "") === normalized(city)) &&
-        (!domain || d.domain === domain || (!d.domain && studyDomains(d.fieldOfStudy || d.degree).includes(domain))) &&
+        (!domain ||
+          d.domain === domain ||
+          (!d.domain &&
+            studyDomains(d.fieldOfStudy || d.degree).includes(domain))) &&
         (!fieldOfStudy ||
           normalizeStudyField(d.fieldOfStudy) ===
             normalizeStudyField(fieldOfStudy)) &&
