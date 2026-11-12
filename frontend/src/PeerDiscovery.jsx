@@ -1,4 +1,3 @@
-import { PeerMobile } from "./MobilePrivacy";
 import { knownStudyFields, studyDomains, studyFieldLabel } from "./studyFields";
 import {
   GraduationCap,
@@ -610,14 +609,6 @@ export function PeerDiscovery({
                     {d.location}
                   </p>
                 )}
-                {p.importDefaults &&
-                  (p.importDefaults.domain === d.domain ||
-                    p.importDefaults.experience === d.experience) && (
-                    <p className="hint">
-                      Import defaults · domain and experience are unverified.
-                      Students can update these in discovery settings.
-                    </p>
-                  )}
                 <section className="peer-section">
                   <h4>
                     {p.skills?.length
@@ -635,7 +626,6 @@ export function PeerDiscovery({
                     <p className="hint">Skills not shared yet.</p>
                   )}
                 </section>
-                <PeerMobile uid={p.uid} />
                 {suggested && (
                   <div className="skill-row peer-match">
                     <span>Suggested</span>

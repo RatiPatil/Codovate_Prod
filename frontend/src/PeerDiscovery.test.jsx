@@ -109,6 +109,10 @@ beforeEach(() => {
 afterEach(cleanup);
 it("keeps the existing student card and renders shared data with working actions", async () => {
   open();
+  expect(
+    screen.queryByRole("button", { name: "View mobile number" }),
+  ).toBeNull();
+  expect(screen.queryByText(/Import defaults/)).toBeNull();
   expect(screen.getByRole("heading", { name: "Bob" })).toBeInTheDocument();
   expect(screen.getByText("AI Engineer")).toBeInTheDocument();
   expect(

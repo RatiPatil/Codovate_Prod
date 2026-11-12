@@ -1,3 +1,4 @@
+import { ProfileInterests, profileInterests } from "./ProfileInterests";
 import { MobilePrivacyFields, mobileFormValues } from "./MobilePrivacy";
 import { StudyFieldAdmin } from "./StudyFieldAdmin";
 import { useEffect, useState } from "react";
@@ -1552,14 +1553,17 @@ function Profile() {
     const values = new FormData(e.currentTarget);
     const data = Object.fromEntries(values);
     delete data.resume;
-    let mobilePrivacy;
+    let mobilePrivacy, interests;
     try {
       mobilePrivacy = mobileFormValues(data.mobile, data.mobileVisibility);
+      interests = profileInterests(values);
     } catch (failure) {
       setError(failure.message);
       return;
     }
     delete data.mobileVisibility;
+    delete data.achievements;
+    delete data.passions;
     data.mobile = mobilePrivacy.mobile;
     try { data.name = normalizeFullName(data.name); if (profile?.nameParts) data.nameParts = splitFullName(data.name); }
     catch (failure) { setError(failure.message); return; }
@@ -1600,10 +1604,17 @@ function Profile() {
         const memberRef = doc(db, "memberProfiles", user.uid);
         const current = await transaction.get(profileRef);
         const publicCard = await transaction.get(memberRef);
+        const preferencesRef = doc(db, "discoveryPreferences", user.uid);
+        const preferences = await transaction.get(preferencesRef);
         if (!current.exists())
           throw new Error("Your profile is unavailable. Please retry.");
+        const sharedInterests = publicCard.exists() && publicCard.data().details && preferences.exists() && preferences.data().shareDetails === true;
+        if (preferences.exists() && preferences.data().details) transaction.update(preferencesRef, {
+          "details.achievements": interests.achievements, "details.passions": interests.passions, updatedAt: serverTimestamp(),
+        });
         if (publicCard.exists())
           transaction.update(memberRef, {
+            ...(sharedInterests ? { "details.achievements": interests.achievements, "details.passions": interests.passions } : {}),
             uid: user.uid,
             name: data.name,
             skills: data.skills,
@@ -1611,6 +1622,7 @@ function Profile() {
           });
         transaction.update(profileRef, {
           ...data,
+          teammateCard: { photoUrl: current.data().teammateCard?.photoUrl || "", ...interests },
           resumePath,
           updatedAt: serverTimestamp(),
         });
@@ -1764,6 +1776,7 @@ function Profile() {
             placeholder="React, communication, Figma…"
           />
         </label>
+        <ProfileInterests profile={profile} />
         <h2>Your résumé</h2>
         <p className="hint">
           Use an HTTPS résumé link if file uploads are unavailable. PDF uploads
