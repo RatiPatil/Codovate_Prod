@@ -1181,9 +1181,7 @@ function AuthPage({ signup = false }) {
           disabled={!configured || busy}
           onClick={google}
         >
-          <span className="google-g" aria-hidden="true">
-            G
-          </span>{" "}
+          <img className="google-g" src="/google-sign-in-logo.png" width="20" height="20" alt="" aria-hidden="true" />{" "}
           Continue with Google
         </button>
         <Link className="button secondary full" to="/phone-login" state={loc.state}><span aria-hidden="true">📱</span>{" "}Continue with phone OTP</Link>

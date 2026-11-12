@@ -1107,10 +1107,11 @@ form > label {
   margin-top: 12px;
 }
 .google-g {
-  font-family: Arial, sans-serif;
-  font-size: 18px;
-  color: #4285f4;
-  font-weight: 700;
+  display: block;
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  object-fit: contain;
 }
 .divider {
   border-top: 1px solid var(--border);
