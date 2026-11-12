@@ -29,38 +29,44 @@ vi.mock("firebase/firestore", () => ({
       update: fake.update,
     }),
 }));
-import { MobilePrivacy, PeerMobile } from "./MobilePrivacy";
+import {
+  MobilePrivacyFields,
+  mobileFormValues,
+  PeerMobile,
+} from "./MobilePrivacy";
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
   fake.next = null;
   fake.error = null;
 });
-it("defaults to Only me and lets the owner save a connection-only number", async () => {
-  render(
-    <MobilePrivacy
-      user={{ uid: "alice" }}
-      profile={{ mobile: "+919999999999" }}
-    />,
+it("embeds mobile and audience in the parent profile form without a separate form", () => {
+  const view = render(
+    <form aria-label="Profile">
+      <MobilePrivacyFields
+        user={{ uid: "alice" }}
+        profile={{ mobile: "+919999999999" }}
+      />
+    </form>,
   );
+  expect(view.container.querySelectorAll("form")).toHaveLength(1);
   expect(screen.getByLabelText("Who can see your mobile number?")).toHaveValue(
     "only_me",
-  );
-  expect(screen.getByLabelText("Your mobile number (+91)")).toHaveValue(
-    "9999999999",
   );
   fireEvent.change(screen.getByLabelText("Who can see your mobile number?"), {
     target: { value: "connections" },
   });
-  fireEvent.click(screen.getByRole("button", { name: "Save mobile privacy" }));
-  await waitFor(() =>
-    expect(fake.set).toHaveBeenCalledWith("mobileSharing/alice", {
-      uid: "alice",
-      mobile: "+919999999999",
-      visibility: "connections",
-      updatedAt: "SERVER",
-    }),
-  );
+  const data = new FormData(screen.getByRole("form", { name: "Profile" }));
+  expect(
+    mobileFormValues(data.get("mobile"), data.get("mobileVisibility")),
+  ).toEqual({ mobile: "+919999999999", visibility: "connections" });
+  expect(
+    screen.queryByRole("button", { name: "Save mobile privacy" }),
+  ).toBeNull();
+});
+it("rejects incomplete mobile numbers and unloaded privacy choices", () => {
+  expect(() => mobileFormValues("999", "only_me")).toThrow("10-digit");
+  expect(() => mobileFormValues("9999999999", null)).toThrow("load");
 });
 it("reveals no number until requested and clears it on permission revocation", async () => {
   render(<PeerMobile uid="bob" />);

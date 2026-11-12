@@ -1,10 +1,5 @@
 import { useEffect, useState } from "react";
-import {
-  doc,
-  onSnapshot,
-  runTransaction,
-  serverTimestamp,
-} from "firebase/firestore";
+import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "./firebase";
 export const mobileAudiences = {
   only_me: "Only me",
@@ -12,11 +7,17 @@ export const mobileAudiences = {
   everyone: "Everyone",
   connections: "My connections",
 };
-export function MobilePrivacy({ user, profile }) {
+export function mobileFormValues(mobile, visibility) {
+  if (!Object.hasOwn(mobileAudiences, visibility))
+    throw new Error("Wait for mobile privacy settings to load, then retry.");
+  if (!/^\d{10}$/.test(mobile || ""))
+    throw new Error("Enter a 10-digit mobile number.");
+  return { mobile: "+91" + mobile, visibility };
+}
+export function MobilePrivacyFields({ user, profile }) {
   const [audience, setAudience] = useState("only_me"),
     [mobile, setMobile] = useState(""),
     [ready, setReady] = useState(false),
-    [busy, setBusy] = useState(false),
     [message, setMessage] = useState("");
   useEffect(() => {
     setMobile(
@@ -46,78 +47,44 @@ export function MobilePrivacy({ user, profile }) {
       },
     );
   }, [user.uid]);
-  async function save(event) {
-    event.preventDefault();
-    if (!/^\d{10}$/.test(mobile)) {
-      setMessage("Enter a 10-digit mobile number.");
-      return;
-    }
-    setBusy(true);
-    setMessage("");
-    try {
-      await runTransaction(db, async (tx) => {
-        const ref = doc(db, "users", user.uid),
-          current = await tx.get(ref);
-        if (!current.exists()) throw new Error("missing profile");
-        const number = "+91" + mobile;
-        tx.update(ref, { mobile: number, updatedAt: serverTimestamp() });
-        tx.set(doc(db, "mobileSharing", user.uid), {
-          uid: user.uid,
-          mobile: number,
-          visibility: audience,
-          updatedAt: serverTimestamp(),
-        });
-      });
-      setMessage("Mobile number and visibility saved.");
-    } catch {
-      setMessage("Could not save your mobile privacy settings. Please retry.");
-    } finally {
-      setBusy(false);
-    }
-  }
   return (
-    <section className="panel">
-      <h2>Mobile number & privacy</h2>
-      <form onSubmit={save}>
-        <div className="form-grid">
-          <label>
-            Your mobile number (+91)
-            <input
-              type="tel"
-              inputMode="numeric"
-              autoComplete="tel-national"
-              maxLength={10}
-              value={mobile}
-              onChange={(e) => setMobile(e.target.value.replace(/\D/g, ""))}
-              required
-            />
-          </label>
-          <label>
-            Who can see your mobile number?
-            <select
-              value={audience}
-              onChange={(e) => setAudience(e.target.value)}
-              disabled={!ready}
-            >
-              {Object.entries(mobileAudiences).map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
-        <p className="hint">
-          Only me is the default. No one hides your contact display; you can
-          still edit it here. Everyone means signed-in Codovate members. My
-          connections means accepted connections.
+    <>
+      <label>
+        Your mobile number (+91)
+        <input
+          name="mobile"
+          type="tel"
+          inputMode="numeric"
+          autoComplete="tel-national"
+          minLength={10}
+          maxLength={10}
+          pattern="[0-9]{10}"
+          value={mobile}
+          onChange={(e) => setMobile(e.target.value.replace(/\D/g, ""))}
+          required
+        />
+      </label>
+      <label>
+        Who can see your mobile number?
+        <select
+          name="mobileVisibility"
+          value={audience}
+          onChange={(e) => setAudience(e.target.value)}
+          disabled={!ready}
+        >
+          {Object.entries(mobileAudiences).map(([value, label]) => (
+            <option key={value} value={value}>
+              {label}
+            </option>
+          ))}
+        </select>
+      </label>
+      {message && (
+        <p className="hint" role="alert">
+          {message}
         </p>
-        <button className="button" disabled={!ready || busy}>
-          {busy ? "Saving…" : "Save mobile privacy"}
-        </button>
-        {message && <p role="status">{message}</p>}
-      </form>
-    </section>
+      )}
+    </>
   );
 }
 export function PeerMobile({ uid }) {

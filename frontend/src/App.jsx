@@ -1,4 +1,4 @@
-import { MobilePrivacy } from "./MobilePrivacy";
+import { MobilePrivacyFields, mobileFormValues } from "./MobilePrivacy";
 import { StudyFieldAdmin } from "./StudyFieldAdmin";
 import { useEffect, useState } from "react";
 import {
@@ -1552,6 +1552,15 @@ function Profile() {
     const values = new FormData(e.currentTarget);
     const data = Object.fromEntries(values);
     delete data.resume;
+    let mobilePrivacy;
+    try {
+      mobilePrivacy = mobileFormValues(data.mobile, data.mobileVisibility);
+    } catch (failure) {
+      setError(failure.message);
+      return;
+    }
+    delete data.mobileVisibility;
+    data.mobile = mobilePrivacy.mobile;
     try { data.name = normalizeFullName(data.name); if (profile?.nameParts) data.nameParts = splitFullName(data.name); }
     catch (failure) { setError(failure.message); return; }
     const skillsError = skillInputError(data.skills);
@@ -1605,6 +1614,12 @@ function Profile() {
           resumePath,
           updatedAt: serverTimestamp(),
         });
+        transaction.set(doc(db, "mobileSharing", user.uid), {
+          uid: user.uid,
+          mobile: mobilePrivacy.mobile,
+          visibility: mobilePrivacy.visibility,
+          updatedAt: serverTimestamp(),
+        });
         transaction.set(doc(db, "adminUsers", user.uid), {
           uid: user.uid,
           fullName: data.name,
@@ -1636,7 +1651,6 @@ function Profile() {
   }
   return (
     <Workspace title="My profile" subtitle="Keep your details up to date.">
-      <MobilePrivacy user={user} profile={profile} />
       <div className="profile-summary panel">
         <div className="profile-avatar">
           {(profile?.name || user.email || "S")[0].toUpperCase()}
@@ -1665,7 +1679,7 @@ function Profile() {
         onSubmit={save}
         key={user.uid + !!profile}
       >
-        <h2>The basics</h2>
+        <h2>Personal & academic details</h2>
         <div className="form-grid">
           <label>
             Full name
@@ -1728,6 +1742,7 @@ function Profile() {
               placeholder="https://"
             />
           </label>
+          <MobilePrivacyFields user={user} profile={profile} />
         </div>
         <label>
           About you
