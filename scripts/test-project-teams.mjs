@@ -150,6 +150,12 @@ try {
       ],
     };
   const privateProfile = (await getDoc(doc(a, "users", ids[0]))).data();
+  await env.withSecurityRulesDisabled(async (context) => {
+    await updateDoc(doc(context.firestore(), "users", ids[0]), {
+      importSource: "student_workbook_v1",
+      suggestedSkills: maximumSkills,
+    });
+  });
   const full = writeBatch(a);
   full.update(doc(a, "users", ids[0]), {
     skills: maximumSkills,
@@ -170,6 +176,7 @@ try {
   full.set(doc(a, "memberProfiles", ids[0]), {
     ...card(ids[0]),
     skills: maximumSkills,
+    suggestedSkills: maximumSkills,
     details: maximumDetails,
   });
   await check(

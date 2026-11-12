@@ -1635,6 +1635,16 @@
         },
         "details": {
           "$ref": "#/$defs/discoveryDetails"
+        },
+        "suggestedSkills": {
+          "type": "array",
+          "uniqueItems": true,
+          "maxItems": 20,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60
+          }
         }
       },
       "additionalProperties": false

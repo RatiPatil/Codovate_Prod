@@ -1,3 +1,4 @@
+import { programSkills } from "./profileSkills";
 import { useEffect, useState } from "react";
 import {
   collection,
@@ -117,6 +118,9 @@ export function validatedPublicProfile(user, profile) {
     uid: user.uid,
     name: profile.name,
     skills,
+    ...(programSkills(profile).length
+      ? { suggestedSkills: programSkills(profile) }
+      : {}),
     updatedAt: serverTimestamp(),
   };
 }

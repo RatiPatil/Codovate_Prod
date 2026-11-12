@@ -234,7 +234,7 @@ export function ModernTeams({
         )}
       <div className="hub-people">
         {teams.items.map((t) => (
-          <article className="panel" key={t.id}>
+          <article className="panel team-project-card" key={t.id}>
             <h3>{t.title}</h3>
             <p>{t.description}</p>
             <div className="skill-row">
@@ -282,7 +282,7 @@ export function ModernTeams({
           <h3>Earlier recruiting teams</h3>
           <div className="hub-people">
             {earlierTeams.items.map((t) => (
-              <article className="panel" key={t.id}>
+              <article className="panel team-project-card" key={t.id}>
                 <h4>{t.title}</h4>
                 <p>{t.summary}</p>
                 <button
@@ -832,7 +832,7 @@ export function ProjectTeamBoard({ user, act, busy, myPublic }) {
       )}
       <div className="hub-people">
         {rows.map((t) => (
-          <article className="panel" key={t.id}>
+          <article className="panel team-project-card" key={t.id}>
             <h3>{t.title}</h3>
             <p>{t.description}</p>
             <div className="skill-row">

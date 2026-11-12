@@ -55,6 +55,7 @@ async function main() {
     mode: apply ? "apply" : "dry-run",
     scanned: 0,
     published: 0,
+    updated: 0,
     eligible: 0,
     student_managed: 0,
     ineligible: 0,

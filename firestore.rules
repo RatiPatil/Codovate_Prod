@@ -515,11 +515,12 @@ service cloud.firestore {
    allow read: if signedIn();
    allow create,update: if own(uid)
     && request.resource.data.keys().hasAll(['uid','name','skills','updatedAt'])
-    && request.resource.data.keys().hasOnly(['uid','name','skills','details','updatedAt'])
+    && request.resource.data.keys().hasOnly(['uid','name','skills','suggestedSkills','details','updatedAt'])
     && (!request.resource.data.keys().hasAny(['details']) || (validDiscoveryDetails(request.resource.data.details)
      && getAfter(/databases/$(database)/documents/discoveryPreferences/$(uid)).data.shareDetails==true
      && request.resource.data.details==getAfter(/databases/$(database)/documents/discoveryPreferences/$(uid)).data.details))
     && (!existsAfter(/databases/$(database)/documents/discoveryPreferences/$(uid)) || getAfter(/databases/$(database)/documents/discoveryPreferences/$(uid)).data.get('discoverable',true)==true)
+    && (!request.resource.data.keys().hasAny(['suggestedSkills']) || (validSkills(request.resource.data.suggestedSkills) && getAfter(/databases/$(database)/documents/users/$(uid)).data.get('importSource','')=='student_workbook_v1' && request.resource.data.suggestedSkills==getAfter(/databases/$(database)/documents/users/$(uid)).data.get('suggestedSkills',[])))
     && request.resource.data.uid == uid && text(request.resource.data.name,100) && request.resource.data.name.size()>0
     && request.resource.data.skills is list && request.resource.data.skills.size() <= 20 && changedTime()
     && request.resource.data.name == getAfter(/databases/$(database)/documents/users/$(uid)).data.name

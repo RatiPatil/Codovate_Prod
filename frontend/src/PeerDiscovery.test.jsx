@@ -5,6 +5,7 @@ import {
   fireEvent,
   cleanup,
   waitFor,
+  within,
 } from "@testing-library/react";
 const state = vi.hoisted(() => ({
   snapshot: null,
@@ -201,4 +202,62 @@ it("keeps long skill lists compact and reveals all values on request", () => {
   fireEvent.click(toggle);
   expect(screen.getByText("Design", { exact: true })).toBeInTheDocument();
   expect(toggle).toHaveAttribute("aria-expanded", "true");
+});
+
+it("shows imported default skills as suggested and makes them searchable", () => {
+  open({
+    people: {
+      items: [
+        {
+          ...bob,
+          skills: [],
+          suggestedSkills: ["Programming fundamentals", "Web fundamentals"],
+        },
+      ],
+      loading: false,
+      error: "",
+    },
+  });
+  expect(
+    screen.getByText("Program-based skills", { exact: true }),
+  ).toBeInTheDocument();
+  expect(screen.getByText("Suggested", { exact: true })).toBeInTheDocument();
+  fireEvent.change(screen.getByLabelText("Skill", { exact: true }), {
+    target: { value: "Web fundamentals" },
+  });
+  expect(screen.getByRole("heading", { name: "Bob" })).toBeInTheDocument();
+});
+
+it("sorts students by listed skills and restores alphabetical order", () => {
+  open({
+    people: {
+      items: [
+        bob,
+        {
+          ...bob,
+          uid: "carol",
+          name: "Carol",
+          skills: ["React", "Java", "Python"],
+        },
+      ],
+      loading: false,
+      error: "",
+    },
+  });
+  fireEvent.change(screen.getByLabelText("Sort students"), {
+    target: { value: "skills" },
+  });
+  expect(
+    within(screen.getAllByRole("article")[0]).getByRole("heading", {
+      name: "Carol",
+    }),
+  ).toBeInTheDocument();
+  fireEvent.change(screen.getByLabelText("Sort students"), {
+    target: { value: "name" },
+  });
+  expect(
+    within(screen.getAllByRole("article")[0]).getByRole("heading", {
+      name: "Bob",
+    }),
+  ).toBeInTheDocument();
 });

@@ -1,9 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import {
-  publishStudent,
-  studentCard,
-} from "./student-discovery-core.mjs";
+import { publishStudent, studentCard } from "./student-discovery-core.mjs";
 const profile = () => ({
   name: "Example Student",
   importSource: "student_workbook_v1",
@@ -42,6 +39,10 @@ function database(p = profile(), extra = {}) {
           exists: records.has(path),
           data: () => records.get(path),
         }),
+        update: (path, value) => {
+          records.set(path, { ...records.get(path), ...value });
+          writes.push(path);
+        },
         set: (path, value) => {
           records.set(path, value);
           writes.push(path);
@@ -55,12 +56,13 @@ function database(p = profile(), extra = {}) {
   };
   return { db, records, writes };
 }
-test("projects only the requested saved student data, never private contacts or inferred skills", () => {
+test("projects only the requested saved student data, no private contacts and separate program defaults", () => {
   const card = studentCard("import_example", profile());
   assert.deepEqual(Object.keys(card).sort(), [
     "details",
     "name",
     "skills",
+    "suggestedSkills",
     "uid",
   ]);
   assert.deepEqual(card.skills, ["React"]);
@@ -69,7 +71,7 @@ test("projects only the requested saved student data, never private contacts or 
   assert.equal(card.details.desiredRole, "Frontend Developer");
   assert.deepEqual(card.details.achievements, ["Research Publication"]);
   assert.ok(!JSON.stringify(card).includes("private"));
-  assert.ok(!JSON.stringify(card).includes("Java"));
+  assert.deepEqual(card.suggestedSkills, ["Java"]);
 });
 test("does not invent a role, college, achievements, interests or confirmed skills", () => {
   const card = studentCard("import_example", {
@@ -86,10 +88,7 @@ test("does not invent a role, college, achievements, interests or confirmed skil
 });
 test("accepts existing students and refuses invalid public names", () => {
   assert.ok(studentCard("normal_user", profile()));
-  assert.equal(
-    studentCard("import_example", { ...profile(), name: "" }),
-    null,
-  );
+  assert.equal(studentCard("import_example", { ...profile(), name: "" }), null);
 });
 test("dry runs make no writes and apply atomically creates only the two discovery records", async () => {
   const { db, records, writes } = database();
@@ -136,7 +135,9 @@ test("never recreates hidden cards or overwrites student-managed profiles", asyn
         discoverable: false,
       },
     },
-    { "memberProfiles/import_example": { name: "Existing" } },
+    {
+      "memberProfiles/import_example": { name: "Existing", skills: ["React"] },
+    },
   ]) {
     const { db, writes } = database(profile(), extra);
     assert.equal(
@@ -180,4 +181,38 @@ test("keeps existing details-sharing restrictions while enabling default card vi
   assert.equal(pref.discoverable, true);
   assert.ok(!JSON.stringify(pref).includes("private@example.test"));
   assert.ok(!JSON.stringify(pref).includes("secret"));
+});
+
+test("adds program defaults to existing imported cards without changing confirmed skills or privacy", async () => {
+  const p = { ...profile(), skills: [] };
+  const { db, records } = database(p, {
+    "memberProfiles/import_example": {
+      uid: "import_example",
+      name: p.name,
+      skills: [],
+    },
+  });
+  assert.equal(
+    await publishStudent({
+      db,
+      uid: "import_example",
+      apply: true,
+      timestamp: () => "TIME",
+    }),
+    "updated",
+  );
+  assert.deepEqual(
+    records.get("memberProfiles/import_example").suggestedSkills,
+    ["Java"],
+  );
+  assert.deepEqual(records.get("users/import_example").skills, []);
+  assert.equal(
+    await publishStudent({
+      db,
+      uid: "import_example",
+      apply: true,
+      timestamp: () => "TIME",
+    }),
+    "student_managed",
+  );
 });

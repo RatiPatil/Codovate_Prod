@@ -1,3 +1,4 @@
+import { visibleSkills } from "./profileSkills";
 import { doc, runTransaction, serverTimestamp } from "firebase/firestore";
 import { db } from "./firebase";
 import { validatedPublicProfile } from "./teamHubData";
@@ -273,7 +274,7 @@ export function discoverPeers(
               d.college,
               d.degree,
               d.location,
-              ...(p.skills || []),
+              ...visibleSkills(p),
             ]
               .filter(Boolean)
               .join(" "),
@@ -284,7 +285,7 @@ export function discoverPeers(
             .map((v) => v.trim())
             .filter(Boolean)
             .every((term) =>
-              (p.skills || []).some(
+              visibleSkills(p).some(
                 (value) => canonicalSkill(value) === canonicalSkill(term),
               ),
             )) &&

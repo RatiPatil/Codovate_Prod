@@ -1,3 +1,12 @@
+import {
+  GraduationCap,
+  MapPin,
+  Handshake,
+  X,
+  SlidersHorizontal,
+  ArrowDownWideNarrow,
+} from "lucide-react";
+import { visibleSkills } from "./profileSkills";
 import { useEffect, useState, useRef } from "react";
 import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "./firebase";
@@ -77,6 +86,7 @@ export function PeerDiscovery({
   loadMore,
   canLoadMore,
 }) {
+  const [sort, setSort] = useState(suggested ? "recommended" : "name");
   const [search, setSearch] = useState(""),
     [skill, setSkill] = useState(""),
     [domain, setDomain] = useState(""),
@@ -136,15 +146,24 @@ export function PeerDiscovery({
     suggested,
     mine: { skills: profile?.skills || [], details: saved },
   });
+  const sortedItems = [...items].sort((a, b) =>
+    sort === "name"
+      ? a.name.localeCompare(b.name)
+      : sort === "skills"
+        ? visibleSkills(b).length - visibleSkills(a).length ||
+          a.name.localeCompare(b.name)
+        : suggested
+          ? b.match.score - a.match.score || a.name.localeCompare(b.name)
+          : a.name.localeCompare(b.name),
+  );
   const update = (key, value) => setDraft((d) => ({ ...d, [key]: value }));
   return (
     <>
       <details className="panel discovery-settings">
         <summary>Discovery profile settings</summary>
         <p>
-          Your name and confirmed skills are shared when you opt in. The extra
-          details below are optional. Nothing copies your email or phone into
-          discovery.
+          Choose what appears on your card. Your email, phone and résumé always
+          stay private.
         </p>
         <form
           className="discovery-form"
@@ -259,6 +278,15 @@ export function PeerDiscovery({
         className="panel discovery-search"
         aria-label="Find teammates filters"
       >
+        <header className="hub-section-heading discovery-filter-heading">
+          <h2>
+            <SlidersHorizontal size={17} aria-hidden="true" /> Refine your
+            search
+          </h2>
+          <span className="hint">
+            Find complementary skills and shared goals
+          </span>
+        </header>
         <div className="discovery-filters">
           <label>
             Search students
@@ -321,6 +349,36 @@ export function PeerDiscovery({
           Separate skills with commas to match all selected skills.
         </p>
       </section>
+      <div className="discovery-results-heading">
+        <div>
+          <span className="eyebrow">
+            {suggested ? "MATCHED TO YOUR GOALS" : "THE STUDENT COMMUNITY"}
+          </span>
+          <h2>
+            {suggested
+              ? "People you could build with"
+              : "Meet your next teammate"}
+          </h2>
+          <p className="hint" role="status">
+            {people.loading || dismissed.loading
+              ? "Finding students…"
+              : `${items.length} matching students in loaded profiles`}
+          </p>
+        </div>
+        <label className="discovery-sort">
+          <ArrowDownWideNarrow size={16} aria-hidden="true" />
+          <span className="sr-only">Sort students</span>
+          <select
+            aria-label="Sort students"
+            value={sort}
+            onChange={(e) => setSort(e.target.value)}
+          >
+            {suggested && <option value="recommended">Best match</option>}
+            <option value="name">Name A–Z</option>
+            <option value="skills">Most listed skills</option>
+          </select>
+        </label>
+      </div>
       {(people.error ||
         dismissed.error ||
         connectionsError ||
@@ -330,7 +388,21 @@ export function PeerDiscovery({
         </p>
       )}
       {(people.loading || dismissed.loading || (suggested && !prefReady)) && (
-        <p role="status">Loading discovery…</p>
+        <div
+          role="status"
+          aria-label="Loading student profiles"
+          className="hub-people"
+        >
+          <span className="sr-only">Loading discovery…</span>
+          {[0, 1, 2, 3].map((n) => (
+            <div className="panel peer-skeleton" aria-hidden="true" key={n}>
+              <i />
+              <b />
+              <b />
+              <b />
+            </div>
+          ))}
+        </div>
       )}
       {!people.loading &&
         !dismissed.loading &&
@@ -356,13 +428,18 @@ export function PeerDiscovery({
         {!dismissed.error &&
           !dismissed.loading &&
           (!suggested || prefReady) &&
-          items.map((p) => {
+          sortedItems.map((p, index) => {
             const d = p.details || {},
               relation = connections.find((c) =>
                 [c.fromId, c.toId].includes(p.uid),
               );
             return (
-              <article className="panel peer-card" key={p.uid}>
+              <article
+                className="panel peer-card"
+                key={p.uid}
+                style={{ "--peer-order": index % 6 }}
+              >
+                <div className="peer-card-accent" aria-hidden="true" />
                 <PeerAvatar name={p.name} photoUrl={d.photoUrl} />
                 <h3>{p.name}</h3>
                 <p className="peer-role">
@@ -370,14 +447,39 @@ export function PeerDiscovery({
                 </p>
                 {(d.degree || d.college || d.year) && (
                   <p className="peer-academic">
+                    <GraduationCap size={16} aria-hidden="true" />{" "}
                     {[d.degree, d.college, d.year].filter(Boolean).join(" • ")}
                   </p>
                 )}
-                {d.location && <p className="peer-location">{d.location}</p>}
+                {d.location && (
+                  <p className="peer-location">
+                    <MapPin size={15} aria-hidden="true" />
+                    {d.location}
+                  </p>
+                )}
                 <section className="peer-section">
-                  <h4>Skills</h4>
-                  {p.skills?.length ? (
-                    <PeerTags values={p.skills} label="Skills" />
+                  <h4>
+                    {p.skills?.length
+                      ? "Skills"
+                      : p.suggestedSkills?.length
+                        ? "Program-based skills"
+                        : "Skills"}
+                    {!p.skills?.length && !!p.suggestedSkills?.length && (
+                      <span
+                        className="peer-suggested-label"
+                        title="Suggested from the study program; the student has not yet confirmed these skills."
+                      >
+                        Suggested
+                      </span>
+                    )}
+                  </h4>
+                  {visibleSkills(p).length ? (
+                    <PeerTags
+                      values={visibleSkills(p)}
+                      label={
+                        p.skills?.length ? "Skills" : "Program-based skills"
+                      }
+                    />
                   ) : (
                     <p className="hint">Skills not shared yet.</p>
                   )}
@@ -417,7 +519,7 @@ export function PeerDiscovery({
                       )
                     }
                   >
-                    Dismiss
+                    <X size={15} aria-hidden="true" /> Dismiss
                   </button>
                   {relation ? (
                     <a
@@ -443,7 +545,7 @@ export function PeerDiscovery({
                         )
                       }
                     >
-                      Connect
+                      <Handshake size={16} aria-hidden="true" /> Connect
                     </button>
                   )}
                 </div>
@@ -456,11 +558,11 @@ export function PeerDiscovery({
           Load more profiles
         </button>
       )}
-      <p className="hint">
-        {items.length} matching students in loaded profiles.
-        {!myPublic &&
-          " Make your profile discoverable above to send connection requests."}
-      </p>
+      {!myPublic && (
+        <p className="hint">
+          Make your profile discoverable above to send connection requests.
+        </p>
+      )}
       {dismissed.items.length > 0 && (
         <details className="panel">
           <summary>Dismissed profiles ({dismissed.items.length})</summary>

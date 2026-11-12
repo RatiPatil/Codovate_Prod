@@ -256,3 +256,23 @@ it("defaults existing students to discoverable and preserves an explicit private
     expect.objectContaining({ name: "Alice", skills: [] }),
   );
 });
+
+it("program suggestions are searchable without becoming confirmed-skill match scores", () => {
+  const candidate = {
+    uid: "bob",
+    name: "Bob",
+    skills: [],
+    suggestedSkills: ["React"],
+    details: {},
+  };
+  expect(
+    discoverPeers([candidate], { uid: "alice", skill: "React" }),
+  ).toHaveLength(1);
+  expect(
+    discoverPeers([candidate], {
+      uid: "alice",
+      suggested: true,
+      mine: { skills: ["React"], details: {} },
+    }),
+  ).toHaveLength(0);
+});

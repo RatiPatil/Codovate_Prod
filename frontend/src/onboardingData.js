@@ -1,3 +1,4 @@
+import { programSkills } from "./profileSkills";
 import {
   doc,
   getDoc,
@@ -304,6 +305,9 @@ export async function saveOnboarding(
               uid: user.uid,
               name: values.name,
               skills: values.skills,
+              ...(programSkills(existing).length
+                ? { suggestedSkills: programSkills(existing) }
+                : {}),
               ...(shareDetails ? { details } : {}),
               updatedAt,
             });

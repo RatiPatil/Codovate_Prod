@@ -94,7 +94,25 @@ try {
       updatedAt: serverTimestamp(),
     }),
   );
-  console.log("6 default-discovery security checks passed.");
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await updateDoc(doc(ctx.firestore(), "users", uid), {
+      importSource: "student_workbook_v1",
+      suggestedSkills: ["Programming fundamentals"],
+    });
+  });
+  await assertSucceeds(
+    updateDoc(member, {
+      suggestedSkills: ["Programming fundamentals"],
+      updatedAt: serverTimestamp(),
+    }),
+  );
+  await assertFails(
+    updateDoc(member, {
+      suggestedSkills: ["Fake expert certification"],
+      updatedAt: serverTimestamp(),
+    }),
+  );
+  console.log("8 default-discovery security checks passed.");
 } finally {
   await env.cleanup();
 }

@@ -1,5 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import { Users, UserRoundSearch, Sparkles, Handshake } from "lucide-react";
+import {
+  Users,
+  UserRoundSearch,
+  Sparkles,
+  Handshake,
+  Eye,
+  EyeOff,
+} from "lucide-react";
 import { useSearchParams, Link } from "react-router-dom";
 import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "./firebase";
@@ -132,13 +139,27 @@ export function TeamHub() {
     <div className="team-hub">
       {tab !== "recruiting" && (
         <section className="panel hub-intro">
-          <span className="eyebrow">BUILD TOGETHER</span>
-          <h2>Your next team starts here.</h2>
+          <span className="eyebrow">BUILD WITH PEOPLE LIKE YOU</span>
+          <h2>Build your next team.</h2>
           <p>
-            Meet students who share your goals. Connect, find your role and
-            build something together.
+            Discover complementary skills, connect through shared goals and turn
+            your idea into a team.
           </p>
-          <div className="hub-actions">
+          <div className="hub-actions hub-visibility-actions">
+            <span
+              className={`hub-visibility-state ${myPublic ? "visible" : "private"}`}
+            >
+              {myPublic ? (
+                <Eye size={14} aria-hidden="true" />
+              ) : (
+                <EyeOff size={14} aria-hidden="true" />
+              )}
+              {visibilityReady
+                ? myPublic
+                  ? "Your profile is visible"
+                  : "Your profile is private"
+                : "Checking profile visibility…"}
+            </span>
             <button
               className="button secondary"
               disabled={busy || !db || !visibilityReady}

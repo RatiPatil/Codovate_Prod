@@ -1,4 +1,5 @@
-// Admin-only projection. Never copies contacts, inferred skills or credentials.
+import { programSkills } from "../frontend/src/profileSkills.js";
+// Admin-only projection. Never copies contacts or credentials; program defaults stay separate from confirmed skills.
 const blankDetails = () => ({
   desiredRole: "",
   domain: "",
@@ -107,7 +108,15 @@ export function studentCard(uid, profile) {
     seeking: tags(career.seeking, 6, seeking),
     passions: tags(card.passions, 6, passions),
   };
-  return { uid, name: profile.name, skills: [...profile.skills], details };
+  return {
+    uid,
+    name: profile.name,
+    skills: [...profile.skills],
+    ...(programSkills(profile).length
+      ? { suggestedSkills: programSkills(profile) }
+      : {}),
+    details,
+  };
 }
 export async function publishStudent({ db, uid, timestamp, apply = false }) {
   return db.runTransaction(async (tx) => {
@@ -122,10 +131,25 @@ export async function publishStudent({ db, uid, timestamp, apply = false }) {
     if (!profile.exists) return "missing";
     // Existing cards and explicit private choices belong to the student.
     // In particular, a hidden card must not be recreated on a later sync.
-    if (current.exists || preferences.data()?.discoverable === false)
-      return "student_managed";
+    if (preferences.data()?.discoverable === false) return "student_managed";
     const card = studentCard(uid, profile.data());
     if (!card) return "ineligible";
+    if (current.exists) {
+      if (
+        !current.data().skills?.length &&
+        card.suggestedSkills?.length &&
+        JSON.stringify(current.data().suggestedSkills) !==
+          JSON.stringify(card.suggestedSkills)
+      ) {
+        if (apply)
+          tx.update(publicRef, {
+            suggestedSkills: card.suggestedSkills,
+            updatedAt: timestamp(),
+          });
+        return apply ? "updated" : "eligible";
+      }
+      return "student_managed";
+    }
     if (apply) {
       const updatedAt = timestamp();
       const saved = preferences.data();
@@ -163,6 +187,9 @@ export async function publishStudent({ db, uid, timestamp, apply = false }) {
         uid,
         name: card.name,
         skills: card.skills,
+        ...(card.suggestedSkills?.length
+          ? { suggestedSkills: card.suggestedSkills }
+          : {}),
         ...(shareDetails ? { details } : {}),
         updatedAt,
       });
@@ -170,4 +197,3 @@ export async function publishStudent({ db, uid, timestamp, apply = false }) {
     return apply ? "published" : "eligible";
   });
 }
-
