@@ -335,3 +335,14 @@ it("commits city search on Enter and clears city and study together", () => {
   fireEvent.click(screen.getByRole("button", { name: "Clear filters" }));
   expect(clear).toHaveBeenCalledOnce();
 });
+
+it("suggestions ignore old manual filters and hide search/refine controls", () => {
+  open({ suggested: true, city: "Mumbai", fieldOfStudy: "CIVIL ENGINEERING" });
+  expect(
+    screen.queryByRole("region", { name: "Find teammates filters" }),
+  ).toBeNull();
+  expect(screen.queryByLabelText("Filter by city")).toBeNull();
+  expect(screen.queryByLabelText("Sort students")).toBeNull();
+  expect(screen.getByRole("heading", { name: "Bob" })).toBeInTheDocument();
+  expect(screen.getByText("Suggested", { exact: true })).toBeInTheDocument();
+});

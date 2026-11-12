@@ -151,14 +151,15 @@ export function PeerDiscovery({
       },
     );
   }, [user.uid]);
+  const suggestionOrder = useRef(new Map());
   const candidates = discoverPeers(people.items, {
     uid: user.uid,
-    search,
-    skill,
-    domain,
-    fieldOfStudy,
-    city,
-    experience,
+    search: suggested ? "" : search,
+    skill: suggested ? "" : skill,
+    domain: suggested ? "" : domain,
+    fieldOfStudy: suggested ? "" : fieldOfStudy,
+    city: suggested ? "" : city,
+    experience: suggested ? "" : experience,
     dismissed: dismissed.items.map((x) => x.peerId),
     blocked: connections
       .filter((c) => c.status === "blocked")
@@ -176,15 +177,20 @@ export function PeerDiscovery({
   const items = savedOnly
     ? candidates.filter((p) => savedIds.has(p.uid))
     : candidates;
+  for (const item of items)
+    if (!suggestionOrder.current.has(item.uid))
+      suggestionOrder.current.set(item.uid, Math.random());
   const sortedItems = [...items].sort((a, b) =>
-    sort === "name"
-      ? a.name.localeCompare(b.name)
-      : sort === "skills"
-        ? visibleSkills(b).length - visibleSkills(a).length ||
-          a.name.localeCompare(b.name)
-        : suggested
-          ? b.match.score - a.match.score || a.name.localeCompare(b.name)
-          : a.name.localeCompare(b.name),
+    suggested
+      ? suggestionOrder.current.get(a.uid) - suggestionOrder.current.get(b.uid)
+      : sort === "name"
+        ? a.name.localeCompare(b.name)
+        : sort === "skills"
+          ? visibleSkills(b).length - visibleSkills(a).length ||
+            a.name.localeCompare(b.name)
+          : suggested
+            ? b.match.score - a.match.score || a.name.localeCompare(b.name)
+            : a.name.localeCompare(b.name),
   );
   const studyOptions = approvedFields;
   const update = (key, value) => setDraft((d) => ({ ...d, [key]: value }));
@@ -305,123 +311,130 @@ export function PeerDiscovery({
           confirmed skill.
         </p>
       )}
-      <section
-        className="panel discovery-search"
-        aria-label="Find teammates filters"
-      >
-        <header className="hub-section-heading discovery-filter-heading">
-          <h2>
-            <SlidersHorizontal size={17} aria-hidden="true" /> Refine your
-            search
-          </h2>
-          <span className="hint">
-            Find complementary skills and shared goals
-          </span>
-        </header>
-        <div className="discovery-filters">
-          <label className="discovery-name-search">
-            Search students
-            <input
-              type="search"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Name or desired role"
-            />
-          </label>
-          <label>
-            Skill
-            <input
-              value={skill}
-              onChange={(e) => setSkill(e.target.value)}
-              placeholder="React, Java, Python, ML"
-            />
-          </label>
-          <label>
-            Field of study
-            <select
-              aria-label="Filter by field of study"
-              value={fieldOfStudy}
-              onChange={(event) => onStudyChange(event.target.value)}
-            >
-              <option value="">All fields of study</option>
-              {studyOptions.map((field) => (
-                <option key={field} value={field}>
-                  {studyFieldLabel(field)}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            City
-            <input
-              aria-label="Filter by city"
-              key={city}
-              defaultValue={city}
-              placeholder="Enter the city shown on a student card"
-              maxLength={120}
-              onBlur={(event) => onCityChange(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === "Enter") {
-                  event.preventDefault();
-                  onCityChange(event.currentTarget.value);
+      {!suggested && (
+        <section
+          className="panel discovery-search"
+          aria-label="Find teammates filters"
+        >
+          <header className="hub-section-heading discovery-filter-heading">
+            <h2>
+              <SlidersHorizontal size={17} aria-hidden="true" /> Refine your
+              search
+            </h2>
+            <span className="hint">
+              Find complementary skills and shared goals
+            </span>
+          </header>
+          <div className="discovery-filters">
+            <label className="discovery-name-search">
+              Search students
+              <input
+                type="search"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Name or desired role"
+              />
+            </label>
+            <label>
+              Skill
+              <input
+                value={skill}
+                onChange={(e) => setSkill(e.target.value)}
+                placeholder="React, Java, Python, ML"
+              />
+            </label>
+            <label>
+              Field of study
+              <select
+                aria-label="Filter by field of study"
+                value={fieldOfStudy}
+                onChange={(event) => onStudyChange(event.target.value)}
+              >
+                <option value="">All fields of study</option>
+                {studyOptions.map((field) => (
+                  <option key={field} value={field}>
+                    {studyFieldLabel(field)}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              City
+              <input
+                aria-label="Filter by city"
+                key={city}
+                defaultValue={city}
+                placeholder="Enter the city shown on a student card"
+                maxLength={120}
+                onBlur={(event) => onCityChange(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    event.preventDefault();
+                    onCityChange(event.currentTarget.value);
+                  }
+                }}
+              />
+              <small className="hint">
+                Press Enter to search by city. Letter case does not matter.
+              </small>
+            </label>
+            <label>
+              Domain / goal
+              <select
+                aria-label="Filter by domain or goal"
+                value={domain}
+                onChange={(e) => setDomain(e.target.value)}
+              >
+                <option value="">All domains</option>
+                {(fieldOfStudy ? studyDomains(fieldOfStudy) : domains).map(
+                  (v) => (
+                    <option key={v}>{v}</option>
+                  ),
+                )}
+              </select>
+            </label>
+            <label>
+              Experience level
+              <select
+                aria-label="Filter by experience level"
+                value={experience}
+                onChange={(e) => setExperience(e.target.value)}
+              >
+                <option value="">All levels</option>
+                {experienceLevels.map((v) => (
+                  <option key={v}>{v}</option>
+                ))}
+              </select>
+            </label>
+          </div>
+          {(search ||
+            skill ||
+            domain ||
+            experience ||
+            fieldOfStudy ||
+            city) && (
+            <button
+              className="text-link"
+              onClick={() => {
+                setSearch("");
+                setSkill("");
+                setDomain("");
+                setExperience("");
+                if (onClearDirectoryFilters) onClearDirectoryFilters();
+                else {
+                  onStudyChange("");
+                  onCityChange("");
                 }
               }}
-            />
-            <small className="hint">
-              Press Enter to search by city. Letter case does not matter.
-            </small>
-          </label>
-          <label>
-            Domain / goal
-            <select
-              aria-label="Filter by domain or goal"
-              value={domain}
-              onChange={(e) => setDomain(e.target.value)}
             >
-              <option value="">All domains</option>
-              {(fieldOfStudy ? studyDomains(fieldOfStudy) : domains).map(
-                (v) => (
-                  <option key={v}>{v}</option>
-                ),
-              )}
-            </select>
-          </label>
-          <label>
-            Experience level
-            <select
-              aria-label="Filter by experience level"
-              value={experience}
-              onChange={(e) => setExperience(e.target.value)}
-            >
-              <option value="">All levels</option>
-              {experienceLevels.map((v) => (
-                <option key={v}>{v}</option>
-              ))}
-            </select>
-          </label>
-        </div>
-        {(search || skill || domain || experience || fieldOfStudy || city) && (
-          <button
-            className="text-link"
-            onClick={() => {
-              setSearch("");
-              setSkill("");
-              setDomain("");
-              setExperience("");
-              if (onClearDirectoryFilters) onClearDirectoryFilters();
-              else {
-                onStudyChange("");
-                onCityChange("");
-              }
-            }}
-          >
-            Clear filters
-          </button>
-        )}
-        <p className="hint">
-          Separate skills with commas to match all selected skills.
-        </p>
-      </section>
+              Clear filters
+            </button>
+          )}
+          <p className="hint">
+            Separate skills with commas to match all selected skills.
+          </p>
+        </section>
+      )}
       <div
         className="peer-browse-switch"
         role="group"
@@ -469,19 +482,21 @@ export function PeerDiscovery({
               : `${items.length} matching students in loaded profiles`}
           </p>
         </div>
-        <label className="discovery-sort">
-          <ArrowDownWideNarrow size={16} aria-hidden="true" />
-          <span className="sr-only">Sort students</span>
-          <select
-            aria-label="Sort students"
-            value={sort}
-            onChange={(e) => setSort(e.target.value)}
-          >
-            {suggested && <option value="recommended">Best match</option>}
-            <option value="name">Name A–Z</option>
-            <option value="skills">Most listed skills</option>
-          </select>
-        </label>
+        {!suggested && (
+          <label className="discovery-sort">
+            <ArrowDownWideNarrow size={16} aria-hidden="true" />
+            <span className="sr-only">Sort students</span>
+            <select
+              aria-label="Sort students"
+              value={sort}
+              onChange={(e) => setSort(e.target.value)}
+            >
+              {suggested && <option value="recommended">Best match</option>}
+              <option value="name">Name A–Z</option>
+              <option value="skills">Most listed skills</option>
+            </select>
+          </label>
+        )}
       </div>
       {(people.error ||
         dismissed.error ||
