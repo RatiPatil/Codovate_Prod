@@ -26,6 +26,7 @@ import {
   onboardingDraft,
   onboardingInput,
   saveOnboarding,
+  missingProfileDefaults,
 } from "./onboardingData";
 const user = {
   uid: "student",
@@ -59,6 +60,14 @@ beforeEach(() => {
       email: user.email,
       createdAt: "created",
       resumePath: "",
+      college: "",
+      degree: "",
+      graduationYear: "",
+      city: "",
+      bio: "",
+      skills: [],
+      portfolio: "",
+      updatedAt: "created",
       onboarding: initialOnboarding("created"),
     },
   };
@@ -281,4 +290,63 @@ it("preserves published skills when only the identity step changes the name", as
     ([ref]) => ref.collection === "memberProfiles",
   )[1];
   expect(member).toMatchObject({ name: "NEW ASHOK CHAVAN", skills: ["React"] });
+});
+
+it("fills only absent core fields on older profiles and preserves legacy fields", async () => {
+  state.docs.users = {
+    name: "Existing Student",
+    email: user.email,
+    createdAt: "original-created",
+    role: "student",
+    fullName: "Existing Student",
+    resumePath: "resumes/student/resume.pdf",
+    portfolio: "https://example.com",
+  };
+  await saveOnboarding(user, draft(), 1);
+  const update = state.update.mock.calls[0][1];
+  expect(update).toMatchObject({
+    college: "",
+    degree: "",
+    graduationYear: "",
+    bio: "",
+    skills: [],
+    onboarding: { startedAt: "original-created" },
+  });
+  for (const key of [
+    "role",
+    "fullName",
+    "email",
+    "createdAt",
+    "resumePath",
+    "portfolio",
+  ])
+    expect(update).not.toHaveProperty(key);
+});
+it("initializes a missing date and email once without changing account counts", async () => {
+  state.docs.users = { name: "Existing Student", role: "student" };
+  await saveOnboarding(user, draft(), 1);
+  const update = state.update.mock.calls[0][1];
+  expect(update).toMatchObject({
+    email: user.email,
+    createdAt: "server-time",
+    onboarding: { startedAt: "server-time" },
+  });
+  expect(
+    state.set.mock.calls.some(([ref]) => ref.collection === "publicStats"),
+  ).toBe(false);
+  expect(
+    missingProfileDefaults({ email: null, createdAt: "original" }, user, "new"),
+  ).not.toHaveProperty("createdAt");
+  expect(
+    missingProfileDefaults({ email: null, createdAt: "original" }, user, "new"),
+  ).not.toHaveProperty("email");
+});
+it("tags denied commits with a safe stage code while keeping the Firebase error code", async () => {
+  state.update.mockImplementationOnce(() => {
+    throw Object.assign(new Error("Denied"), { code: "permission-denied" });
+  });
+  await expect(saveOnboarding(user, draft(), 1)).rejects.toMatchObject({
+    code: "permission-denied",
+    onboardingStage: "WRITE_PROFILE",
+  });
 });

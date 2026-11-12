@@ -24,9 +24,9 @@ import {
 } from "./OnboardingVisuals";
 import "./onboarding.css";
 
-export function saveFailureMessage(code) {
+export function saveFailureMessage(code, stage) {
   if (code === "permission-denied" || code === "firestore/permission-denied")
-    return "Your profile could not be saved. Your entries are still here. Please retry or contact support with code PROFILE_ACCESS.";
+    return `Your profile could not be saved. Your entries are still here. Please retry or contact support with code PROFILE_ACCESS${stage ? "_" + stage : ""}.`;
   if (code === "unavailable" || code === "app/profile-timeout")
     return "We couldn’t reach the server. Check your connection and retry. Your entries are still here.";
   if (code === "unauthenticated")
@@ -239,7 +239,9 @@ export function Onboarding() {
     } catch (failure) {
       if (failure.fields) setFieldErrors(failure.fields);
       setError(
-        failure.code ? saveFailureMessage(failure.code) : failure.message,
+        failure.code
+          ? saveFailureMessage(failure.code, failure.onboardingStage)
+          : failure.message,
       );
     } finally {
       setBusy(false);

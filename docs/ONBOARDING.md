@@ -29,3 +29,11 @@ Run `npm run deploy:onboarding` from the repository root to build, deploy Firest
 The setup form is centered by default. Desktop users can open and close Preview profile; mobile/tablet users see the form only. First-step writes contain only identity/contact/city plus the progress marker. Later steps add the data collected so far. Existing résumé, portfolio and unreached profile fields are not rewritten. The name directory is updated only when missing or when the full name changes.
 
 Authentication routes finish their active sign-in operation before the global gate redirects to onboarding. Intercepting them while a sign-in promise was still running could allow its later return-destination navigation to remount onboarding and discard edits. The regression suite verifies auth-route handling, and the browser test edits education immediately after sign-in and confirms those values persist.
+
+## Compatibility with older account records
+
+Existing documents may retain extra legacy fields such as fullName, role or phoneNumber. Updates validate an allowlist of changed fields, so unchanged legacy fields no longer block onboarding. Those extra fields cannot be added, changed or removed by the client; new document creation remains strict. Authorization continues to use authenticated ownership and admin token claims, never a legacy profile role.
+
+The first successful onboarding save initializes only absent required profile defaults. Existing email, registration timestamp, résumé, portfolio and legacy attributes are preserved. A missing email can initialize only to the authenticated token email (or empty for phone-only accounts). A missing createdAt can initialize only to server request time and is immutable thereafter. This repair never increments registration counts or recreates the account.
+
+Save denials now identify the operation with safe support codes such as PROFILE_ACCESS_READ_DIRECTORY or PROFILE_ACCESS_WRITE_PROFILE. Codes contain no UID, phone, email, tokens or personal values. These aid diagnosis if an account has another legacy shape; actual production records cannot be inspected without an authenticated Firebase connection.

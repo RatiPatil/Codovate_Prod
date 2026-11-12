@@ -86,10 +86,11 @@ service cloud.firestore {
     && (!changed.hasAny(['skillSuggestionsSource']) || text(d.get('skillSuggestionsSource',''),100));
   }
   function validProfile(d) {
-   // Create validates the full document; update validates every changed value.
+   // New documents have a strict shape. Legacy unknown fields may remain, but cannot change.
+   // Every changed supported field is validated; required fields must exist after the update.
    let changed = request.method=='update' ? d.diff(resource.data).affectedKeys() : d.keys().toSet();
    return d.keys().hasAll(['name','email','college','degree','graduationYear','city','bio','skills','portfolio','resumePath','createdAt','updatedAt'])
-    && d.keys().hasOnly(['name','email','college','degree','graduationYear','city','bio','skills','portfolio','resumePath','resumeUrl','mobile','taluka','program','suggestedSkills','skillSuggestionsSource','onboarding','careerPreferences','nameParts','discoveryEnabled','accountStatus','mobileVerified','importSource','createdAt','updatedAt'])
+    && (request.method=='update' ? changed : d.keys().toSet()).hasOnly(['name','email','college','degree','graduationYear','city','bio','skills','portfolio','resumePath','resumeUrl','mobile','taluka','program','suggestedSkills','skillSuggestionsSource','onboarding','careerPreferences','nameParts','discoveryEnabled','accountStatus','mobileVerified','importSource','createdAt','updatedAt'])
     && (!changed.hasAny(['name']) || text(d.name,100))
     && (!changed.hasAny(['email']) || text(d.email,320))
     && (!changed.hasAny(['college']) || text(d.college,180))
@@ -119,8 +120,8 @@ service cloud.firestore {
     && request.resource.data.get('accountStatus','') == resource.data.get('accountStatus','')
     && request.resource.data.get('importSource','') == resource.data.get('importSource','')
     && request.resource.data.get('skillSuggestionsSource','') == resource.data.get('skillSuggestionsSource','')
-    && request.resource.data.email == resource.data.email
-    && request.resource.data.createdAt == resource.data.createdAt && changedTime();
+    && request.resource.data.email == resource.data.get('email',request.auth.token.get('email',''))
+    && request.resource.data.createdAt == resource.data.get('createdAt',request.time) && changedTime();
    allow delete: if false;
   }
   match /publicStats/{id} {

@@ -248,3 +248,12 @@ it.each(["/login", "/signup", "/phone-login"])(
     ).toBeNull();
   },
 );
+
+it("includes the denied operation in the support code without exposing user data", () => {
+  expect(saveFailureMessage("permission-denied", "READ_DIRECTORY")).toContain(
+    "PROFILE_ACCESS_READ_DIRECTORY",
+  );
+  expect(saveFailureMessage("permission-denied", "WRITE_PROFILE")).toContain(
+    "PROFILE_ACCESS_WRITE_PROFILE",
+  );
+});

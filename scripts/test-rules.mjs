@@ -1964,6 +1964,45 @@ try {
     onboarding:{...legacyMarker, step:1}, updatedAt:serverTimestamp(),
   })));
 
+  const oldOwner=env.authenticatedContext('legacy-extra',{email:'legacy-extra@example.com'});
+  const oldRef=doc(oldOwner.firestore(),'users','legacy-extra');
+  const oldDate=Timestamp.fromDate(new Date('2024-01-01T00:00:00Z'));
+  await env.withSecurityRulesDisabled(c=>setDoc(doc(c.firestore(),'users','legacy-extra'),{
+    ...profile,name:'Older Student',email:'legacy-extra@example.com',createdAt:oldDate,resumePath:'',
+    fullName:'Older Student',role:'student',phoneNumber:'9876543210',
+  }));
+  const oldIdentity={name:'OLDER ASHOK STUDENT',nameParts:{first:'OLDER',middle:'ASHOK',last:'STUDENT'},city:'South Solapur',mobile:'+919876543210',onboarding:{version:1,status:'in-progress',step:2,startedAt:oldDate,completedAt:null},updatedAt:serverTimestamp()};
+  const oldBatch=writeBatch(oldOwner.firestore());
+  oldBatch.update(oldRef,oldIdentity);
+  oldBatch.set(doc(oldOwner.firestore(),'adminUsers','legacy-extra'),{uid:'legacy-extra',fullName:oldIdentity.name,joinedAt:oldDate,updatedAt:serverTimestamp()});
+  await check('legacy extra fields no longer block the identity save',assertSucceeds(oldBatch.commit()));
+  const retained=(await getDoc(oldRef)).data();
+  if(retained.fullName!=='Older Student' || retained.role!=='student' || retained.phoneNumber!=='9876543210' || !retained.createdAt.isEqual(oldDate)) throw new Error('Legacy fields were overwritten');
+  await check('legacy role cannot be promoted by its owner',assertFails(updateDoc(oldRef,{role:'admin',updatedAt:serverTimestamp()})));
+  await check('legacy owners cannot add arbitrary privilege fields',assertFails(updateDoc(oldRef,{admin:true,updatedAt:serverTimestamp()})));
+  await check('legacy owner still cannot rewrite email',assertFails(updateDoc(oldRef,{email:'forged@example.com',updatedAt:serverTimestamp()})));
+  await check('legacy owner still cannot rewrite original creation date',assertFails(updateDoc(oldRef,{createdAt:serverTimestamp(),updatedAt:serverTimestamp()})));
+  const sparseOwner=env.authenticatedContext('legacy-sparse',{email:'legacy-sparse@example.com'});
+  const sparseRef=doc(sparseOwner.firestore(),'users','legacy-sparse');
+  await env.withSecurityRulesDisabled(c=>setDoc(doc(c.firestore(),'users','legacy-sparse'),{name:'Sparse Student',role:'student'}));
+  const sparseBatch=writeBatch(sparseOwner.firestore());
+  sparseBatch.update(sparseRef,{...oldIdentity,email:'legacy-sparse@example.com',college:'',degree:'',graduationYear:'',bio:'',skills:[],portfolio:'',resumePath:'',createdAt:serverTimestamp(),onboarding:{...oldIdentity.onboarding,startedAt:serverTimestamp()}});
+  sparseBatch.set(doc(sparseOwner.firestore(),'adminUsers','legacy-sparse'),{uid:'legacy-sparse',fullName:oldIdentity.name,joinedAt:serverTimestamp(),updatedAt:serverTimestamp()});
+  await check('sparse legacy account can initialize missing fields atomically',assertSucceeds(sparseBatch.commit()));
+  await check('initialized legacy email remains protected',assertFails(updateDoc(sparseRef,{email:'forged@example.com',updatedAt:serverTimestamp()})));
+  await check('initialized legacy date remains protected',assertFails(updateDoc(sparseRef,{createdAt:Timestamp.fromDate(new Date('2020-01-01')) ,updatedAt:serverTimestamp()})));
+  const spoofOwner=env.authenticatedContext('legacy-spoof',{email:'real@example.com'});
+  await env.withSecurityRulesDisabled(c=>setDoc(doc(c.firestore(),'users','legacy-spoof'),{name:'Sparse Student'}));
+  await check('missing email can only initialize to the authenticated email',assertFails(updateDoc(doc(spoofOwner.firestore(),'users','legacy-spoof'),{...oldIdentity,email:'forged@example.com',college:'',degree:'',graduationYear:'',bio:'',skills:[],portfolio:'',resumePath:'',createdAt:serverTimestamp(),onboarding:{...oldIdentity.onboarding,startedAt:serverTimestamp()}})));
+  await check('legacy extras do not permit reading another student profile',assertFails(getDoc(doc(oldOwner.firestore(),'users','alice'))));
+
+  await check('missing registration date cannot be initialized to a forged historical date',assertFails(updateDoc(doc(spoofOwner.firestore(),'users','legacy-spoof'),{...oldIdentity,email:'real@example.com',college:'',degree:'',graduationYear:'',bio:'',skills:[],portfolio:'',resumePath:'',createdAt:oldDate,onboarding:{...oldIdentity.onboarding,startedAt:oldDate}})));
+  const oldPhone=env.authenticatedContext('legacy-phone',{phone_number:'+919876543210'});
+  const oldPhoneRef=doc(oldPhone.firestore(),'users','legacy-phone');
+  await env.withSecurityRulesDisabled(c=>setDoc(doc(c.firestore(),'users','legacy-phone'),{name:'Older Phone Student',phoneNumber:'9876543210'}));
+  await check('older phone-only account can initialize an empty email safely',assertSucceeds(updateDoc(oldPhoneRef,{...oldIdentity,email:'',college:'',degree:'',graduationYear:'',bio:'',skills:[],portfolio:'',resumePath:'',createdAt:serverTimestamp(),onboarding:{...oldIdentity.onboarding,startedAt:serverTimestamp()}})));
+  await check('phone-only account cannot claim an unverified email',assertFails(updateDoc(oldPhoneRef,{email:'forged@example.com',updatedAt:serverTimestamp()})));
+
   console.log(`${checks} Firebase security checks passed.`);
 } finally {
   await env.cleanup();

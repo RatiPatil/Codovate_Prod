@@ -158,6 +158,25 @@ export function onboardingInput(raw, step, complete = false, partial = false) {
   return profile;
 }
 
+export function missingProfileDefaults(existing, user, createdAt) {
+  const defaults = {
+    name: "",
+    email: user.email || "",
+    college: "",
+    degree: "",
+    graduationYear: "",
+    city: "",
+    bio: "",
+    skills: [],
+    portfolio: "",
+    resumePath: "",
+    createdAt,
+  };
+  return Object.fromEntries(
+    Object.entries(defaults).filter(([key]) => !Object.hasOwn(existing, key)),
+  );
+}
+
 export async function saveOnboarding(
   user,
   raw,
@@ -166,77 +185,95 @@ export async function saveOnboarding(
 ) {
   if (!db || !user?.uid) throw new Error("Sign in before saving your profile.");
   const values = onboardingInput(raw, step, complete, partial);
-  await withTimeout(
-    runTransaction(db, async (tx) => {
-      const profileRef = doc(db, "users", user.uid);
-      const snapshot = await tx.get(profileRef);
-      if (!snapshot.exists())
-        throw new Error(
-          "Your profile is not ready. Retry the account connection.",
-        );
-      const existing = snapshot.data();
-      // Completed accounts stay complete. Existing profiles enroll on their first save.
-      if (!needsOnboarding(existing)) return;
-      const preferenceRef = doc(db, "discoveryPreferences", user.uid);
-      const memberRef = doc(db, "memberProfiles", user.uid);
-      const pref = complete ? await tx.get(preferenceRef) : null;
-      const directoryRef = doc(db, "adminUsers", user.uid);
-      const directory = await tx.get(directoryRef);
-      const syncMember = complete || values.name !== existing.name || step >= 3;
-      const member = syncMember ? await tx.get(memberRef) : null;
-      const updatedAt = serverTimestamp();
-      tx.update(profileRef, {
-        ...values,
-        onboarding: {
-          ...(existing.onboarding || initialOnboarding(existing.createdAt)),
-          step: complete ? 4 : partial ? step : Math.min(step + 1, 4),
-          status: complete ? "completed" : "in-progress",
-          completedAt: complete ? updatedAt : null,
-        },
-        updatedAt,
-      });
-      if (!directory.exists() || directory.data().fullName !== values.name) {
-        tx.set(directoryRef, {
-          uid: user.uid,
-          fullName: values.name,
-          joinedAt: existing.createdAt,
+  let stage = "READ_PROFILE";
+  try {
+    await withTimeout(
+      runTransaction(db, async (tx) => {
+        const profileRef = doc(db, "users", user.uid);
+        stage = "READ_PROFILE";
+        const snapshot = await tx.get(profileRef);
+        if (!snapshot.exists())
+          throw new Error(
+            "Your profile is not ready. Retry the account connection.",
+          );
+        const existing = snapshot.data();
+        // Completed accounts stay complete. Existing profiles enroll on their first save.
+        if (!needsOnboarding(existing)) return;
+        const preferenceRef = doc(db, "discoveryPreferences", user.uid);
+        const memberRef = doc(db, "memberProfiles", user.uid);
+        stage = "READ_PREFERENCES";
+        const pref = complete ? await tx.get(preferenceRef) : null;
+        const directoryRef = doc(db, "adminUsers", user.uid);
+        stage = "READ_DIRECTORY";
+        const directory = await tx.get(directoryRef);
+        const syncMember =
+          complete || values.name !== existing.name || step >= 3;
+        stage = "READ_MEMBER";
+        const member = syncMember ? await tx.get(memberRef) : null;
+        const updatedAt = serverTimestamp();
+        const createdAt = Object.hasOwn(existing, "createdAt")
+          ? existing.createdAt
+          : updatedAt;
+        stage = "WRITE_PROFILE";
+        tx.update(profileRef, {
+          ...missingProfileDefaults(existing, user, createdAt),
+          ...values,
+          onboarding: {
+            ...(existing.onboarding || initialOnboarding(createdAt)),
+            step: complete ? 4 : partial ? step : Math.min(step + 1, 4),
+            status: complete ? "completed" : "in-progress",
+            completedAt: complete ? updatedAt : null,
+          },
           updatedAt,
         });
-      }
-      if (complete) {
-        const details = discoveryDetails({
-          ...pref?.data()?.details,
-          desiredRole: values.careerPreferences.desiredRole,
-          domain: values.careerPreferences.domain,
-          experience: values.careerPreferences.experience,
-          college: values.college,
-          year: values.careerPreferences.yearOfStudy,
-          location: values.city,
-          seeking: values.careerPreferences.seeking,
-        });
-        tx.set(preferenceRef, {
-          uid: user.uid,
-          details,
-          shareDetails: false,
-          updatedAt,
-        });
-        if (discoverable)
-          tx.set(memberRef, {
+        if (!directory.exists() || directory.data().fullName !== values.name) {
+          tx.set(directoryRef, {
             uid: user.uid,
-            name: values.name,
-            skills: values.skills,
+            fullName: values.name,
+            joinedAt: createdAt,
             updatedAt,
           });
-        else if (member?.exists()) tx.delete(memberRef);
-      } else if (member?.exists()) {
-        tx.update(memberRef, {
-          name: values.name,
-          skills: values.skills || existing.skills || [],
-          updatedAt,
-        });
-      }
-    }),
-    "app/profile-timeout",
-    25000,
-  );
+        }
+        if (complete) {
+          const details = discoveryDetails({
+            ...pref?.data()?.details,
+            desiredRole: values.careerPreferences.desiredRole,
+            domain: values.careerPreferences.domain,
+            experience: values.careerPreferences.experience,
+            college: values.college,
+            year: values.careerPreferences.yearOfStudy,
+            location: values.city,
+            seeking: values.careerPreferences.seeking,
+          });
+          tx.set(preferenceRef, {
+            uid: user.uid,
+            details,
+            shareDetails: false,
+            updatedAt,
+          });
+          if (discoverable)
+            tx.set(memberRef, {
+              uid: user.uid,
+              name: values.name,
+              skills: values.skills,
+              updatedAt,
+            });
+          else if (member?.exists()) tx.delete(memberRef);
+        } else if (member?.exists()) {
+          tx.update(memberRef, {
+            name: values.name,
+            skills: values.skills || existing.skills || [],
+            updatedAt,
+          });
+        }
+      }),
+      "app/profile-timeout",
+      25000,
+    );
+  } catch (failure) {
+    throw Object.assign(
+      new Error(failure.message || "The profile could not be saved."),
+      { code: failure.code, onboardingStage: stage, cause: failure },
+    );
+  }
 }
