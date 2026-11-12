@@ -341,6 +341,33 @@
         },
         "teammateCard": {
           "$ref": "#/$defs/teammateCard"
+        },
+        "importAssignedDefaults": {
+          "type": "object",
+          "properties": {
+            "domain": {
+              "enum": [
+                "Web Development",
+                "AI/ML",
+                "Data Science",
+                "Cyber Security",
+                "Research",
+                "Startups",
+                "Hackathons"
+              ]
+            },
+            "experience": {
+              "enum": [
+                "Beginner",
+                "Intermediate",
+                "Advanced"
+              ]
+            },
+            "version": {
+              "const": "import-profile-defaults-v1"
+            }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": false
@@ -1645,6 +1672,30 @@
             "minLength": 1,
             "maxLength": 60
           }
+        },
+        "importDefaults": {
+          "type": "object",
+          "properties": {
+            "domain": {
+              "enum": [
+                "Web Development",
+                "AI/ML",
+                "Data Science",
+                "Cyber Security",
+                "Research",
+                "Startups",
+                "Hackathons"
+              ]
+            },
+            "experience": {
+              "enum": [
+                "Beginner",
+                "Intermediate",
+                "Advanced"
+              ]
+            }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": false

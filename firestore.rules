@@ -525,7 +525,8 @@ service cloud.firestore {
    allow read: if signedIn();
    allow create,update: if own(uid)
     && request.resource.data.keys().hasAll(['uid','name','skills','updatedAt'])
-    && request.resource.data.keys().hasOnly(['uid','name','skills','suggestedSkills','details','updatedAt'])
+    && request.resource.data.keys().hasOnly(['uid','name','skills','suggestedSkills','details','updatedAt','importDefaults'])
+    && (!request.resource.data.keys().hasAny(['importDefaults']) || (resource != null && request.resource.data.importDefaults==resource.data.get('importDefaults',null)))
     && (!request.resource.data.keys().hasAny(['details']) || (validDiscoveryDetails(request.resource.data.details)
      && getAfter(/databases/$(database)/documents/discoveryPreferences/$(uid)).data.shareDetails==true
      && request.resource.data.details==getAfter(/databases/$(database)/documents/discoveryPreferences/$(uid)).data.details))

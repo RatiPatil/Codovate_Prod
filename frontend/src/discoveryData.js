@@ -216,25 +216,29 @@ const canonicalSkill = (value) => {
     }[key] || key
   );
 };
-export function suggestedPeer(mine, other) {
+export function suggestionReasons(mine, other) {
   const a = mine?.details || {},
     b = other?.details || {};
   const city = normalized(a.location),
     field = normalizeStudyField(a.fieldOfStudy);
-  if (
-    !city ||
-    !field ||
-    city !== normalized(b.location) ||
-    field !== normalizeStudyField(b.fieldOfStudy)
-  )
-    return false;
+  const reasons = [];
+  if (city && city === normalized(b.location)) reasons.push("Same city");
+  if (field && field === normalizeStudyField(b.fieldOfStudy))
+    reasons.push("Same field of study");
   const skills = new Set(
     (mine?.skills || []).map(canonicalSkill).filter(Boolean),
   );
-  return (other?.skills || []).some((value) => {
-    const key = canonicalSkill(value);
-    return key && skills.has(key);
-  });
+  if (
+    (other?.skills || []).some((value) => {
+      const key = canonicalSkill(value);
+      return key && skills.has(key);
+    })
+  )
+    reasons.push("Shared skills");
+  return reasons;
+}
+export function suggestedPeer(mine, other) {
+  return suggestionReasons(mine, other).length > 0;
 }
 export function profileMatch(mine, other) {
   const a = mine?.details || {},

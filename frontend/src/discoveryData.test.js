@@ -335,7 +335,7 @@ it("matches student searches and combined skills regardless of letter case", () 
   expect(discoverPeers(people, { uid: "me", skill: "Java" })).toEqual([]);
 });
 
-it("requires city AND study field AND a shared confirmed skill for suggestions", () => {
+it("suggests on city OR study field OR a shared confirmed skill", () => {
   const mine = {
     skills: ["React.js"],
     details: {
@@ -343,47 +343,39 @@ it("requires city AND study field AND a shared confirmed skill for suggestions",
       fieldOfStudy: "computer science and engineering",
     },
   };
-  const match = {
-    uid: "yes",
-    name: "Match",
-    skills: ["REACT"],
-    details: {
-      location: "pune",
-      fieldOfStudy: "COMPUTER SCIENCE AND ENGINEERING",
-    },
-  };
   const peers = [
-    match,
+    { uid: "city", name: "City", skills: [], details: { location: "pune" } },
     {
-      ...match,
-      uid: "city",
-      details: { ...match.details, location: "Mumbai" },
+      uid: "study",
+      name: "Study",
+      skills: [],
+      details: { fieldOfStudy: "COMPUTER SCIENCE AND ENGINEERING" },
+    },
+    { uid: "skill", name: "Skill", skills: ["REACT"], details: {} },
+    {
+      uid: "none",
+      name: "None",
+      skills: ["Java"],
+      details: { location: "Mumbai", fieldOfStudy: "Civil Engineering" },
     },
     {
-      ...match,
-      uid: "field",
-      details: { ...match.details, fieldOfStudy: "CIVIL ENGINEERING" },
+      uid: "unconfirmed",
+      name: "Unconfirmed",
+      skills: [],
+      suggestedSkills: ["React"],
+      details: {},
     },
-    { ...match, uid: "skill", skills: ["Java"] },
-    { ...match, uid: "missing", details: {} },
-    { ...match, uid: "unconfirmed", skills: [], suggestedSkills: ["React"] },
+    { uid: "missing", name: "Missing", skills: [], details: {} },
   ];
   expect(
-    discoverPeers(peers, { uid: "me", mine, suggested: true }).map(
-      (p) => p.uid,
-    ),
-  ).toEqual(["yes"]);
+    discoverPeers(peers, { uid: "me", mine, suggested: true })
+      .map((p) => p.uid)
+      .sort(),
+  ).toEqual(["city", "skill", "study"]);
   expect(
     discoverPeers(peers, { uid: "me", mine, suggested: false }),
   ).toHaveLength(6);
   expect(
-    discoverPeers(peers, {
-      uid: "me",
-      mine: {
-        ...mine,
-        details: { location: "", fieldOfStudy: mine.details.fieldOfStudy },
-      },
-      suggested: true,
-    }),
+    discoverPeers(peers, { uid: "me", mine: {}, suggested: true }),
   ).toEqual([]);
 });

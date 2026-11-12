@@ -17,6 +17,7 @@ import { useTeamFeed, connectMember } from "./teamHubData";
 import {
   approvedAvatar,
   discoveryDraft,
+  suggestionReasons,
   domains,
   experienceLevels,
   seekingOptions,
@@ -152,6 +153,14 @@ export function PeerDiscovery({
     );
   }, [user.uid]);
   const suggestionOrder = useRef(new Map());
+  const myMatchingProfile = {
+    skills: profile?.skills || [],
+    details: {
+      ...saved,
+      location: profile?.city || saved.location,
+      fieldOfStudy: profile?.program || saved.fieldOfStudy,
+    },
+  };
   const candidates = discoverPeers(people.items, {
     uid: user.uid,
     search: suggested ? "" : search,
@@ -165,14 +174,7 @@ export function PeerDiscovery({
       .filter((c) => c.status === "blocked")
       .map((c) => (c.fromId === user.uid ? c.toId : c.fromId)),
     suggested,
-    mine: {
-      skills: profile?.skills || [],
-      details: {
-        ...saved,
-        location: profile?.city || saved.location,
-        fieldOfStudy: profile?.program || saved.fieldOfStudy,
-      },
-    },
+    mine: myMatchingProfile,
   });
   const items = savedOnly
     ? candidates.filter((p) => savedIds.has(p.uid))
@@ -307,7 +309,7 @@ export function PeerDiscovery({
       </details>
       {suggested && (
         <p>
-          These teammates share your city, field of study and at least one
+          These teammates match your city, field of study or at least one
           confirmed skill.
         </p>
       )}
@@ -538,7 +540,7 @@ export function PeerDiscovery({
             </h3>
             <p>
               {suggested
-                ? "Complete your city, field of study and confirmed skills to find matching teammates. All three must match. Browse Find Teammates for other students."
+                ? "Add your city, field of study or confirmed skills to find matching teammates. Any one match qualifies. Browse Find Teammates for other students."
                 : "Try different filters or load more profiles. Only students who choose discovery appear here."}
             </p>
             {suggested && (
@@ -607,6 +609,14 @@ export function PeerDiscovery({
                     {d.location}
                   </p>
                 )}
+                {p.importDefaults &&
+                  (p.importDefaults.domain === d.domain ||
+                    p.importDefaults.experience === d.experience) && (
+                    <p className="hint">
+                      Import defaults · domain and experience are unverified.
+                      Students can update these in discovery settings.
+                    </p>
+                  )}
                 <section className="peer-section">
                   <h4>
                     {p.skills?.length
@@ -627,9 +637,9 @@ export function PeerDiscovery({
                 {suggested && (
                   <div className="skill-row peer-match">
                     <span>Suggested</span>
-                    <span>Same city</span>
-                    <span>Same field of study</span>
-                    <span>Shared skills</span>
+                    {suggestionReasons(myMatchingProfile, p).map((reason) => (
+                      <span key={reason}>{reason}</span>
+                    ))}
                   </div>
                 )}
                 {[
