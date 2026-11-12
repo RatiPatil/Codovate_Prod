@@ -1,6 +1,5 @@
 import { doc, runTransaction, serverTimestamp } from "firebase/firestore";
 import { db } from "./firebase";
-import { normalizeFullName } from "./profileNames";
 import { discoveryDetails } from "./discoveryData";
 import { withTimeout } from "./authSupport";
 import { skillInputError } from "./domain";
@@ -59,12 +58,10 @@ export function onboardingInput(raw, step, complete = false, partial = false) {
   const limits = {
     name: 100,
     city: 100,
-    college: 180,
-    degree: 100,
-    program: 180,
-    graduationYear: 4,
-    bio: 1500,
-    portfolio: 500,
+    ...(step >= 2
+      ? { college: 180, degree: 100, program: 180, graduationYear: 4 }
+      : {}),
+    ...(step >= 3 ? { bio: 1500 } : {}),
   };
   const profile = Object.fromEntries(
     Object.entries(limits).map(([key, limit]) => {
@@ -79,33 +76,25 @@ export function onboardingInput(raw, step, complete = false, partial = false) {
   );
   profile.nameParts = nameParts;
   profile.mobile = raw.mobile ? `+91${raw.mobile}` : "";
-  const skillError = skillInputError(String(raw.skillsText || ""));
+  // Do not overwrite or validate fields the user has not reached yet.
+  if (step === 1) return profile;
+  const skillError =
+    step >= 3 ? skillInputError(String(raw.skillsText || "")) : "";
   if (skillError) throw new Error(skillError);
-  profile.skills = [
-    ...new Set(
-      String(raw.skillsText || "")
-        .split(",")
-        .map((value) => value.trim())
-        .filter(Boolean),
-    ),
-  ];
+  if (step >= 3)
+    profile.skills = [
+      ...new Set(
+        String(raw.skillsText || "")
+          .split(",")
+          .map((value) => value.trim())
+          .filter(Boolean),
+      ),
+    ];
   if (
     profile.graduationYear &&
     !/^(20\d{2}|2100)$/.test(profile.graduationYear)
   )
     throw new Error("Enter a graduation year between 2000 and 2100.");
-  if (profile.portfolio) {
-    let url;
-    try {
-      url = new URL(profile.portfolio);
-    } catch {
-      throw new Error("Enter a valid HTTPS portfolio link, or leave it blank.");
-    }
-    if (url.protocol !== "https:" || url.username || url.password)
-      throw new Error(
-        "Use an HTTPS portfolio link without embedded credentials.",
-      );
-  }
   const p = { ...emptyCareerPreferences, ...raw.preferences };
   const details = discoveryDetails({
     desiredRole: p.desiredRole,
@@ -139,7 +128,6 @@ export function onboardingInput(raw, step, complete = false, partial = false) {
     justStarting: p.justStarting,
   };
   if (!partial) {
-    normalizeFullName(profile.name);
     if (!profile.city) throw new Error("Enter your city to continue.");
     if (
       (complete || step >= 2) &&
@@ -192,7 +180,10 @@ export async function saveOnboarding(
       const preferenceRef = doc(db, "discoveryPreferences", user.uid);
       const memberRef = doc(db, "memberProfiles", user.uid);
       const pref = complete ? await tx.get(preferenceRef) : null;
-      const member = await tx.get(memberRef);
+      const directoryRef = doc(db, "adminUsers", user.uid);
+      const directory = await tx.get(directoryRef);
+      const syncMember = complete || values.name !== existing.name || step >= 3;
+      const member = syncMember ? await tx.get(memberRef) : null;
       const updatedAt = serverTimestamp();
       tx.update(profileRef, {
         ...values,
@@ -204,12 +195,14 @@ export async function saveOnboarding(
         },
         updatedAt,
       });
-      tx.set(doc(db, "adminUsers", user.uid), {
-        uid: user.uid,
-        fullName: values.name,
-        joinedAt: existing.createdAt,
-        updatedAt,
-      });
+      if (!directory.exists() || directory.data().fullName !== values.name) {
+        tx.set(directoryRef, {
+          uid: user.uid,
+          fullName: values.name,
+          joinedAt: existing.createdAt,
+          updatedAt,
+        });
+      }
       if (complete) {
         const details = discoveryDetails({
           ...pref?.data()?.details,
@@ -234,11 +227,11 @@ export async function saveOnboarding(
             skills: values.skills,
             updatedAt,
           });
-        else if (member.exists()) tx.delete(memberRef);
-      } else if (member.exists()) {
+        else if (member?.exists()) tx.delete(memberRef);
+      } else if (member?.exists()) {
         tx.update(memberRef, {
           name: values.name,
-          skills: values.skills,
+          skills: values.skills || existing.skills || [],
           updatedAt,
         });
       }

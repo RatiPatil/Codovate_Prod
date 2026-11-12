@@ -100,9 +100,9 @@ it("normalizes full names, validates progress, and supports beginners", () => {
       true,
     ).skills,
   ).toEqual([]);
-  expect(() =>
+  expect(
     onboardingInput({ ...draft(), portfolio: "javascript:alert(1)" }, 3),
-  ).toThrow("HTTPS");
+  ).not.toHaveProperty("portfolio");
 });
 it("saves the next step without rewriting account identity or incrementing community counts", async () => {
   await saveOnboarding(user, draft(), 1);
@@ -223,4 +223,62 @@ it("enrolls a registered profile atomically without replacing identity, resume o
   expect(
     state.set.mock.calls.some(([ref]) => ref.collection === "publicStats"),
   ).toBe(false);
+});
+
+it("first-step saves do not touch unreached education, career, resume or portfolio fields", async () => {
+  await saveOnboarding(
+    user,
+    {
+      ...draft(),
+      college: "",
+      skillsText: "123",
+      portfolio: "http://legacy.example.com",
+    },
+    1,
+  );
+  const update = state.update.mock.calls[0][1];
+  for (const key of [
+    "college",
+    "degree",
+    "program",
+    "graduationYear",
+    "bio",
+    "skills",
+    "careerPreferences",
+    "portfolio",
+    "resumePath",
+    "resumeUrl",
+  ])
+    expect(update).not.toHaveProperty(key);
+  expect(update).toMatchObject({
+    mobile: "+919876543210",
+    name: "VIVEK ASHOK CHAVAN",
+  });
+});
+it("does not rewrite a matching name directory entry", async () => {
+  state.docs.adminUsers = { fullName: "VIVEK ASHOK CHAVAN" };
+  await saveOnboarding(user, draft(), 1);
+  expect(
+    state.set.mock.calls.some(([ref]) => ref.collection === "adminUsers"),
+  ).toBe(false);
+});
+
+it("preserves published skills when only the identity step changes the name", async () => {
+  state.docs.users.skills = ["React"];
+  state.docs.memberProfiles = {
+    name: state.docs.users.name,
+    skills: ["React"],
+  };
+  await saveOnboarding(
+    user,
+    {
+      ...draft(),
+      nameParts: { first: "NEW", middle: "ASHOK", last: "CHAVAN" },
+    },
+    1,
+  );
+  const member = state.update.mock.calls.find(
+    ([ref]) => ref.collection === "memberProfiles",
+  )[1];
+  expect(member).toMatchObject({ name: "NEW ASHOK CHAVAN", skills: ["React"] });
 });

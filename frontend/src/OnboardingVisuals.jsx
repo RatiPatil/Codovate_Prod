@@ -40,7 +40,7 @@ export function StudentPreview({ draft, complete = false }) {
       </div>
       <h2>{normalizeName(draft.name) || "YOUR FULL NAME"}</h2>
       <p className="onboarding-role">
-        {draft.preferences.desiredRole || "Your future starts here"}
+        {draft.preferences.desiredRole || "Student at Codovate"}
       </p>
       <p className="onboarding-card-line">
         <GraduationCap size={16} aria-hidden="true" />
@@ -52,44 +52,38 @@ export function StudentPreview({ draft, complete = false }) {
         <MapPin size={16} aria-hidden="true" />
         {draft.city || "Your city"}
       </p>
-      <div className="onboarding-card-section">
-        <h3>Skills & strengths</h3>
-        <div className="onboarding-tags">
-          {skills.length ? (
-            skills.map((skill) => <span key={skill}>{skill}</span>)
-          ) : (
-            <span>
-              {draft.preferences.justStarting
-                ? "Learning & exploring"
-                : "Add your skills"}
-            </span>
-          )}
+      {(skills.length > 0 || draft.preferences.justStarting) && (
+        <div className="onboarding-card-section">
+          <h3>Skills</h3>
+          <div className="onboarding-tags">
+            {skills.length ? (
+              skills.map((skill) => <span key={skill}>{skill}</span>)
+            ) : (
+              <span>Learning & exploring</span>
+            )}
+          </div>
         </div>
-      </div>
-      <div className="onboarding-card-section">
-        <h3>Working towards</h3>
-        <div className="onboarding-tags">
-          {draft.preferences.goals.length ? (
-            draft.preferences.goals.map((goal) => (
+      )}
+      {draft.preferences.goals.length > 0 && (
+        <div className="onboarding-card-section">
+          <h3>Goals</h3>
+          <div className="onboarding-tags">
+            {draft.preferences.goals.map((goal) => (
               <span key={goal}>{goal}</span>
-            ))
-          ) : (
-            <span>Your career goals</span>
-          )}
+            ))}
+          </div>
         </div>
-      </div>
-      <div className="onboarding-card-section">
-        <h3>Looking to connect with</h3>
-        <div className="onboarding-tags">
-          {draft.preferences.seeking.length ? (
-            draft.preferences.seeking.map((item) => (
+      )}
+      {draft.preferences.seeking.length > 0 && (
+        <div className="onboarding-card-section">
+          <h3>Looking for</h3>
+          <div className="onboarding-tags">
+            {draft.preferences.seeking.map((item) => (
               <span key={item}>{item}</span>
-            ))
-          ) : (
-            <span>Your future teammates</span>
-          )}
+            ))}
+          </div>
         </div>
-      </div>
+      )}
       {draft.bio && <p className="onboarding-card-bio">{draft.bio}</p>}
       <p className="onboarding-card-private">
         <ShieldCheck size={15} aria-hidden="true" />

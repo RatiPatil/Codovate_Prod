@@ -1,10 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { Navigate, useLocation } from "react-router-dom";
-import { ArrowRight, CheckCircle2 } from "lucide-react";
+import { ArrowRight, CheckCircle2, Eye } from "lucide-react";
 import { useSession } from "./session";
 import { safeReturnPath } from "./authSupport";
 import { domains, experienceLevels, seekingOptions } from "./discoveryData";
-import { normalizeName } from "./profileNames";
 import {
   fullNameFromParts,
   onboardingFieldErrors,
@@ -24,6 +23,16 @@ import {
   StudentPreview,
 } from "./OnboardingVisuals";
 import "./onboarding.css";
+
+export function saveFailureMessage(code) {
+  if (code === "permission-denied" || code === "firestore/permission-denied")
+    return "Your profile could not be saved. Your entries are still here. Please retry or contact support with code PROFILE_ACCESS.";
+  if (code === "unavailable" || code === "app/profile-timeout")
+    return "We couldn’t reach the server. Check your connection and retry. Your entries are still here.";
+  if (code === "unauthenticated")
+    return "Your session has expired. Please sign in again.";
+  return "We couldn’t save this step. Your entries are still here. Please retry.";
+}
 
 function resumeStep(profile, user) {
   const draft = onboardingDraft(profile, user);
@@ -103,7 +112,8 @@ export function OnboardingGate({ children }) {
     !loading &&
     !sessionError &&
     needsOnboarding(profile) &&
-    location.pathname !== "/onboarding"
+    location.pathname !== "/onboarding" &&
+    !["/login", "/signup", "/phone-login"].includes(location.pathname)
   ) {
     return (
       <Navigate
@@ -129,6 +139,7 @@ export function Onboarding() {
   );
   const [step, setStep] = useState(resumeStep(profile, user));
   const [discoverable, setDiscoverable] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState({});
@@ -159,6 +170,7 @@ export function Onboarding() {
     heading.current?.focus();
   }, [step, showWelcome]);
   function field(key, value) {
+    setError("");
     setDraft((current) => {
       if (key.startsWith("nameParts.")) {
         const nameParts = { ...current.nameParts, [key.split(".")[1]]: value };
@@ -189,6 +201,7 @@ export function Onboarding() {
     ) : null;
   }
   function preference(key, value) {
+    setError("");
     setFieldErrors((current) => ({
       ...current,
       [`preferences.${key}`]: undefined,
@@ -204,7 +217,7 @@ export function Onboarding() {
     const errors = onboardingFieldErrors(draft, step, leave);
     setFieldErrors(errors);
     if (Object.keys(errors).length) {
-      setError("Check the highlighted fields before continuing.");
+      setError("");
       const first = document.querySelector(
         `[data-field="${Object.keys(errors)[0]}"]`,
       );
@@ -226,9 +239,7 @@ export function Onboarding() {
     } catch (failure) {
       if (failure.fields) setFieldErrors(failure.fields);
       setError(
-        failure.code
-          ? "Could not save your progress. Check your connection and make sure the latest Firebase rules are deployed, then retry."
-          : failure.message,
+        failure.code ? saveFailureMessage(failure.code) : failure.message,
       );
     } finally {
       setBusy(false);
@@ -274,11 +285,9 @@ export function Onboarding() {
     >
       <div className="onboarding-heading">
         <span className="eyebrow">BUILD YOUR CODOVATE IDENTITY</span>
-        <h1>Let’s make this yours.</h1>
+        <h1>Set up your profile</h1>
         <p>
-          Your journey, strengths and goals belong here. Complete each step to
-          build a profile that represents you. All profile questions are
-          required.
+          A few details to help you find the right opportunities and teammates.
         </p>
       </div>
       <ol className="onboarding-steps" aria-label="Setup progress">
@@ -299,7 +308,20 @@ export function Onboarding() {
           </li>
         ))}
       </ol>
-      <div className="onboarding-layout">
+      <div className="onboarding-toolbar">
+        <span>All profile fields are required</span>
+        <button
+          type="button"
+          className="text-link onboarding-preview-toggle"
+          aria-expanded={previewOpen}
+          aria-controls="onboarding-live-preview"
+          onClick={() => setPreviewOpen((value) => !value)}
+        >
+          <Eye size={15} aria-hidden="true" />
+          {previewOpen ? "Hide preview" : "Preview profile"}
+        </button>
+      </div>
+      <div className={`onboarding-layout${previewOpen ? " has-preview" : ""}`}>
         <form
           className="panel profile-form onboarding-form"
           onSubmit={save}
@@ -319,21 +341,13 @@ export function Onboarding() {
           <h2 ref={heading} tabIndex={-1}>
             {steps[step - 1]}
           </h2>
-          {error && (
-            <p className="notice error" role="alert">
-              {error}
-            </p>
-          )}
           <fieldset
             disabled={busy || waitingForProfile}
             className="onboarding-fields"
           >
             {step === 1 && (
               <>
-                <p>
-                  Enter your first, middle and last name as you want them on
-                  your profile. Your full name will be saved in uppercase.
-                </p>
+                <p>Use your full name as it appears on your college records.</p>
                 <div className="onboarding-name-fields">
                   {[
                     ["first", "First name", "given-name"],
@@ -359,49 +373,47 @@ export function Onboarding() {
                   ))}
                 </div>
                 <p className="hint" id="name-preview">
-                  Profile name:{" "}
-                  <strong>
-                    {normalizeName(draft.name) || "YOUR FULL NAME"}
-                  </strong>
+                  Your name will appear in uppercase on your profile.
                 </p>
-                <label>
-                  City
-                  <input
-                    required
-                    placeholder="Enter your city"
-                    {...inputProps("city")}
-                    autoComplete="address-level2"
-                    maxLength={100}
-                    value={draft.city}
-                    onChange={(event) => field("city", event.target.value)}
-                  />
-                  {inlineError("city")}
-                </label>
-                <label>
-                  Mobile number
-                  <span className="onboarding-phone">
-                    <span aria-hidden="true">+91</span>
+                <div className="form-grid onboarding-contact-fields">
+                  <label>
+                    City
                     <input
-                      {...inputProps("mobile")}
-                      type="tel"
-                      inputMode="numeric"
-                      autoComplete="tel-national"
-                      maxLength={10}
-                      placeholder="10-digit mobile number"
-                      value={draft.mobile}
-                      onChange={(event) =>
-                        field("mobile", event.target.value.replace(/\D/g, ""))
-                      }
                       required
-                      aria-label="Mobile number"
+                      placeholder="Enter your city"
+                      {...inputProps("city")}
+                      autoComplete="address-level2"
+                      maxLength={100}
+                      value={draft.city}
+                      onChange={(event) => field("city", event.target.value)}
                     />
-                  </span>
-                  {inlineError("mobile")}
-                  <span className="hint">
-                    Enter 10 digits without the country code. This is saved
-                    privately as your contact number.
-                  </span>
-                </label>
+                    {inlineError("city")}
+                  </label>
+                  <label>
+                    Mobile number
+                    <span className="onboarding-phone">
+                      <span aria-hidden="true">+91</span>
+                      <input
+                        {...inputProps("mobile")}
+                        type="tel"
+                        inputMode="numeric"
+                        autoComplete="tel-national"
+                        maxLength={10}
+                        placeholder="10-digit mobile number"
+                        value={draft.mobile}
+                        onChange={(event) =>
+                          field("mobile", event.target.value.replace(/\D/g, ""))
+                        }
+                        required
+                        aria-label="Mobile number"
+                      />
+                    </span>
+                    {inlineError("mobile")}
+                    <span className="hint">
+                      10 digits, without the country code. Kept private.
+                    </span>
+                  </label>
+                </div>
               </>
             )}
             {step === 2 && (
@@ -633,6 +645,11 @@ export function Onboarding() {
               </>
             )}
           </fieldset>
+          {error && (
+            <p className="onboarding-save-error" role="alert">
+              {error}
+            </p>
+          )}
           {waitingForProfile && (
             <p role="status">Profile saved. Preparing your welcome…</p>
           )}
@@ -668,18 +685,14 @@ export function Onboarding() {
             </button>
           </div>
         </form>
-        <div className="onboarding-preview-column">
-          <StudentPreview draft={draft} />
-          <div className="onboarding-side-note">
-            <img
-              src="/images/onboarding/build-together.svg"
-              alt=""
-              width="640"
-              height="440"
-            />
-            <p>A little ambition. A world of possibility.</p>
+        {previewOpen && (
+          <div
+            className="onboarding-preview-column"
+            id="onboarding-live-preview"
+          >
+            <StudentPreview draft={draft} />
           </div>
-        </div>
+        )}
       </div>
     </section>
   );

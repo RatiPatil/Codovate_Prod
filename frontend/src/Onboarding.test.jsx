@@ -17,7 +17,7 @@ vi.mock("./onboardingData", async (importOriginal) => ({
   ...(await importOriginal()),
   saveOnboarding: state.save,
 }));
-import { Onboarding, OnboardingGate } from "./Onboarding";
+import { Onboarding, OnboardingGate, saveFailureMessage } from "./Onboarding";
 import { initialOnboarding } from "./onboardingContract";
 beforeEach(() => {
   vi.clearAllMocks();
@@ -56,6 +56,9 @@ function open(path = "/onboarding") {
           <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/dashboard" element={<p>Workspace ready</p>} />
           <Route path="/profile" element={<p>Profile ready</p>} />
+          <Route path="/login" element={<p>Sign-in flow active</p>} />
+          <Route path="/signup" element={<p>Sign-in flow active</p>} />
+          <Route path="/phone-login" element={<p>Sign-in flow active</p>} />
         </Routes>
       </OnboardingGate>
     </MemoryRouter>,
@@ -87,6 +90,12 @@ it("prefills the name and shows its uppercase profile preview", () => {
   expect(screen.getByLabelText("First name")).toHaveValue("VIVEK");
   expect(screen.getByLabelText("Middle name")).toHaveValue("ASHOK");
   expect(screen.getByLabelText("Last name")).toHaveValue("CHAVAN");
+  expect(
+    screen.queryByRole("complementary", {
+      name: "Live student profile preview",
+    }),
+  ).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: "Preview profile" }));
   expect(
     screen.getByRole("heading", { name: "VIVEK ASHOK CHAVAN" }),
   ).toBeInTheDocument();
@@ -211,3 +220,31 @@ it("blocks invalid city and short mobile inline before any save", async () => {
     "true",
   );
 });
+
+it("keeps the card closed until requested and can close it again", () => {
+  open();
+  fireEvent.click(
+    screen.getByRole("button", { name: "Let’s build my profile" }),
+  );
+  expect(screen.queryByRole("complementary")).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: "Preview profile" }));
+  expect(screen.getByRole("complementary")).toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "Hide preview" }));
+  expect(screen.queryByRole("complementary")).toBeNull();
+});
+it("gives a permission-specific support code without deployment instructions in the product", () => {
+  expect(saveFailureMessage("permission-denied")).toContain("PROFILE_ACCESS");
+  expect(saveFailureMessage("permission-denied")).not.toContain("rules");
+  expect(saveFailureMessage("unavailable")).toContain("connection");
+});
+
+it.each(["/login", "/signup", "/phone-login"])(
+  "lets %s finish authentication before onboarding redirects",
+  async (path) => {
+    open(path);
+    expect(await screen.findByText("Sign-in flow active")).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Let’s build my profile" }),
+    ).toBeNull();
+  },
+);

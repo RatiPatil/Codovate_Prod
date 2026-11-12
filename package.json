@@ -13,6 +13,7 @@
     "preview": "npm --prefix frontend run preview",
     "firebase:setup": "node scripts/firebase-setup.mjs",
     "firebase:configure": "node scripts/firebase-setup.mjs --configure-only",
-    "test:setup": "node --test scripts/firebase-setup.test.mjs"
+    "test:setup": "node --test scripts/firebase-setup.test.mjs scripts/deploy-onboarding.test.mjs",
+    "deploy:onboarding": "node scripts/deploy-onboarding.mjs"
   }
 }
