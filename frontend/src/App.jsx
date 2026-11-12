@@ -1257,7 +1257,6 @@ function Workspace({ children, title, subtitle }) {
           ["/applications", "My applications", FileText],
           ["/saved", "Saved opportunities", Bookmark],
           ["/planner", "Career planner", CheckCircle2],
-          ["/learn", "Learning library", GraduationCap],
           ["/resume", "Résumé templates", FileText],
           ["/placement", "Placement preparation", GraduationCap],
           ["/projects?view=mine", "My projects", Code2],
