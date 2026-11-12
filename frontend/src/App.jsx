@@ -108,7 +108,7 @@ import { splitFullName } from "./onboardingValidation";
 import { needsOnboarding } from "./onboardingContract";
 import { normalizeFullName } from "./profileNames";
 import { OpportunityResources } from "./OpportunityResources.jsx";
-import { HackathonDirectory } from "./HackathonDirectory.jsx";
+import { HackathonDirectory, HackathonIntroduction } from "./HackathonDirectory.jsx";
 import { hackathonDirectory } from "./hackathonCatalog.js";
 import { externalById } from "./externalCatalog";
 import { ExternalDetails } from "./ExternalDetails";
@@ -613,6 +613,7 @@ function Explore({ catalog }) {
         <h1>{typeLabel[type] || "Explore opportunities."}</h1>
         <p>Find something that fits you.</p>
       </div>
+      {type === "hackathon" && <HackathonIntroduction />}
       <div className="type-tabs">
         <button
           className={type === "all" ? "active" : ""}
@@ -1256,7 +1257,6 @@ function Workspace({ children, title, subtitle }) {
           ["/dashboard", "Overview", LayoutDashboard],
           ["/applications", "My applications", FileText],
           ["/saved", "Saved opportunities", Bookmark],
-          ["/planner", "Career planner", CheckCircle2],
           ["/resume", "Résumé templates", FileText],
           ["/placement", "Placement preparation", GraduationCap],
           ["/projects?view=mine", "My projects", Code2],

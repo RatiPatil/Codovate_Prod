@@ -6,10 +6,8 @@ import "./placement.css";
 const statusLabels = { open: "Registration open — check organizer", upcoming: "Coming soon — check registration", ongoing: "Event in progress — check registration", closed: "Registration / edition closed", unverified: "Dates / registration unconfirmed" };
 const eventLabels = { upcoming: "Upcoming event", ongoing: "Event in progress", ended: "Past edition", paused: "On hiatus", unverified: "Event dates unconfirmed" };
 const displayDate = value => new Date(value + "T12:00:00Z").toLocaleDateString("en-IN", {day:"numeric",month:"short",year:"numeric",timeZone:"UTC"});
-export function HackathonDirectory({ filters = {} }) {
-  const rows = filterHackathonDirectory(hackathonDirectory, filters);
-  const groups = [...new Set(hackathonDirectory.map(row => row.group))].filter(group => rows.some(row => row.group === group));
-  return <section aria-label="Hackathon discovery directory" className="hackathon-directory">
+export function HackathonIntroduction() {
+  return <section aria-label="About hackathons" className="hackathon-directory">
     <div className="panel">
       <span className="eyebrow">BUILD · CONNECT · SHOW YOUR WORK</span>
       <h2>Hackathons to explore</h2>
@@ -17,6 +15,13 @@ export function HackathonDirectory({ filters = {} }) {
       <p className="hint">This reference directory includes recurring events, programs and platforms. Edition dates are shown with sources where confirmed. Future event dates do not guarantee open registration. Typical modes and suggested interests help you explore; check the selected edition with its organizer.</p>
       <details><summary>Getting started</summary><p>Choose a challenge that interests you, read eligibility and team-size rules, and build a small team with complementary skills. Prepare a demo and a clear explanation of what you built. Travel, meals, recruitment outcomes and prizes vary by event.</p></details>
     </div>
+  </section>;
+}
+
+export function HackathonDirectory({ filters = {} }) {
+  const rows = filterHackathonDirectory(hackathonDirectory, filters);
+  const groups = [...new Set(hackathonDirectory.map(row => row.group))].filter(group => rows.some(row => row.group === group));
+  return <section aria-label="Hackathon discovery directory" className="hackathon-directory">
     <p role="status">{rows.length} reference resources match your filters</p>
     {filters.sort === "stipend" && <p className="hint">Only confirmed INR cash prizes are ranked. Unannounced prizes are not counted as zero or mixed with other currencies.</p>}
     {filters.sort === "newest" && <p className="hint">Undated references appear alphabetically; they are not labeled as newly announced events.</p>}
