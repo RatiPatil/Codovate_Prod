@@ -374,9 +374,6 @@ export function PeerDiscovery({
                   }
                 }}
               />
-              <small className="hint">
-                Press Enter to search by city. Letter case does not matter.
-              </small>
             </label>
             <label>
               Domain / goal

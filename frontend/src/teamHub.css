@@ -1352,6 +1352,31 @@
   overflow-wrap: anywhere;
 }
 
-.discovery-filters .discovery-name-search {
-  grid-column: 1 / -1;
+.discovery-search .discovery-filters {
+  align-items: start;
+  gap: 20px;
+}
+.discovery-search .discovery-filters label {
+  min-width: 0;
+  align-content: start;
+  grid-template-rows: 20px 48px;
+  line-height: 20px;
+  gap: 8px;
+}
+.discovery-search .discovery-filters input,
+.discovery-search .discovery-filters select {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  height: 48px;
+  min-height: 48px;
+  margin: 0;
+  padding: 0 14px;
+  border-radius: 9px;
+  font-size: 14px;
+  line-height: normal;
+}
+.discovery-search .discovery-filters select {
+  padding-right: 32px;
+  text-overflow: ellipsis;
 }
