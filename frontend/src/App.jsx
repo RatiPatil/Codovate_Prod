@@ -1,3 +1,4 @@
+import { MobilePrivacy } from "./MobilePrivacy";
 import { StudyFieldAdmin } from "./StudyFieldAdmin";
 import { useEffect, useState } from "react";
 import {
@@ -1635,6 +1636,7 @@ function Profile() {
   }
   return (
     <Workspace title="My profile" subtitle="Keep your details up to date.">
+      <MobilePrivacy user={user} profile={profile} />
       <div className="profile-summary panel">
         <div className="profile-avatar">
           {(profile?.name || user.email || "S")[0].toUpperCase()}

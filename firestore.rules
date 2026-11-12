@@ -826,6 +826,23 @@ service cloud.firestore {
     && request.resource.data.enabled is bool;
    allow delete: if false;
   }
+  function mobileConnectionStatus(a,b,status) {
+   return exists(/databases/$(database)/documents/connections/$(a+'_'+b)) && get(/databases/$(database)/documents/connections/$(a+'_'+b)).data.status==status;
+  }
+  match /mobileSharing/{uid} {
+   allow get: if own(uid) || (signedIn() && resource != null
+    && resource.data.mobile==get(/databases/$(database)/documents/users/$(uid)).data.mobile
+    && !mobileConnectionStatus(request.auth.uid,uid,'blocked') && !mobileConnectionStatus(uid,request.auth.uid,'blocked')
+    && (resource.data.visibility=='everyone' || (resource.data.visibility=='connections'
+     && (mobileConnectionStatus(request.auth.uid,uid,'accepted') || mobileConnectionStatus(uid,request.auth.uid,'accepted')))));
+   allow list: if false;
+   allow create,update: if own(uid) && request.resource.data.keys().hasAll(['uid','mobile','visibility','updatedAt'])
+    && request.resource.data.keys().hasOnly(['uid','mobile','visibility','updatedAt'])
+    && request.resource.data.uid==uid && request.resource.data.mobile is string && request.resource.data.mobile.matches('^[+]91[0-9]{10}$')
+    && request.resource.data.mobile==getAfter(/databases/$(database)/documents/users/$(uid)).data.mobile
+    && request.resource.data.visibility in ['only_me','none','everyone','connections'] && changedTime();
+   allow delete: if own(uid);
+  }
   match /{document=**} { allow read, write: if false; }
  }
 }

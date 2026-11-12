@@ -2691,6 +2691,39 @@
           "format": "date-time"
         }
       }
+    },
+    "mobileSharing": {
+      "type": "object",
+      "required": [
+        "uid",
+        "mobile",
+        "visibility",
+        "updatedAt"
+      ],
+      "properties": {
+        "uid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "mobile": {
+          "type": "string",
+          "pattern": "^\\+91[0-9]{10}$"
+        },
+        "visibility": {
+          "enum": [
+            "only_me",
+            "none",
+            "everyone",
+            "connections"
+          ]
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "additionalProperties": false
     }
   }
 }

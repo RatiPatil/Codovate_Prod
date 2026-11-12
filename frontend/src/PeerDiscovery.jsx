@@ -1,3 +1,4 @@
+import { PeerMobile } from "./MobilePrivacy";
 import { knownStudyFields, studyDomains, studyFieldLabel } from "./studyFields";
 import {
   GraduationCap,
@@ -634,6 +635,7 @@ export function PeerDiscovery({
                     <p className="hint">Skills not shared yet.</p>
                   )}
                 </section>
+                <PeerMobile uid={p.uid} />
                 {suggested && (
                   <div className="skill-row peer-match">
                     <span>Suggested</span>
