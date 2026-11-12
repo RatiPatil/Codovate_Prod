@@ -1,4 +1,5 @@
 // Trusted operator only. Defaults to a read-only preview and prints counts only.
+import { lookupStudentAccounts } from "./discovery-account-lookup.mjs";
 import { syncOperation, safeSyncError } from "./discovery-sync-runtime.mjs";
 import { readFile } from "node:fs/promises";
 import { verifyImportPrivacy } from "./student-import-privacy.mjs";
@@ -61,6 +62,7 @@ async function main() {
     ineligible: 0,
     missing: 0,
     unavailable: 0,
+    missing_accounts: 0,
     failed: 0,
   };
   progress = counts;
@@ -76,13 +78,25 @@ async function main() {
     console.log(
       `[discovery-sync] Loaded ${page.size} profiles; scanned ${counts.scanned} so far.`,
     );
+    stage = "Checking student accounts";
+    const accounts = await lookupStudentAccounts(
+      auth,
+      page.docs.map((record) => record.id),
+      {
+        onRetry: ({ attempt, attempts, batchSize }) =>
+          console.log(
+            `[discovery-sync] Retrying lookup for ${batchSize} accounts (${attempt + 1}/${attempts}).`,
+          ),
+      },
+    );
     for (const record of page.docs) {
       counts.scanned++;
       try {
-        stage = "Checking student account";
-        const account = await syncOperation(stage, () =>
-          auth.getUser(record.id),
-        );
+        const account = accounts.get(record.id);
+        if (!account) {
+          counts.missing_accounts++;
+          continue;
+        }
         if (account.disabled || account.customClaims?.admin) {
           counts.unavailable++;
           continue;
