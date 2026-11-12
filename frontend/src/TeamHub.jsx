@@ -1,3 +1,4 @@
+import { useStudyFieldCatalog } from "./StudyFieldAdmin";
 import { normalizeStudyField } from "./studyFields";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -28,6 +29,7 @@ import { ModernTeams, ProjectTeamBoard } from "./ModernTeams";
 import { ensureDefaultDiscovery } from "./discoveryData";
 import { ConnectionSections } from "./ConnectionSections";
 export function TeamHub() {
+  const studyCatalog = useStudyFieldCatalog();
   const { user, profile, admin } = useSession();
   const [params, setParams] = useSearchParams();
   const fieldOfStudy = normalizeStudyField(params.get("study") || "");
@@ -59,10 +61,7 @@ export function TeamHub() {
   const people = useTeamFeed(
     ["people", "suggested"].includes(tab) ? "memberProfiles" : null,
     user?.uid,
-    [
-      ...(fieldOfStudy ? [["details.fieldOfStudy", "==", fieldOfStudy]] : []),
-
-    ],
+    [...(fieldOfStudy ? [["details.fieldOfStudy", "==", fieldOfStudy]] : [])],
     city ? 1968 : size,
   );
   const sent = useTeamFeed("connections", user?.uid, [
@@ -266,6 +265,7 @@ export function TeamHub() {
           profile={profile}
           people={people}
           connections={connections}
+          approvedFields={studyCatalog.fields}
           fieldOfStudy={fieldOfStudy}
           city={city}
           onCityChange={(value) => {

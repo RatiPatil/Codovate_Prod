@@ -1,7 +1,6 @@
 import {
   knownStudyFields,
   studyDomains,
-  normalizeStudyField,
   studyFieldLabel,
 } from "./studyFields";
 import {
@@ -89,6 +88,7 @@ export function PeerDiscovery({
   city = "",
   onCityChange = () => {},
   onClearDirectoryFilters,
+  approvedFields = knownStudyFields,
   fieldOfStudy = "",
   onStudyChange = () => {},
   connectionsReady = true,
@@ -183,22 +183,7 @@ export function PeerDiscovery({
           ? b.match.score - a.match.score || a.name.localeCompare(b.name)
           : a.name.localeCompare(b.name),
   );
-  const studyOptions = [
-    ...new Set([
-      ...knownStudyFields,
-      ...people.items.map((person) =>
-        normalizeStudyField(person.details?.fieldOfStudy),
-      ),
-      fieldOfStudy,
-    ]),
-  ]
-    .filter(
-      (value) =>
-        value &&
-        !["OTHER", "UNKNOWN", "NONE", "N/A", "NOT SPECIFIED"].includes(value) &&
-        /\p{L}.*\p{L}/u.test(value),
-    )
-    .sort((a, b) => studyFieldLabel(a).localeCompare(studyFieldLabel(b)));
+  const studyOptions = approvedFields;
   const update = (key, value) => setDraft((d) => ({ ...d, [key]: value }));
   return (
     <>
@@ -391,9 +376,11 @@ export function PeerDiscovery({
               onChange={(e) => setDomain(e.target.value)}
             >
               <option value="">All domains</option>
-              {(fieldOfStudy ? studyDomains(fieldOfStudy) : domains).map((v) => (
-                <option key={v}>{v}</option>
-              ))}
+              {(fieldOfStudy ? studyDomains(fieldOfStudy) : domains).map(
+                (v) => (
+                  <option key={v}>{v}</option>
+                ),
+              )}
             </select>
           </label>
           <label>
@@ -588,7 +575,12 @@ export function PeerDiscovery({
                 <p className="peer-role">
                   {d.desiredRole || "Student collaborator"}
                 </p>
-                {!d.domain && d.fieldOfStudy && <p className="hint">Suggested domains: {studyDomains(d.fieldOfStudy).join(" · ")}</p>}
+                {!d.domain && d.fieldOfStudy && (
+                  <p className="hint">
+                    Suggested domains:{" "}
+                    {studyDomains(d.fieldOfStudy).join(" · ")}
+                  </p>
+                )}
                 {d.fieldOfStudy && (
                   <p className="peer-study-chip">
                     {studyFieldLabel(d.fieldOfStudy)}

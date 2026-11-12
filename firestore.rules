@@ -818,6 +818,13 @@ service cloud.firestore {
    allow delete: if false;
   }
 
+  match /studyFields/{id} {
+   allow read: if signedIn();
+   allow create, update: if admin() && request.resource.data.keys().hasOnly(['code','enabled'])
+    && request.resource.data.code is string && request.resource.data.code.size() >= 3 && request.resource.data.code.size() <= 180
+    && request.resource.data.enabled is bool;
+   allow delete: if false;
+  }
   match /{document=**} { allow read, write: if false; }
  }
 }

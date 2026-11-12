@@ -23,6 +23,13 @@ import { useSession } from "./session";
 import "./admin.css";
 export const adminModules = [
   {
+    id: "study-fields",
+    label: "Fields of study",
+    group: "Content & learning",
+    icon: GraduationCap,
+    description: "Approve and remove fields used in teammate discovery.",
+  },
+  {
     id: "overview",
     label: "Overview",
     group: "Management",

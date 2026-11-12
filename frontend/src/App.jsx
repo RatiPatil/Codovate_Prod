@@ -1,3 +1,4 @@
+import { StudyFieldAdmin } from "./StudyFieldAdmin";
 import { useEffect, useState } from "react";
 import {
   Link,
@@ -1915,6 +1916,8 @@ function Admin() {
         <AdminOverview open={setTab} />
       ) : tab === "users" ? (
         <AdminAccounts />
+      ) : tab === "study-fields" ? (
+        <StudyFieldAdmin />
       ) : tab === "system" ? (
         <AdminSystem />
       ) : tab === "notifications" ? (
