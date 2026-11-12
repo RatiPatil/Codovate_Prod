@@ -62,7 +62,7 @@ export function TeamHub() {
     ["people", "suggested"].includes(tab) ? "memberProfiles" : null,
     user?.uid,
     [...(fieldOfStudy ? [["details.fieldOfStudy", "==", fieldOfStudy]] : [])],
-    city ? 1968 : size,
+    city || tab === "suggested" ? 1968 : size,
   );
   const sent = useTeamFeed("connections", user?.uid, [
     ["fromId", "==", user?.uid || ""],

@@ -216,6 +216,26 @@ const canonicalSkill = (value) => {
     }[key] || key
   );
 };
+export function suggestedPeer(mine, other) {
+  const a = mine?.details || {},
+    b = other?.details || {};
+  const city = normalized(a.location),
+    field = normalizeStudyField(a.fieldOfStudy);
+  if (
+    !city ||
+    !field ||
+    city !== normalized(b.location) ||
+    field !== normalizeStudyField(b.fieldOfStudy)
+  )
+    return false;
+  const skills = new Set(
+    (mine?.skills || []).map(canonicalSkill).filter(Boolean),
+  );
+  return (other?.skills || []).some((value) => {
+    const key = canonicalSkill(value);
+    return key && skills.has(key);
+  });
+}
 export function profileMatch(mine, other) {
   const a = mine?.details || {},
     b = other?.details || {};
@@ -312,7 +332,7 @@ export function discoverPeers(
           normalizeStudyField(d.fieldOfStudy) ===
             normalizeStudyField(fieldOfStudy)) &&
         (!experience || d.experience === experience) &&
-        (!suggested || p.match.score > 0)
+        (!suggested || suggestedPeer(mine, p))
       );
     })
     .sort((a, b) =>

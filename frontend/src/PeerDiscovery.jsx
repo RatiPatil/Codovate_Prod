@@ -1,8 +1,4 @@
-import {
-  knownStudyFields,
-  studyDomains,
-  studyFieldLabel,
-} from "./studyFields";
+import { knownStudyFields, studyDomains, studyFieldLabel } from "./studyFields";
 import {
   GraduationCap,
   MapPin,
@@ -168,7 +164,14 @@ export function PeerDiscovery({
       .filter((c) => c.status === "blocked")
       .map((c) => (c.fromId === user.uid ? c.toId : c.fromId)),
     suggested,
-    mine: { skills: profile?.skills || [], details: saved },
+    mine: {
+      skills: profile?.skills || [],
+      details: {
+        ...saved,
+        location: profile?.city || saved.location,
+        fieldOfStudy: profile?.program || saved.fieldOfStudy,
+      },
+    },
   });
   const items = savedOnly
     ? candidates.filter((p) => savedIds.has(p.uid))
@@ -298,8 +301,8 @@ export function PeerDiscovery({
       </details>
       {suggested && (
         <p>
-          These teammates are recommended based on your skills, career goals,
-          and experience level.
+          These teammates share your city, field of study and at least one
+          confirmed skill.
         </p>
       )}
       <section
@@ -523,7 +526,7 @@ export function PeerDiscovery({
             </h3>
             <p>
               {suggested
-                ? "Save your goals and add confirmed skills to get explainable suggestions. Try Find Teammates to browse everyone who has opted in."
+                ? "Complete your city, field of study and confirmed skills to find matching teammates. All three must match. Browse Find Teammates for other students."
                 : "Try different filters or load more profiles. Only students who choose discovery appear here."}
             </p>
             {suggested && (
@@ -575,12 +578,6 @@ export function PeerDiscovery({
                 <p className="peer-role">
                   {d.desiredRole || "Student collaborator"}
                 </p>
-                {!d.domain && d.fieldOfStudy && (
-                  <p className="hint">
-                    Suggested domains:{" "}
-                    {studyDomains(d.fieldOfStudy).join(" · ")}
-                  </p>
-                )}
                 {d.fieldOfStudy && (
                   <p className="peer-study-chip">
                     {studyFieldLabel(d.fieldOfStudy)}
@@ -605,14 +602,6 @@ export function PeerDiscovery({
                       : p.suggestedSkills?.length
                         ? "Study-based skills"
                         : "Skills"}
-                    {!p.skills?.length && !!p.suggestedSkills?.length && (
-                      <span
-                        className="peer-suggested-label"
-                        title="Suggested from the study program; the student has not yet confirmed these skills."
-                      >
-                        Suggested
-                      </span>
-                    )}
                   </h4>
                   {visibleSkills(p).length ? (
                     <PeerTags
@@ -625,14 +614,10 @@ export function PeerDiscovery({
                 </section>
                 {suggested && (
                   <div className="skill-row peer-match">
-                    <span title="Shared-profile similarity: skills 30%, domain 20%, interests 15%, collaboration goals 10%, college 10%, year 5%, experience 10%">
-                      {p.match.score}% Match
-                    </span>
-                    {[...new Set([...p.match.labels, ...p.reasons])]
-                      .slice(0, 2)
-                      .map((v) => (
-                        <span key={v}>{v}</span>
-                      ))}
+                    <span>Suggested</span>
+                    <span>Same city</span>
+                    <span>Same field of study</span>
+                    <span>Shared skills</span>
                   </div>
                 )}
                 {[

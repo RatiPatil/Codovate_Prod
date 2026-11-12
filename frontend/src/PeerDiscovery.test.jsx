@@ -55,6 +55,7 @@ const profile = {
   skills: ["React"],
   college: "Example College",
   degree: "MCA",
+  program: "COMPUTER SCIENCE AND ENGINEERING",
   city: "Pune",
   careerPreferences: {
     domain: "AI/ML",
@@ -71,6 +72,7 @@ const bob = {
   email: "private@example.com",
   mobile: "9999999999",
   details: {
+    fieldOfStudy: "COMPUTER SCIENCE AND ENGINEERING",
     desiredRole: "AI Engineer",
     degree: "MCA",
     college: "Example College",
@@ -138,10 +140,13 @@ it("filters students and clears filters without changing the page layout", () =>
   fireEvent.click(screen.getByRole("button", { name: "Clear filters" }));
   expect(screen.getByRole("heading", { name: "Bob" })).toBeInTheDocument();
 });
-it("shows calculated match labels from onboarding preferences", () => {
+it("labels matching profiles only in Suggested for You", () => {
   open({ suggested: true });
-  expect(screen.getByText("95% Match")).toBeInTheDocument();
-  expect(screen.getByText("AI/ML Match")).toBeInTheDocument();
+  expect(screen.getByText("Suggested", { exact: true })).toBeInTheDocument();
+  expect(screen.getByText("Same city")).toBeInTheDocument();
+  cleanup();
+  open();
+  expect(screen.queryByText("Suggested", { exact: true })).toBeNull();
 });
 it("prefills settings and preserves edits on metadata-only snapshots", () => {
   open();
@@ -231,7 +236,7 @@ it("shows imported default skills as suggested and makes them searchable", () =>
   expect(
     screen.getByText("Study-based skills", { exact: true }),
   ).toBeInTheDocument();
-  expect(screen.getByText("Suggested", { exact: true })).toBeInTheDocument();
+  expect(screen.queryByText("Suggested", { exact: true })).toBeNull();
   fireEvent.change(screen.getByLabelText("Skill", { exact: true }), {
     target: { value: "Web fundamentals" },
   });

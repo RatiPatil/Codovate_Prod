@@ -90,6 +90,8 @@ it("suggestions explain matches without inventing percentages or interests", () 
       skills: ["React"],
       details: {
         domain: "Web Development",
+        location: "Pune",
+        fieldOfStudy: "COMPUTER SCIENCE AND ENGINEERING",
         passions: ["Open Source"],
         college: "Example College",
       },
@@ -100,6 +102,8 @@ it("suggestions explain matches without inventing percentages or interests", () 
       skills: ["React"],
       details: {
         domain: "Web Development",
+        location: "Pune",
+        fieldOfStudy: "COMPUTER SCIENCE AND ENGINEERING",
         passions: ["Open Source"],
         college: "example college",
       },
@@ -329,4 +333,57 @@ it("matches student searches and combined skills regardless of letter case", () 
     ).toEqual(["peer"]);
   }
   expect(discoverPeers(people, { uid: "me", skill: "Java" })).toEqual([]);
+});
+
+it("requires city AND study field AND a shared confirmed skill for suggestions", () => {
+  const mine = {
+    skills: ["React.js"],
+    details: {
+      location: " PuNe ",
+      fieldOfStudy: "computer science and engineering",
+    },
+  };
+  const match = {
+    uid: "yes",
+    name: "Match",
+    skills: ["REACT"],
+    details: {
+      location: "pune",
+      fieldOfStudy: "COMPUTER SCIENCE AND ENGINEERING",
+    },
+  };
+  const peers = [
+    match,
+    {
+      ...match,
+      uid: "city",
+      details: { ...match.details, location: "Mumbai" },
+    },
+    {
+      ...match,
+      uid: "field",
+      details: { ...match.details, fieldOfStudy: "CIVIL ENGINEERING" },
+    },
+    { ...match, uid: "skill", skills: ["Java"] },
+    { ...match, uid: "missing", details: {} },
+    { ...match, uid: "unconfirmed", skills: [], suggestedSkills: ["React"] },
+  ];
+  expect(
+    discoverPeers(peers, { uid: "me", mine, suggested: true }).map(
+      (p) => p.uid,
+    ),
+  ).toEqual(["yes"]);
+  expect(
+    discoverPeers(peers, { uid: "me", mine, suggested: false }),
+  ).toHaveLength(6);
+  expect(
+    discoverPeers(peers, {
+      uid: "me",
+      mine: {
+        ...mine,
+        details: { location: "", fieldOfStudy: mine.details.fieldOfStudy },
+      },
+      suggested: true,
+    }),
+  ).toEqual([]);
 });
