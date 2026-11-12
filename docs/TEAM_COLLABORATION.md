@@ -2,13 +2,13 @@
 
 Open **Teams → My Teams** after signing in. The expanded model and history contracts are documented in [Teams data model](TEAMS_DATA_MODEL.md). Earlier recruiting boards and private workspaces remain accessible with their original records. The sections below describe the retained original collaboration workflow.
 
-## Current phase-one interface
+## Current Teams interface
 
 The four primary views are My Teams, Connections, Find Teammates and Suggested for You. My Teams offers Create team and a directly accessible Join team directory. Membership changes remain transactional; the leader approves join requests, team capacity is checked again at approval, and each change records immutable history. Member and mentor roles do not grant leader or platform-admin permissions. Pending requests, full teams and missing discovery consent disable join actions.
 
 Discovery uses centered student cards and explicit opt-in profile projections. Photo, role, course, college, year, city, achievements, seeking preferences and passions are published only after separate expanded-detail consent. Private phone/email/résumé never enter the directory. Long tag lists show three values initially with an accessible expand control. Filters and actual weighted match scores apply to loaded profiles; they are not global search or compatibility guarantees.
 
-Accepted connections are shown under Connected students. The current phase-one UI does not open direct or new-team chats. Active chats displays the under-development notice; its 24h Limit badge is explicitly marked planned because expiry is not enforced. Existing conversation records and rules are preserved for earlier private workspaces. No presence, typing indicators, notifications or fabricated online status are added.
+Accepted connections offer Open chat. Group chats supports creating private conversations and explicit invitations; project teams have a team chat tied to their membership. Messages, typing indicators and read receipts update live. No online-presence state or artificial 24-hour expiry is claimed. Earlier private conversations remain accessible with their original records.
 
 
 ## Discovery and consent
@@ -24,13 +24,13 @@ Send a connection request. Only the recipient can accept or decline it. Pending 
 
 Messages are plain text, up to 1,500 characters, with immutable sender UID, sender name and server timestamp. No private contact fields are automatically copied. Members can voluntarily type contact details; the composer makes this explicit. Messages are not end-to-end encrypted; Firestore access rules enforce membership. Administrators do not automatically get private conversation access.
 
-The most recent 50 messages are streamed live; older messages load in 50-message pages. Message retries keep a generated message ID and use a transaction to avoid duplicate sends. Listener errors clear message state; listeners unsubscribe on close/logout. Messages are retained; this release does not offer message editing, file uploads, calls, typing indicators, push notifications or account-deletion data cleanup.
+The most recent 50 messages are streamed live; older messages load in 50-message pages. Message retries keep a generated message ID and use a transaction to avoid duplicate sends. Listener errors clear message state; listeners unsubscribe on close/logout. Messages are retained; this release does not offer message editing, file uploads, calls, push notifications or account-deletion data cleanup.
 
 ## Project groups
 
 A project group starts with its owner and supports up to 12 members. The owner invites discoverable members; the recipient must accept. Invitation acceptance and membership update commit atomically. Pending or cancelled invitations cannot read group messages. The owner can cancel pending invitations, remove members and archive a group. Other members can leave; leaving/removal immediately removes chat access. Archived groups keep readable history for remaining members and reject new messages. Existing recruiting-team join approvals do not automatically grant chat access: create a group and invite those teammates.
 
-Groups, connection lists and invitation lists are bounded to 100 documents per subscription. Discovery/invite selection has load-more controls. These are initial product limits; monitor Spark read/write quotas before increasing them. There is no server-side abuse/rate-limiting service in this no-billing release; Firebase Auth throttles account operations, and chat is restricted to accepted connections or group members.
+Groups, connection lists and invitation lists are bounded to 100 documents per subscription. Discovery/invite selection has load-more controls. These are initial product limits; monitor Spark read/write quotas before increasing them. There is no server-side abuse/rate-limiting service in this browser-based release; Firebase Auth throttles account operations, and chat is restricted to accepted connections or group members.
 
 ## Storage map
 
@@ -97,3 +97,19 @@ The trusted discovery sync now refreshes already published imported cards with m
 Discovery includes sorting by name or number of listed skills; the recommendations view also offers best match. Filter panels, avatars, card sections and primary/secondary actions share a consistent hierarchy. Entry and hover transitions are subtle; reduced-motion preferences disable them. Loading skeletons contain no fabricated names, counts or profiles.
 
 Account checks use Admin Auth bulk lookup in groups of at most 100 UIDs, mapped by UID because response order is unspecified. Transient Auth lookup failures retry up to three times with bounded waits and count-only progress. Missing Auth records are reported as `missing_accounts` and skipped; these are stale profile documents, not failed card writes. Disabled and administrator accounts remain excluded. Rerunning after a timeout preserves completed card updates and explicit opt-outs. This change needs only `git pull origin main` and a rerun of `npm run discovery:sync -- --apply`; Hosting/rules do not change.
+
+## Live messaging release
+
+Connections now opens real direct conversations after acceptance. Group chats supports creating private groups, inviting discoverable members, explicit acceptance, member removal, leaving and archiving. Each project team also has an Open team chat action; its membership comes directly from the canonical project-team record. Existing conversations and messages are retained. The earlier phase-one coming-soon interface and planned 24-hour label are superseded; no automatic message expiry is claimed.
+
+Messages stream from Firestore, paginate in 50-message pages and retain their boundary messages as the live window advances. The composer supports Enter to send, Shift+Enter for a new line, a 1,500-character limit, retained failed drafts and stable retry IDs. The display distinguishes server-sent messages from participant-backed read receipts. Read acknowledgements are written only while an open, visible conversation is at the bottom. Typing signals are throttled and expire visually after six seconds without a fresh signal. These are typing indicators, not inferred online presence. Signal queries include only current participants so former members cannot crowd out current read/typing records.
+
+`conversations/{id}/typing/{uid}` and `readReceipts/{uid}` are member-readable and writable only by that UID, with server timestamps and strict schemas. Read receipts must reference a real message. Blocking, leaving and membership removal revoke message and signal access; archived rooms keep readable history but reject new messages/active typing. Message transport is access-controlled text chat, not end-to-end encryption, audio/video calls or attachments.
+
+## Private shortlist and team task board
+
+The bookmark action stores only student/peer IDs, a saved flag and server timestamps in owner-only `teammateShortlists/{uid}/members/{peerId}`. Saved teammates survives reloads without copying profile/contact details. Hidden or dismissed profiles are omitted from discovery. The shortlist is never accessible to other students or through administrator claims.
+
+`projectTeams/{teamId}/tasks/{taskId}` stores title, description, current-member assignment, optional calendar due date, todo/doing/done status, creator and immutable creation timestamp. Current members can create tasks and update status; the creator or leader can edit details or delete. Removal revokes access immediately. Archived teams retain read access and reject writes. Client validation and rules enforce field bounds, real calendar dates, membership, immutable authorship and timestamps. New-task retries reuse an ID. The board supports assigned-to-me filtering, editing and progress for the displayed tasks. It loads the latest 100 records, with load-more up to 500, so it does not claim an all-history task total.
+
+Deploy with `npm run deploy:onboarding`. The helper now builds, deploys Firestore rules **and indexes**, then releases Hosting. Wait for any newly created index to finish building before using queries that depend on it. No student-data migration or discovery sync is required for these messaging, task or shortlist features.

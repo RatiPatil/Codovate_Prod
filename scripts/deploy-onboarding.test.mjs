@@ -9,7 +9,7 @@ test("builds and publishes rules before Hosting", () => {
   });
   assert.deepEqual(
     calls.map(([, args]) => args.at(-1)),
-    ["build", "firestore:rules", "hosting"],
+    ["build", "firestore:rules,firestore:indexes", "hosting"],
   );
 });
 test("a rejected rules deployment prevents publishing Hosting", () => {

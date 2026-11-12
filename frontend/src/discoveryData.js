@@ -329,3 +329,22 @@ export async function ensureDefaultDiscovery(user, profile) {
     });
   });
 }
+
+export async function savePeer(uid, peerId, saved = true) {
+  if (!uid || !peerId || uid === peerId || peerId.length > 128)
+    throw new Error("Choose another student.");
+  await runTransaction(db, async (tx) => {
+    const ref = doc(db, "teammateShortlists", uid, "members", peerId),
+      previous = await tx.get(ref);
+    if (previous.exists())
+      tx.update(ref, { saved, updatedAt: serverTimestamp() });
+    else
+      tx.set(ref, {
+        studentId: uid,
+        peerId,
+        saved,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+  });
+}

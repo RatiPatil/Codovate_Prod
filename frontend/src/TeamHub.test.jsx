@@ -166,7 +166,7 @@ it("keeps earlier private workspaces visible in My Teams without rewriting their
   ).toBeTruthy();
 });
 
-it("keeps phase-one chat unavailable without inventing active chats or timers", () => {
+it("offers real direct chat for accepted connections", () => {
   fake.feeds.fromId = [
     { id: "alice_bob", fromId: "alice", toId: "bob", status: "accepted" },
   ];
@@ -175,17 +175,11 @@ it("keeps phase-one chat unavailable without inventing active chats or timers", 
       <TeamHub />
     </MemoryRouter>,
   );
-  expect(
-    screen.getByRole("heading", { name: "Connected students" }),
-  ).toBeTruthy();
-  expect(
-    screen.getByText(
-      "Realtime chat is under development and will be available in upcoming releases.",
-    ),
-  ).toBeTruthy();
-  expect(screen.getByText("No active chats.")).toBeTruthy();
-  expect(screen.queryByRole("button", { name: "Open chat" })).toBeNull();
+  expect(screen.getByRole("button", { name: "Open chat" })).toBeEnabled();
+  expect(screen.getByRole("heading", { name: "Group chats" })).toBeTruthy();
+  expect(screen.queryByText(/Realtime chat is under development/)).toBeNull();
 });
+
 it("lets students browse joinable teams directly from My Teams", () => {
   render(
     <MemoryRouter initialEntries={["/teams"]}>

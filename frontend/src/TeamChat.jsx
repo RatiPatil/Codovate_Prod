@@ -1,4 +1,19 @@
-import { useEffect, useRef, useState } from "react";
+import {
+  Send,
+  ArrowLeft,
+  MessageCircle,
+  Users,
+  Check,
+  CheckCheck,
+  LockKeyhole,
+} from "lucide-react";
+import {
+  setChatTyping,
+  markChatRead,
+  messageReadCount,
+  TYPING_VISIBLE_MS,
+} from "./chatSignals";
+import { Fragment, useEffect, useRef, useState } from "react";
 import {
   collection,
   doc,
@@ -17,6 +32,7 @@ import {
   updateGroup,
   sendTeamMessage,
   revokeGroupInvite,
+  connectionDecision,
 } from "./teamHubData";
 import { FeedStatus, MemberName } from "./TeamWidgets";
 export function TeamChat({ id, onClose, team = null }) {
@@ -31,11 +47,40 @@ export function TeamChat({ id, onClose, team = null }) {
     [paging, setPaging] = useState(false),
     [draft, setDraft] = useState(""),
     [cached, setCached] = useState(false),
-    [notice, setNotice] = useState("");
+    [messagesReady, setMessagesReady] = useState(false),
+    [notice, setNotice] = useState(""),
+    [clock, setClock] = useState(Date.now()),
+    [atBottom, setAtBottom] = useState(true),
+    [newMessages, setNewMessages] = useState(false);
+  const lastTyping = useRef(0),
+    lastRead = useRef(""),
+    readFailureAt = useRef(0),
+    typingWasSet = useRef(false);
+  const signalMembers = team?.members || room?.members || [];
+  const signalFilters = signalMembers.length
+    ? [["uid", "in", signalMembers]]
+    : [];
+  const receipts = useTeamFeed(
+    room && signalMembers.length ? `conversations/${id}/readReceipts` : null,
+    user.uid,
+    signalFilters,
+    12,
+  );
+  const typing = useTeamFeed(
+    room && signalMembers.length ? `conversations/${id}/typing` : null,
+    user.uid,
+    signalFilters,
+    12,
+  );
+  const panel = useRef(null);
+  useEffect(() => {
+    panel.current?.scrollIntoView?.({ block: "start", behavior: "auto" });
+  }, [id]);
   const retry = useRef(null),
     lock = useRef(false),
     list = useRef(null),
-    historyStarted = useRef(false);
+    historyStarted = useRef(false),
+    liveHead = useRef([]);
   const [profileLimit, setProfileLimit] = useState(48);
   const profiles = useTeamFeed(
     room?.kind === "group" && room.ownerId === user.uid
@@ -84,7 +129,27 @@ export function TeamChat({ id, onClose, team = null }) {
       { includeMetadataChanges: true },
       (s) => {
         if (active) {
-          setMessages(s.docs.map((d) => ({ id: d.id, ...d.data() })));
+          const nextMessages = s.docs.map((d) => ({
+            id: d.id,
+            ...d.data(),
+            pending: !!d.metadata?.hasPendingWrites,
+          }));
+          if (historyStarted.current) {
+            const ids = new Set(nextMessages.map((item) => item.id));
+            const shifted = liveHead.current.filter(
+              (item) => !ids.has(item.id),
+            );
+            if (shifted.length)
+              setOlder((current) =>
+                [...current, ...shifted].filter(
+                  (item, index, all) =>
+                    all.findIndex((other) => other.id === item.id) === index,
+                ),
+              );
+          }
+          liveHead.current = nextMessages;
+          setMessages(nextMessages);
+          setMessagesReady(true);
           if (!historyStarted.current) {
             setCursor(s.docs.at(-1) || null);
             setMore(s.size === 50);
@@ -116,8 +181,77 @@ export function TeamChat({ id, onClose, team = null }) {
         (b.createdAt?.toMillis?.() || Date.now()),
     );
   useEffect(() => {
-    if (list.current) list.current.scrollTop = list.current.scrollHeight;
-  }, [messages.length]);
+    if (!list.current) return;
+    if (atBottom || messages[0]?.senderId === user.uid) {
+      list.current.scrollTop = list.current.scrollHeight;
+      setNewMessages(false);
+    } else setNewMessages(true);
+  }, [messages[0]?.id]);
+  useEffect(() => {
+    if (!room) return;
+    const timer = setInterval(() => setClock(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, [room?.id]);
+  const participants = team?.members || room?.members || [];
+  const activeTyping = typing.items.filter(
+    (item) =>
+      item.uid !== user.uid &&
+      participants.includes(item.uid) &&
+      item.active &&
+      clock - (item.updatedAt?.toMillis?.() || 0) >= 0 &&
+      clock - (item.updatedAt?.toMillis?.() || 0) < TYPING_VISIBLE_MS,
+  );
+  const latest = all.filter((message) => message.senderId !== user.uid).at(-1);
+  useEffect(() => {
+    if (
+      !room ||
+      cached ||
+      error ||
+      !atBottom ||
+      document.visibilityState !== "visible" ||
+      !latest?.createdAt ||
+      latest.pending ||
+      readFailureAt.current > Date.now()
+    )
+      return;
+    const key = id + ":" + latest.id;
+    if (lastRead.current === key) return;
+    lastRead.current = key;
+    markChatRead(id, user.uid, latest.id).catch(() => {
+      lastRead.current = "";
+      readFailureAt.current = Date.now() + 5000;
+    });
+  }, [
+    id,
+    room?.id,
+    latest?.id,
+    !!latest?.createdAt,
+    latest?.pending,
+    cached,
+    error,
+    atBottom,
+    clock,
+  ]);
+  useEffect(
+    () => () => {
+      if (db && typingWasSet.current)
+        setChatTyping(id, user.uid, false).catch(() => {});
+    },
+    [id, user.uid],
+  );
+  function signalTyping(active) {
+    if (!room || (active && closed)) return;
+    if (
+      active &&
+      typingWasSet.current &&
+      Date.now() - lastTyping.current < 3000
+    )
+      return;
+    if (!active && !typingWasSet.current) return;
+    typingWasSet.current = active;
+    lastTyping.current = Date.now();
+    setChatTyping(id, user.uid, active).catch(() => {});
+  }
   async function action(fn, success = "") {
     if (lock.current) return;
     lock.current = true;
@@ -142,6 +276,8 @@ export function TeamChat({ id, onClose, team = null }) {
     if (!cursor || paging) return;
     historyStarted.current = true;
     setPaging(true);
+    const previousHeight = list.current?.scrollHeight || 0,
+      previousTop = list.current?.scrollTop || 0;
     try {
       const s = await getDocs(
         query(
@@ -157,6 +293,11 @@ export function TeamChat({ id, onClose, team = null }) {
       ]);
       setCursor(s.docs.at(-1) || null);
       setMore(s.size === 50);
+      requestAnimationFrame(() => {
+        if (list.current)
+          list.current.scrollTop =
+            previousTop + list.current.scrollHeight - previousHeight;
+      });
     } catch {
       setError("Could not load older messages.");
     } finally {
@@ -165,25 +306,74 @@ export function TeamChat({ id, onClose, team = null }) {
   }
   const closed =
     !room ||
+    !messagesReady ||
+    cached ||
     (team
       ? team.lifecycle === "archived"
       : room.kind === "group" && room.status !== "active");
   return (
-    <section className="panel hub-chat" aria-label="Team conversation">
+    <section
+      className="panel hub-chat"
+      ref={panel}
+      aria-label="Team conversation"
+    >
       <div className="hub-chat-heading">
         <div>
-          <span className="eyebrow">PRIVATE COLLABORATION</span>
+          <span className="eyebrow">
+            <LockKeyhole size={12} aria-hidden="true" /> PRIVATE CONVERSATION
+          </span>
           <h2>
+            <span className="chat-heading-icon" aria-hidden="true">
+              {room?.kind === "direct" ? (
+                <MessageCircle size={22} />
+              ) : (
+                <Users size={22} />
+              )}
+            </span>
             {team?.title ||
-              (room?.kind === "group" ? room.title : "Direct conversation")}
+              (room?.kind === "group" ? (
+                room.title
+              ) : room?.kind === "direct" ? (
+                <MemberName
+                  uid={room.members.find((uid) => uid !== user.uid)}
+                  fallback="Connected student"
+                />
+              ) : (
+                "Direct conversation"
+              ))}
           </h2>
           <small>
-            {cached ? "Reconnecting · saved messages" : "Messages update live"}
+            {!messagesReady
+              ? "Connecting to chat…"
+              : cached
+                ? "Reconnecting · saved messages"
+                : "Messages update live"}
           </small>
         </div>
-        <button className="button secondary" onClick={onClose}>
-          Close chat
-        </button>
+        <div className="hub-actions">
+          {room?.kind === "direct" && (
+            <button
+              className="text-link"
+              disabled={busy}
+              onClick={() => {
+                if (
+                  window.confirm(
+                    "Block this connection and revoke direct chat access?",
+                  )
+                )
+                  action(async () => {
+                    await connectionDecision(room.connectionId, "blocked");
+                    onClose();
+                  });
+              }}
+            >
+              Block connection
+            </button>
+          )}
+          <button className="button secondary" onClick={onClose}>
+            <ArrowLeft size={15} aria-hidden="true" /> Close chat
+          </button>
+        </div>
       </div>
       {error && (
         <p className="hub-error" role="alert">
@@ -241,7 +431,11 @@ export function TeamChat({ id, onClose, team = null }) {
                 >
                   <label>
                     Invite a discoverable member
-                    <select name="member" required>
+                    <select
+                      name="member"
+                      aria-label="Invite a discoverable member"
+                      required
+                    >
                       <option value="">Choose a member</option>
                       {profiles.items
                         .filter((p) => !room.members.includes(p.uid))
@@ -346,23 +540,130 @@ export function TeamChat({ id, onClose, team = null }) {
           {paging ? "Loading…" : "Load older messages"}
         </button>
       )}
-      <div className="hub-messages" ref={list} role="log" aria-live="polite">
-        {all.map((m) => (
-          <article
-            className={
-              m.senderId === user.uid ? "hub-message mine" : "hub-message"
-            }
-            key={m.id}
-          >
-            <strong>{m.senderId === user.uid ? "You" : m.senderName}</strong>
-            <p>{m.text}</p>
-            <small>
-              {m.createdAt?.toDate?.().toLocaleString() || "Sending…"}
-            </small>
-          </article>
+      <div
+        className="hub-messages"
+        ref={list}
+        role="log"
+        aria-live="polite"
+        aria-label="Conversation messages"
+        onScroll={() => {
+          if (list.current) {
+            const bottom =
+              list.current.scrollHeight -
+                list.current.scrollTop -
+                list.current.clientHeight <
+              80;
+            setAtBottom(bottom);
+            if (bottom) setNewMessages(false);
+          }
+        }}
+      >
+        {all.map((m, index) => (
+          <Fragment key={m.id}>
+            {(index === 0 ||
+              m.createdAt?.toDate?.().toDateString() !==
+                all[index - 1].createdAt?.toDate?.().toDateString()) && (
+              <p className="chat-day">
+                {m.createdAt?.toDate?.().toDateString() ===
+                new Date().toDateString()
+                  ? "Today"
+                  : m.createdAt?.toDate?.().toLocaleDateString([], {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                    }) || "Today"}
+              </p>
+            )}
+            <article
+              className={
+                m.senderId === user.uid ? "hub-message mine" : "hub-message"
+              }
+              key={m.id}
+            >
+              {room?.kind !== "direct" && m.senderId !== user.uid && (
+                <strong>{m.senderName}</strong>
+              )}
+              <p>{m.text}</p>
+              <small className="message-meta">
+                <span title={m.createdAt?.toDate?.().toLocaleString()}>
+                  {m.createdAt?.toDate?.().toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  }) || "Sending…"}
+                </span>
+                {m.senderId === user.uid && m.createdAt && !m.pending && (
+                  <span
+                    className={
+                      messageReadCount(
+                        m,
+                        receipts.items,
+                        participants,
+                        user.uid,
+                      )
+                        ? "message-read"
+                        : ""
+                    }
+                  >
+                    {messageReadCount(
+                      m,
+                      receipts.items,
+                      participants,
+                      user.uid,
+                    ) ? (
+                      <>
+                        <CheckCheck size={14} aria-hidden="true" />
+                        {room?.kind === "direct"
+                          ? "Read"
+                          : `Read by ${messageReadCount(m, receipts.items, participants, user.uid)}`}
+                      </>
+                    ) : (
+                      <>
+                        <Check size={14} aria-hidden="true" />
+                        Sent
+                      </>
+                    )}
+                  </span>
+                )}
+              </small>
+            </article>
+          </Fragment>
         ))}
         {!all.length && !error && (
           <p className="hint">Start with a hello, your idea or a question.</p>
+        )}
+      </div>
+      {newMessages && (
+        <button
+          className="chat-new-messages"
+          onClick={() => {
+            if (list.current)
+              list.current.scrollTop = list.current.scrollHeight;
+            setAtBottom(true);
+            setNewMessages(false);
+          }}
+        >
+          New messages ↓
+        </button>
+      )}
+      <div className="chat-typing" aria-live="polite">
+        {activeTyping.length > 0 && (
+          <>
+            <span className="typing-dots" aria-hidden="true">
+              <i />
+              <i />
+              <i />
+            </span>
+            <span>
+              {activeTyping.length === 1 ? (
+                <>
+                  <MemberName uid={activeTyping[0].uid} fallback="A teammate" />{" "}
+                  is typing…
+                </>
+              ) : (
+                "Teammates are typing…"
+              )}
+            </span>
+          </>
         )}
       </div>
       <form
@@ -385,6 +686,7 @@ export function TeamChat({ id, onClose, team = null }) {
               draft,
             );
             setDraft("");
+            signalTyping(false);
             retry.current = null;
           });
         }}
@@ -392,10 +694,27 @@ export function TeamChat({ id, onClose, team = null }) {
         <label>
           Message
           <textarea
+            aria-label="Message"
             value={draft}
-            onChange={(e) => setDraft(e.target.value)}
+            onChange={(e) => {
+              setDraft(e.target.value);
+              signalTyping(!!e.target.value.trim());
+            }}
+            onKeyDown={(e) => {
+              if (
+                e.key === "Enter" &&
+                !e.shiftKey &&
+                !e.nativeEvent.isComposing &&
+                !closed &&
+                !busy &&
+                draft.trim()
+              ) {
+                e.preventDefault();
+                e.currentTarget.form?.requestSubmit();
+              }
+            }}
             maxLength={1500}
-            rows={3}
+            rows={2}
             required
             disabled={closed || busy}
             placeholder={
@@ -410,6 +729,7 @@ export function TeamChat({ id, onClose, team = null }) {
             {draft.length}/1500 · Share contact details only if you choose to.
           </small>
           <button className="button" disabled={closed || busy || !draft.trim()}>
+            <Send size={17} aria-hidden="true" />{" "}
             {busy ? "Sending…" : "Send message"}
           </button>
         </div>

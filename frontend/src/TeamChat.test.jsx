@@ -1,5 +1,5 @@
 import { it, expect, vi, afterEach } from "vitest";
-import { render, screen, cleanup } from "@testing-library/react";
+import { render, screen, cleanup, fireEvent } from "@testing-library/react";
 vi.mock("./firebase", () => ({ db: {} }));
 vi.mock("./session", () => ({
   useSession: () => ({ user: { uid: "alice" }, profile: { name: "Alice" } }),
@@ -32,6 +32,11 @@ vi.mock("firebase/firestore", () => ({
     return () => {};
   },
 }));
+const signals = vi.hoisted(() => ({ typing: vi.fn().mockResolvedValue() }));
+vi.mock("./chatSignals", async (original) => ({
+  ...(await original()),
+  setChatTyping: signals.typing,
+}));
 import { TeamChat } from "./TeamChat";
 afterEach(cleanup);
 it("uses canonical team title and disables sending when the team is archived", () => {
@@ -52,4 +57,28 @@ it("uses canonical team title and disables sending when the team is archived", (
     />,
   );
   expect(screen.getByLabelText("Message")).not.toBeDisabled();
+});
+
+it("immediately resumes typing after clearing a draft", () => {
+  signals.typing.mockClear();
+  render(
+    <TeamChat
+      id="studio"
+      team={{
+        title: "Project Studio",
+        lifecycle: "active",
+        members: ["alice", "bob"],
+      }}
+      onClose={vi.fn()}
+    />,
+  );
+  const field = screen.getByLabelText("Message", { exact: true });
+  fireEvent.change(field, { target: { value: "First draft" } });
+  fireEvent.change(field, { target: { value: "" } });
+  fireEvent.change(field, { target: { value: "Second draft" } });
+  expect(signals.typing.mock.calls.map((call) => call[2])).toEqual([
+    true,
+    false,
+    true,
+  ]);
 });

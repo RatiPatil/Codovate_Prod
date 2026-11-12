@@ -2493,6 +2493,149 @@
           }
         }
       }
+    },
+    "projectTeamTasks": {
+      "type": "object",
+      "required": [
+        "title",
+        "description",
+        "assigneeId",
+        "dueDate",
+        "status",
+        "createdBy",
+        "createdAt",
+        "updatedAt"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160,
+          "pattern": "^[^\\r\\n]+$"
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 800
+        },
+        "assigneeId": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "dueDate": {
+          "anyOf": [
+            {
+              "const": ""
+            },
+            {
+              "type": "string",
+              "format": "date"
+            }
+          ]
+        },
+        "status": {
+          "enum": [
+            "todo",
+            "doing",
+            "done"
+          ]
+        },
+        "createdBy": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "teammateShortlists": {
+      "type": "object",
+      "required": [
+        "studentId",
+        "peerId",
+        "saved",
+        "createdAt",
+        "updatedAt"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "studentId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "peerId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "saved": {
+          "type": "boolean"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "conversationTyping": {
+      "type": "object",
+      "required": [
+        "uid",
+        "active",
+        "updatedAt"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "uid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "active": {
+          "type": "boolean"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "conversationReadReceipts": {
+      "type": "object",
+      "required": [
+        "uid",
+        "lastMessageId",
+        "lastReadAt"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "uid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "lastMessageId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "lastReadAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
     }
   }
 }

@@ -815,3 +815,525 @@
 .team-hub .connection-section {
   animation: peer-card-enter 0.25s ease backwards;
 }
+
+/* Saved discovery and private team delivery boards. */
+.peer-save {
+  position: absolute;
+  z-index: 1;
+  right: 18px;
+  top: 16px;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #e5def7;
+  border-radius: 10px;
+  background: #ffffffdb;
+  color: #817299;
+  cursor: pointer;
+  transition:
+    background 0.18s ease,
+    color 0.18s ease;
+}
+.peer-save.saved {
+  background: #6654d7;
+  border-color: #6654d7;
+  color: #fff;
+}
+.peer-save:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+.peer-browse-switch {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.peer-browse-switch button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 16px;
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  background: #fff;
+  font: inherit;
+  font-size: 0.85rem;
+  color: #677086;
+  cursor: pointer;
+}
+.peer-browse-switch button.active {
+  color: #5b49c7;
+  background: #eeeaff;
+  border-color: #d8d0f5;
+}
+.team-task-board h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0;
+}
+.task-progress-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 22px 0 10px;
+  color: #677086;
+  font-size: 0.82rem;
+}
+.task-progress-row > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.task-filter {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+}
+.task-filter input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: #6654d7;
+}
+.team-task-board progress {
+  display: block;
+  width: 100%;
+  height: 7px;
+  margin-bottom: 24px;
+  accent-color: #6654d7;
+  border: 0;
+  border-radius: 6px;
+  overflow: hidden;
+}
+.team-task-board progress::-webkit-progress-bar {
+  background: #eeecf6;
+}
+.team-task-board progress::-webkit-progress-value {
+  background: #6654d7;
+  border-radius: 6px;
+}
+.task-columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 14px;
+}
+.task-column {
+  min-width: 0;
+  background: #f7f8fc;
+  border: 1px solid #ebeaf2;
+  border-radius: 14px;
+  padding: 14px;
+}
+.task-column > header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.task-column > header h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 0.88rem;
+}
+.task-column > header h3::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  background: #9aa2b5;
+  border-radius: 50%;
+}
+.task-column.doing > header h3::before {
+  background: #7860df;
+}
+.task-column.done > header h3::before {
+  background: #48a379;
+}
+.task-column > header > span {
+  padding: 3px 7px;
+  background: #eeedf5;
+  border-radius: 7px;
+  font-size: 0.75rem;
+  color: #677086;
+}
+.team-task {
+  background: #fff;
+  border: 1px solid #e7e5ef;
+  border-radius: 10px;
+  padding: 14px;
+  margin-top: 12px;
+  overflow-wrap: anywhere;
+  animation: peer-card-enter 0.2s ease backwards;
+}
+.team-task h4 {
+  margin: 0 0 8px;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+.team-task > p {
+  margin: 8px 0;
+  color: #6b7287;
+  font-size: 0.8rem;
+  white-space: pre-wrap;
+  line-height: 1.6;
+}
+.task-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  color: #68718a;
+  font-size: 0.72rem;
+  margin: 12px 0;
+}
+.task-meta > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.task-meta .task-overdue {
+  color: #b44d39;
+}
+.task-controls {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding-top: 10px;
+  border-top: 1px solid #f0eef5;
+}
+.task-controls label {
+  flex: 1;
+  min-width: 0;
+}
+.task-controls select {
+  width: 100%;
+  padding: 7px;
+  background: #f8f7fc;
+  border: 1px solid #e9e6f2;
+  border-radius: 7px;
+  font: inherit;
+  font-size: 0.75rem;
+  color: #66568e;
+}
+.task-delete {
+  background: transparent;
+  border: 0;
+  color: #7d7891;
+  padding: 8px;
+  cursor: pointer;
+  border-radius: 6px;
+}
+.task-delete:hover {
+  color: #6654d7;
+  background: #f0edfa;
+}
+.task-empty {
+  font-size: 0.8rem;
+  line-height: 1.7;
+  padding: 16px 4px;
+  color: #8a90a4;
+}
+.team-task-form {
+  background: #faf9fe;
+  padding: 20px;
+  border: 1px solid #e9e4f4;
+  border-radius: 12px;
+}
+@media (max-width: 600px) {
+  .team-task-board {
+    padding: 20px;
+  }
+  .task-columns {
+    grid-template-columns: 1fr;
+  }
+  .peer-browse-switch button {
+    flex: 1;
+    justify-content: center;
+    padding: 10px;
+  }
+}
+
+/* Live messenger, using Codovate's existing purple and neutral palette. */
+.team-hub .hub-chat {
+  padding: 0;
+  gap: 0;
+  overflow: hidden;
+  border: 1px solid #e5e2ef;
+  border-radius: 20px;
+  box-shadow: 0 8px 28px #2f254a08;
+}
+.hub-chat-heading {
+  padding: 20px 24px;
+  background: #fcfbff;
+  border-bottom: 1px solid #ebe7f4;
+}
+.hub-chat-heading .eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.65rem;
+}
+.hub-chat-heading h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.16rem;
+}
+.chat-heading-icon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  background: #eae4fb;
+  border-radius: 11px;
+  color: #715bd3;
+}
+.hub-chat-heading .button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.team-hub .hub-chat > .hub-error,
+.team-hub .hub-chat > .hub-success {
+  margin: 12px 20px;
+}
+.team-hub .hub-chat .hub-members {
+  margin: 16px 20px;
+  background: #fcfbff;
+}
+.team-hub .hub-messages {
+  border-radius: 0;
+  min-height: 320px;
+  height: clamp(320px, 52vh, 560px);
+  max-height: 560px;
+  padding: 24px;
+  gap: 13px;
+  background:
+    radial-gradient(circle at 1px 1px, #e9e5f0 1px, transparent 1px) 0 0/22px
+      22px,
+    #f8f7fb;
+  overscroll-behavior: contain;
+}
+.team-hub .hub-message {
+  max-width: 78%;
+  padding: 12px 15px 9px;
+  border: 1px solid #ebe7f0;
+  border-radius: 15px 15px 15px 4px;
+  box-shadow: 0 2px 5px #352b4505;
+  background: #fff;
+  animation: peer-card-enter 0.18s ease backwards;
+}
+.team-hub .hub-message.mine {
+  border-color: #e1d9f4;
+  border-radius: 15px 15px 4px 15px;
+  background: #eee8fb;
+}
+.hub-message > strong {
+  color: #6b52b0;
+  font-size: 0.73rem;
+}
+.team-hub .hub-message p {
+  color: #343244;
+  line-height: 1.65;
+  margin: 5px 0 7px;
+  font-size: 0.91rem;
+}
+.hub-chat .message-meta {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  font-size: 0.65rem;
+  color: #8a8199;
+}
+.message-meta > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.message-meta .message-read {
+  color: #5a69c3;
+}
+.chat-day {
+  align-self: center;
+  font-size: 0.7rem;
+  background: #ede9f3;
+  border: 1px solid #e6e0ef;
+  color: #80758e;
+  padding: 5px 12px;
+  border-radius: 20px;
+  margin: 3px 0 9px;
+}
+.team-hub .hub-compose {
+  padding: 16px 22px 20px;
+  background: #fff;
+  border-top: 1px solid #efebf4;
+}
+.hub-compose > label {
+  font-size: 0.76rem;
+  color: #80758e;
+}
+.team-hub .hub-compose textarea {
+  min-height: 70px;
+  max-height: 180px;
+  resize: vertical;
+  border-radius: 14px;
+  border-color: #e7e1ef;
+  background: #fcfbff;
+  padding: 13px 15px;
+  font-size: 0.9rem;
+}
+.hub-compose .button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border-radius: 12px;
+}
+.chat-typing {
+  min-height: 26px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 24px;
+  background: #f8f7fb;
+  color: #8b7ba1;
+  font-size: 0.72rem;
+}
+.typing-dots {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+.typing-dots i {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #9b87c6;
+  animation: chat-typing-bounce 1s ease infinite;
+}
+.typing-dots i:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.typing-dots i:nth-child(3) {
+  animation-delay: 0.3s;
+}
+.chat-new-messages {
+  justify-self: center;
+  color: #6b52b0;
+  border: 1px solid #e5dcef;
+  border-radius: 20px;
+  background: #fff;
+  padding: 8px 14px;
+  margin: 7px 0;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.78rem;
+}
+.group-chats h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.group-chats .hub-create {
+  margin: 22px 0;
+}
+.group-chat-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 20px;
+}
+.group-chat-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+  border: 1px solid #e9e5f2;
+  border-radius: 12px;
+  background: #fcfbff;
+  color: #53465f;
+  padding: 14px;
+  font: inherit;
+  cursor: pointer;
+  transition: background 0.18s ease;
+}
+.group-chat-row:hover {
+  background: #f0ecfa;
+}
+.group-chat-row > span:nth-child(2) {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.group-chat-row small {
+  display: block;
+  margin-top: 5px;
+  color: #8a8199;
+  font-size: 0.75rem;
+}
+.group-chat-row strong {
+  font-size: 0.9rem;
+}
+.group-invite {
+  padding: 16px 0;
+  border-bottom: 1px solid #f0edf6;
+}
+@keyframes chat-typing-bounce {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.6;
+  }
+  30% {
+    transform: translateY(-3px);
+    opacity: 1;
+  }
+}
+@media (max-width: 600px) {
+  .team-hub .hub-chat-heading {
+    padding: 18px;
+  }
+  .team-hub .hub-messages {
+    padding: 16px;
+    height: 50vh;
+  }
+  .team-hub .hub-message {
+    max-width: 92%;
+  }
+  .team-hub .hub-compose {
+    padding: 14px;
+  }
+  .hub-compose .hub-actions small {
+    max-width: 55%;
+    font-size: 0.63rem;
+  }
+  .hub-chat-heading h2 {
+    font-size: 1rem;
+  }
+}
+.team-chat-entry {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+.team-chat-entry h3 {
+  margin: 0 0 7px;
+}
+.team-chat-entry p {
+  margin: 0;
+}
+.hub-chat {
+  scroll-margin-top: 110px;
+}
+.chat-heading-icon {
+  flex-shrink: 0;
+}

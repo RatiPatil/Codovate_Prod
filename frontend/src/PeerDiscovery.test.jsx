@@ -11,6 +11,8 @@ const state = vi.hoisted(() => ({
   snapshot: null,
   emit: null,
   dismissed: [],
+  shortlist: [],
+  savePeer: vi.fn(),
   connect: vi.fn(),
   dismiss: vi.fn(),
   save: vi.fn(),
@@ -31,7 +33,13 @@ vi.mock("firebase/firestore", () => ({
   serverTimestamp: () => "SERVER",
 }));
 vi.mock("./teamHubData", () => ({
-  useTeamFeed: () => ({ items: state.dismissed, loading: false, error: "" }),
+  useTeamFeed: (path) => ({
+    items: path.startsWith("teammateShortlists/")
+      ? state.shortlist
+      : state.dismissed,
+    loading: false,
+    error: "",
+  }),
   connectMember: state.connect,
   validatedPublicProfile: vi.fn(),
 }));
@@ -39,6 +47,7 @@ vi.mock("./discoveryData", async (original) => ({
   ...(await original()),
   dismissPeer: state.dismiss,
   saveDiscovery: state.save,
+  savePeer: state.savePeer,
 }));
 import { PeerDiscovery } from "./PeerDiscovery";
 const profile = {
@@ -93,6 +102,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   state.snapshot = null;
   state.dismissed = [];
+  state.shortlist = [];
 });
 afterEach(cleanup);
 it("keeps the existing student card and renders shared data with working actions", async () => {
@@ -260,4 +270,27 @@ it("sorts students by listed skills and restores alphabetical order", () => {
       name: "Bob",
     }),
   ).toBeInTheDocument();
+});
+
+it("saves teammates privately and filters the saved shortlist", async () => {
+  open();
+  fireEvent.click(
+    screen.getByRole("button", { name: "Save Bob", exact: true }),
+  );
+  await waitFor(() =>
+    expect(state.savePeer).toHaveBeenCalledWith("alice", "bob", true),
+  );
+  fireEvent.click(screen.getByRole("button", { name: /Saved teammates/ }));
+  expect(
+    screen.getByText("No saved teammates match your filters."),
+  ).toBeInTheDocument();
+});
+it("renders saved teammates without copying private profile fields", () => {
+  state.shortlist = [{ peerId: "bob", saved: true }];
+  open();
+  fireEvent.click(screen.getByRole("button", { name: /Saved teammates/ }));
+  expect(screen.getByRole("heading", { name: "Bob" })).toBeInTheDocument();
+  expect(
+    screen.getByRole("button", { name: "Unsave Bob", exact: true }),
+  ).toHaveAttribute("aria-pressed", "true");
 });

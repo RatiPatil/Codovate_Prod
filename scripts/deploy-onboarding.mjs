@@ -14,7 +14,7 @@ export const deploymentSteps = [
       "--project",
       "codovate-dev",
       "--only",
-      "firestore:rules",
+      "firestore:rules,firestore:indexes",
     ],
   ],
   [
@@ -64,7 +64,7 @@ export function deployOnboarding(run = runCommand) {
     const result = run(command, args);
     if (result.error || result.status !== 0)
       throw new Error(
-        "Deployment stopped. Fix the failed step before retrying; Hosting is released only after the rules deployment succeeds.",
+        "Deployment stopped. Fix the failed step before retrying; Hosting is released only after the rules and indexes deployment succeeds.",
       );
   }
 }

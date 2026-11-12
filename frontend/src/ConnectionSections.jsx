@@ -1,4 +1,5 @@
-import { connectionDecision } from "./teamHubData";
+import { MessageCircle } from "lucide-react";
+import { connectionDecision, openDirect } from "./teamHubData";
 import { MemberName } from "./TeamWidgets";
 export function ConnectionSections({
   connections,
@@ -103,6 +104,18 @@ export function ConnectionSections({
                           Cancel request
                         </button>
                       )}
+                      {c.status === "accepted" && (
+                        <button
+                          className="button"
+                          disabled={busy || !ready}
+                          onClick={() =>
+                            act(async () => setSelected(await openDirect(c)))
+                          }
+                        >
+                          <MessageCircle size={16} aria-hidden="true" />
+                          Open chat
+                        </button>
+                      )}
                       {["pending", "accepted"].includes(c.status) && (
                         <button
                           className="text-link"
@@ -160,17 +173,6 @@ export function ConnectionSections({
             </div>
           </section>
         ))}
-      <section className="panel chat-coming-soon" aria-label="Active chats">
-        <header className="hub-section-heading">
-          <h2>Active chats</h2>
-          <span className="pill">24h Limit · planned</span>
-        </header>
-        <p>No active chats.</p>
-        <p className="hint">
-          Realtime chat is under development and will be available in upcoming
-          releases.
-        </p>
-      </section>
     </div>
   );
 }

@@ -20,6 +20,7 @@ import {
 } from "./teamHubData";
 import "./teamHub.css";
 import { FeedStatus, MemberName, InvitationTitle } from "./TeamWidgets";
+import { GroupChats } from "./GroupChats";
 import { TeamChat } from "./TeamChat";
 import { PeerDiscovery } from "./PeerDiscovery";
 import { ModernTeams, ProjectTeamBoard } from "./ModernTeams";
@@ -47,6 +48,11 @@ export function TeamHub() {
     [selected, setSelected] = useState(""),
     [browseTeams, setBrowseTeams] = useState(false);
   const lock = useRef(false);
+  useEffect(() => {
+    if(!notice) return;
+    const timer=setTimeout(()=>setNotice(""),5000);
+    return ()=>clearTimeout(timer);
+  },[notice]);
   const people = useTeamFeed(
     ["people", "suggested"].includes(tab) ? "memberProfiles" : null,
     user?.uid,
@@ -137,7 +143,7 @@ export function TeamHub() {
   if (!user) return null;
   return (
     <div className="team-hub">
-      {tab !== "recruiting" && (
+      {tab !== "recruiting" && !selected && (
         <section className="panel hub-intro">
           <span className="eyebrow">BUILD WITH PEOPLE LIKE YOU</span>
           <h2>Build your next team.</h2>
@@ -280,39 +286,47 @@ export function TeamHub() {
           </button>
         </details>
       )}
-      {tab === "connections" && (
-        <>
-          <FeedStatus
-            feed={{
-              ...sent,
-              error: sent.error || received.error,
-              loading: sent.loading || received.loading,
-              cached: sent.cached || received.cached,
-            }}
+      {tab === "connections" &&
+        (selected ? (
+          <TeamChat
+            key={user.uid + selected}
+            id={selected}
+            onClose={() => setSelected("")}
           />
-          <ConnectionSections
-            connections={connections}
-            user={user}
-            act={act}
-            busy={busy}
-            myPublic={myPublic}
-            setSelected={setSelected}
-            ready={
-              !sent.loading &&
-              !received.loading &&
-              !sent.error &&
-              !received.error
-            }
-          />
-          {selected && (
-            <TeamChat
-              key={user.uid + selected}
-              id={selected}
-              onClose={() => setSelected("")}
+        ) : (
+          <>
+            <FeedStatus
+              feed={{
+                ...sent,
+                error: sent.error || received.error,
+                loading: sent.loading || received.loading,
+                cached: sent.cached || received.cached,
+              }}
             />
-          )}
-        </>
-      )}
+            <ConnectionSections
+              connections={connections}
+              user={user}
+              act={act}
+              busy={busy}
+              myPublic={myPublic}
+              setSelected={setSelected}
+              ready={
+                !sent.loading &&
+                !received.loading &&
+                !sent.error &&
+                !received.error
+              }
+            />
+            <GroupChats
+              user={user}
+              groups={groups}
+              invites={invites}
+              busy={busy}
+              act={act}
+              onOpen={setSelected}
+            />
+          </>
+        ))}
       {tab === "groups" && (
         <>
           <section className="panel">

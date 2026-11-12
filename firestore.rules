@@ -499,6 +499,16 @@ service cloud.firestore {
       : !getAfter(/databases/$(database)/documents/memberProfiles/$(uid)).data.keys().hasAny(['details'])));
    allow delete: if false;
   }
+  match /teammateShortlists/{uid}/members/{peerId} {
+   allow read: if own(uid);
+   allow create: if own(uid) && peerId!=uid && request.resource.data.keys().hasAll(['studentId','peerId','saved','createdAt','updatedAt'])
+    && request.resource.data.keys().hasOnly(['studentId','peerId','saved','createdAt','updatedAt']) && request.resource.data.studentId==uid && request.resource.data.peerId==peerId
+    && text(peerId,128) && peerId.size()>0 && request.resource.data.saved is bool && request.resource.data.createdAt==request.time && changedTime()
+    && exists(/databases/$(database)/documents/memberProfiles/$(peerId));
+   allow update: if own(uid) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['saved','updatedAt']) && request.resource.data.saved is bool && changedTime()
+    && (!request.resource.data.saved || exists(/databases/$(database)/documents/memberProfiles/$(peerId)));
+   allow delete: if false;
+  }
   match /discoveryDismissals/{uid}/members/{peerId} {
    allow read: if own(uid);
    allow create: if own(uid) && peerId!=uid && request.resource.data.keys().hasAll(['studentId','peerId','dismissed','createdAt','updatedAt'])
@@ -584,6 +594,10 @@ service cloud.firestore {
    return signedIn() && ((c.kind=='team' && projectMember(c.teamId)) || (c.kind!='team' && request.auth.uid in c.members
     && ((c.kind == 'direct' && acceptedConnection(c.connectionId)) || c.kind == 'group')));
   }
+  function chatWritable(id) {
+   let c=get(/databases/$(database)/documents/conversations/$(id)).data;
+   return chatAccess(id) && (c.kind=='direct' || (c.kind=='group' && c.status=='active') || (c.kind=='team' && get(/databases/$(database)/documents/projectTeams/$(c.teamId)).data.lifecycle=='active'));
+  }
   match /conversations/{id} {
    allow get: if signedIn() && ((!exists(/databases/$(database)/documents/conversations/$(id)) && id.matches('dm_.*'))
     || (resource.data.kind in ['direct','team'] && chatAccess(id))
@@ -616,6 +630,19 @@ service cloud.firestore {
        && pendingGroupInvite(id)
        && getAfter(/databases/$(database)/documents/groupInvites/$(id + '_' + request.auth.uid)).data.status == 'accepted'))));
    allow delete: if false;
+   match /typing/{uid} {
+    allow read: if chatAccess(id);
+    allow create,update: if own(uid) && chatAccess(id) && request.resource.data.keys().hasAll(['uid','active','updatedAt']) && request.resource.data.keys().hasOnly(['uid','active','updatedAt'])
+     && request.resource.data.uid==uid && request.resource.data.active is bool && changedTime() && (!request.resource.data.active || chatWritable(id));
+    allow delete: if own(uid) && chatAccess(id);
+   }
+   match /readReceipts/{uid} {
+    allow read: if chatAccess(id);
+    allow create,update: if own(uid) && chatAccess(id) && request.resource.data.keys().hasAll(['uid','lastMessageId','lastReadAt']) && request.resource.data.keys().hasOnly(['uid','lastMessageId','lastReadAt'])
+     && request.resource.data.uid==uid && text(request.resource.data.lastMessageId,128) && request.resource.data.lastMessageId.size()>0
+     && exists(/databases/$(database)/documents/conversations/$(id)/messages/$(request.resource.data.lastMessageId)) && request.resource.data.lastReadAt==request.time;
+    allow delete: if false;
+   }
    match /messages/{messageId} {
     allow read: if chatAccess(id);
     allow create: if chatAccess(id)
@@ -683,6 +710,17 @@ service cloud.firestore {
   function projectAcceptedInvite(id,uid) { return exists(/databases/$(database)/documents/projectTeamInvites/$(id+'_'+uid)) && get(/databases/$(database)/documents/projectTeamInvites/$(id+'_'+uid)).data.status=='pending' && getAfter(/databases/$(database)/documents/projectTeamInvites/$(id+'_'+uid)).data.status=='accepted'; }
   function projectAcceptedRequest(id,uid) { return exists(/databases/$(database)/documents/projectTeamRequests/$(id+'_'+uid)) && get(/databases/$(database)/documents/projectTeamRequests/$(id+'_'+uid)).data.status=='pending' && getAfter(/databases/$(database)/documents/projectTeamRequests/$(id+'_'+uid)).data.status=='accepted'; }
   function projectAdded(d,old) { return d.members.size()==old.members.size()+1 && d.members.hasAll(old.members); }
+  function validTaskDate(value) {
+   return value=='' || (value is string && value.matches('[0-9]{4}-[0-9]{2}-[0-9]{2}')
+    && int(value.split('-')[0])>=1 && timestamp.date(int(value.split('-')[0]),int(value.split('-')[1]),int(value.split('-')[2])).day()==int(value.split('-')[2]) && timestamp.date(int(value.split('-')[0]),int(value.split('-')[1]),int(value.split('-')[2])).month()==int(value.split('-')[1]));
+  }
+  function validTeamTask(d) {
+   return d.keys().hasAll(['title','description','assigneeId','dueDate','status','createdBy','createdAt','updatedAt'])
+    && d.keys().hasOnly(['title','description','assigneeId','dueDate','status','createdBy','createdAt','updatedAt'])
+    && text(d.title,160) && d.title.size()>0 && d.title.matches('[^\\n\\r]+')
+    && text(d.description,800) && text(d.assigneeId,128) && text(d.createdBy,128) && d.createdBy.size()>0
+    && validTaskDate(d.dueDate) && d.status in ['todo','doing','done'] && d.createdAt is timestamp && d.updatedAt is timestamp;
+  }
   match /projectTeams/{id} {
    allow get: if projectMember(id) || projectInvited(id);
    allow list: if signedIn() && request.auth.uid in resource.data.members;
@@ -712,6 +750,18 @@ service cloud.firestore {
         && request.resource.data.members.size()==resource.data.members.size()-1 && request.resource.data.members.hasOnly(resource.data.members)
         && request.resource.data.roles.diff(resource.data.roles).affectedKeys().hasOnly([request.auth.uid])))));
    allow delete: if false;
+   match /tasks/{taskId} {
+    allow read: if projectMember(id);
+    allow create: if projectMember(id) && get(/databases/$(database)/documents/projectTeams/$(id)).data.lifecycle=='active'
+     && validTeamTask(request.resource.data) && request.resource.data.createdBy==request.auth.uid
+     && request.resource.data.createdAt==request.time && changedTime() && request.resource.data.status=='todo'
+     && (request.resource.data.assigneeId=='' || request.resource.data.assigneeId in get(/databases/$(database)/documents/projectTeams/$(id)).data.members);
+    allow update: if projectMember(id) && get(/databases/$(database)/documents/projectTeams/$(id)).data.lifecycle=='active'
+     && validTeamTask(request.resource.data) && changedTime() && request.resource.data.createdBy==resource.data.createdBy && request.resource.data.createdAt==resource.data.createdAt
+     && (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','updatedAt']) || own(resource.data.createdBy) || projectLeader(id))
+     && (request.resource.data.assigneeId==resource.data.assigneeId || request.resource.data.assigneeId=='' || request.resource.data.assigneeId in get(/databases/$(database)/documents/projectTeams/$(id)).data.members);
+    allow delete: if projectMember(id) && get(/databases/$(database)/documents/projectTeams/$(id)).data.lifecycle=='active' && (own(resource.data.createdBy) || projectLeader(id));
+   }
    match /history/{eventId} {
     allow read: if projectMember(id);
     allow create: if signedIn() && request.resource.data.keys().hasAll(['teamId','actorId','snapshot','createdAt'])

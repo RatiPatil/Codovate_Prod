@@ -5,6 +5,8 @@ import {
   X,
   SlidersHorizontal,
   ArrowDownWideNarrow,
+  Bookmark,
+  BookmarkCheck,
 } from "lucide-react";
 import { visibleSkills } from "./profileSkills";
 import { useEffect, useState, useRef } from "react";
@@ -21,6 +23,7 @@ import {
   emptyDetails,
   saveDiscovery,
   dismissPeer,
+  savePeer,
   discoverPeers,
 } from "./discoveryData";
 function PeerAvatar({ name, photoUrl }) {
@@ -86,6 +89,14 @@ export function PeerDiscovery({
   loadMore,
   canLoadMore,
 }) {
+  const [savedOnly, setSavedOnly] = useState(false);
+  const shortlist = useTeamFeed(
+    "teammateShortlists/" + user.uid + "/members",
+    user.uid,
+    [["saved", "==", true]],
+    1968,
+  );
+  const savedIds = new Set(shortlist.items.map((item) => item.peerId));
   const [sort, setSort] = useState(suggested ? "recommended" : "name");
   const [search, setSearch] = useState(""),
     [skill, setSkill] = useState(""),
@@ -133,7 +144,7 @@ export function PeerDiscovery({
       },
     );
   }, [user.uid]);
-  const items = discoverPeers(people.items, {
+  const candidates = discoverPeers(people.items, {
     uid: user.uid,
     search,
     skill,
@@ -146,6 +157,9 @@ export function PeerDiscovery({
     suggested,
     mine: { skills: profile?.skills || [], details: saved },
   });
+  const items = savedOnly
+    ? candidates.filter((p) => savedIds.has(p.uid))
+    : candidates;
   const sortedItems = [...items].sort((a, b) =>
     sort === "name"
       ? a.name.localeCompare(b.name)
@@ -349,6 +363,35 @@ export function PeerDiscovery({
           Separate skills with commas to match all selected skills.
         </p>
       </section>
+      <div
+        className="peer-browse-switch"
+        role="group"
+        aria-label="Student directory view"
+      >
+        <button
+          className={!savedOnly ? "active" : ""}
+          aria-pressed={!savedOnly}
+          onClick={() => setSavedOnly(false)}
+        >
+          All teammates
+        </button>
+        <button
+          className={savedOnly ? "active" : ""}
+          aria-pressed={savedOnly}
+          onClick={() => setSavedOnly(true)}
+        >
+          <Bookmark size={15} aria-hidden="true" />
+          Saved teammates
+          {!shortlist.loading && !shortlist.error
+            ? ` (${shortlist.items.length})`
+            : ""}
+        </button>
+      </div>
+      {shortlist.error && (
+        <p role="alert" className="hub-error">
+          {shortlist.error}
+        </p>
+      )}
       <div className="discovery-results-heading">
         <div>
           <span className="eyebrow">
@@ -360,7 +403,9 @@ export function PeerDiscovery({
               : "Meet your next teammate"}
           </h2>
           <p className="hint" role="status">
-            {people.loading || dismissed.loading
+            {people.loading ||
+            dismissed.loading ||
+            (savedOnly && shortlist.loading)
               ? "Finding students…"
               : `${items.length} matching students in loaded profiles`}
           </p>
@@ -387,7 +432,10 @@ export function PeerDiscovery({
           {people.error || dismissed.error || connectionsError || prefError}
         </p>
       )}
-      {(people.loading || dismissed.loading || (suggested && !prefReady)) && (
+      {(people.loading ||
+        dismissed.loading ||
+        (savedOnly && shortlist.loading) ||
+        (suggested && !prefReady)) && (
         <div
           role="status"
           aria-label="Loading student profiles"
@@ -405,13 +453,18 @@ export function PeerDiscovery({
         </div>
       )}
       {!people.loading &&
+        !(savedOnly && (shortlist.loading || shortlist.error)) &&
         !dismissed.loading &&
         !people.error &&
         !dismissed.error &&
         (!suggested || prefReady) &&
         !items.length && (
           <section className="panel">
-            <h3>No teammates found matching your criteria.</h3>
+            <h3>
+              {savedOnly
+                ? "No saved teammates match your filters."
+                : "No teammates found matching your criteria."}
+            </h3>
             <p>
               {suggested
                 ? "Save your goals and add confirmed skills to get explainable suggestions. Try Find Teammates to browse everyone who has opted in."
@@ -425,7 +478,8 @@ export function PeerDiscovery({
           </section>
         )}
       <div className="hub-people">
-        {!dismissed.error &&
+        {!(savedOnly && (shortlist.loading || shortlist.error)) &&
+          !dismissed.error &&
           !dismissed.loading &&
           (!suggested || prefReady) &&
           sortedItems.map((p, index) => {
@@ -440,6 +494,26 @@ export function PeerDiscovery({
                 style={{ "--peer-order": index % 6 }}
               >
                 <div className="peer-card-accent" aria-hidden="true" />
+                <button
+                  className={`peer-save ${savedIds.has(p.uid) ? "saved" : ""}`}
+                  aria-label={`${savedIds.has(p.uid) ? "Unsave" : "Save"} ${p.name}`}
+                  aria-pressed={savedIds.has(p.uid)}
+                  disabled={busy || shortlist.loading || !!shortlist.error}
+                  onClick={() =>
+                    act(
+                      () => savePeer(user.uid, p.uid, !savedIds.has(p.uid)),
+                      savedIds.has(p.uid)
+                        ? "Teammate removed from your shortlist."
+                        : "Teammate saved to your private shortlist.",
+                    )
+                  }
+                >
+                  {savedIds.has(p.uid) ? (
+                    <BookmarkCheck size={19} aria-hidden="true" />
+                  ) : (
+                    <Bookmark size={19} aria-hidden="true" />
+                  )}
+                </button>
                 <PeerAvatar name={p.name} photoUrl={d.photoUrl} />
                 <h3>{p.name}</h3>
                 <p className="peer-role">

@@ -11,6 +11,8 @@ import {
   reviewProjectEntry,
   teamStatus,
 } from "./projectTeamsData";
+import { TeamChat } from "./TeamChat";
+import { TeamTaskBoard } from "./TeamTaskBoard";
 import { MemberName, FeedStatus } from "./TeamWidgets";
 function TeamForm({ team, onSave, busy }) {
   return (
@@ -364,7 +366,8 @@ function ProjectWorkspace({ id, user, act, busy, onClose }) {
     [error, setError] = useState(""),
     [historySize, setHistorySize] = useState(20),
     [historyOpen, setHistoryOpen] = useState(false),
-    [profileLimit, setProfileLimit] = useState(48);
+    [profileLimit, setProfileLimit] = useState(48),
+    [chatOpen, setChatOpen] = useState(false);
   useEffect(() => {
     if (!db) return;
     return onSnapshot(
@@ -511,6 +514,7 @@ function ProjectWorkspace({ id, user, act, busy, onClose }) {
           </button>
         )}
       </section>
+      <TeamTaskBoard team={{ ...team, id }} user={user} act={act} busy={busy} />
       {owner && (
         <details className="panel">
           <summary>Manage team</summary>
@@ -688,13 +692,27 @@ function ProjectWorkspace({ id, user, act, busy, onClose }) {
             ))}
         </section>
       )}
-      <section className="panel chat-coming-soon">
-        <h3>Team chat</h3>
-        <p className="hint">
-          Realtime chat is under development and will be available in upcoming
-          releases.
-        </p>
-      </section>
+      {chatOpen ? (
+        <TeamChat
+          key={id}
+          id={id}
+          team={team}
+          onClose={() => setChatOpen(false)}
+        />
+      ) : (
+        <section className="panel team-chat-entry">
+          <div>
+            <h3>Team group chat</h3>
+            <p className="hint">
+              Keep conversations and decisions together with your team.
+            </p>
+          </div>
+          <button className="button" onClick={() => setChatOpen(true)}>
+            Open team chat
+          </button>
+        </section>
+      )}
+
       <details
         className="panel"
         onToggle={(e) => setHistoryOpen(e.currentTarget.open)}
