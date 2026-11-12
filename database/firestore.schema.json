@@ -325,17 +325,17 @@
             "first": {
               "type": "string",
               "maxLength": 40,
-              "pattern": "^(?:[\\p{L}\\p{M}][\\p{L}\\p{M}'’ .-]*|)$"
+              "pattern": "^(?:[\\p{L}\\p{M}][\\p{L}\\p{M}'\u2019 .-]*|)$"
             },
             "middle": {
               "type": "string",
               "maxLength": 40,
-              "pattern": "^(?:[\\p{L}\\p{M}][\\p{L}\\p{M}'’ .-]*|)$"
+              "pattern": "^(?:[\\p{L}\\p{M}][\\p{L}\\p{M}'\u2019 .-]*|)$"
             },
             "last": {
               "type": "string",
               "maxLength": 40,
-              "pattern": "^(?:[\\p{L}\\p{M}][\\p{L}\\p{M}'’ .-]*|)$"
+              "pattern": "^(?:[\\p{L}\\p{M}][\\p{L}\\p{M}'\u2019 .-]*|)$"
             }
           }
         },
@@ -2001,6 +2001,9 @@
         "updatedAt": {
           "type": "string",
           "format": "date-time"
+        },
+        "discoverable": {
+          "type": "boolean"
         }
       },
       "additionalProperties": false

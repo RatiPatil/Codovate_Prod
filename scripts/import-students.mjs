@@ -3,7 +3,12 @@ import { readFile, stat } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import readExcelFile from "read-excel-file/node";
-import { prepareStudents, importStudent } from "./student-import-core.mjs";
+import {
+  prepareStudents,
+  importStudent,
+  importedUid,
+} from "./student-import-core.mjs";
+import { publishStudent } from "./student-discovery-core.mjs";
 import { verifyImportPrivacy } from "./student-import-privacy.mjs";
 async function main() {
   const args = process.argv.slice(2),
@@ -69,8 +74,9 @@ async function main() {
     throw new Error(
       "Production import refuses emulator environment variables.",
     );
-  const { initializeApp, applicationDefault } =
-    await import("firebase-admin/app");
+  const { initializeApp, applicationDefault } = await import(
+    "firebase-admin/app"
+  );
   const { getAuth } = await import("firebase-admin/auth");
   const { getFirestore, FieldValue } = await import("firebase-admin/firestore");
   const credential = applicationDefault();
@@ -101,6 +107,17 @@ async function main() {
         timestamp: () => FieldValue.serverTimestamp(),
       });
       result[outcome.status]++;
+      if (["created", "recovered", "existing"].includes(outcome.status)) {
+        const uid = importedUid(r.email),
+          account = await auth.getUser(uid);
+        if (!account.disabled && !account.customClaims?.admin)
+          await publishStudent({
+            db,
+            uid,
+            timestamp: () => FieldValue.serverTimestamp(),
+            apply: true,
+          });
+      }
       if (["partial", "conflict"].includes(outcome.status))
         console.log(JSON.stringify({ row: r.row, status: outcome.status }));
     } catch (e) {

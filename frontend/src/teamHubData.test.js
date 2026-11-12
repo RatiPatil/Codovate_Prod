@@ -3,6 +3,7 @@ const fake = vi.hoisted(() => ({
   get: vi.fn(),
   set: vi.fn(),
   update: vi.fn(),
+  delete: vi.fn(),
 }));
 vi.mock("./firebase", () => ({
   db: {},
@@ -20,13 +21,19 @@ vi.mock("firebase/firestore", () => ({
   setDoc: vi.fn(),
   deleteDoc: vi.fn(),
   runTransaction: async (_db, fn) =>
-    fn({ get: fake.get, set: fake.set, update: fake.update }),
+    fn({
+      get: fake.get,
+      set: fake.set,
+      update: fake.update,
+      delete: fake.delete,
+    }),
 }));
 import {
   validatedPublicProfile,
   connectMember,
   sendTeamMessage,
   answerInvite,
+  hideMember,
 } from "./teamHubData";
 beforeEach(() => {
   vi.clearAllMocks();
@@ -107,4 +114,18 @@ it("can decline a pending invitation without needing an active group", async () 
     status: "declined",
     updatedAt: "SERVER",
   });
+});
+
+it("remembers hiding a profile without destroying existing discovery settings", async () => {
+  fake.get.mockResolvedValueOnce({ exists: () => false });
+  await hideMember("alice");
+  expect(fake.set).toHaveBeenCalledWith(
+    "discoveryPreferences/alice",
+    expect.objectContaining({ uid: "alice", shareDetails: false }),
+  );
+  expect(fake.delete).toHaveBeenCalledWith("memberProfiles/alice");
+  fake.set.mockClear();
+  fake.get.mockResolvedValueOnce({ exists: () => true });
+  await hideMember("alice");
+  expect(fake.set).not.toHaveBeenCalled();
 });

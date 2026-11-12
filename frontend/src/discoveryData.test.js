@@ -26,6 +26,7 @@ import {
   matchReasons,
   saveDiscovery,
   dismissPeer,
+  ensureDefaultDiscovery,
 } from "./discoveryData";
 beforeEach(() => {
   vi.clearAllMocks();
@@ -231,4 +232,27 @@ it("prefills discovery from onboarding while respecting explicitly cleared saved
   expect(
     discoveryDraft(profile, {}, { desiredRole: "Researcher" }).degree,
   ).toBe("MCA");
+});
+
+it("defaults existing students to discoverable and preserves an explicit private choice", async () => {
+  fake.get
+    .mockResolvedValueOnce({
+      exists: () => true,
+      data: () => ({ discoverable: false }),
+    })
+    .mockResolvedValueOnce({ exists: () => false });
+  await ensureDefaultDiscovery({ uid: "alice" }, { name: "Alice", skills: [] });
+  expect(fake.set).not.toHaveBeenCalled();
+  fake.get
+    .mockResolvedValueOnce({ exists: () => false, data: () => undefined })
+    .mockResolvedValueOnce({ exists: () => false });
+  await ensureDefaultDiscovery({ uid: "alice" }, { name: "Alice", skills: [] });
+  expect(fake.set).toHaveBeenCalledWith(
+    "discoveryPreferences/alice",
+    expect.objectContaining({ discoverable: true }),
+  );
+  expect(fake.set).toHaveBeenCalledWith(
+    "memberProfiles/alice",
+    expect.objectContaining({ name: "Alice", skills: [] }),
+  );
 });

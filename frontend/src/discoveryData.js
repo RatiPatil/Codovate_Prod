@@ -135,6 +135,7 @@ export async function saveDiscovery(user, profile, raw, shareDetails) {
       uid: user.uid,
       details,
       shareDetails: !!shareDetails,
+      discoverable: current.exists(),
       updatedAt: serverTimestamp(),
     });
     if (current.exists())
@@ -299,4 +300,31 @@ export function discoverPeers(
           a.name.localeCompare(b.name)
         : a.name.localeCompare(b.name),
     );
+}
+
+// A stored private choice always wins over the default, including concurrent syncs.
+export async function ensureDefaultDiscovery(user, profile) {
+  if (!db || !user || !profile) return;
+  await runTransaction(db, async (tx) => {
+    const prefRef = doc(db, "discoveryPreferences", user.uid);
+    const memberRef = doc(db, "memberProfiles", user.uid);
+    const pref = await tx.get(prefRef),
+      member = await tx.get(memberRef);
+    if (pref.data()?.discoverable === false || member.exists()) return;
+    const details = discoveryDetails(
+      discoveryDraft(profile, user, pref.data()?.details),
+    );
+    const shareDetails = pref.exists() ? pref.data().shareDetails : true;
+    tx.set(prefRef, {
+      uid: user.uid,
+      details,
+      shareDetails,
+      discoverable: true,
+      updatedAt: serverTimestamp(),
+    });
+    tx.set(memberRef, {
+      ...validatedPublicProfile(user, profile),
+      ...(shareDetails ? { details } : {}),
+    });
+  });
 }

@@ -146,8 +146,8 @@ export function Onboarding() {
     resumeStep(profile, user) === 1,
   );
   const [step, setStep] = useState(resumeStep(profile, user));
-  const [discoverable, setDiscoverable] = useState(false);
-  const [shareDetails, setShareDetails] = useState(false);
+  const [discoverable, setDiscoverable] = useState(true);
+  const [shareDetails, setShareDetails] = useState(true);
   const [cardReady, setCardReady] = useState(!!profile?.teammateCard);
   const [cardError, setCardError] = useState("");
   const [cardRetry, setCardRetry] = useState(0);
@@ -181,17 +181,19 @@ export function Onboarding() {
 
   useEffect(() => {
     if (!user || !profile) return;
-    if (profile.teammateCard) {
-      setCardReady(true);
-      return;
-    }
     let active = true;
     setCardReady(false);
     setCardError("");
     loadOnboardingCard(user)
       .then((card) => {
         if (!active) return;
-        if (card && !cardEdited.current)
+        if (card) {
+          setDiscoverable(card.discoverable !== false);
+          setShareDetails(
+            card.discoverable !== false && card.shareDetails !== false,
+          );
+        }
+        if (card && !profile.teammateCard && !cardEdited.current)
           setDraft((current) => ({
             ...current,
             photoUrl: card.photoUrl,
@@ -650,9 +652,7 @@ export function Onboarding() {
                   {inlineError("bio")}
                 </label>
                 <details className="onboarding-team-details">
-                  <summary>
-                    Achievements & interests
-                  </summary>
+                  <summary>Achievements & interests</summary>
                   <p className="hint">
                     These details stay private until you choose to share them.
                     If you’re just starting, you can leave achievements blank.
@@ -729,6 +729,7 @@ export function Onboarding() {
                   <input
                     type="checkbox"
                     checked={discoverable}
+                    disabled={!cardReady}
                     onChange={(event) => {
                       setDiscoverable(event.target.checked);
                       if (!event.target.checked) setShareDetails(false);
@@ -748,10 +749,9 @@ export function Onboarding() {
                   achievements and interests on my teammate card
                 </label>
                 <p className="hint">
-                  You control visibility. Turn discovery on to share only your
-                  name and skills. Education and teammate details appear only if
-                  you select the second option. Your email, phone and résumé
-                  stay private. Manage discovery later in Find a team.
+                  Discovery is on by default. Uncheck the first option to keep
+                  your card private. You can also hide it at any time in Find a
+                  team. Your email, phone and résumé stay private.
                 </p>
               </>
             )}

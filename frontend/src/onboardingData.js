@@ -42,6 +42,8 @@ export async function loadOnboardingCard(user) {
         photoUrl: d.photoUrl || "",
         achievements: d.achievements || [],
         passions: d.passions || [],
+        discoverable: snapshot.data()?.discoverable !== false,
+        shareDetails: snapshot.data()?.shareDetails !== false,
       }
     : null;
 }
@@ -294,6 +296,7 @@ export async function saveOnboarding(
             uid: user.uid,
             details,
             shareDetails: !!(discoverable && shareDetails),
+            discoverable: !!discoverable,
             updatedAt,
           });
           if (discoverable)

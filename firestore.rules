@@ -491,8 +491,9 @@ service cloud.firestore {
   match /discoveryPreferences/{uid} {
    allow read: if own(uid);
    allow create,update: if own(uid) && request.resource.data.keys().hasAll(['uid','details','shareDetails','updatedAt'])
-    && request.resource.data.keys().hasOnly(['uid','details','shareDetails','updatedAt']) && request.resource.data.uid==uid
+    && request.resource.data.keys().hasOnly(['uid','details','shareDetails','discoverable','updatedAt']) && request.resource.data.uid==uid
     && validDiscoveryDetails(request.resource.data.details) && request.resource.data.shareDetails is bool && changedTime()
+    && (!request.resource.data.keys().hasAny(['discoverable']) || (request.resource.data.discoverable is bool && request.resource.data.discoverable==existsAfter(/databases/$(database)/documents/memberProfiles/$(uid))))
     && (!existsAfter(/databases/$(database)/documents/memberProfiles/$(uid))
      || (request.resource.data.shareDetails ? getAfter(/databases/$(database)/documents/memberProfiles/$(uid)).data.get('details',{})==request.resource.data.details
       : !getAfter(/databases/$(database)/documents/memberProfiles/$(uid)).data.keys().hasAny(['details'])));
@@ -518,6 +519,7 @@ service cloud.firestore {
     && (!request.resource.data.keys().hasAny(['details']) || (validDiscoveryDetails(request.resource.data.details)
      && getAfter(/databases/$(database)/documents/discoveryPreferences/$(uid)).data.shareDetails==true
      && request.resource.data.details==getAfter(/databases/$(database)/documents/discoveryPreferences/$(uid)).data.details))
+    && (!existsAfter(/databases/$(database)/documents/discoveryPreferences/$(uid)) || getAfter(/databases/$(database)/documents/discoveryPreferences/$(uid)).data.get('discoverable',true)==true)
     && request.resource.data.uid == uid && text(request.resource.data.name,100) && request.resource.data.name.size()>0
     && request.resource.data.skills is list && request.resource.data.skills.size() <= 20 && changedTime()
     && request.resource.data.name == getAfter(/databases/$(database)/documents/users/$(uid)).data.name

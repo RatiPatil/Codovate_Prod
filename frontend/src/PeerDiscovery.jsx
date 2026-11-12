@@ -345,6 +345,11 @@ export function PeerDiscovery({
                 ? "Save your goals and add confirmed skills to get explainable suggestions. Try Find Teammates to browse everyone who has opted in."
                 : "Try different filters or load more profiles. Only students who choose discovery appear here."}
             </p>
+            {suggested && (
+              <a className="button secondary" href="/teams?hub=people">
+                Browse all students
+              </a>
+            )}
           </section>
         )}
       <div className="hub-people">

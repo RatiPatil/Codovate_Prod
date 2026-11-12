@@ -116,18 +116,19 @@ it("resumes the saved education step and keeps users on the step when saving fai
     screen.getByRole("heading", { name: "Education" }),
   ).toBeInTheDocument();
 });
-it("keeps discovery opt-in off and waits for persisted completion", async () => {
+it("defaults discovery on and respects an explicit private choice", async () => {
   state.session.profile.onboarding.step = 4;
   open();
   const checkbox = screen.getByRole("checkbox", {
     name: /Make my name and skills discoverable/,
   });
-  expect(checkbox).not.toBeChecked();
+  expect(checkbox).toBeChecked();
   await waitFor(() =>
     expect(
       screen.getByRole("button", { name: /Complete setup/ }),
     ).toBeEnabled(),
   );
+  fireEvent.click(checkbox);
   fireEvent.click(screen.getByRole("button", { name: /Complete setup/ }));
   await waitFor(() =>
     expect(state.save).toHaveBeenCalledWith(
@@ -282,9 +283,7 @@ it("adds teammate details to onboarding and requires explicit expanded sharing",
       screen.getByRole("button", { name: /Save and continue/ }),
     ).toBeEnabled(),
   );
-  fireEvent.click(
-    screen.getByText("Achievements & interests"),
-  );
+  fireEvent.click(screen.getByText("Achievements & interests"));
   expect(screen.queryByLabelText("Google or GitHub avatar link")).toBeNull();
   fireEvent.change(screen.getByLabelText("Achievements"), {
     target: { value: "SIH Participant" },
@@ -293,6 +292,12 @@ it("adds teammate details to onboarding and requires explicit expanded sharing",
   fireEvent.click(screen.getByRole("button", { name: /Save and continue/ }));
   await screen.findByRole("heading", { name: "Collaboration", exact: true });
   const sharing = screen.getByRole("checkbox", { name: /Also share my role/ });
+  expect(sharing).toBeChecked();
+  fireEvent.click(
+    screen.getByRole("checkbox", {
+      name: /Make my name and skills discoverable/,
+    }),
+  );
   expect(sharing).toBeDisabled();
   fireEvent.click(
     screen.getByRole("checkbox", {

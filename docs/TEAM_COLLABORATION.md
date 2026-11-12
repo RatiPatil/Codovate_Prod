@@ -13,7 +13,8 @@ Accepted connections are shown under Connected students. The current phase-one U
 
 ## Discovery and consent
 
-Existing/imported accounts are not automatically made public. A student selects **Make my profile discoverable** to publish a separate document containing only their UID, full name, confirmed skills and update timestamp. Email, mobile, résumé and private notes are never in that projection. With separate expanded-detail consent, the optional discovery card can include education, location, desired role and self-reported achievements/interests. Students can hide it at any time. Profile saves update an existing projection and private profile in one transaction, preserving opt-out during concurrent edits. Branch-derived skill suggestions are not presented as confirmed experience. Skill labels are single-line strings of 1–60 characters, with at most 20 unique labels. Boundary and mixed-type tests enforce this contract without exceeding Firestore rule expression limits.
+Student discovery is enabled by default, with an explicit private visibility choice taking precedence. The separate directory document contains only UID, full name, confirmed skills and the listed teammate-card details. Email, mobile, résumé and private notes are never copied into it. Students can hide their card at any time. Existing restrictions on sharing optional details are preserved. Profile saves synchronize an existing projection without recreating a hidden one. Program-derived skill suggestions are not presented as confirmed skills. Skill labels are single-line strings of 1–60 characters, with at most 20 unique labels.
+
 
 Discovery is available only to signed-in accounts. Search applies to loaded profiles; 48 profiles load initially and another 48 can be loaded at a time, up to 1,968. Member-name lookups used in conversations read only the discovery projection. A hidden profile shows a generic member label; past chat messages retain the name the sender chose when sending.
 
@@ -64,3 +65,23 @@ npx --yes firebase-tools@15.34.2 deploy --only "firestore:rules,firestore:indexe
 Wait for the conversations index to finish building. Sign in as two separate students in separate browser profiles. Opt both into discovery, send/accept a connection, send a message and verify it appears on the other account. Create a group, invite/accept, verify messages, then remove a member and verify access is denied. A third unrelated account must be denied access. Verify a recovery email with an account you control; production email delivery cannot be proven from local tests. No application records are seeded or imported by deployment.
 
 The recruiting board streams its entire loaded prefix (24 records initially, with live load-more). Empty cached results are not treated as confirmed empty database results; a timed-out read shows a retryable error. Group/member feeds distinguish missing indexes and denied rules from a genuine empty collection.
+
+## Default visibility and existing accounts
+
+Discovery is on by default for students. Onboarding selects visibility and the listed teammate-card details initially; either checkbox can be cleared. Find a team also prepares a default discovery profile for an existing student who has no explicit private choice. Administrators are excluded from this automatic preparation. Only the card projection is readable by signed-in peers; the private `users` collection stays owner-only.
+
+`discoveryPreferences.discoverable` records an explicit visibility choice. Hide my discovery profile atomically sets it to false and removes the public card; enabling discovery sets it true. Rules prevent publishing a card while this flag is false. Settings edits, onboarding resume and trusted syncs preserve a saved false choice. Older preferences remain schema-compatible. Existing detail-sharing restrictions are retained.
+
+To create cards for already registered accounts, run from a trusted checkout using the same Firebase Admin application-default credentials used for student imports:
+
+```powershell
+git pull origin main
+npm --prefix scripts ci
+npm run deploy:onboarding
+npm run discovery:sync
+npm run discovery:sync -- --apply
+```
+
+The first sync is read-only. Apply verifies matching deployed rules, pages existing profiles, excludes disabled accounts and administrator claims, then transactionally creates missing discovery cards. Counts only are printed; no contacts, names or credentials are logged. Original private profiles, authentication identities and registration counts are unchanged. Existing cards and explicit private choices are skipped. Repeat runs are idempotent. New workbook imports use the same projection automatically.
+
+Only actual saved name, confirmed skills and the listed card fields are copied. Missing role, college, achievements or interests remain blank. Program-derived skill suggestions are never treated as confirmed skills. Registered-member totals include accounts that may be disabled, administrative, missing profiles or explicitly private, so that total is not a guaranteed number of visible cards. Find Teammates browses visible cards; Suggested for You still requires a real profile match.

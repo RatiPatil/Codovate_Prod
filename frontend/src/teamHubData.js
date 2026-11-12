@@ -10,7 +10,6 @@ import {
   runTransaction,
   serverTimestamp,
   setDoc,
-  deleteDoc,
 } from "firebase/firestore";
 import { auth, db } from "./firebase";
 import { withTimeout } from "./authSupport";
@@ -125,6 +124,11 @@ export async function publishMember(user, profile) {
   if (!db) throw new Error("Connect Firebase first.");
   await runTransaction(db, async (tx) => {
     const pref = await tx.get(doc(db, "discoveryPreferences", user.uid));
+    if (pref.exists())
+      tx.update(doc(db, "discoveryPreferences", user.uid), {
+        discoverable: true,
+        updatedAt: serverTimestamp(),
+      });
     tx.set(doc(db, "memberProfiles", user.uid), {
       ...validatedPublicProfile(user, profile),
       ...(pref.exists() && pref.data().shareDetails
@@ -133,7 +137,39 @@ export async function publishMember(user, profile) {
     });
   });
 }
-export const hideMember = (uid) => deleteDoc(doc(db, "memberProfiles", uid));
+export async function hideMember(uid) {
+  await runTransaction(db, async (tx) => {
+    const preferences = doc(db, "discoveryPreferences", uid);
+    const saved = await tx.get(preferences);
+    // Preserve an explicit visibility choice so trusted import syncs cannot undo it.
+    if (!saved.exists())
+      tx.set(preferences, {
+        uid,
+        shareDetails: false,
+        discoverable: false,
+        updatedAt: serverTimestamp(),
+        details: {
+          desiredRole: "",
+          domain: "",
+          experience: "",
+          college: "",
+          degree: "",
+          year: "",
+          location: "",
+          photoUrl: "",
+          achievements: [],
+          seeking: [],
+          passions: [],
+        },
+      });
+    if (saved.exists())
+      tx.update(preferences, {
+        discoverable: false,
+        updatedAt: serverTimestamp(),
+      });
+    tx.delete(doc(db, "memberProfiles", uid));
+  });
+}
 export async function connectMember(uid, target) {
   if (!uid || !target || uid === target)
     throw new Error("Choose another member.");

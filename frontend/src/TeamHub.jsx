@@ -16,9 +16,10 @@ import { FeedStatus, MemberName, InvitationTitle } from "./TeamWidgets";
 import { TeamChat } from "./TeamChat";
 import { PeerDiscovery } from "./PeerDiscovery";
 import { ModernTeams, ProjectTeamBoard } from "./ModernTeams";
+import { ensureDefaultDiscovery } from "./discoveryData";
 import { ConnectionSections } from "./ConnectionSections";
 export function TeamHub() {
-  const { user, profile } = useSession();
+  const { user, profile, admin } = useSession();
   const [params, setParams] = useSearchParams();
   const tab = [
     "teams",
@@ -58,6 +59,17 @@ export function TeamHub() {
   const invites = useTeamFeed("groupInvites", user?.uid, [
     ["studentId", "==", user?.uid || ""],
   ]);
+  useEffect(() => {
+    if (!user || !profile || admin) return;
+    let active = true;
+    ensureDefaultDiscovery(user, profile).catch(() => {
+      if (active)
+        setError("Your discovery profile could not be prepared. Please retry.");
+    });
+    return () => {
+      active = false;
+    };
+  }, [user?.uid, !!profile, admin]);
   const [myPublic, setMyPublic] = useState(false);
   const [visibilityReady, setVisibilityReady] = useState(false);
   useEffect(() => {

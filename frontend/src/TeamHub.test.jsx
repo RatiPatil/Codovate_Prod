@@ -66,6 +66,10 @@ vi.mock("./teamHubData", () => ({
   sendTeamMessage: vi.fn(),
   revokeGroupInvite: vi.fn(),
 }));
+vi.mock("./discoveryData", async (original) => ({
+  ...(await original()),
+  ensureDefaultDiscovery: vi.fn().mockResolvedValue(),
+}));
 import { TeamHub } from "./TeamHub";
 afterEach(() => {
   cleanup();
