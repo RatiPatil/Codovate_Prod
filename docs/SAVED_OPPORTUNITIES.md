@@ -1,0 +1,11 @@
+# Saved opportunities
+
+A shared account-scoped bookmark subscription now supplies save controls on homepage, dashboard and explore cards, managed/official opportunity detail pages, and all hackathon reference-directory cards. The subscription remounts on account change; saved IDs do not persist across accounts in browser storage. Guests receive a sign-in link with the current route as their return destination. Loading/error states prevent toggling against an unknown bookmark list. Per-opportunity locks prevent duplicate clicks while a write is in flight; failures remain visible for retry.
+
+Existing managed bookmarks retain their schema and authoritative published-opportunity checks. Official listings and directory references add `source` (`external` or `directory`) and `sourceUrl` (HTTPS, up to 500 characters; may be empty only for directory references without a confirmed source). These are private, bounded reference snapshots, not trusted published opportunities. They grant no application permission, public publication status or administrative capability. All bookmarks remain readable/deletable only by their owner; creation requires the authenticated owner, deterministic `uid_opportunityId` ID and server timestamp. Updates remain denied.
+
+Saved opportunities opens a managed/official item through its existing `/opportunities/{id}` detail route. A saved hackathon reference opens `/explore?type=hackathon#directory-{id}`, scrolls to and highlights that card. References do not display a misleading "no longer in the current listing" message merely because they live outside the dated opportunity catalog. Users can remove all bookmark types from Saved opportunities. No migration or data import is required.
+
+Placement Preparation's résumé-template card links to the existing `/resume` Word template gallery. Old `/placement?section=resume-templates` student links also redirect there. Admin placement content management stays available.
+
+Deploy the updated Firestore rules and frontend together with `git pull origin main` and `npm run deploy`. Validate owner/other-account behavior in production after deployment. Automated coverage includes save/unsave/error/loading controls, reference serialization, application regression tests, schema validation, and `npm --prefix scripts run test:bookmarks` with Firestore emulator port 8080.

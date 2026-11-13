@@ -1,3 +1,4 @@
+import { MemoryRouter } from "react-router-dom";
 import { afterEach, expect, it } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import { HackathonDirectory } from "./HackathonDirectory.jsx";
@@ -32,7 +33,7 @@ it("computes closed and coming-soon states from explicit timestamps and ranks on
   expect(filterHackathonDirectory(rows,{sort:"stipend"},now).map(row=>row.id)).toEqual(["known","zero","unknown"]);
 });
 it("labels reference resources separately and applies passed filters to links", () => {
-  render(<HackathonDirectory filters={{search:"NASA"}} />);
+  render(<MemoryRouter><HackathonDirectory filters={{search:"NASA"}} /></MemoryRouter>);
   expect(screen.getByRole("heading",{name:"NASA Space Apps Challenge"})).toBeInTheDocument();
   expect(screen.queryByRole("heading",{name:"HackMIT"})).toBeNull();
   expect(screen.getByRole("link", {name:/Date source/})).toBeInTheDocument();

@@ -23,6 +23,7 @@
     "test:teams": "node test-team-rules.mjs",
     "test:project-teams": "node test-project-teams.mjs",
     "test:mentoring": "node test-mentor-workspace-rules.mjs",
-    "test:mentor-chat": "node test-mentor-chat-rules.mjs"
+    "test:mentor-chat": "node test-mentor-chat-rules.mjs",
+    "test:bookmarks": "node test-bookmark-rules.mjs"
   }
 }

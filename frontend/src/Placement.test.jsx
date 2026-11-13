@@ -153,3 +153,8 @@ it("shows the career directory alongside existing published material", async () 
   expect(await screen.findByRole("heading", { name: "Application checklist" })).toBeInTheDocument();
   expect(screen.queryByText("Material is being prepared")).toBeNull();
 });
+
+it("links the student résumé preparation section to the existing Word template gallery", () => {
+ show();
+ expect(screen.getByRole("link",{name:/Word templates/})).toHaveAttribute("href","/resume");
+});

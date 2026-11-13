@@ -660,9 +660,71 @@
         "createdAt": {
           "type": "string",
           "format": "date-time"
+        },
+        "source": {
+          "enum": [
+            "external",
+            "directory"
+          ]
+        },
+        "sourceUrl": {
+          "type": "string",
+          "maxLength": 500,
+          "pattern": "^$|^https://[^ /]+.*$"
         }
       },
-      "additionalProperties": false
+      "additionalProperties": false,
+      "dependentRequired": {
+        "source": [
+          "sourceUrl"
+        ],
+        "sourceUrl": [
+          "source"
+        ]
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "source": {
+                "const": "external"
+              }
+            },
+            "required": [
+              "source"
+            ]
+          },
+          "then": {
+            "properties": {
+              "sourceUrl": {
+                "minLength": 1
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "source": {
+                "const": "directory"
+              }
+            },
+            "required": [
+              "source"
+            ]
+          },
+          "then": {
+            "properties": {
+              "type": {
+                "const": "hackathon"
+              },
+              "opportunityId": {
+                "pattern": "^directory-[A-Za-z0-9_-]+$"
+              }
+            }
+          }
+        }
+      ]
     },
     "careerTasks": {
       "type": "object",

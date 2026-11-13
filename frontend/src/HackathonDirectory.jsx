@@ -1,3 +1,6 @@
+import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
+import { SaveOpportunityButton } from "./OpportunitySave";
 import { ExternalLink } from "lucide-react";
 import { hackathonDirectory, filterHackathonDirectory, directoryStatus, eventStatus } from "./hackathonCatalog.js";
 import { CompanyLogo } from "./CareerPortals.jsx";
@@ -19,6 +22,14 @@ export function HackathonIntroduction() {
 }
 
 export function HackathonDirectory({ filters = {} }) {
+  const { hash } = useLocation();
+  useEffect(() => {
+    if (!hash.startsWith("#directory-")) return;
+    let target;
+    try { target = decodeURIComponent(hash.slice(1)); } catch { return; }
+    const frame = requestAnimationFrame(() => document.getElementById(target)?.scrollIntoView({ block:"start" }));
+    return () => cancelAnimationFrame(frame);
+  }, [hash]);
   const rows = filterHackathonDirectory(hackathonDirectory, filters);
   const groups = [...new Set(hackathonDirectory.map(row => row.group))].filter(group => rows.some(row => row.group === group));
   return <section aria-label="Hackathon discovery directory" className="hackathon-directory">
@@ -29,7 +40,7 @@ export function HackathonDirectory({ filters = {} }) {
     {groups.map(group => <section key={group} aria-label={group}>
       <div className="career-portals-group"><h3>{group}</h3><span className="pill">{rows.filter(row => row.group === group).length} resources</span></div>
       <div className="placement-grid">
-        {rows.filter(row => row.group === group).map(row => <article className="panel career-portal-card" key={row.id}>
+        {rows.filter(row => row.group === group).map(row => <article className="panel career-portal-card" key={row.id} id={"directory-" + row.id}>
           <span className="pill">{row.kind === "event-series" ? "Recurring event" : row.kind === "platform" ? "Discovery platform" : "Program / resource"}</span>
           <div className="career-company-brand"><CompanyLogo company={{ name:row.title, logo:row.logo, logoDark:row.logoDark }} /><h4>{row.title}</h4></div><p>{row.summary}</p>
           <span className="pill">{statusLabels[directoryStatus(row)]}</span>
@@ -45,6 +56,7 @@ export function HackathonDirectory({ filters = {} }) {
           <p className="hint">Typical format: {row.location}<br />Registration closes: {row.schedule?.registrationDeadlineDate ? displayDate(row.schedule.registrationDeadlineDate) : row.deadline ? dateLabel(row.deadline) : "Not announced"}<br />Cash prize: {row.prizeINR === null ? "Not announced" : money(row.prizeINR)}</p>
           <ul className="career-portal-roles" aria-label={`${row.title} interests`}>{row.interests.map(interest => <li className="pill" key={interest}>{interest}</li>)}</ul>
           <p className="hint">{row.note}</p>
+          <SaveOpportunityButton item={{ id:"directory-" + row.id, title:row.title, organization:"Hackathon reference", type:"hackathon", bookmarkSource:"directory", sourceUrl:row.sourceUrl }} />
           {row.sourceUrl ? <a className="button secondary" href={row.sourceUrl} target="_blank" rel="noopener noreferrer" aria-label={`Visit ${row.title} resource (opens in a new tab)`}>Visit resource <ExternalLink size={15} aria-hidden="true" /></a> : <p className="hint">Official link not confirmed</p>}
         </article>)}
       </div>

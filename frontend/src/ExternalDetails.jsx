@@ -1,3 +1,4 @@
+import { SaveOpportunityButton } from "./OpportunitySave";
 import { Link } from "react-router-dom";
 import { isOpen, typeLabel } from "./domain";
 export function ExternalDetails({ item }) {
@@ -74,6 +75,7 @@ export function ExternalDetails({ item }) {
         <aside className="panel apply-panel">
           <span className="eyebrow blue">YOUR NEXT STEP</span>
           <h2>Apply with {item.organization}</h2>
+          <SaveOpportunityButton item={item} />
           {item.deadlineNote && <p>{item.deadlineNote}</p>}
           <p>
             {item.deadline

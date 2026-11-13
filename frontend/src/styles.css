@@ -3705,3 +3705,11 @@ button:disabled:hover {
 .mentor-message time { color:var(--muted); font-size:10px; }
 .mentor-message p { white-space:pre-wrap; overflow-wrap:anywhere; font-size:13px; line-height:1.6; margin:8px 0 0; }
 .mentor-chat form { display:grid; gap:12px; margin-top:18px; }
+
+.opportunity-save-control { margin:14px 0; }
+.opportunity-save-control.compact { margin:0 0 0 auto; position:relative; }
+.opportunity-save-control .save-button { display:inline-flex; align-items:center; justify-content:center; min-width:36px; min-height:36px; }
+.save-opportunity-error { display:block; color:#b23e4b; font-size:12px; margin-top:8px; line-height:1.5; }
+.opportunity-save-control.compact .save-opportunity-error { position:absolute; z-index:2; right:0; width:220px; padding:10px; border:1px solid var(--border); border-radius:8px; background:white; }
+.career-portal-card[id] { scroll-margin-top:120px; }
+.career-portal-card:target { outline:2px solid var(--blue); outline-offset:4px; }

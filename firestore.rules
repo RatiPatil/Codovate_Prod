@@ -211,19 +211,29 @@ service cloud.firestore {
     && request.resource.data.status in ['submitted','under_review','shortlisted','selected','rejected'] && changedTime();
    allow delete: if false;
   }
+  function validBookmark(d, id) {
+   return d.keys().hasAll(['studentId','opportunityId','title','organization','type','createdAt'])
+    && d.keys().hasOnly(['studentId','opportunityId','title','organization','type','createdAt','source','sourceUrl'])
+    && d.studentId==request.auth.uid && id==request.auth.uid+'_'+d.opportunityId
+    && text(d.opportunityId,128) && d.opportunityId.size()>0
+    && text(d.title,180) && d.title.size()>0 && text(d.organization,180) && d.organization.size()>0
+    && d.type in ['internship','job','competition','hackathon'] && d.createdAt==request.time;
+  }
+  function managedBookmark(d) {
+   let item=get(/databases/$(database)/documents/opportunities/$(d.opportunityId)).data;
+   return !d.keys().hasAny(['source','sourceUrl']) && item.status=='published'
+    && d.title==item.title && d.organization==item.organization && d.type==item.type;
+  }
+  function referenceBookmark(d) {
+   // Private, bounded reference metadata is not a trusted published listing.
+   return d.source in ['external','directory'] && optionalHttps(d.sourceUrl)
+    && (d.source=='external' ? d.sourceUrl.size()>0 : (d.type=='hackathon' && d.opportunityId.matches('directory-[A-Za-z0-9_-]+')));
+  }
   match /bookmarks/{id} {
-   allow read: if signedIn() && resource.data.studentId == request.auth.uid;
-   allow create: if signedIn()
-    && request.resource.data.keys().hasOnly(['studentId','opportunityId','title','organization','type','createdAt'])
-    && request.resource.data.studentId == request.auth.uid
-    && text(request.resource.data.opportunityId,128)
-    && id == request.auth.uid + '_' + request.resource.data.opportunityId
-    && request.resource.data.createdAt == request.time
-    && request.resource.data.title == get(/databases/$(database)/documents/opportunities/$(request.resource.data.opportunityId)).data.title
-    && request.resource.data.organization == get(/databases/$(database)/documents/opportunities/$(request.resource.data.opportunityId)).data.organization
-    && request.resource.data.type == get(/databases/$(database)/documents/opportunities/$(request.resource.data.opportunityId)).data.type
-    && get(/databases/$(database)/documents/opportunities/$(request.resource.data.opportunityId)).data.status == 'published';
-   allow delete: if signedIn() && resource.data.studentId == request.auth.uid;
+   allow read: if signedIn() && resource.data.studentId==request.auth.uid;
+   allow create: if signedIn() && validBookmark(request.resource.data,id)
+    && (request.resource.data.get('source','') in ['external','directory'] ? referenceBookmark(request.resource.data) : managedBookmark(request.resource.data));
+   allow delete: if signedIn() && resource.data.studentId==request.auth.uid;
    allow update: if false;
   }
   function validTask(d) {

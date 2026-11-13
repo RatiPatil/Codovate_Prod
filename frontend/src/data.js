@@ -103,6 +103,13 @@ export async function toggleSaved(uid, item, saved) {
     await setDoc(ref, {
       studentId: uid,
       opportunityId: item.id,
+      ...(item.external || item.bookmarkSource === "directory"
+        ? {
+            source:
+              item.bookmarkSource === "directory" ? "directory" : "external",
+            sourceUrl: httpsLink(item.sourceUrl, !!item.external),
+          }
+        : {}),
       title: item.title,
       organization: item.organization,
       type: item.type,

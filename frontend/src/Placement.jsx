@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, Navigate, useSearchParams } from "react-router-dom";
 import {
   collection,
   query,
@@ -46,7 +46,7 @@ export function Placement({ manage = false }) {
     setItems([]);
     setEditing(null);
     setError("");
-    if (!user || !section) {
+    if (!user || !section || (!manage && section.id === "resume-templates")) {
       setLoading(false);
       return;
     }
@@ -166,6 +166,7 @@ export function Placement({ manage = false }) {
       setBusy(false);
     }
   }
+  if (!manage && section?.id === "resume-templates") return <Navigate to="/resume" replace />;
   if (manage && !admin)
     return <p role="alert">Administrator access required.</p>;
   return (
@@ -254,7 +255,13 @@ export function Placement({ manage = false }) {
               <section key={group}>
                 <h3>{group}</h3>
                 <div className="placement-grid">
-                  {list.map((s) => (
+                  {list.map((s) => !manage && s.id === "resume-templates" ? (
+                    <Link className="panel placement-section" key={s.id} to="/resume">
+                      <span className="pill">Word templates</span>
+                      <h3>{s.title}</h3>
+                      <span>View résumé templates →</span>
+                    </Link>
+                  ) : (
                     <button
                       className="panel placement-section"
                       key={s.id}

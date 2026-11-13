@@ -1,3 +1,4 @@
+import { OpportunitySaveProvider, SaveOpportunityButton } from "./OpportunitySave";
 import { ProfileInterests, profileInterests } from "./ProfileInterests";
 import { MobilePrivacyFields, mobileFormValues } from "./MobilePrivacy";
 import { StudyFieldAdmin } from "./StudyFieldAdmin";
@@ -290,7 +291,7 @@ function PreviewBanner() {
     )
   );
 }
-function Card({ item, saved = false, onSave }) {
+function Card({ item }) {
   const Icon = categoryIcons[item.type] || BriefcaseBusiness;
   return (
     <article className="opportunity-card">
@@ -309,16 +310,7 @@ function Card({ item, saved = false, onSave }) {
             }[item.type]
           }
         </span>
-        {onSave && !item.external && (
-          <button
-            className={"save-button " + (saved ? "is-saved" : "")}
-            aria-label={(saved ? "Unsave " : "Save ") + item.title}
-            aria-pressed={saved}
-            onClick={() => onSave(item)}
-          >
-            <Bookmark size={19} fill={saved ? "currentColor" : "none"} />
-          </button>
-        )}
+        <SaveOpportunityButton item={item} compact />
       </div>
       <Link className="card-title" to={"/opportunities/" + item.id}>
         <h3>{item.title}</h3>
@@ -578,9 +570,6 @@ function Home({ catalog }) {
 }
 function Explore({ catalog }) {
   const [params, setParams] = useSearchParams();
-  const { user } = useSession();
-  const bookmarks = useOwned("bookmarks", user?.uid);
-  const [notice, setNotice] = useState("");
   const type = types.includes(params.get("type")) ? params.get("type") : "all";
   const filters = {
     type,
@@ -591,24 +580,11 @@ function Explore({ catalog }) {
     ...(type === "hackathon" ? { availability: params.get("availability") || "all", group: params.get("group") || "all", openOnly: false } : {}),
   };
   const rows = filterOpportunities(catalog.items, filters);
-  const saved = new Set(bookmarks.items.map((b) => b.opportunityId));
   function change(key, value) {
     const next = new URLSearchParams(params);
     if (value === "all" || !value) next.delete(key);
     else next.set(key, value);
     setParams(next, { replace: key === "search" });
-  }
-  async function save(item) {
-    setNotice("");
-    if (!user) {
-      setNotice("Sign in to save opportunities to your account.");
-      return;
-    }
-    try {
-      await toggleSaved(user.uid, item, saved.has(item.id));
-    } catch (e) {
-      setNotice(errorMessage(e));
-    }
   }
   return (
     <div className="container section">
@@ -702,11 +678,6 @@ function Explore({ catalog }) {
           {rows.length > 0 && <p className="result-count">
             {rows.length} matching loaded opportunities
           </p>}
-          {notice && (
-            <Notice kind="info">
-              {notice} {!user && <Link to="/login">Sign in</Link>}
-            </Notice>
-          )}
           {catalog.loading && !catalog.items.length ? (
             <Loading />
           ) : catalog.error && !rows.length ? (
@@ -720,8 +691,6 @@ function Explore({ catalog }) {
                 <Card
                   key={o.id}
                   item={o}
-                  saved={saved.has(o.id)}
-                  onSave={save}
                 />
               ))}
             </div>
@@ -880,6 +849,7 @@ function Details({ catalog }) {
         </article>
         <aside className="panel apply-panel">
           <span className="eyebrow blue">YOUR NEXT STEP</span>
+          <SaveOpportunityButton item={item} />
           <h2>
             {applied || success ? "You’re in the running." : "Make your move."}
           </h2>
@@ -1519,12 +1489,12 @@ function Saved({ catalog }) {
           <article className="panel application-row" key={b.id}>
             <Bookmark size={20} />
             <div>
-              <Link to={"/opportunities/" + b.opportunityId}>
+              <Link to={b.source === "directory" ? "/explore?type=hackathon#" + encodeURIComponent(b.opportunityId) : "/opportunities/" + b.opportunityId}>
                 <h2>{b.title}</h2>
               </Link>
               <p>
                 {b.organization}
-                {!catalog.items.some((o) => o.id === b.opportunityId)
+                {b.source !== "directory" && !catalog.items.some((o) => o.id === b.opportunityId)
                   ? " · No longer in the current listing"
                   : ""}
               </p>
@@ -2333,6 +2303,7 @@ export default function App() {
       : "Codovate — Your next chapter starts here";
   }, [location.pathname, adminScreen]);
   return (
+    <OpportunitySaveProvider>
     <>
       <a className="skip-link" href="#main">
         Skip to content
@@ -2523,5 +2494,6 @@ export default function App() {
       </main>
       {!adminScreen && !onboardingScreen && <Footer />}
     </>
+    </OpportunitySaveProvider>
   );
 }
