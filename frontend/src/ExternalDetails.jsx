@@ -20,6 +20,22 @@ export function ExternalDetails({ item }) {
           </div>
           <h2>About the opportunity</h2>
           <p>{item.description}</p>
+          {!!item.responsibilities?.length && (
+            <>
+              <h2>What you’ll do</h2>
+              <ul>
+                {item.responsibilities.map((value) => (
+                  <li key={value}>{value}</li>
+                ))}
+              </ul>
+            </>
+          )}
+          {item.duration !== "See official listing" && (
+            <>
+              <h2>Duration</h2>
+              <p>{item.duration}</p>
+            </>
+          )}
           <h2>Who can apply</h2>
           <p>{item.eligibility}</p>
           <h2>Skills</h2>

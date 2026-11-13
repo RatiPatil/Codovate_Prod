@@ -350,7 +350,7 @@ function Card({ item, saved = false, onSave }) {
             {item.external
               ? item.type === "hackathon"
                 ? "See prize rules"
-                : "Pay not stated"
+                : (item.compensation && !item.compensation.startsWith("Not specified") ? item.compensation : "Pay not stated")
               : money(item.stipend)}
           </strong>
           <small>
@@ -378,6 +378,7 @@ function Home({ catalog }) {
   const navigate = useNavigate();
   const open = catalog.items.filter((o) => isOpen(o));
   const featured = filterOpportunities(open, { type: activeType });
+  const externalCounts = Object.fromEntries(types.map(type => [type, open.filter(item => item.external && item.type === type).length]));
   return (
     <div className="landing">
       <section className="intro container">
@@ -497,7 +498,7 @@ function Home({ catalog }) {
               <span className="category-count" aria-live="polite">
                 <strong>{type === "hackathon"
                   ? (hackathonDirectory.length + (liveCounts.counts[type] || 0)).toLocaleString("en-IN")
-                  : Number.isInteger(liveCounts.counts[type]) ? liveCounts.counts[type].toLocaleString("en-IN") : liveCounts.loading ? "…" : "—"}</strong>
+                  : Number.isInteger(liveCounts.counts[type]) ? (liveCounts.counts[type] + externalCounts[type]).toLocaleString("en-IN") : !configured ? externalCounts[type].toLocaleString("en-IN") : liveCounts.loading ? "…" : "—"}</strong>
               </span>
               <ArrowUpRight size={16} />
             </Link>
@@ -2487,7 +2488,7 @@ export default function App() {
             element={
               <Workspace
                 title="Résumé templates"
-                subtitle="Turn your education, skills and projects into a clear résumé."
+                subtitle="Preview and download editable Word résumé templates."
               >
                 <ResumeBuilder />
               </Workspace>

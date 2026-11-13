@@ -113,6 +113,20 @@
       "reviewedAt": {
         "type": "string",
         "format": "date-time"
+      },
+      "responsibilities": {
+        "type": "array",
+        "maxItems": 6,
+        "items": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        }
+      },
+      "duration": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 150
       }
     },
     "additionalProperties": false

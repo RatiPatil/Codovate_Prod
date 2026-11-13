@@ -13,6 +13,9 @@ const validate = ajv.compile(schema);
 test("curated snapshot matches its executable schema", () => {
   assert.equal(validate(records), true, JSON.stringify(validate.errors));
   assert.equal(new Set(records.map((r) => r.id)).size, records.length);
+  assert.equal(records.filter((r) => r.type === "internship").length, 15);
+  assert.equal(records.filter((r) => r.type === "job").length, 15);
+  assert.equal(new Set(records.map((r) => r.sourceUrl)).size, records.length);
   for (const r of records) {
     const u = new URL(r.sourceUrl);
     assert.equal(u.protocol, "https:");
@@ -22,6 +25,10 @@ test("curated snapshot matches its executable schema", () => {
         "amazon.jobs",
         "www.amazon.jobs",
         "stripe.com",
+        "jobs.lever.co",
+        "careers.arm.com",
+        "www.alehar.com",
+        "www.stivate.com",
         "paypalaihackathon.devpost.com",
         "launchpad-hacks.devpost.com",
       ].includes(u.hostname),
@@ -43,8 +50,11 @@ test("hackathon references match their schema without fabricated event metadata"
   const records = await read("../frontend/src/hackathonDirectory.json");
   const valid = ajv.compile(schema);
   assert.equal(valid(records), true, JSON.stringify(valid.errors));
-  assert.equal(new Set(records.map(r => r.id)).size, records.length);
-  assert.equal(valid([{...records[0], deadline:"coming soon"}]), false);
-  assert.equal(valid([{...records[0], prizeINR:-1}]), false);
-  assert.equal(valid([{...records[0], sourceUrl:"javascript:alert(1)"}]), false);
+  assert.equal(new Set(records.map((r) => r.id)).size, records.length);
+  assert.equal(valid([{ ...records[0], deadline: "coming soon" }]), false);
+  assert.equal(valid([{ ...records[0], prizeINR: -1 }]), false);
+  assert.equal(
+    valid([{ ...records[0], sourceUrl: "javascript:alert(1)" }]),
+    false,
+  );
 });

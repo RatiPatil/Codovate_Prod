@@ -1,5 +1,30 @@
 [
   {
+    "id": "amazon-10541345",
+    "title": "SDE I Intern – 2027",
+    "organization": "Amazon",
+    "type": "internship",
+    "location": "India — Bengaluru, Chennai, Hyderabad, Delhi, Mumbai and Pune",
+    "mode": "On-site",
+    "category": "Technology",
+    "skills": [
+      "Java",
+      "Python",
+      "Data structures"
+    ],
+    "summary": "Six-month engineering internship contributing software to customer-facing products and distributed systems.",
+    "eligibility": "Currently enrolled in a relevant CS/engineering bachelor’s or master’s degree; graduation year 2027. Full-time 40-hour weeks and a university availability declaration are required.",
+    "compensation": "Not specified in the reviewed employer listing",
+    "deadline": null,
+    "sourceUrl": "https://amazon.jobs/en/jobs/10541345/sde-i-intern-amazon-university-talent-acquisition",
+    "reviewedAt": "2026-11-13T07:26:05Z",
+    "responsibilities": [
+      "Develop and test software with an engineering team.",
+      "Contribute to distributed systems and participate in technical reviews."
+    ],
+    "duration": "24–26 weeks; starts January–June 2027"
+  },
+  {
     "id": "amazon-10498158",
     "title": "Systems Development Engineer Intern – 2027",
     "organization": "Amazon",
@@ -17,7 +42,11 @@
     "compensation": "Not specified in the reviewed listing",
     "deadline": null,
     "sourceUrl": "https://www.amazon.jobs/en/jobs/10498158/systems-development-engineer-intern-2027",
-    "reviewedAt": "2026-11-02T00:00:00.000Z"
+    "reviewedAt": "2026-11-13T07:26:05Z",
+    "responsibilities": [
+      "Build and support distributed applications and internal engineering tools.",
+      "Collaborate on design, architecture, implementation and delivery."
+    ]
   },
   {
     "id": "amazon-10496769",
@@ -37,7 +66,11 @@
     "compensation": "Not specified in the reviewed listing",
     "deadline": null,
     "sourceUrl": "https://amazon.jobs/en/jobs/10496769/data-engineer-intern-2027",
-    "reviewedAt": "2026-11-02T00:00:00.000Z"
+    "reviewedAt": "2026-11-13T07:26:05Z",
+    "responsibilities": [
+      "Develop data pipelines, schemas and data-warehouse workflows.",
+      "Transform datasets with SQL, Python and AWS data services."
+    ]
   },
   {
     "id": "stripe-8031833",
@@ -45,7 +78,7 @@
     "organization": "Stripe",
     "type": "internship",
     "location": "Bengaluru, India",
-    "mode": "On-site",
+    "mode": "Not specified",
     "category": "Technology",
     "skills": [
       "Programming",
@@ -53,11 +86,15 @@
       "Team projects"
     ],
     "summary": "Contribute production software with guidance from an engineering team.",
-    "eligibility": "CS, mathematics or related degree background; programming and collaborative project experience. Check office expectations on the original page.",
+    "eligibility": "Pursuing a relevant CS, mathematics or related degree, with programming experience from coursework or projects. Collaborative project experience and strong communication are expected. Confirm team-specific office attendance with Stripe.",
     "compensation": "Not specified in the reviewed listing",
     "deadline": null,
     "sourceUrl": "https://stripe.com/careers/listing/software-engineer-intern/8031833?gh_jid=8031833",
-    "reviewedAt": "2026-11-02T00:00:00.000Z"
+    "reviewedAt": "2026-11-13T07:26:05Z",
+    "responsibilities": [
+      "Ship production software and own a scoped engineering project.",
+      "Participate in design discussions, testing and code reviews."
+    ]
   },
   {
     "id": "amazon-10580008",
@@ -77,7 +114,11 @@
     "compensation": "Not specified in the reviewed listing",
     "deadline": null,
     "sourceUrl": "https://www.amazon.jobs/en/jobs/10580008/software-development-engineer-i",
-    "reviewedAt": "2026-11-02T00:00:00.000Z"
+    "reviewedAt": "2026-11-13T07:26:05Z",
+    "responsibilities": [
+      "Design, implement, test and maintain software components.",
+      "Participate in code reviews and resolve operational issues."
+    ]
   },
   {
     "id": "amazon-10580014",
@@ -97,7 +138,595 @@
     "compensation": "Not specified in the reviewed listing",
     "deadline": null,
     "sourceUrl": "https://www.amazon.jobs/en/jobs/10580014/software-development-engineer-i",
-    "reviewedAt": "2026-11-02T00:00:00.000Z"
+    "reviewedAt": "2026-11-13T07:26:05Z",
+    "responsibilities": [
+      "Design, implement, test and maintain software components.",
+      "Participate in code reviews and resolve operational issues."
+    ]
+  },
+  {
+    "id": "amazon-10506542",
+    "title": "Programmer Analyst Intern – 2027",
+    "organization": "Amazon",
+    "type": "internship",
+    "location": "Hyderabad, India",
+    "mode": "Not specified",
+    "category": "Technology",
+    "skills": [
+      "Java",
+      "Python",
+      "SQL"
+    ],
+    "summary": "Work on internal applications, integrations and process automation with engineering mentorship.",
+    "eligibility": "Pursuing a bachelor’s degree or higher in CS, engineering or equivalent; coding fundamentals and project experience. Full-time availability with university confirmation is required.",
+    "compensation": "Not specified in the reviewed employer listing",
+    "deadline": null,
+    "sourceUrl": "https://www.amazon.jobs/en/jobs/10506542/programmer-analyst-intern-2027",
+    "reviewedAt": "2026-11-13T07:26:05Z",
+    "responsibilities": [
+      "Implement integrations, internal tools and unit tests.",
+      "Troubleshoot applications and support platform migrations."
+    ]
+  },
+  {
+    "id": "alehar-tech-intern",
+    "title": "Intern – AI & Software Engineering",
+    "organization": "Alehar",
+    "type": "internship",
+    "location": "Bangalore, India",
+    "mode": "Not specified",
+    "category": "Technology",
+    "skills": [
+      "Full-stack development",
+      "AI",
+      "APIs"
+    ],
+    "summary": "Build practical software, AI-enabled workflows and data solutions for advisory client projects.",
+    "eligibility": "Pursuing or holding a relevant computing, engineering or data-science degree, or equivalent practical experience. Demonstrable projects and familiarity with modern web frameworks are expected. Apply using the email instructions on the employer page.",
+    "compensation": "₹30,000 per month",
+    "deadline": null,
+    "sourceUrl": "https://www.alehar.com/about/careers/tech-intern",
+    "reviewedAt": "2026-11-13T07:26:05Z",
+    "responsibilities": [
+      "Map business workflows and build internal tools.",
+      "Evaluate technical solutions and contribute to client-facing delivery."
+    ],
+    "duration": "2–4 months"
+  },
+  {
+    "id": "stivate-junior-developer-intern",
+    "title": "Junior Developer Intern",
+    "organization": "Stivate",
+    "type": "internship",
+    "location": "Remote — Pune, India",
+    "mode": "Remote",
+    "category": "Technology",
+    "skills": [
+      "React",
+      "Next.js",
+      "TypeScript",
+      "Node.js",
+      "PostgreSQL"
+    ],
+    "summary": "Contribute features to logistics software and automation dashboards used by client teams.",
+    "eligibility": "JavaScript/TypeScript and React fundamentals, relevant personal or academic projects, basic Node.js/SQL knowledge, and Git familiarity. Minimum three-month availability. Follow the official email application instructions.",
+    "compensation": "Monthly stipend; amount not specified. Performance-based PPO mentioned.",
+    "deadline": null,
+    "sourceUrl": "https://www.stivate.com/careers/junior-developer-intern",
+    "reviewedAt": "2026-11-13T07:26:05Z",
+    "responsibilities": [
+      "Build responsive interfaces, APIs and database queries.",
+      "Fix bugs and participate in code reviews and deployment workflows."
+    ],
+    "duration": "3–6 months"
+  },
+  {
+    "id": "hevodata-993a3ed3-3014-432f-b0f4-28d300d58d9a",
+    "title": "Associate Software Development Engineer (SDE) Intern",
+    "organization": "Hevo Data",
+    "type": "internship",
+    "location": "Bangalore, India",
+    "mode": "On-site",
+    "category": "Technology",
+    "skills": [
+      "Java",
+      "TypeScript",
+      "Python",
+      "REST APIs"
+    ],
+    "summary": "Implement data connectors and small service components under engineering mentorship.",
+    "eligibility": "CS B.Tech or equivalent; freshers with software projects or integration internships. Basic object-oriented programming, APIs and data structures are expected.",
+    "compensation": "Not specified in the reviewed employer listing",
+    "deadline": null,
+    "sourceUrl": "https://jobs.lever.co/hevodata/993a3ed3-3014-432f-b0f4-28d300d58d9a",
+    "reviewedAt": "2026-11-13T07:26:05Z",
+    "responsibilities": [
+      "Implement SaaS connectors and API components.",
+      "Debug data-pipeline code and document changes."
+    ]
+  },
+  {
+    "id": "drivetrain-bc1c17bc-86ac-4f00-a1e3-0eb85aae4fdc",
+    "title": "Engineering Intern – Gen AI for FP&A Platform",
+    "organization": "Drivetrain",
+    "type": "internship",
+    "location": "India",
+    "mode": "Remote",
+    "category": "Technology",
+    "skills": [
+      "AI/ML",
+      "RAG",
+      "LLMs",
+      "Data structures"
+    ],
+    "summary": "Develop generative-AI workflows for a financial-planning and analysis platform.",
+    "eligibility": "Pursuing or recently completing a relevant computing degree. Strong CS fundamentals and demonstrable AI/ML or end-to-end projects; familiarity with RAG and agentic AI.",
+    "compensation": "Not specified in the reviewed employer listing",
+    "deadline": null,
+    "sourceUrl": "https://jobs.lever.co/drivetrain/bc1c17bc-86ac-4f00-a1e3-0eb85aae4fdc",
+    "reviewedAt": "2026-11-13T07:26:05Z",
+    "responsibilities": [
+      "Build and evaluate AI workflows and integrations.",
+      "Document technical work and demonstrate completed projects."
+    ]
+  },
+  {
+    "id": "drivetrain-edb8a8f7-16ac-4177-bf2e-99c36ab47d5f",
+    "title": "Quality Assurance Engineering (QAE) - Intern",
+    "organization": "Drivetrain",
+    "type": "internship",
+    "location": "India",
+    "mode": "Remote",
+    "category": "Technology",
+    "skills": [
+      "Test automation",
+      "Software testing",
+      "Debugging"
+    ],
+    "summary": "Support engineering quality through automated and manual testing.",
+    "eligibility": "Relevant CS or computer-engineering bachelor’s degree; employer specifies a 2023–2025 graduation window. Testing fundamentals, maintainable automation scripts and browser debugging skills are expected.",
+    "compensation": "Not specified in the reviewed employer listing",
+    "deadline": null,
+    "sourceUrl": "https://jobs.lever.co/drivetrain/edb8a8f7-16ac-4177-bf2e-99c36ab47d5f",
+    "reviewedAt": "2026-11-13T07:26:05Z",
+    "responsibilities": [
+      "Execute tests and document defects.",
+      "Improve automation coverage and reproduce production issues."
+    ]
+  },
+  {
+    "id": "sprinto-78b7b003-6c37-4e49-a110-5f54d9e9bddf",
+    "title": "Finance Intern - Remote",
+    "organization": "Sprinto",
+    "type": "internship",
+    "location": "Remote (India)",
+    "mode": "Remote",
+    "category": "Finance",
+    "skills": [
+      "Accounting",
+      "Google Sheets",
+      "Financial reporting"
+    ],
+    "summary": "Assist with payables, receivables, financial operations and audit preparation.",
+    "eligibility": "Accounting, finance or related bachelor’s degree; ACCA candidates preferred. Employer requests 1–6+ months of relevant finance exposure and familiarity with accounting software.",
+    "compensation": "Not specified in the reviewed employer listing",
+    "deadline": null,
+    "sourceUrl": "https://jobs.lever.co/Sprinto/78b7b003-6c37-4e49-a110-5f54d9e9bddf",
+    "reviewedAt": "2026-11-13T07:26:05Z",
+    "responsibilities": [
+      "Support invoice processing and reconciliations.",
+      "Prepare audit evidence and budgeting or variance analysis."
+    ]
+  },
+  {
+    "id": "sprinto-b0f52d4a-c9ac-414d-86c9-2f2f35868aef",
+    "title": "Information Security Compliance Intern",
+    "organization": "Sprinto",
+    "type": "internship",
+    "location": "Remote (India)",
+    "mode": "Remote",
+    "category": "Technology",
+    "skills": [
+      "Information security",
+      "Compliance",
+      "Spreadsheets"
+    ],
+    "summary": "Help maintain audit-partner operations and map evidence requirements to security-compliance workflows.",
+    "eligibility": "Completed graduate or master’s degree in GRC, information security, risk, CS or related field. Audit exposure is helpful; careful verification, spreadsheet skills and clear writing are important.",
+    "compensation": "Not specified in the reviewed employer listing",
+    "deadline": null,
+    "sourceUrl": "https://jobs.lever.co/Sprinto/b0f52d4a-c9ac-414d-86c9-2f2f35868aef",
+    "reviewedAt": "2026-11-13T07:26:05Z",
+    "responsibilities": [
+      "Track audit-partner onboarding and accreditation information.",
+      "Support evidence mapping, verification and routine queries."
+    ]
+  },
+  {
+    "id": "sprinto-47036e01-4a27-4380-bcf1-83f158febe95",
+    "title": "MRE Intern",
+    "organization": "Sprinto",
+    "type": "internship",
+    "location": "Bengaluru",
+    "mode": "Remote",
+    "category": "Marketing",
+    "skills": [
+      "Market research",
+      "Excel",
+      "Google Sheets"
+    ],
+    "summary": "Research companies and markets to support commercial decisions and customer insights.",
+    "eligibility": "Fresher or student in business, analytics, economics, marketing or a related subject. The employer also requests at least three months of prior marketing-research internship experience.",
+    "compensation": "Not specified in the reviewed employer listing",
+    "deadline": null,
+    "sourceUrl": "https://jobs.lever.co/Sprinto/47036e01-4a27-4380-bcf1-83f158febe95",
+    "reviewedAt": "2026-11-13T07:26:05Z",
+    "responsibilities": [
+      "Collect, validate and organize research data.",
+      "Prepare market summaries and maintain research databases."
+    ]
+  },
+  {
+    "id": "sprinto-856517f8-cc53-4d48-a5aa-137734e61489",
+    "title": "Revenue & Operations Intern",
+    "organization": "Sprinto",
+    "type": "internship",
+    "location": "Bengaluru",
+    "mode": "Remote",
+    "category": "Business",
+    "skills": [
+      "Analytics",
+      "Spreadsheets",
+      "Operations"
+    ],
+    "summary": "Support the processes, reporting and workflows behind a SaaS revenue organization.",
+    "eligibility": "Pursuing or recently completing engineering, business, analytics, economics or a related degree. Comfortable with numbers, spreadsheets and structured operational problem-solving.",
+    "compensation": "Not specified in the reviewed employer listing",
+    "deadline": null,
+    "sourceUrl": "https://jobs.lever.co/Sprinto/856517f8-cc53-4d48-a5aa-137734e61489",
+    "reviewedAt": "2026-11-13T07:26:05Z",
+    "responsibilities": [
+      "Analyse operational metrics and customer trends.",
+      "Improve trackers, dashboards and cross-team workflows."
+    ]
+  },
+  {
+    "id": "sprinto-24691575-e46e-4d9f-a07a-137d1d84ea55",
+    "title": "Talent Acquisition Intern",
+    "organization": "Sprinto",
+    "type": "internship",
+    "location": "Bengaluru",
+    "mode": "Remote",
+    "category": "Business",
+    "skills": [
+      "Recruiting",
+      "Communication",
+      "Candidate coordination"
+    ],
+    "summary": "Support recruitment workflows and help create a smooth candidate experience.",
+    "eligibility": "Strong communication, organization and ownership; available to join immediately. Previous HR, recruiting, operations or ATS exposure is helpful rather than mandatory.",
+    "compensation": "Not specified in the reviewed employer listing",
+    "deadline": null,
+    "sourceUrl": "https://jobs.lever.co/Sprinto/24691575-e46e-4d9f-a07a-137d1d84ea55",
+    "reviewedAt": "2026-11-13T07:26:05Z",
+    "responsibilities": [
+      "Coordinate interviews and candidate communications.",
+      "Maintain hiring pipelines, documentation and recruiting reports."
+    ]
+  },
+  {
+    "id": "hevodata-6cbbe304-e065-4711-bf3e-756795d2bc2a",
+    "title": "SDE I",
+    "organization": "Hevo Data",
+    "type": "job",
+    "location": "Bangalore, India",
+    "mode": "On-site",
+    "category": "Technology",
+    "skills": [
+      "Java",
+      "Python",
+      "REST APIs"
+    ],
+    "summary": "Develop integrations and components for a data-pipeline platform.",
+    "eligibility": "CS B.Tech or equivalent; 0–1 years of software-development experience, with programming and data-structure fundamentals.",
+    "compensation": "Not specified in the reviewed employer listing",
+    "deadline": null,
+    "sourceUrl": "https://jobs.lever.co/hevodata/6cbbe304-e065-4711-bf3e-756795d2bc2a",
+    "reviewedAt": "2026-11-13T07:26:05Z",
+    "responsibilities": [
+      "Implement SaaS connectors and REST components.",
+      "Debug and improve integrations, tests and documentation."
+    ]
+  },
+  {
+    "id": "hevodata-96993ebc-609a-4733-84cd-e1a0c3e69fda",
+    "title": "Associate Customer Experience Engineer",
+    "organization": "Hevo Data",
+    "type": "job",
+    "location": "Pune, Maharashtra",
+    "mode": "On-site",
+    "category": "Technology",
+    "skills": [
+      "SQL",
+      "Databases",
+      "REST APIs"
+    ],
+    "summary": "Help customers diagnose technical problems across data integrations and cloud systems.",
+    "eligibility": "Strong SQL, database and troubleshooting skills. Technical product-support experience is expected; 1–3 years of related support work is preferred.",
+    "compensation": "Not specified in the reviewed employer listing",
+    "deadline": null,
+    "sourceUrl": "https://jobs.lever.co/hevodata/96993ebc-609a-4733-84cd-e1a0c3e69fda",
+    "reviewedAt": "2026-11-13T07:26:05Z",
+    "responsibilities": [
+      "Investigate integration and database incidents.",
+      "Document solutions and improve support automation."
+    ]
+  },
+  {
+    "id": "hevodata-8334030a-d6e3-46cc-96a4-f16c5412ed74",
+    "title": "Associate Technical Writer",
+    "organization": "Hevo Data",
+    "type": "job",
+    "location": "Bangalore, India",
+    "mode": "On-site",
+    "category": "Technology",
+    "skills": [
+      "Technical writing",
+      "Markdown",
+      "Git"
+    ],
+    "summary": "Create accurate product documentation using a docs-as-code workflow.",
+    "eligibility": "0–2 years in technical writing or related work; internships and academic writing are acceptable. Strong English, basic Git/Markdown and ability to verify technical content.",
+    "compensation": "Not specified in the reviewed employer listing",
+    "deadline": null,
+    "sourceUrl": "https://jobs.lever.co/hevodata/8334030a-d6e3-46cc-96a4-f16c5412ed74",
+    "reviewedAt": "2026-11-13T07:26:05Z",
+    "responsibilities": [
+      "Write and maintain product documentation.",
+      "Review technical accuracy with engineering and support teams."
+    ]
+  },
+  {
+    "id": "drivetrain-cd39cc4e-056e-444c-8c17-9f97e34ddbce",
+    "title": "Frontend Engineer",
+    "organization": "Drivetrain",
+    "type": "job",
+    "location": "India",
+    "mode": "Remote",
+    "category": "Technology",
+    "skills": [
+      "React",
+      "JavaScript",
+      "HTML",
+      "CSS"
+    ],
+    "summary": "Build interactive interfaces and data-visualization components for financial-planning software.",
+    "eligibility": "1–3 years of relevant frontend or UI engineering experience. JavaScript, React, HTML/CSS, debugging and data structures are important.",
+    "compensation": "Not specified in the reviewed employer listing",
+    "deadline": null,
+    "sourceUrl": "https://jobs.lever.co/drivetrain/cd39cc4e-056e-444c-8c17-9f97e34ddbce",
+    "reviewedAt": "2026-11-13T07:26:05Z",
+    "responsibilities": [
+      "Implement accessible, responsive interfaces.",
+      "Build reusable components and improve frontend performance."
+    ]
+  },
+  {
+    "id": "drivetrain-e2aafad8-a785-4515-9e3f-2b4981b727b8",
+    "title": "Backend Engineer",
+    "organization": "Drivetrain",
+    "type": "job",
+    "location": "India",
+    "mode": "Remote",
+    "category": "Technology",
+    "skills": [
+      "Java",
+      "Spring",
+      "Distributed systems"
+    ],
+    "summary": "Develop reliable backend services for a financial-planning platform.",
+    "eligibility": "At least three years of software-engineering experience; strong algorithms, data structures and distributed-systems fundamentals. Experience with the named stack is useful but not mandatory.",
+    "compensation": "Not specified in the reviewed employer listing",
+    "deadline": null,
+    "sourceUrl": "https://jobs.lever.co/drivetrain/e2aafad8-a785-4515-9e3f-2b4981b727b8",
+    "reviewedAt": "2026-11-13T07:26:05Z",
+    "responsibilities": [
+      "Develop maintainable and secure service components.",
+      "Review code, document changes and improve operational quality."
+    ]
+  },
+  {
+    "id": "drivetrain-83c03c6e-ab58-4760-b5eb-152ad46c7dee",
+    "title": "Associate - Growth Marketing",
+    "organization": "Drivetrain",
+    "type": "job",
+    "location": "India",
+    "mode": "Remote",
+    "category": "Marketing",
+    "skills": [
+      "Copywriting",
+      "Marketing automation",
+      "Analytics"
+    ],
+    "summary": "Support growth campaigns, marketing operations and event execution.",
+    "eligibility": "0–3 years of marketing experience, strong copywriting and experience with HubSpot or comparable marketing automation tools.",
+    "compensation": "Not specified in the reviewed employer listing",
+    "deadline": null,
+    "sourceUrl": "https://jobs.lever.co/drivetrain/83c03c6e-ab58-4760-b5eb-152ad46c7dee",
+    "reviewedAt": "2026-11-13T07:26:05Z",
+    "responsibilities": [
+      "Manage lead-nurture workflows and newsletters.",
+      "Coordinate webinars and track campaign performance."
+    ]
+  },
+  {
+    "id": "meesho-22c4a7a0-43be-439e-9473-2f8074b3e8d5",
+    "title": "Assistant Manager - Business Finance | CA pass -out 2026",
+    "organization": "Meesho",
+    "type": "job",
+    "location": "Bangalore, Karnataka",
+    "mode": "On-site",
+    "category": "Finance",
+    "skills": [
+      "Financial analysis",
+      "Budgeting",
+      "Accounting"
+    ],
+    "summary": "Partner with business units on planning, financial reviews and operational decision-making.",
+    "eligibility": "Qualified CA fresher from the 2025 or 2026 batch. Strong analytical, communication and problem-solving abilities.",
+    "compensation": "Not specified in the reviewed employer listing",
+    "deadline": null,
+    "sourceUrl": "https://jobs.lever.co/meesho/22c4a7a0-43be-439e-9473-2f8074b3e8d5",
+    "reviewedAt": "2026-11-13T07:26:05Z",
+    "responsibilities": [
+      "Compare financial plans with actual business performance.",
+      "Support month-end reviews and process automation."
+    ]
+  },
+  {
+    "id": "cred-913a6616-78c9-4ca3-8c92-67ddea8a80df",
+    "title": "fraud analyst",
+    "organization": "CRED",
+    "type": "job",
+    "location": "bengaluru",
+    "mode": "On-site",
+    "category": "Technology",
+    "skills": [
+      "SQL",
+      "Python",
+      "Fraud analytics"
+    ],
+    "summary": "Analyse suspicious activity and help strengthen fraud-detection systems.",
+    "eligibility": "1–2 years in analytics, data science, engineering or a related technical role. Strong SQL/Python, large-dataset analysis and basic ML knowledge.",
+    "compensation": "Not specified in the reviewed employer listing",
+    "deadline": null,
+    "sourceUrl": "https://jobs.lever.co/cred/913a6616-78c9-4ca3-8c92-67ddea8a80df",
+    "reviewedAt": "2026-11-13T07:26:05Z",
+    "responsibilities": [
+      "Investigate unusual patterns and test fraud hypotheses.",
+      "Work with engineering and product teams on detection controls."
+    ]
+  },
+  {
+    "id": "zeta-aa98c726-9336-4d99-be08-20050eaf309c",
+    "title": "Executive - IT Support",
+    "organization": "Zeta",
+    "type": "job",
+    "location": "Mumbai",
+    "mode": "On-site",
+    "category": "Technology",
+    "skills": [
+      "IT support",
+      "Windows",
+      "Networking"
+    ],
+    "summary": "Provide hands-on hardware, operating-system and network support to internal users.",
+    "eligibility": "Three or more years of relevant IT support experience; IT graduation preferred. Desktop, network and system troubleshooting skills, with willingness to work shifts.",
+    "compensation": "Not specified in the reviewed employer listing",
+    "deadline": null,
+    "sourceUrl": "https://jobs.lever.co/zeta/aa98c726-9336-4d99-be08-20050eaf309c",
+    "reviewedAt": "2026-11-13T07:26:05Z",
+    "responsibilities": [
+      "Resolve support requests within service commitments.",
+      "Maintain devices, inventories and technical support reports."
+    ]
+  },
+  {
+    "id": "sprinto-7e89750a-4013-4da8-9fa8-3e3112d9f46c",
+    "title": "Product Support Engineer",
+    "organization": "Sprinto",
+    "type": "job",
+    "location": "Bengaluru",
+    "mode": "Remote",
+    "category": "Technology",
+    "skills": [
+      "APIs",
+      "HTTP",
+      "Databases"
+    ],
+    "summary": "Investigate SaaS product issues and help customers resolve integrations and configuration problems.",
+    "eligibility": "Recent engineering graduate or up to one year of relevant experience. Understanding of APIs, HTTP, client-server systems and databases, with clear written communication.",
+    "compensation": "Not specified in the reviewed employer listing",
+    "deadline": null,
+    "sourceUrl": "https://jobs.lever.co/Sprinto/7e89750a-4013-4da8-9fa8-3e3112d9f46c",
+    "reviewedAt": "2026-11-13T07:26:05Z",
+    "responsibilities": [
+      "Reproduce and diagnose customer-reported issues.",
+      "Collaborate with engineering and improve support knowledge."
+    ]
+  },
+  {
+    "id": "sprinto-56d536c2-812c-49be-8421-6ad63c42a273",
+    "title": "Revenue Operations Analyst - Customer Experience & Partner Operations",
+    "organization": "Sprinto",
+    "type": "job",
+    "location": "Bengaluru",
+    "mode": "Remote",
+    "category": "Business",
+    "skills": [
+      "HubSpot",
+      "SaaS metrics",
+      "Reporting"
+    ],
+    "summary": "Maintain revenue operations processes and reporting for customer-success and partner teams.",
+    "eligibility": "3–5 years in revenue operations, preferably customer-success or partner operations. Practical HubSpot workflows and SaaS-metric reporting experience.",
+    "compensation": "Not specified in the reviewed employer listing",
+    "deadline": null,
+    "sourceUrl": "https://jobs.lever.co/Sprinto/56d536c2-812c-49be-8421-6ad63c42a273",
+    "reviewedAt": "2026-11-13T07:26:05Z",
+    "responsibilities": [
+      "Maintain CRM hygiene and operational workflows.",
+      "Prepare retention, renewal and partner-pipeline reports."
+    ]
+  },
+  {
+    "id": "sprinto-a1f3493f-9ff3-4198-a265-c88b71ba4f3d",
+    "title": "Senior Executive, Finance Operations",
+    "organization": "Sprinto",
+    "type": "job",
+    "location": "Bengaluru",
+    "mode": "Remote",
+    "category": "Finance",
+    "skills": [
+      "Accounts receivable",
+      "Reconciliation",
+      "Excel"
+    ],
+    "summary": "Own billing, collections and reconciliations in a SaaS finance operation.",
+    "eligibility": "3–5 years in order-to-cash, receivables or finance operations. Experience with billing systems, reconciliation and spreadsheets; SaaS experience preferred.",
+    "compensation": "Not specified in the reviewed employer listing",
+    "deadline": null,
+    "sourceUrl": "https://jobs.lever.co/Sprinto/a1f3493f-9ff3-4198-a265-c88b71ba4f3d",
+    "reviewedAt": "2026-11-13T07:26:05Z",
+    "responsibilities": [
+      "Manage invoicing, collections and receivables tracking.",
+      "Reconcile billing records and support month-end reporting."
+    ]
+  },
+  {
+    "id": "arm-2026-19167",
+    "title": "Associate Engineer – Physical Design",
+    "organization": "Arm",
+    "type": "job",
+    "location": "Bengaluru, India",
+    "mode": "Not specified",
+    "category": "Technology",
+    "skills": [
+      "ASIC implementation",
+      "Synthesis",
+      "Timing closure",
+      "Verilog"
+    ],
+    "summary": "Work on physical implementation and optimization of Arm-based cores and systems-on-chip.",
+    "eligibility": "Relevant electrical/computer engineering bachelor’s or master’s degree and 2+ years of ASIC implementation experience from RTL to GDS. Timing constraints, synthesis and timing closure skills are required.",
+    "compensation": "Not specified in the reviewed employer listing",
+    "deadline": null,
+    "sourceUrl": "https://careers.arm.com/en/job/bengaluru/associate-engineer/33099/101118903488",
+    "reviewedAt": "2026-11-13T07:26:05Z",
+    "responsibilities": [
+      "Implement and analyse cores and SoCs for timing, area and power.",
+      "Improve implementation methods and collaborate with RTL and physical-IP teams."
+    ]
   },
   {
     "id": "paypal-ai-2026",

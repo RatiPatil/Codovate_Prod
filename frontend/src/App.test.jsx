@@ -8,6 +8,7 @@ import {
 } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import App from "./App";
+import records from "./curatedOpportunities.json";
 import { SessionProvider } from "./session";
 vi.mock("./firebase", () => ({
   configured: false,
@@ -18,7 +19,7 @@ vi.mock("./firebase", () => ({
 }));
 beforeEach(() => {
   vi.spyOn(window, "scrollTo").mockImplementation(() => {});
-  vi.spyOn(Date, "now").mockReturnValue(Date.parse("2026-11-02T01:00:00Z"));
+  vi.spyOn(Date, "now").mockReturnValue(Date.parse(records[0].reviewedAt) + 3600000);
 });
 afterEach(() => {
   cleanup();
@@ -49,21 +50,21 @@ describe("main opportunity catalog without Firebase", () => {
   it("switches homepage opportunity categories", async () => {
     renderAt("/");
     fireEvent.click(
-      screen.getByRole("button", { name: "Hackathons", exact: true }),
+      screen.getByRole("button", { name: "Jobs", exact: true }),
     );
     await waitFor(() =>
-      expect(document.querySelectorAll(".opportunity-card")).toHaveLength(2),
+      expect(document.querySelectorAll(".opportunity-card")).toHaveLength(15),
     );
     expect(
       screen.getByRole("link", {
-        name: "PayPal AI Hackathon",
+        name: "Software Development Engineer I",
         exact: true,
       }),
     ).toBeInTheDocument();
   });
   it("filters by URL type and search, then opens a listing detail", async () => {
     renderAt("/explore?type=internship");
-    expect(document.querySelectorAll(".opportunity-card")).toHaveLength(3);
+    expect(document.querySelectorAll(".opportunity-card")).toHaveLength(15);
     fireEvent.change(
       screen.getByRole("textbox", { name: "Search by role, skill or company" }),
       { target: { value: "Stripe" } },

@@ -10,9 +10,9 @@ const checked = Date.parse(records[0].reviewedAt),
   now = checked + 3600000;
 it("puts sourced jobs, internships and hackathons in the main catalog", () => {
   const rows = mergeOpportunityCatalog([], now);
-  expect(rows).toHaveLength(7);
+  expect(rows).toHaveLength(30);
   expect(new Set(rows.map((o) => o.type))).toEqual(
-    new Set(["internship", "job", "hackathon"]),
+    new Set(["internship", "job"]),
   );
   expect(rows.every((o) => o.external && o.status === "published")).toBe(true);
 });
@@ -20,13 +20,13 @@ it("shares the same main-module filters for all records", () => {
   const rows = mergeOpportunityCatalog([], now);
   expect(
     filterOpportunities(rows, { type: "internship", openOnly: false }),
-  ).toHaveLength(3);
+  ).toHaveLength(15);
   expect(
     filterOpportunities(rows, { type: "job", openOnly: false }),
-  ).toHaveLength(2);
+  ).toHaveLength(15);
   expect(
     filterOpportunities(rows, { type: "hackathon", openOnly: false }),
-  ).toHaveLength(2);
+  ).toHaveLength(0);
   expect(
     filterOpportunities(rows, { search: "Stripe", openOnly: false }),
   ).toHaveLength(1);
@@ -54,6 +54,6 @@ it("does not invent job compensation or application deadlines", () => {
 it("preserves managed records and avoids ID duplicates", () => {
   const managed = { id: records[0].id, title: "Managed", status: "published" };
   const rows = mergeOpportunityCatalog([managed], now);
-  expect(rows).toHaveLength(7);
+  expect(rows).toHaveLength(30);
   expect(rows.find((r) => r.id === managed.id)).toBe(managed);
 });

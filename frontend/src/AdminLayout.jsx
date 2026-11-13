@@ -139,7 +139,7 @@ export const adminModules = [
   },
 ];
 export const adminModule = (id) =>
-  adminModules.find((m) => m.id === id) || adminModules[0];
+  adminModules.find((m) => m.id === id) || adminModules.find((m) => m.id === "overview");
 export function AdminLayout({ children }) {
   const { user, admin, logout } = useSession();
   const [params] = useSearchParams();

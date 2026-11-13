@@ -24,6 +24,10 @@ vi.mock("./session", () => ({
     profile: { name: "Alice", skills: ["React"] },
   }),
 }));
+vi.mock("./StudyFieldAdmin", async () => {
+  const {knownStudyFields} = await import("./studyFields");
+  return {useStudyFieldCatalog: () => ({fields: knownStudyFields, error: ""})};
+});
 vi.mock("./Community", () => ({
   Teams: () => <div>Recruiting teams module</div>,
 }));

@@ -16,10 +16,9 @@ export function externalOpportunity(row) {
     external: true,
     status: "published",
     stipend: null,
-    duration: "See official listing",
+    duration: row.duration || "See official listing",
     description: row.summary,
-    responsibilities:
-      "Review the employer or organizer page for the complete responsibilities and application requirements.",
+    responsibilities: row.responsibilities || [],
     createdAt: { seconds: Date.parse(row.reviewedAt) / 1000 },
   };
 }
