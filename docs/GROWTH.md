@@ -18,7 +18,7 @@ A transaction checks the deterministic booking ID and authoritative published fu
 
 Admin transitions: pending → confirmed / declined / cancelled; confirmed → completed / cancelled. Terminal decisions cannot reopen. Students may cancel pending/confirmed requests. Online confirmation requires an HTTPS meeting link. Confirmation is blocked after session start; completion requires the session to have ended. Meeting links and notes stay private. The calendar download is available on confirmed bookings; it does not send invitations or emails. Student browsing hides sessions after their start; admin lists and existing bookings retain them.
 
-Admins operate mentoring on behalf of mentors; there is no separate mentor login or automated matching. Admin authorization uses the existing verified custom claim, never an email match or browser-written role.
+Admins publish and confirm sessions. A real mentor can use their existing Codovate account to access only bookings whose mentorUid matches that account; no automated matching or mentor self-registration is provided. Admin authorization uses the existing verified custom claim, never an email match or browser-written role.
 
 ## Queries
 

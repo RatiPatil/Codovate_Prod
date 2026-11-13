@@ -131,7 +131,9 @@ export function useCareerPage(
       return;
     }
     const filters = [];
-    if (
+    if (kind === "mentorBookings" && scope === "assigned" && !admin)
+      filters.push(where("mentorUid", "==", uid));
+    else if (
       (["careerTasks", "mentorBookings", "notifications"].includes(kind) &&
         !admin) ||
       (["projects", "teams"].includes(kind) && scope === "mine") ||

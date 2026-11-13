@@ -334,8 +334,11 @@ service cloud.firestore {
   }
   function validMentorSession(d) {
    return d.keys().hasAll(['title','mentorName','topic','description','startsAt','durationMinutes','format','location','status','createdBy','createdAt','updatedAt'])
-    && d.keys().hasOnly(['title','mentorName','topic','description','startsAt','durationMinutes','format','location','status','createdBy','createdAt','updatedAt'])
+    && d.keys().hasOnly(['title','mentorName','topic','description','startsAt','durationMinutes','format','location','status','createdBy','createdAt','updatedAt','mentorUid','mentorRole','mentorBio','expertise','outcome','preparation'])
     && text(d.title,120) && d.title.size()>0 && text(d.mentorName,100) && d.mentorName.size()>0
+    && text(d.get('mentorUid',''),128) && text(d.get('mentorRole',''),100) && text(d.get('mentorBio',''),500)
+    && text(d.get('outcome',''),300) && text(d.get('preparation',''),300)
+    && validSkills(d.get('expertise',[])) && d.get('expertise',[]).size()<=6
     && d.topic in ['Interview practice','Career direction','Resume review','Project feedback','Team & hackathon guidance','Portfolio walkthrough']
     && text(d.description,2000) && d.description.size()>0 && d.startsAt is timestamp
     && d.durationMinutes is int && d.durationMinutes>=15 && d.durationMinutes<=120
@@ -347,6 +350,7 @@ service cloud.firestore {
    allow read: if resource.data.status == 'published' || admin();
    allow create: if admin() && validMentorSession(request.resource.data)
     && request.resource.data.createdBy == request.auth.uid && request.resource.data.startsAt>request.time
+    && (request.resource.data.get('mentorUid','')=='' || exists(/databases/$(database)/documents/users/$(request.resource.data.mentorUid)))
     && request.resource.data.createdAt == request.time && changedTime();
    allow update: if admin() && validMentorSession(request.resource.data) && changedTime()
     && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['description','status','updatedAt'])
@@ -355,7 +359,8 @@ service cloud.firestore {
   }
   function validBooking(d) {
    return d.keys().hasAll(['studentId','studentName','sessionId','sessionTitle','mentorName','startsAt','durationMinutes','format','location','note','status','meetingUrl','createdAt','updatedAt'])
-    && d.keys().hasOnly(['studentId','studentName','sessionId','sessionTitle','mentorName','startsAt','durationMinutes','format','location','note','status','meetingUrl','createdAt','updatedAt'])
+    && d.keys().hasOnly(['studentId','studentName','sessionId','sessionTitle','mentorName','startsAt','durationMinutes','format','location','note','status','meetingUrl','createdAt','updatedAt','mentorUid'])
+    && text(d.get('mentorUid',''),128)
     && text(d.studentId,128) && text(d.studentName,100) && d.studentName.size()>0 && text(d.sessionId,128) && d.sessionId.size()>0
     && text(d.sessionTitle,120) && text(d.mentorName,100) && d.startsAt is timestamp && d.durationMinutes is int && d.durationMinutes>=15 && d.durationMinutes<=120
     && d.format in ['Online','In person'] && text(d.location,180) && text(d.note,1000) && d.note.size()>0
@@ -366,11 +371,14 @@ service cloud.firestore {
    let session = get(/databases/$(database)/documents/mentorSessions/$(d.sessionId)).data;
    return session.status == 'published' && session.startsAt>request.time
     && d.sessionTitle == session.title && d.mentorName == session.mentorName && d.startsAt == session.startsAt
+    && d.get('mentorUid','') == session.get('mentorUid','')
     && d.durationMinutes == session.durationMinutes && d.format == session.format && d.location == session.location;
   }
+  function assignedMentor(b) { return signedIn() && b.get('mentorUid','')==request.auth.uid; }
+  function mentorParticipant(b) { return own(b.studentId) || assignedMentor(b) || admin(); }
   match /mentorBookings/{id} {
-   allow get: if signedIn() && (!exists(/databases/$(database)/documents/mentorBookings/$(id)) || own(resource.data.studentId) || admin());
-   allow list: if signedIn() && (own(resource.data.studentId) || admin());
+   allow get: if signedIn() && (!exists(/databases/$(database)/documents/mentorBookings/$(id)) || mentorParticipant(resource.data));
+   allow list: if signedIn() && (mentorParticipant(resource.data));
    allow create: if signedIn() && validBooking(request.resource.data) && matchingMentor(request.resource.data)
     && request.resource.data.studentId == request.auth.uid && id == request.auth.uid + '_' + request.resource.data.sessionId
     && request.resource.data.studentName == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.name
@@ -380,12 +388,27 @@ service cloud.firestore {
     && ((own(resource.data.studentId)
       && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','updatedAt'])
       && resource.data.status in ['pending','confirmed'] && request.resource.data.status == 'cancelled')
+     || (admin() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['mentorUid','updatedAt'])
+      && resource.data.get('mentorUid','')!='' && request.resource.data.get('mentorUid','')=='')
      || (admin() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','meetingUrl','updatedAt'])
       && ((resource.data.status == 'pending' && request.resource.data.status in ['confirmed','declined','cancelled'])
        || (resource.data.status == 'confirmed' && request.resource.data.status in ['completed','cancelled']))
       && (request.resource.data.status != 'confirmed' || (resource.data.startsAt>request.time && (resource.data.format != 'Online' || request.resource.data.meetingUrl.size()>0)))
       && (request.resource.data.status != 'completed' || resource.data.startsAt + duration.value(resource.data.durationMinutes,'m') <= request.time)));
    allow delete: if false;
+   match /messages/{messageId} {
+    function parentBooking() { return get(/databases/$(database)/documents/mentorBookings/$(id)).data; }
+    allow get: if signedIn() && mentorParticipant(parentBooking());
+    allow list: if signedIn() && mentorParticipant(parentBooking()) && request.query.limit<=200;
+    allow create: if signedIn() && mentorParticipant(parentBooking()) && parentBooking().status=='confirmed'
+     && request.resource.data.keys().hasAll(['senderId','senderRole','text','createdAt'])
+     && request.resource.data.keys().hasOnly(['senderId','senderRole','text','createdAt'])
+     && request.resource.data.senderId==request.auth.uid
+     && request.resource.data.senderRole==(own(parentBooking().studentId) ? 'student' : (assignedMentor(parentBooking()) ? 'mentor' : 'coordinator'))
+     && text(request.resource.data.text,2000) && request.resource.data.text.matches('[\\s\\S]*\\S[\\s\\S]*')
+     && request.resource.data.createdAt==request.time;
+    allow update, delete: if false;
+   }
   }
   function validMentorWorkspace(d, id) {
    return d.keys().hasAll(['bookingId','studentId','preparation','plan','completedActions','rating','reflection','createdAt','updatedAt'])
@@ -415,7 +438,7 @@ service cloud.firestore {
   }
   match /mentorWorkspaces/{id} {
    function booking() { return get(/databases/$(database)/documents/mentorBookings/$(id)).data; }
-   allow get: if signedIn() && (own(booking().studentId) || admin());
+   allow get: if signedIn() && mentorParticipant(booking());
    allow list, delete: if false;
    allow create: if signedIn() && validMentorWorkspace(request.resource.data,id)
     && request.resource.data.studentId == booking().studentId
@@ -424,12 +447,12 @@ service cloud.firestore {
     && ((own(booking().studentId) && booking().status in ['pending','confirmed','completed']
       && request.resource.data.plan == {'summary':'','actions':[]}
       && (booking().status=='completed' || (request.resource.data.rating==0 && request.resource.data.reflection=='')))
-     || (admin() && booking().status in ['confirmed','completed'] && emptyMentorStudentFields(request.resource.data)));
+     || ((admin() || assignedMentor(booking())) && booking().status in ['confirmed','completed'] && emptyMentorStudentFields(request.resource.data)));
    allow update: if signedIn() && validMentorWorkspace(request.resource.data,id) && changedTime()
     && ((own(booking().studentId) && booking().status in ['pending','confirmed','completed']
       && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['preparation','completedActions','rating','reflection','updatedAt'])
       && (booking().status=='completed' || !request.resource.data.diff(resource.data).affectedKeys().hasAny(['rating','reflection'])))
-     || (admin() && booking().status in ['confirmed','completed']
+     || ((admin() || assignedMentor(booking())) && booking().status in ['confirmed','completed']
       && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['plan','completedActions','updatedAt'])
       && request.resource.data.completedActions==[]));
   }

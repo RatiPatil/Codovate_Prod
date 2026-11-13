@@ -228,3 +228,56 @@ it("filters future sessions by focus without showing expired availability", () =
     screen.queryByRole("heading", { name: "Project interview" }),
   ).not.toBeInTheDocument();
 });
+
+it("shows ten clearly labeled, non-bookable demo profiles when the live catalog is empty", () => {
+  state.sessions = [];
+  open(<Mentoring />);
+  expect(screen.getAllByText("Demo profile")).toHaveLength(10);
+  expect(
+    screen.getByText("10 demo mentor profiles · examples only"),
+  ).toBeInTheDocument();
+  expect(
+    screen.queryByRole("button", { name: "Request a place" }),
+  ).not.toBeInTheDocument();
+});
+it("uses the same detail layout for a real administrator-created session", () => {
+  state.sessions = [
+    {
+      ...session,
+      mentorRole: "Project reviewer",
+      expertise: ["React"],
+      outcome: "A review checklist",
+      preparation: "Bring a diagram",
+    },
+  ];
+  open(<Mentoring />);
+  expect(screen.getByText("Project reviewer")).toBeInTheDocument();
+  expect(screen.getByText("React")).toBeInTheDocument();
+  expect(screen.getByText("A review checklist")).toBeInTheDocument();
+  expect(screen.queryByText("Demo profile")).not.toBeInTheDocument();
+  expect(
+    screen.getByRole("button", { name: "Request a place" }),
+  ).toBeInTheDocument();
+});
+it("assigned mentors have a separate view and cannot cancel student bookings", () => {
+  state.bookings = [
+    {
+      ...session,
+      id: "alice_m1",
+      sessionTitle: session.title,
+      status: "confirmed",
+      studentName: "Alice",
+      mentorUid: "alice",
+    },
+  ];
+  open(<Mentoring />, "/mentoring?view=assigned");
+  expect(
+    screen.getByRole("button", { name: "Assigned sessions" }),
+  ).toHaveAttribute("aria-pressed", "true");
+  expect(
+    screen.getByRole("button", { name: "Open workspace" }),
+  ).toBeInTheDocument();
+  expect(
+    screen.queryByRole("button", { name: "Cancel booking" }),
+  ).not.toBeInTheDocument();
+});

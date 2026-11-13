@@ -59,7 +59,34 @@ export function sessionInput(raw, now = Date.now()) {
     );
   if (location.length > 180 || (raw.format === "In person" && !location))
     throw new Error("Add the meeting location in up to 180 characters.");
+  const details = {};
+  for (const [key, max] of [
+    ["mentorRole", 100],
+    ["mentorBio", 500],
+    ["outcome", 300],
+    ["preparation", 300],
+    ["mentorUid", 128],
+  ]) {
+    const value = String(raw[key] || "").trim();
+    if (value.length > max)
+      throw new Error(`${key} exceeds ${max} characters.`);
+    if (value) details[key] = value;
+  }
+  const expertise = String(raw.expertise || "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  if (
+    expertise.length > 6 ||
+    new Set(expertise).size !== expertise.length ||
+    expertise.some((s) => s.length > 60 || /[\r\n]/.test(s))
+  )
+    throw new Error(
+      "Add up to six different expertise labels, each 60 characters or fewer.",
+    );
+  if (expertise.length) details.expertise = expertise;
   return {
+    ...details,
     title,
     mentorName,
     topic: raw.topic,
@@ -147,6 +174,7 @@ export async function requestMentoring(user, profile, sessionId, note) {
     tx.set(target, {
       studentId: user.uid,
       studentName: profile.name,
+      ...(s.mentorUid ? { mentorUid: s.mentorUid } : {}),
       sessionId,
       sessionTitle: s.title,
       mentorName: s.mentorName,
@@ -260,4 +288,13 @@ export function calendarEvent(item) {
   ]
     .map(foldCalendarLine)
     .join("\r\n");
+}
+
+// Revocation changes the parent booking, so workspace and message rules revoke
+// the mentor's access immediately without copying membership into child docs.
+export async function revokeBookingMentor(id) {
+  await updateDoc(doc(db, "mentorBookings", id), {
+    mentorUid: "",
+    updatedAt: serverTimestamp(),
+  });
 }

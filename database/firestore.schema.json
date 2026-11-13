@@ -1104,6 +1104,37 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 128
+        },
+        "mentorUid": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "mentorRole": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "mentorBio": {
+          "type": "string",
+          "maxLength": 500
+        },
+        "outcome": {
+          "type": "string",
+          "maxLength": 300
+        },
+        "preparation": {
+          "type": "string",
+          "maxLength": 300
+        },
+        "expertise": {
+          "type": "array",
+          "maxItems": 6,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60,
+            "pattern": "^[^\\r\\n]+$"
+          }
         }
       },
       "additionalProperties": false
@@ -1206,6 +1237,10 @@
               "maxLength": 500
             }
           ]
+        },
+        "mentorUid": {
+          "type": "string",
+          "maxLength": 128
         }
       },
       "additionalProperties": false
@@ -2970,6 +3005,40 @@
         }
       },
       "additionalProperties": false
+    },
+    "mentorMessages": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "senderId",
+        "senderRole",
+        "text",
+        "createdAt"
+      ],
+      "properties": {
+        "senderId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "senderRole": {
+          "enum": [
+            "student",
+            "mentor",
+            "coordinator"
+          ]
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000,
+          "pattern": "\\S"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
     }
   }
 }

@@ -1,3 +1,4 @@
+import MentorChat from "./MentorChat";
 import { useEffect, useState } from "react";
 import { doc, onSnapshot } from "firebase/firestore";
 import { CheckCircle2, Target, FileText, ArrowUpRight } from "lucide-react";
@@ -11,6 +12,7 @@ import {
 export default function MentorWorkspace({ booking, manage = false }) {
   const [state, setState] = useState({ loading: true, data: null, error: "" });
   const [busy, setBusy] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
   const [message, setMessage] = useState("");
   useEffect(() => {
     if (!db) {
@@ -75,8 +77,8 @@ export default function MentorWorkspace({ booking, manage = false }) {
         </div>
       </div>
       <p className="hint">
-        Visible only to you and authorized Codovate administrators coordinating
-        your mentor session.
+        Visible only to this student, the assigned mentor and authorized
+        Codovate administrators coordinating the session.
       </p>
       {closed && (
         <p className="hint">
@@ -229,7 +231,7 @@ export default function MentorWorkspace({ booking, manage = false }) {
         ) : (
           <p className="hint">
             Your mentor’s takeaway and next steps will appear here after the
-            administrator shares them.
+            mentor or coordinator shares them.
           </p>
         )}
       </div>
@@ -287,6 +289,15 @@ export default function MentorWorkspace({ booking, manage = false }) {
             </fieldset>
           </form>
         ))}
+      <button
+        className="button secondary"
+        type="button"
+        aria-expanded={chatOpen}
+        onClick={() => setChatOpen((v) => !v)}
+      >
+        {chatOpen ? "Close conversation" : "Open conversation"}
+      </button>
+      {chatOpen && <MentorChat key={booking.id} booking={booking} />}
       {message && (
         <p role="status" className="hint">
           {message}

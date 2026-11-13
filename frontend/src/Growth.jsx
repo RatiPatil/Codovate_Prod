@@ -1,4 +1,5 @@
 import MentorWorkspace from "./MentorWorkspace";
+import { mentorExamples } from "./mentorExamples";
 import { useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import {
@@ -23,6 +24,7 @@ import {
   saveAnnouncement,
   requestMentoring,
   changeBooking,
+  revokeBookingMentor,
   bookingTransitions,
   calendarEvent,
 } from "./growthData";
@@ -159,11 +161,12 @@ function MentoringScreen({ manage }) {
   const { user, profile } = useSession();
   const [params, setParams] = useSearchParams();
   const mine = !!user && !manage && params.get("view") === "mine";
+  const assigned = !!user && !manage && params.get("view") === "assigned";
   const data = useCareerPage(
-    mine ? "mentorBookings" : "mentorSessions",
+    mine || assigned ? "mentorBookings" : "mentorSessions",
     user?.uid,
     manage,
-    mine ? "mine" : "default",
+    assigned ? "assigned" : mine ? "mine" : "default",
   );
   const action = useAction(data.refresh),
     [editor, setEditor] = useState(false),
@@ -188,10 +191,21 @@ function MentoringScreen({ manage }) {
       setParams({ view: "mine" });
     }, "Request sent. The administrator will review your booking.");
   }
-  const items = data.items.filter(
+  const showExamples =
+    !mine &&
+    !assigned &&
+    !manage &&
+    !data.loading &&
+    !data.error &&
+    !data.items.some((s) => s.startsAt?.toMillis?.() > Date.now());
+  const items = (showExamples ? mentorExamples : data.items).filter(
     (s) =>
-      (mine || manage || s.startsAt?.toMillis?.() > Date.now()) &&
-      (topic === "All" || mine || s.topic === topic) &&
+      (mine ||
+        assigned ||
+        manage ||
+        s.demo ||
+        s.startsAt?.toMillis?.() > Date.now()) &&
+      (topic === "All" || mine || assigned || s.topic === topic) &&
       (s.title || s.sessionTitle || "")
         .concat(" ", s.mentorName, " ", s.topic || "")
         .toLowerCase()
@@ -237,8 +251,8 @@ function MentoringScreen({ manage }) {
           {!manage && (
             <>
               <button
-                aria-pressed={!mine}
-                className={!mine ? "active" : ""}
+                aria-pressed={!mine && !assigned}
+                className={!mine && !assigned ? "active" : ""}
                 onClick={() => {
                   setParams({});
                   setSelected(null);
@@ -247,16 +261,28 @@ function MentoringScreen({ manage }) {
                 Explore sessions
               </button>
               {user && (
-                <button
-                  aria-pressed={mine}
-                  className={mine ? "active" : ""}
-                  onClick={() => {
-                    setParams({ view: "mine" });
-                    setSelected(null);
-                  }}
-                >
-                  My bookings
-                </button>
+                <>
+                  <button
+                    aria-pressed={mine}
+                    className={mine ? "active" : ""}
+                    onClick={() => {
+                      setParams({ view: "mine" });
+                      setSelected(null);
+                    }}
+                  >
+                    My bookings
+                  </button>
+                  <button
+                    aria-pressed={assigned}
+                    className={assigned ? "active" : ""}
+                    onClick={() => {
+                      setParams({ view: "assigned" });
+                      setSelected(null);
+                    }}
+                  >
+                    Assigned sessions
+                  </button>
+                </>
               )}
             </>
           )}
@@ -286,6 +312,30 @@ function MentoringScreen({ manage }) {
               <label>
                 Mentor name
                 <input name="mentorName" required maxLength={100} />
+              </label>
+              <label>
+                Mentor role / specialization
+                <input
+                  name="mentorRole"
+                  maxLength={100}
+                  placeholder="For example: Full-stack project mentor"
+                />
+              </label>
+              <label>
+                Mentor account UID (optional)
+                <input
+                  name="mentorUid"
+                  maxLength={128}
+                  placeholder="Existing Codovate account UID"
+                />
+              </label>
+              <label>
+                Expertise (comma-separated)
+                <input
+                  name="expertise"
+                  maxLength={365}
+                  placeholder="React, Node.js, Database design"
+                />
               </label>
               <label>
                 Topic
@@ -329,6 +379,24 @@ function MentoringScreen({ manage }) {
                 </select>
               </label>
             </div>
+            <label>
+              About the mentor
+              <textarea name="mentorBio" maxLength={500} rows={2} />
+            </label>
+            <label>
+              What the student will leave with
+              <input name="outcome" maxLength={300} />
+            </label>
+            <label>
+              What to prepare
+              <input name="preparation" maxLength={300} />
+            </label>
+            <p className="hint">
+              Only assign a real mentor who has agreed to participate. Use their
+              existing account UID to give access to assigned bookings and
+              private conversations. Leave it blank for
+              administrator-coordinated sessions.
+            </p>
             <label>
               Session description
               <textarea name="description" required maxLength={2000} rows={4} />
@@ -374,15 +442,16 @@ function MentoringScreen({ manage }) {
             />
           </label>
           <p className="hint">
-            Your name and note are shared privately with platform
-            administrators. A request is not a confirmed appointment.
+            Your name and note are shared privately with the assigned mentor and
+            authorized Codovate administrators. A request is not a confirmed
+            appointment.
           </p>
           <button className="button" disabled={action.busy}>
             Send booking request
           </button>
         </form>
       )}
-      {!mine && (
+      {!mine && !assigned && (
         <label className="mentor-topic-filter">
           Session focus
           <select value={topic} onChange={(e) => setTopic(e.target.value)}>
@@ -394,7 +463,7 @@ function MentoringScreen({ manage }) {
         </label>
       )}
       <label className="directory-search">
-        Search loaded {mine ? "bookings" : "sessions"}
+        Search loaded {mine || assigned ? "bookings" : "sessions"}
         <input
           type="search"
           value={search}
@@ -402,22 +471,53 @@ function MentoringScreen({ manage }) {
           placeholder="Topic, session or mentor"
         />
       </label>
+      {showExamples && (
+        <div className="mentor-demo-notice" role="note">
+          <strong>10 demo mentor profiles · examples only</strong>
+          <p>
+            These fictional profiles preview the session layout. They cannot
+            receive bookings or messages. Real sessions published by your admin
+            use the same cards and replace these examples.
+          </p>
+        </div>
+      )}
+      {assigned && (
+        <p className="hint">
+          Only bookings assigned to your account appear here. Open a workspace
+          to review the student's question, reply privately, and share an action
+          plan after confirmation.
+        </p>
+      )}
       <div className="mentoring-grid">
         {items.map((s) => (
           <article className="panel mentor-card" key={s.id}>
             <div className="mentor-card-head">
               <span className="mentor-avatar">{s.mentorName?.slice(0, 1)}</span>
               <span className={"request-state state-" + s.status}>
-                {s.status}
+                {s.demo ? "Demo profile" : s.status}
               </span>
             </div>
             <span className="eyebrow">{s.topic || s.format}</span>
             <h2>{s.title || s.sessionTitle}</h2>
-            <p className="mentor-name">With {s.mentorName}</p>
+            <p className="mentor-name">
+              With {s.mentorName}
+              {s.demo ? " · fictional example" : ""}
+            </p>
+            {s.mentorRole && (
+              <strong className="mentor-specialty">{s.mentorRole}</strong>
+            )}
+            {s.mentorBio && <p className="community-summary">{s.mentorBio}</p>}
+            {s.expertise?.length > 0 && (
+              <div className="mentor-expertise">
+                {s.expertise.map((skill) => (
+                  <span key={skill}>{skill}</span>
+                ))}
+              </div>
+            )}
             <div className="mentor-facts">
               <span>
                 <CalendarDays size={15} />
-                {sessionTime(s)}
+                {s.demo ? "No real availability" : sessionTime(s)}
               </span>
               <span>
                 <Clock size={15} />
@@ -425,8 +525,29 @@ function MentoringScreen({ manage }) {
               </span>
             </div>
             <p className="community-summary">{s.description || s.note}</p>
+            {(s.outcome || s.preparation) && (
+              <details className="mentor-session-details">
+                <summary>Session details</summary>
+                {s.outcome && (
+                  <p>
+                    <strong>Your takeaway</strong>
+                    {s.outcome}
+                  </p>
+                )}
+                {s.preparation && (
+                  <p>
+                    <strong>Come prepared</strong>
+                    {s.preparation}
+                  </p>
+                )}
+              </details>
+            )}
             <p className="hint">{s.location}</p>
-            {mine ? (
+            {s.demo ? (
+              <span className="mentor-demo-label">
+                Example only · not bookable
+              </span>
+            ) : mine || assigned ? (
               <>
                 <div className="career-controls">
                   <button
@@ -444,7 +565,7 @@ function MentoringScreen({ manage }) {
                       <CalendarButton item={s} />
                     </>
                   )}
-                  {["pending", "confirmed"].includes(s.status) && (
+                  {!assigned && ["pending", "confirmed"].includes(s.status) && (
                     <button
                       className="text-link"
                       disabled={action.busy}
@@ -461,7 +582,7 @@ function MentoringScreen({ manage }) {
                   )}
                 </div>
                 {workspace === s.id && (
-                  <MentorWorkspace key={s.id} booking={s} />
+                  <MentorWorkspace key={s.id} booking={s} manage={assigned} />
                 )}
                 {s.status === "pending" && (
                   <p className="hint">
@@ -521,14 +642,18 @@ function MentoringScreen({ manage }) {
         <div className="career-empty">
           <GraduationCap />
           <h2>
-            {mine
-              ? "Your next conversation starts here."
-              : "Good guidance takes shape here."}
+            {assigned
+              ? "No assigned bookings yet."
+              : mine
+                ? "Your next conversation starts here."
+                : "Good guidance takes shape here."}
           </h2>
           <p>
-            {mine
-              ? "Request a mentor session to track it here."
-              : "No upcoming sessions match this view. Try another topic or check back for the next published session."}
+            {assigned
+              ? "An administrator must assign your account to a session. Its student bookings will then appear here."
+              : mine
+                ? "Request a mentor session to track it here."
+                : "No upcoming sessions match this view. Try another topic or check back for the next published session."}
           </p>
         </div>
       )}
@@ -562,7 +687,7 @@ export function BookingAdmin() {
       <p className="hint">
         Confirm requests only after checking mentor availability. Online
         confirmations require a meeting link, which remains private to that
-        student and administrators.
+        student, assigned mentor and authorized administrators.
       </p>
       <Feedback action={action} />
       <label className="directory-search">
@@ -596,6 +721,25 @@ export function BookingAdmin() {
                 </span>
               </div>
               <p className="community-summary">{b.note}</p>
+              {b.mentorUid && (
+                <button
+                  className="text-link"
+                  disabled={action.busy}
+                  onClick={() => {
+                    if (
+                      window.confirm(
+                        "Remove this mentor's access to the booking, notes and conversation? Administrators can still coordinate the session.",
+                      )
+                    )
+                      action.run(
+                        () => revokeBookingMentor(b.id),
+                        "Mentor access removed.",
+                      );
+                  }}
+                >
+                  Remove mentor access
+                </button>
+              )}
               <button
                 className="button secondary"
                 aria-expanded={workspace === b.id}

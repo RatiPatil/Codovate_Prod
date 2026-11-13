@@ -51,3 +51,18 @@ test("schema requires progress and feedback to refer to real content", () => {
     true,
   );
 });
+
+test("mentor conversation schema accepts plain text and rejects role spoofing or extra private data", () => {
+  const message = {
+    senderId: "alice",
+    senderRole: "student",
+    text: "Help with my diagram",
+    createdAt: "2026-11-13T00:00:00Z",
+  };
+  const valid = (d) => validateDocument("mentorMessages", "m1", d).valid;
+  assert.equal(valid(message), true);
+  assert.equal(valid({ ...message, senderRole: "admin" }), false);
+  assert.equal(valid({ ...message, text: " \n " }), false);
+  assert.equal(valid({ ...message, text: "x".repeat(2001) }), false);
+  assert.equal(valid({ ...message, mobile: "private" }), false);
+});
