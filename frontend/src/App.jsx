@@ -1,3 +1,4 @@
+import ProfileResume from "./ProfileResume";
 import { OpportunitySaveProvider, SaveOpportunityButton } from "./OpportunitySave";
 import { ProfileInterests, profileInterests } from "./ProfileInterests";
 import { MobilePrivacyFields, mobileFormValues } from "./MobilePrivacy";
@@ -37,7 +38,6 @@ import {
   SlidersHorizontal,
   ChevronRight,
   CheckCircle2,
-  Upload,
   Building2,
   Compass,
   Sparkles,
@@ -61,7 +61,7 @@ import {
   query,
   limit,
 } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { ref, getDownloadURL } from "firebase/storage";
 import { auth, db, storage, configured } from "./firebase";
 import { useSession } from "./session";
 import { withTimeout, safeReturnPath } from "./authSupport";
@@ -1515,8 +1515,7 @@ function Profile() {
   const { user, profile, admin, createProfile } = useSession();
   const [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
-    [message, setMessage] = useState(""),
-    [file, setFile] = useState(null);
+    [message, setMessage] = useState("");
   async function save(e) {
     e.preventDefault();
     const values = new FormData(e.currentTarget);
@@ -1557,16 +1556,6 @@ function Profile() {
     setError("");
     setMessage("");
     try {
-      data.resumeUrl = httpsLink(data.resumeUrl);
-      let resumePath = profile?.resumePath || "";
-      if (file) {
-        if (file.type !== "application/pdf" || file.size > 5 * 1024 * 1024)
-          throw new Error("Choose a PDF résumé under 5 MB.");
-        resumePath = "resumes/" + user.uid + "/resume.pdf";
-        await uploadBytes(ref(storage, resumePath), file, {
-          contentType: "application/pdf",
-        });
-      }
       if (!profile) await createProfile(user, data.name);
       await runTransaction(db, async (transaction) => {
         const profileRef = doc(db, "users", user.uid);
@@ -1592,7 +1581,6 @@ function Profile() {
         transaction.update(profileRef, {
           ...data,
           teammateCard: { photoUrl: current.data().teammateCard?.photoUrl || "", ...interests },
-          resumePath,
           updatedAt: serverTimestamp(),
         });
         transaction.set(doc(db, "mobileSharing", user.uid), {
@@ -1608,26 +1596,11 @@ function Profile() {
           updatedAt: serverTimestamp(),
         });
       });
-      setFile(null);
       setMessage("Your profile has been saved.");
     } catch (e) {
       setError(e.code ? errorMessage(e) : e.message);
     } finally {
       setBusy(false);
-    }
-  }
-  async function openResume() {
-    setError("");
-    try {
-      window.open(
-        profile.resumeUrl
-          ? httpsLink(profile.resumeUrl, true)
-          : await getDownloadURL(ref(storage, profile.resumePath)),
-        "_blank",
-        "noopener,noreferrer",
-      );
-    } catch (e) {
-      setError(errorMessage(e));
     }
   }
   return (
@@ -1746,61 +1719,6 @@ function Profile() {
           />
         </label>
         <ProfileInterests profile={profile} />
-        <h2>Your résumé</h2>
-        <p className="hint">
-          Use an HTTPS résumé link if file uploads are unavailable. PDF uploads
-          require Firebase Storage and are limited to 5 MB.
-        </p>
-        <label>
-          HTTPS résumé link (no upload required)
-          <input
-            name="resumeUrl"
-            type="url"
-            pattern="https://.*"
-            maxLength={500}
-            defaultValue={profile?.resumeUrl || ""}
-            placeholder="https://…"
-          />
-        </label>
-        <p className="hint">
-          Allow reviewers to open this link. It is stored in your private
-          profile and shared with administrators when you apply. Access to the
-          external file is controlled by its provider.
-        </p>
-        <label className="upload-zone">
-          <Upload size={22} />
-          <span>
-            {file
-              ? file.name
-              : profile?.resumePath
-                ? "Replace your résumé"
-                : "Choose your résumé PDF"}
-          </span>
-          <input
-            type="file"
-            name="resume"
-            accept="application/pdf"
-            onChange={(e) => setFile(e.target.files?.[0] || null)}
-          />
-        </label>
-        {file && (
-          <button
-            type="button"
-            className="text-link"
-            onClick={(e) => {
-              setFile(null);
-              const input = e.currentTarget.form.elements.namedItem("resume");
-              if (input) input.value = "";
-            }}
-          >
-            Clear selected PDF
-          </button>
-        )}
-        {(profile?.resumePath || profile?.resumeUrl) && (
-          <button type="button" className="text-link" onClick={openResume}>
-            View current résumé <ArrowUpRight size={15} />
-          </button>
-        )}
         <div className="form-footer">
           <p>Your profile is private to you and the platform administrator.</p>
           <button className="button" disabled={busy}>
@@ -1809,6 +1727,7 @@ function Profile() {
           </button>
         </div>
       </form>
+      <ProfileResume key={user.uid} user={user} profile={profile} />
     </Workspace>
   );
 }

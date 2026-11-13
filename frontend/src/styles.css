@@ -3713,3 +3713,11 @@ button:disabled:hover {
 .opportunity-save-control.compact .save-opportunity-error { position:absolute; z-index:2; right:0; width:220px; padding:10px; border:1px solid var(--border); border-radius:8px; background:white; }
 .career-portal-card[id] { scroll-margin-top:120px; }
 .career-portal-card:target { outline:2px solid var(--blue); outline-offset:4px; }
+
+.profile-resume { margin-top:24px; padding:28px; }
+.profile-resume fieldset { border:0; padding:0; margin:20px 0 0; min-width:0; display:grid; gap:16px; }
+.profile-resume legend { margin-bottom:12px; font-weight:600; }
+.resume-saved-state { display:flex; align-items:center; flex-wrap:wrap; gap:12px; padding:14px 0; color:var(--blue); }
+.profile-resume progress { width:100%; accent-color:var(--blue); }
+.profile-resume .button { justify-self:start; }
+@media(max-width:600px){.profile-resume{padding:22px;}}
