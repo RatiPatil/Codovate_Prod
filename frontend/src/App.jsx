@@ -477,6 +477,11 @@ function Home({ catalog }) {
       >
         {types.map((type) => {
           const Icon = categoryIcons[type];
+          const count = type === "hackathon"
+            ? hackathonDirectory.length + (liveCounts.counts[type] || 0)
+            : Number.isInteger(liveCounts.counts[type])
+              ? liveCounts.counts[type] + externalCounts[type]
+              : !configured ? externalCounts[type] : null;
           return (
             <Link
               className={"path-card " + type}
@@ -488,9 +493,7 @@ function Home({ catalog }) {
               </span>
               <h2>{typeLabel[type]}</h2>
               <span className="category-count" aria-live="polite">
-                <strong>{type === "hackathon"
-                  ? (hackathonDirectory.length + (liveCounts.counts[type] || 0)).toLocaleString("en-IN")
-                  : Number.isInteger(liveCounts.counts[type]) ? (liveCounts.counts[type] + externalCounts[type]).toLocaleString("en-IN") : !configured ? externalCounts[type].toLocaleString("en-IN") : liveCounts.loading ? "…" : "—"}</strong>
+                <strong>{count === null ? (liveCounts.loading ? "…" : "—") : count.toLocaleString("en-IN") + (count > 0 ? "+" : "")}</strong>
               </span>
               <ArrowUpRight size={16} />
             </Link>
