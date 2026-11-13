@@ -3636,3 +3636,10 @@ button:disabled:hover {
 
 .path-card .category-count { display: grid; gap: 3px; text-align: right; }
 .path-card .category-count strong { font-size: 20px; color: var(--ink, #222535); }
+
+.resume-source-actions { display:flex; flex-wrap:wrap; gap:12px; margin:20px 0; }
+.resume-source-actions .hint { flex-basis:100%; }
+.resume-section-guide, .resume-preview { margin:20px 0; }
+.resume-section-guide summary, .resume-preview summary { cursor:pointer; font-weight:600; }
+.resume-preview iframe { display:block; width:100%; height:700px; border:1px solid var(--border); border-radius:12px; margin-top:16px; background:white; }
+@media(max-width:600px){ .resume-source-actions .button { width:100%; } .resume-preview iframe { height:500px; } }

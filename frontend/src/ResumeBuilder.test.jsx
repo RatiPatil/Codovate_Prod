@@ -8,7 +8,12 @@ vi.mock("./session", () => ({
   }),
 }));
 import { ResumeBuilder } from "./ResumeBuilder";
-import { resumeHtml, resumeFromProfile } from "./resumeTemplates";
+import {
+  resumeHtml,
+  resumeFromProfile,
+  documentResumeTemplates,
+  originalResumeUrl,
+} from "./resumeTemplates";
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
@@ -73,4 +78,43 @@ it("orders templates meaningfully and omits empty sections", () => {
   expect(resumeFromProfile(null, "guest@example.test").email).toBe(
     "guest@example.test",
   );
+});
+
+it("provides all eight original editable Word documents with matching source links", () => {
+  expect(documentResumeTemplates).toHaveLength(8);
+  expect(new Set(documentResumeTemplates.map((t) => t.driveId)).size).toBe(8);
+  render(<ResumeBuilder />);
+  for (const template of documentResumeTemplates) {
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "Use " + template.name.toLowerCase(),
+      }),
+    );
+    expect(
+      screen.getByRole("link", { name: "Preview original" }),
+    ).toHaveAttribute("href", originalResumeUrl(template));
+    expect(
+      screen.getByRole("link", {
+        name: `Download editable Word (${template.fileType})`,
+      }),
+    ).toHaveAttribute("href", originalResumeUrl(template, true));
+    expect(screen.getByLabelText("Full name")).toHaveValue("Alice");
+    const html = resumeHtml(
+      { name: "Alice", projects: "My project", certifications: "Credential" },
+      template.id,
+    );
+    expect(html).toContain("My project");
+    expect(html).toContain("Credential");
+    expect(html).toContain('contenteditable="true"');
+  }
+});
+it("updates live preview with personal edits and keeps preview read-only", () => {
+  render(<ResumeBuilder />);
+  fireEvent.change(screen.getByLabelText("Full name"), {
+    target: { value: "Updated Student" },
+  });
+  const preview = screen.getByTitle("Résumé preview");
+  expect(preview.getAttribute("srcdoc")).toContain("Updated Student");
+  expect(preview.getAttribute("srcdoc")).toContain('contenteditable="false"');
+  expect(preview).toHaveAttribute("sandbox", "");
 });
