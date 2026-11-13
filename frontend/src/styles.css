@@ -3654,4 +3654,6 @@ button:disabled:hover {
 .project-reference-card details summary { cursor:pointer; font-weight:600; }
 .project-reference-card details > div { margin-top:12px; }
 .project-reference-actions { margin-top:auto; display:flex; gap:12px; align-items:center; }
+.project-library-pagination { display:flex; justify-content:center; margin-top:32px; }
+.project-library-pagination .button { min-height:48px; }
 @media(max-width:700px){ .project-library-filters { grid-template-columns:1fr; } }

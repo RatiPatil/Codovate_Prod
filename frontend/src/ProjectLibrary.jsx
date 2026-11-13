@@ -206,12 +206,14 @@ export function ProjectLibrary({ manage = false }) {
         </div>
       )}
       {!error && rows.length > shown && (
-        <button
-          className="button secondary"
-          onClick={() => setShown((value) => value + 12)}
-        >
-          Show more projects
-        </button>
+        <div className="project-library-pagination">
+          <button
+            className="button primary"
+            onClick={() => setShown((value) => value + 12)}
+          >
+            Show more projects
+          </button>
+        </div>
       )}
       {!error && !rows.length && (
         <p>
