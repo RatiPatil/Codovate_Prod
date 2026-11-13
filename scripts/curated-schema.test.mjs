@@ -16,6 +16,7 @@ test("curated snapshot matches its executable schema", () => {
   assert.equal(records.filter((r) => r.type === "internship").length, 15);
   assert.equal(records.filter((r) => r.type === "job").length, 15);
   assert.equal(new Set(records.map((r) => r.sourceUrl)).size, records.length);
+  assert.equal(records.filter((r) => r.type === "competition").length, 10);
   for (const r of records) {
     const u = new URL(r.sourceUrl);
     assert.equal(u.protocol, "https:");
@@ -26,6 +27,11 @@ test("curated snapshot matches its executable schema", () => {
         "www.amazon.jobs",
         "stripe.com",
         "jobs.lever.co",
+        "imaginecup.microsoft.com",
+        "brandstorm.loreal.com",
+        "www.kaggle.com",
+        "itch.io",
+        "ucup.ac",
         "careers.arm.com",
         "www.alehar.com",
         "www.stivate.com",

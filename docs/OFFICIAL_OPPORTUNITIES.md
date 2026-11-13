@@ -40,3 +40,11 @@ Several search results were excluded because the current source was closed or re
 | job | Sprinto | Revenue Operations Analyst - Customer Experience & Partner Operations | [Official listing](https://jobs.lever.co/Sprinto/56d536c2-812c-49be-8421-6ad63c42a273) |
 | job | Sprinto | Senior Executive, Finance Operations | [Official listing](https://jobs.lever.co/Sprinto/a1f3493f-9ff3-4198-a265-c88b71ba4f3d) |
 | job | Arm | Associate Engineer – Physical Design | [Official listing](https://careers.arm.com/en/job/bengaluru/associate-engineer/33099/101118903488) |
+
+## Competitions reviewed 13 November 2026
+
+Ten competitions are listed with original organizer/platform logos and primary application routes: Microsoft Imagine Cup 2027, L’Oréal Brandstorm 2027, the main Google Gemma 4 Developer Agent track, GitHub Game Off 2026, Universal Cup Winter Online Challenge 2026, and five ongoing Kaggle learning competitions (Titanic, House Prices, Digit Recognizer, Spaceship Titanic, LLM Classification Finetuning). Learning competitions are explicitly marked as practice with no cash award advertised. They are not presented as dated prize events.
+
+Imagine Cup closes 28 February 2027 at 23:59 CST (1 March 05:59 UTC); the official FAQ now requires an eligible incorporated startup. Brandstorm country deadlines are not invented. Gemma’s 25 November entry deadline is separate from its 2 December final submission deadline; the already-closed paper track is excluded. Game Off closes 1 December 21:37 UTC. Universal Cup explicitly announces open registration but does not state a separate registration cutoff; its published competition dates are shown as notes rather than invented entry deadlines.
+
+Logo sources are stored as `logoSource` on each record. Local Microsoft, Google and GitHub marks reuse the existing brand assets; Brandstorm and Universal Cup images were downloaded from their official page links, and Kaggle’s mark is its official favicon. Brandstorm’s white wordmark uses a dark background.

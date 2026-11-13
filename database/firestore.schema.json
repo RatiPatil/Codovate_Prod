@@ -2724,6 +2724,148 @@
         }
       },
       "additionalProperties": false
+    },
+    "projectLibrary": {
+      "type": "object",
+      "required": [
+        "id",
+        "title",
+        "sourceTitle",
+        "section",
+        "summary",
+        "skills",
+        "sourceUrl",
+        "sourceKind",
+        "notice",
+        "status",
+        "sourceDocument",
+        "sortOrder",
+        "createdAt",
+        "updatedAt"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^fyp-[a-f0-9]{20}$"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 180
+        },
+        "sourceTitle": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 180
+        },
+        "section": {
+          "enum": [
+            "Java",
+            "Core Java",
+            "Python",
+            "React",
+            "Full stack",
+            "Data science",
+            "C++",
+            "Machine learning",
+            "AI & machine learning",
+            "IoT",
+            "Blockchain",
+            "Language technology",
+            "EdTech",
+            "HealthTech"
+          ]
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "skills": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 6,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60
+          }
+        },
+        "sourceUrl": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string",
+              "format": "uri",
+              "maxLength": 1000,
+              "pattern": "^https://(github\\.com/|www\\.interviewbit\\.com/)"
+            }
+          ]
+        },
+        "sourceKind": {
+          "enum": [
+            "repository",
+            "collection",
+            "article",
+            "idea"
+          ]
+        },
+        "notice": {
+          "type": "string",
+          "maxLength": 400
+        },
+        "status": {
+          "enum": [
+            "published",
+            "hidden"
+          ]
+        },
+        "sourceDocument": {
+          "const": "Final Year Projects.docx"
+        },
+        "sortOrder": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "sourceKind": {
+                "const": "idea"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "sourceUrl": {
+                "type": "null"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "sourceUrl": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      ]
     }
   }
 }

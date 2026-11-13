@@ -101,7 +101,7 @@ afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
 });
-function open(component, path = "/projects") {
+function open(component, path = "/projects?view=showcase") {
   return render(
     <MemoryRouter initialEntries={[path]}>{component}</MemoryRouter>,
   );

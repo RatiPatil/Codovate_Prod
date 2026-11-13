@@ -11,6 +11,25 @@ export function ExternalDetails({ item }) {
           <span className="pill">
             {typeLabel[item.type]} · {item.category}
           </span>
+          {item.logo && (
+            <img
+              src={item.logo}
+              alt={item.organization + " logo"}
+              width="64"
+              height="64"
+              style={{
+                objectFit: "contain",
+                ...(item.logoDark
+                  ? {
+                      background: "#17151f",
+                      padding: "8px",
+                      borderRadius: "8px",
+                      width: "144px",
+                    }
+                  : {}),
+              }}
+            />
+          )}
           <h1>{item.title}</h1>
           <p className="organization">{item.organization}</p>
           <div className="detail-facts">
@@ -18,6 +37,9 @@ export function ExternalDetails({ item }) {
             <span>{item.mode}</span>
             <span>{item.compensation}</span>
           </div>
+          {item.competitionKind === "practice" && (
+            <p className="pill">Ongoing learning competition · no cash prize</p>
+          )}
           <h2>About the opportunity</h2>
           <p>{item.description}</p>
           {!!item.responsibilities?.length && (
@@ -52,6 +74,7 @@ export function ExternalDetails({ item }) {
         <aside className="panel apply-panel">
           <span className="eyebrow blue">YOUR NEXT STEP</span>
           <h2>Apply with {item.organization}</h2>
+          {item.deadlineNote && <p>{item.deadlineNote}</p>}
           <p>
             {item.deadline
               ? "Deadline: " +
@@ -63,7 +86,7 @@ export function ExternalDetails({ item }) {
                   minute: "2-digit",
                   timeZoneName: "short",
                 })
-              : "The employer has not stated a deadline. Check the official listing."}
+              : "No fixed entry deadline is stated here. Check the official listing and any country-specific dates."}
           </p>
           {!isOpen(item) && (
             <p className="notice">

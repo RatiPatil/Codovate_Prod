@@ -19,7 +19,7 @@ vi.mock("./firebase", () => ({
 }));
 beforeEach(() => {
   vi.spyOn(window, "scrollTo").mockImplementation(() => {});
-  vi.spyOn(Date, "now").mockReturnValue(Date.parse(records[0].reviewedAt) + 3600000);
+  vi.spyOn(Date, "now").mockReturnValue(Math.max(...records.map(row=>Date.parse(row.reviewedAt))) + 3600000);
 });
 afterEach(() => {
   cleanup();

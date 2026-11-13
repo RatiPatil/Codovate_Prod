@@ -843,6 +843,23 @@ service cloud.firestore {
     && request.resource.data.visibility in ['only_me','none','everyone','connections'] && changedTime();
    allow delete: if own(uid);
   }
+  function validProjectReference(d) {
+   return d.keys().hasAll(['id','title','sourceTitle','section','summary','skills','sourceUrl','sourceKind','notice','status','sourceDocument','sortOrder','createdAt','updatedAt'])
+    && d.keys().hasOnly(['id','title','sourceTitle','section','summary','skills','sourceUrl','sourceKind','notice','status','sourceDocument','sortOrder','createdAt','updatedAt'])
+    && d.id is string && d.id.matches('fyp-[a-f0-9]{20}') && text(d.title,180) && d.title.size()>0 && text(d.sourceTitle,180) && d.sourceTitle.size()>0
+    && d.section in ['Java', 'Core Java', 'Python', 'React', 'Full stack', 'Data science', 'C++', 'Machine learning', 'AI & machine learning', 'IoT', 'Blockchain', 'Language technology', 'EdTech', 'HealthTech'] && text(d.summary,500) && d.summary.size()>0 && validSkills(d.skills) && d.skills.size()>0 && d.skills.size()<=6
+    && d.sourceKind in ['repository','collection','article','idea']
+    && (d.sourceKind=='idea' ? d.sourceUrl==null : (d.sourceUrl is string && d.sourceUrl.size()<=1000 && d.sourceUrl.matches('https://(github[.]com/|www[.]interviewbit[.]com/).*')))
+    && text(d.notice,400) && d.status in ['published','hidden'] && d.sourceDocument=='Final Year Projects.docx'
+    && d.sortOrder is int && d.sortOrder>=0 && d.sortOrder<=10000 && d.createdAt is timestamp && d.updatedAt is timestamp;
+  }
+  // Curated references contain no student data. Hidden is a display state, not a privacy setting.
+  match /projectLibrary/{id} {
+   allow read: if true;
+   allow create: if admin() && validProjectReference(request.resource.data) && request.resource.data.id==id && request.resource.data.createdAt==request.time && changedTime();
+   allow update: if admin() && validProjectReference(request.resource.data) && request.resource.data.id==id && request.resource.data.createdAt==resource.data.createdAt && changedTime();
+   allow delete: if admin();
+  }
   match /{document=**} { allow read, write: if false; }
  }
 }

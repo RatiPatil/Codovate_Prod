@@ -1,3 +1,4 @@
+import { ProjectLibrary } from "./ProjectLibrary";
 import { useEffect, useRef, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import {
@@ -247,6 +248,8 @@ export function Projects({ manage = false }) {
 function ProjectsScreen({ manage = false }) {
   const { user, profile } = useSession();
   const [params, setParams] = useSearchParams();
+  const libraryActive =
+    params.get("view") === "library" || (!manage && !params.get("view"));
   const scope = manage
     ? "all"
     : params.get("view") === "mine"
@@ -301,42 +304,79 @@ function ProjectsScreen({ manage = false }) {
   );
   return (
     <>
-      <section className="community-hero project-hero">
-        <div>
-          <span className="eyebrow">PROOF OF WHAT YOU CAN DO</span>
-          <h2>
-            Let your work
-            <br />
-            <em>do the talking.</em>
-          </h2>
-          <p>
-            A portfolio starts with one project. Share your approach, not just
-            the result.
-          </p>
-        </div>
-        <div className="community-art" aria-hidden="true">
-          <div className="art-sheet sheet-back" />
-          <div className="art-sheet sheet-front">
-            <Code2 size={38} />
-            <span />
-            <span />
-            <i />
-          </div>
-          <span className="art-badge">
-            <Layers size={19} />
-            Built by you
-          </span>
-        </div>
-      </section>
+      {!libraryActive && (
+        <>
+          <section className="community-hero project-hero">
+            <div>
+              <span className="eyebrow">PROOF OF WHAT YOU CAN DO</span>
+              <h2>
+                {libraryActive ? (
+                  <>
+                    Your next idea.
+                    <br />
+                    <em>Your own solution.</em>
+                  </>
+                ) : (
+                  <>
+                    Let your work
+                    <br />
+                    <em>do the talking.</em>
+                  </>
+                )}
+              </h2>
+              <p>
+                A portfolio starts with one project. Share your approach, not
+                just the result.
+              </p>
+            </div>
+            <div className="community-art" aria-hidden="true">
+              <div className="art-sheet sheet-back" />
+              <div className="art-sheet sheet-front">
+                <Code2 size={38} />
+                <span />
+                <span />
+                <i />
+              </div>
+              <span className="art-badge">
+                <Layers size={19} />
+                Built by you
+              </span>
+            </div>
+          </section>
+        </>
+      )}
       <div className="community-toolbar">
         <div className="type-tabs" role="group" aria-label="Project views">
+          <button
+            className={libraryActive ? "active" : ""}
+            aria-pressed={libraryActive}
+            onClick={() => {
+              const next = new URLSearchParams(params);
+              next.set("view", "library");
+              setParams(next);
+              setEditor(null);
+            }}
+          >
+            Project library
+          </button>
+          {manage && libraryActive && (
+            <button
+              onClick={() => {
+                const next = new URLSearchParams(params);
+                next.set("view", "showcase");
+                setParams(next);
+              }}
+            >
+              Student projects
+            </button>
+          )}
           {!manage && (
             <>
               <button
-                className={scope === "public" ? "active" : ""}
-                aria-pressed={scope === "public"}
+                className={!libraryActive && scope === "public" ? "active" : ""}
+                aria-pressed={!libraryActive && scope === "public"}
                 onClick={() => {
-                  setParams({});
+                  setParams({ view: "showcase" });
                   setEditor(null);
                 }}
               >
@@ -361,7 +401,10 @@ function ProjectsScreen({ manage = false }) {
           <button
             className="button"
             disabled={!configured || busy}
-            onClick={() => setEditor({})}
+            onClick={() => {
+              setEditor({});
+              if (libraryActive) setParams({ view: "mine" });
+            }}
           >
             <Plus size={16} />
             Add project
@@ -377,142 +420,157 @@ function ProjectsScreen({ manage = false }) {
           </Link>
         )}
       </div>
-      <Feedback error={error} message={message} />
-      {!configured && (
-        <p className="notice">
-          Connect Firebase to save projects and browse the student showcase.
-        </p>
-      )}
-      {editor && (
-        <CommunityForm
-          key={editor.id || "new"}
-          kind="projects"
-          editing={editor.id ? editor : null}
-          onSubmit={save}
-          busy={busy}
-          onCancel={() => setEditor(null)}
-        />
-      )}
-      <div className="library-filters">
-        <label>
-          Search loaded projects
-          <input
-            type="search"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Project, skill or idea"
-          />
-        </label>
-        <label>
-          Project category
-          <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-          >
-            {["All", ...projectCategories].map((c) => (
-              <option key={c}>{c}</option>
-            ))}
-          </select>
-        </label>
-      </div>
-      <div className="project-grid">
-        {items.map((p) => (
-          <article className="panel project-card" key={p.id}>
-            <div
-              className={
-                "project-cover cover-" + projectCategories.indexOf(p.category)
-              }
-              aria-hidden="true"
-            >
-              <Code2 size={42} />
-              <span>{p.category}</span>
-            </div>
-            <div className="project-body">
-              <div className="project-meta">
-                <span>{p.studentName}</span>
-                <span>
-                  {p.visibility === "private" ? (
-                    <LockKeyhole size={13} />
-                  ) : (
-                    <Globe2 size={13} />
-                  )}{" "}
-                  {p.moderation === "hidden" ? "Hidden by admin" : p.visibility}
-                </span>
-              </div>
-              <Link className="project-title-link" to={"/projects/" + p.id}>
-                <h2>{p.title}</h2>
-              </Link>
-              <p className="community-summary">{p.summary}</p>
-              <div className="skill-row">
-                {p.skills.map((s) => (
-                  <span key={s}>{s}</span>
+      {libraryActive ? (
+        <ProjectLibrary manage={manage} />
+      ) : (
+        <>
+          <Feedback error={error} message={message} />
+          {!configured && (
+            <p className="notice">
+              Connect Firebase to save projects and browse the student showcase.
+            </p>
+          )}
+          {editor && (
+            <CommunityForm
+              key={editor.id || "new"}
+              kind="projects"
+              editing={editor.id ? editor : null}
+              onSubmit={save}
+              busy={busy}
+              onCancel={() => setEditor(null)}
+            />
+          )}
+          <div className="library-filters">
+            <label>
+              Search loaded projects
+              <input
+                type="search"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Project, skill or idea"
+              />
+            </label>
+            <label>
+              Project category
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+              >
+                {["All", ...projectCategories].map((c) => (
+                  <option key={c}>{c}</option>
                 ))}
-              </div>
-              <div className="project-links">
-                <SafeLink url={p.repoUrl}>Repository</SafeLink>
-                <SafeLink url={p.demoUrl}>Live demo</SafeLink>
-              </div>
-              {(p.studentId === user?.uid || manage) && (
-                <div className="card-actions">
-                  <button
-                    disabled={busy || (p.moderation === "hidden" && !manage)}
-                    onClick={() => setEditor(p)}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    disabled={busy}
-                    onClick={() => {
-                      if (window.confirm("Permanently delete this project?"))
-                        act(async () => {
-                          await deleteProject(p.id);
-                          if (editor?.id === p.id) setEditor(null);
-                        }, "Project deleted.");
-                    }}
-                  >
-                    Delete
-                  </button>
-                  {manage && (
-                    <button
-                      disabled={busy}
-                      onClick={() =>
-                        act(
-                          () =>
-                            moderateCommunity(
-                              "projects",
-                              p.id,
-                              p.moderation === "hidden" ? "visible" : "hidden",
-                            ),
-                          "Moderation updated.",
-                        )
-                      }
-                    >
-                      <ShieldCheck size={14} />
-                      {p.moderation === "hidden" ? "Restore" : "Hide"}
-                    </button>
+              </select>
+            </label>
+          </div>
+          <div className="project-grid">
+            {items.map((p) => (
+              <article className="panel project-card" key={p.id}>
+                <div
+                  className={
+                    "project-cover cover-" +
+                    projectCategories.indexOf(p.category)
+                  }
+                  aria-hidden="true"
+                >
+                  <Code2 size={42} />
+                  <span>{p.category}</span>
+                </div>
+                <div className="project-body">
+                  <div className="project-meta">
+                    <span>{p.studentName}</span>
+                    <span>
+                      {p.visibility === "private" ? (
+                        <LockKeyhole size={13} />
+                      ) : (
+                        <Globe2 size={13} />
+                      )}{" "}
+                      {p.moderation === "hidden"
+                        ? "Hidden by admin"
+                        : p.visibility}
+                    </span>
+                  </div>
+                  <Link className="project-title-link" to={"/projects/" + p.id}>
+                    <h2>{p.title}</h2>
+                  </Link>
+                  <p className="community-summary">{p.summary}</p>
+                  <div className="skill-row">
+                    {p.skills.map((s) => (
+                      <span key={s}>{s}</span>
+                    ))}
+                  </div>
+                  <div className="project-links">
+                    <SafeLink url={p.repoUrl}>Repository</SafeLink>
+                    <SafeLink url={p.demoUrl}>Live demo</SafeLink>
+                  </div>
+                  {(p.studentId === user?.uid || manage) && (
+                    <div className="card-actions">
+                      <button
+                        disabled={
+                          busy || (p.moderation === "hidden" && !manage)
+                        }
+                        onClick={() => setEditor(p)}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        disabled={busy}
+                        onClick={() => {
+                          if (
+                            window.confirm("Permanently delete this project?")
+                          )
+                            act(async () => {
+                              await deleteProject(p.id);
+                              if (editor?.id === p.id) setEditor(null);
+                            }, "Project deleted.");
+                        }}
+                      >
+                        Delete
+                      </button>
+                      {manage && (
+                        <button
+                          disabled={busy}
+                          onClick={() =>
+                            act(
+                              () =>
+                                moderateCommunity(
+                                  "projects",
+                                  p.id,
+                                  p.moderation === "hidden"
+                                    ? "visible"
+                                    : "hidden",
+                                ),
+                              "Moderation updated.",
+                            )
+                          }
+                        >
+                          <ShieldCheck size={14} />
+                          {p.moderation === "hidden" ? "Restore" : "Hide"}
+                        </button>
+                      )}
+                    </div>
                   )}
                 </div>
-              )}
+              </article>
+            ))}
+          </div>
+          {!items.length && !data.loading && !data.error && (
+            <div className="career-empty">
+              <Code2 />
+              <h2>
+                {scope === "mine"
+                  ? "Your first project belongs here."
+                  : "Great work starts somewhere."}
+              </h2>
+              <p>
+                {scope === "mine"
+                  ? "Add what you built, the skills you used and a link to try it."
+                  : "No matching projects in the loaded results. Try another filter or load more."}
+              </p>
             </div>
-          </article>
-        ))}
-      </div>
-      {!items.length && !data.loading && !data.error && (
-        <div className="career-empty">
-          <Code2 />
-          <h2>
-            {scope === "mine"
-              ? "Your first project belongs here."
-              : "Great work starts somewhere."}
-          </h2>
-          <p>
-            {scope === "mine"
-              ? "Add what you built, the skills you used and a link to try it."
-              : "No matching projects in the loaded results. Try another filter or load more."}
-          </p>
-        </div>
+          )}
+          <Pagination data={data} />
+        </>
       )}
-      <Pagination data={data} />
     </>
   );
 }
@@ -659,7 +717,9 @@ function TeamRequests({ team, incoming = false, manage = false, onClose }) {
             )}
             {r.status === "accepted" && (
               <p className="hint">
-                The owner accepted this introduction. Open My groups in the collaboration hub to create a private workspace and invite teammates.
+                The owner accepted this introduction. Open My groups in the
+                collaboration hub to create a private workspace and invite
+                teammates.
               </p>
             )}
           </article>

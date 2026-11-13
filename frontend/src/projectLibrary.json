@@ -1,0 +1,1703 @@
+[
+  {
+    "id": "fyp-be9fb50b211f515042bc",
+    "title": "Password Generator using Java",
+    "sourceTitle": "Password Generator using Java",
+    "section": "Java",
+    "summary": "Generate passwords and explore length and character options.",
+    "skills": [
+      "Java",
+      "Object-oriented programming"
+    ],
+    "sourceUrl": "https://github.com/KZarzour/Password-Generator",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 0,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-4bfca1a1d8c17a8afedd",
+    "title": "Online Survey System",
+    "sourceTitle": "Online Survey System",
+    "section": "Java",
+    "summary": "Create questionnaires, collect responses and summarize results.",
+    "skills": [
+      "Java",
+      "Object-oriented programming"
+    ],
+    "sourceUrl": "https://github.com/kodekracker/Online-Survey-System",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 1,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-2c3c61273fdd1eff5b2e",
+    "title": "Online Resume Builder",
+    "sourceTitle": "Online Resume Builder",
+    "section": "Java",
+    "summary": "Turn structured personal details into a résumé document.",
+    "skills": [
+      "Java",
+      "Object-oriented programming"
+    ],
+    "sourceUrl": "https://github.com/meetakbari/CV-Resume-Builder",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 2,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-5622ec385e6d1b9c6d2f",
+    "title": "Snake Game using Java",
+    "sourceTitle": "Snake Game using Java",
+    "section": "Java",
+    "summary": "Build a game loop with movement, collision detection and scoring.",
+    "skills": [
+      "Java",
+      "Object-oriented programming"
+    ],
+    "sourceUrl": "https://github.com/janbodnar/Java-Snake-Game",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 3,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-b834b372d8ed700ce8e9",
+    "title": "Data Visualization Software",
+    "sourceTitle": "Data Visualization Software",
+    "section": "Java",
+    "summary": "Define a small working prototype, document design choices and test its main workflows.",
+    "skills": [
+      "Java",
+      "Object-oriented programming"
+    ],
+    "sourceUrl": "https://github.com/gavalian/groot",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 4,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-9bfb45890c6cee00883f",
+    "title": "Electricity Billing System",
+    "sourceTitle": "Electricity Billing System",
+    "section": "Java",
+    "summary": "Define a small working prototype, document design choices and test its main workflows.",
+    "skills": [
+      "Java",
+      "Object-oriented programming"
+    ],
+    "sourceUrl": "https://github.com/Adarsh9616/Electricity_Billing_System",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 5,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-0abab2ebeed814567291",
+    "title": "Web Medical Management System",
+    "sourceTitle": "Web Medical Management System",
+    "section": "Java",
+    "summary": "Model records, workflows and reporting for a management problem.",
+    "skills": [
+      "Java",
+      "Object-oriented programming"
+    ],
+    "sourceUrl": "https://github.com/mokarrom/medical-center",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 6,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-23eb009ba821dbaf177b",
+    "title": "Supply Chain Management System",
+    "sourceTitle": "Supply Chain Management System",
+    "section": "Java",
+    "summary": "Model records, workflows and reporting for a management problem.",
+    "skills": [
+      "Java",
+      "Object-oriented programming"
+    ],
+    "sourceUrl": "https://github.com/sonnyhcl/Backend",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 7,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-3a3653e856e1b0b0b2b3",
+    "title": "Exam Seating Arrangement System in Java",
+    "sourceTitle": "Exam Seating Arrangement System in Java",
+    "section": "Java",
+    "summary": "Define a small working prototype, document design choices and test its main workflows.",
+    "skills": [
+      "Java",
+      "Object-oriented programming"
+    ],
+    "sourceUrl": "https://github.com/chabedalam11/Exam-Seating-Arrangement-System-Using-JSP-Servlet",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 8,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-0dcce3464f0c69722e0e",
+    "title": "Wordcount Tools in Java",
+    "sourceTitle": "Wordcount Tools in Java",
+    "section": "Java",
+    "summary": "Count words and compare text-processing approaches.",
+    "skills": [
+      "Java",
+      "Object-oriented programming"
+    ],
+    "sourceUrl": "https://github.com/lucassrg/javawc",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 9,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-3bda2f03d8cadd77804d",
+    "title": "Customer Relationship Management System",
+    "sourceTitle": "Create a Consumer Relationship Management System",
+    "section": "Core Java",
+    "summary": "Model records, workflows and reporting for a management problem.",
+    "skills": [
+      "Java",
+      "Object-oriented programming"
+    ],
+    "sourceUrl": "https://github.com/machowina/CRM",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 10,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-33ecc79fe9586a063f36",
+    "title": "bFit Cognitive and Memory Testing Game",
+    "sourceTitle": "bFit Cognitive and Memory Testing Game",
+    "section": "Core Java",
+    "summary": "Build an interactive game with clear rules and progress feedback.",
+    "skills": [
+      "Java",
+      "Object-oriented programming"
+    ],
+    "sourceUrl": "https://github.com/Dk35840/bFit-A-Cognitive-Game",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 11,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-bdef28d300636a8484ed",
+    "title": "Network Packet Sniffer Analyzer Software",
+    "sourceTitle": "Network Packet Sniffer Analyzer Software",
+    "section": "Core Java",
+    "summary": "Explore packet capture and network traffic analysis in a lab.",
+    "skills": [
+      "Java",
+      "Object-oriented programming"
+    ],
+    "sourceUrl": "https://github.com/HassanAdamm/packet-sniffer",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 12,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-19533590fe110d4b2ac0",
+    "title": "Internet Service Provider Automation System",
+    "sourceTitle": "Internet Service Provider Automation System",
+    "section": "Core Java",
+    "summary": "Define a small working prototype, document design choices and test its main workflows.",
+    "skills": [
+      "Java",
+      "Object-oriented programming"
+    ],
+    "sourceUrl": "https://github.com/nitishr7/ISP-Java",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 13,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-406fbb7bd4594328f956",
+    "title": "Face Recognition Practice System",
+    "sourceTitle": "Create a Criminal Face Detection System",
+    "section": "Core Java",
+    "summary": "Explore recognition methods and measure their performance.",
+    "skills": [
+      "Java",
+      "Object-oriented programming"
+    ],
+    "sourceUrl": "https://github.com/prasadus92/Face-Recognition",
+    "sourceKind": "repository",
+    "notice": "The source uses a criminal-face label. Treat this as face-recognition practice; appearance cannot establish criminality.",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 14,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-97e990c8f7751a6634cd",
+    "title": "Weather App",
+    "sourceTitle": "Weather App",
+    "section": "Python",
+    "summary": "Present weather information with a clear location-based interface.",
+    "skills": [
+      "Python"
+    ],
+    "sourceUrl": "https://github.com/PrathameshDhande22/Weather-Desktop-App",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 15,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-2a3ab970bcb7cdba9cf9",
+    "title": "Movie Recommendation App",
+    "sourceTitle": "Movie Recommendation App",
+    "section": "Python",
+    "summary": "Explore movie discovery, search or recommendation workflows.",
+    "skills": [
+      "Python"
+    ],
+    "sourceUrl": "https://github.com/rudrajikadra/Movie-Recommendation-System-Using-Python-and-Pandas",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 16,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-0caf081464068371ca73",
+    "title": "AI-Powered Personal Assistance",
+    "sourceTitle": "AI-Powered Personal Assistance",
+    "section": "Python",
+    "summary": "Define a small working prototype, document design choices and test its main workflows.",
+    "skills": [
+      "Python"
+    ],
+    "sourceUrl": null,
+    "sourceKind": "idea",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 17,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-f04ba75dbc7c01f1d2e3",
+    "title": "Quiz Application",
+    "sourceTitle": "Quiz Application",
+    "section": "Python",
+    "summary": "Create questions, validate answers and calculate results.",
+    "skills": [
+      "Python"
+    ],
+    "sourceUrl": "https://github.com/santosh2201/quiz-application",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 18,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-6e1334d56a7ddbdbe54d",
+    "title": "Building Chatbot",
+    "sourceTitle": "Building Chatbot",
+    "section": "Python",
+    "summary": "Build a conversational interface and study message or response handling.",
+    "skills": [
+      "Python"
+    ],
+    "sourceUrl": "https://github.com/ahmadfaizalbh/Chatbot",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 19,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-60dd95b6ebab05bfa611",
+    "title": "Face Mask Detection",
+    "sourceTitle": "Face Mask Detection",
+    "section": "Python",
+    "summary": "Explore data inputs and evaluation methods for a detection problem.",
+    "skills": [
+      "Python"
+    ],
+    "sourceUrl": "https://github.com/chandrikadeb7/Face-Mask-Detection",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 20,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-12c8dd5bcc789ec3febd",
+    "title": "Plagiarism Checker",
+    "sourceTitle": "Plagiarism Checker",
+    "section": "Python",
+    "summary": "Compare text similarity methods and evaluate their limitations.",
+    "skills": [
+      "Python"
+    ],
+    "sourceUrl": "https://github.com/Kalebu/Plagiarism-checker-Python",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 21,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-5f5432280fa43a36ff88",
+    "title": "Music Player",
+    "sourceTitle": "Music Player",
+    "section": "Python",
+    "summary": "Build playback controls and a browsable media library.",
+    "skills": [
+      "Python"
+    ],
+    "sourceUrl": "https://github.com/attreyabhatt/Python-Music-Player",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 22,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-f420b206662a507d2fe3",
+    "title": "Real-Time Traffic Management System",
+    "sourceTitle": "Real-Time Traffic Management System",
+    "section": "Python",
+    "summary": "Model records, workflows and reporting for a management problem.",
+    "skills": [
+      "Python"
+    ],
+    "sourceUrl": "https://github.com/jayita13/AUTOMATED-TRAFFIC-MANAGEMENT-SYSTEM",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 23,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-843a7cc7db7aa131331c",
+    "title": "React Notes Application",
+    "sourceTitle": "React Notes Application",
+    "section": "React",
+    "summary": "Create, edit, search and organize personal notes.",
+    "skills": [
+      "React",
+      "JavaScript"
+    ],
+    "sourceUrl": "https://github.com/paydendyer/react-notes-app",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 24,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-e1ce8b49c5da381edf40",
+    "title": "React Pokemon App using PokeAPI",
+    "sourceTitle": "React Pokemon App using PokeAPI",
+    "section": "React",
+    "summary": "Define a small working prototype, document design choices and test its main workflows.",
+    "skills": [
+      "React",
+      "JavaScript"
+    ],
+    "sourceUrl": "https://github.com/Megh2507/Pokemon-App",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 25,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-51fe5ababfee4a47e06e",
+    "title": "React Weather Application",
+    "sourceTitle": "React Weather Application",
+    "section": "React",
+    "summary": "Present weather information with a clear location-based interface.",
+    "skills": [
+      "React",
+      "JavaScript"
+    ],
+    "sourceUrl": "https://github.com/topics/react-weather-app",
+    "sourceKind": "collection",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 26,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-1f09860b43186c1a2f60",
+    "title": "React Cryptocurrency Application",
+    "sourceTitle": "React Cryptocurrency Application",
+    "section": "React",
+    "summary": "Define a small working prototype, document design choices and test its main workflows.",
+    "skills": [
+      "React",
+      "JavaScript"
+    ],
+    "sourceUrl": "https://github.com/Megh2507/React-Crypto-App",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 27,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-414fdf1a8ead660ad269",
+    "title": "React Password Generator",
+    "sourceTitle": "React Password Generator",
+    "section": "React",
+    "summary": "Generate passwords and explore length and character options.",
+    "skills": [
+      "React",
+      "JavaScript"
+    ],
+    "sourceUrl": "https://github.com/Megh2507/react_password_generator",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 28,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-683c8405901d1894699d",
+    "title": "Photo Gallery Application",
+    "sourceTitle": "Photo Gallery Application",
+    "section": "React",
+    "summary": "Organize images and build an accessible browsing interface.",
+    "skills": [
+      "React",
+      "JavaScript"
+    ],
+    "sourceUrl": "https://github.com/chrisblakely01/react-node-photo-gallery",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 29,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-736b7549f39cb8c0bca5",
+    "title": "React Chat Application",
+    "sourceTitle": "React Chat Application",
+    "section": "React",
+    "summary": "Build a conversational interface and study message or response handling.",
+    "skills": [
+      "React",
+      "JavaScript"
+    ],
+    "sourceUrl": "https://github.com/WebDevSimplified/Whatsapp-Clone",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 30,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-430461feef76b8873c68",
+    "title": "React Movie and Series Application",
+    "sourceTitle": "React Movie and Series Application",
+    "section": "React",
+    "summary": "Explore movie discovery, search or recommendation workflows.",
+    "skills": [
+      "React",
+      "JavaScript"
+    ],
+    "sourceUrl": "https://github.com/piyush-eon/react-entertainment-hub",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 31,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-b193be680f10ddee2599",
+    "title": "Instagram Clone",
+    "sourceTitle": "Instagram Clone",
+    "section": "React",
+    "summary": "Define a small working prototype, document design choices and test its main workflows.",
+    "skills": [
+      "React",
+      "JavaScript"
+    ],
+    "sourceUrl": "https://github.com/topics/instagram-clone",
+    "sourceKind": "collection",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 32,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-5935ead075c98d2cf3c3",
+    "title": "E-Commerce Application",
+    "sourceTitle": "E-Commerce Application",
+    "section": "React",
+    "summary": "Model a catalogue, shopping basket and order workflow.",
+    "skills": [
+      "React",
+      "JavaScript"
+    ],
+    "sourceUrl": "https://github.com/meabhisingh/mernProjectEcommerce",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 33,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-0d6ddc2fd31e34dc91aa",
+    "title": "To-do List Project",
+    "sourceTitle": "To-do List Project",
+    "section": "Full stack",
+    "summary": "Define a small working prototype, document design choices and test its main workflows.",
+    "skills": [
+      "Frontend development",
+      "Backend development"
+    ],
+    "sourceUrl": "https://github.com/snyk-labs/nodejs-goof",
+    "sourceKind": "repository",
+    "notice": "Intentionally vulnerable security-training source. Use an isolated lab; do not deploy it as a production to-do application.",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 34,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-c06492e06b20f49af6f2",
+    "title": "Blog Website/App",
+    "sourceTitle": "Blog Website/App",
+    "section": "Full stack",
+    "summary": "Build an article publishing and content browsing workflow.",
+    "skills": [
+      "Frontend development",
+      "Backend development"
+    ],
+    "sourceUrl": "https://github.com/rajaraodv/react-redux-blog",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 35,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-ddf1e93cedc84c5c99c6",
+    "title": "Chat Application/Website",
+    "sourceTitle": "Chat Application/Website",
+    "section": "Full stack",
+    "summary": "Build a conversational interface and study message or response handling.",
+    "skills": [
+      "Frontend development",
+      "Backend development"
+    ],
+    "sourceUrl": "https://github.com/raineroviir/react-redux-socketio-chat",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 36,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-8facbf17e2d6450c2a5d",
+    "title": "Portfolio Website",
+    "sourceTitle": "Portfolio Website",
+    "section": "Full stack",
+    "summary": "Present your work, skills and project links clearly.",
+    "skills": [
+      "Frontend development",
+      "Backend development"
+    ],
+    "sourceUrl": "https://github.com/adrianhajdin/portfolio_website",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 37,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-eefede4de6a771394601",
+    "title": "Food Delivery Application/Website",
+    "sourceTitle": "Food Delivery Application/Website",
+    "section": "Full stack",
+    "summary": "Define a small working prototype, document design choices and test its main workflows.",
+    "skills": [
+      "Frontend development",
+      "Backend development"
+    ],
+    "sourceUrl": "https://github.com/fahadahmed07/react-js-quick-food-delivery-website",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 38,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-a8ef53ab9834791bfd42",
+    "title": "E-commerce Website/App",
+    "sourceTitle": "E-commerce Website/App",
+    "section": "Full stack",
+    "summary": "Model a catalogue, shopping basket and order workflow.",
+    "skills": [
+      "Frontend development",
+      "Backend development"
+    ],
+    "sourceUrl": "https://github.com/django-oscar/django-oscar",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 39,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-a8540478313ec797541b",
+    "title": "Video Conferencing App/Website",
+    "sourceTitle": "Video Conferencing App/Website",
+    "section": "Full stack",
+    "summary": "Define a small working prototype, document design choices and test its main workflows.",
+    "skills": [
+      "Frontend development",
+      "Backend development"
+    ],
+    "sourceUrl": "https://github.com/itstaranarora/video-chat-v1",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 40,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-6840549464a7b2a5cfd9",
+    "title": "Social Media App/Website",
+    "sourceTitle": "Social Media App/Website",
+    "section": "Full stack",
+    "summary": "Define a small working prototype, document design choices and test its main workflows.",
+    "skills": [
+      "Frontend development",
+      "Backend development"
+    ],
+    "sourceUrl": "https://github.com/CharlyKeleb/SocialMedia-App",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 41,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-4355502ddf6b5ca5b7ec",
+    "title": "Content Management Tool/System for Blogs",
+    "sourceTitle": "Content Management Tool/System for Blogs",
+    "section": "Full stack",
+    "summary": "Model records, workflows and reporting for a management problem.",
+    "skills": [
+      "Frontend development",
+      "Backend development"
+    ],
+    "sourceUrl": "https://github.com/mahmudahsan/pythonbangla.com",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 42,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-103d212170e259cd767e",
+    "title": "Project Management Tool",
+    "sourceTitle": "Project Management Tool",
+    "section": "Full stack",
+    "summary": "Model records, workflows and reporting for a management problem.",
+    "skills": [
+      "Frontend development",
+      "Backend development"
+    ],
+    "sourceUrl": "https://github.com/JordanKnott/taskcafe",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 43,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-f2611b938f2fdebf5f92",
+    "title": "Fake News Detection Using Python",
+    "sourceTitle": "Fake News Detection Using Python",
+    "section": "Data science",
+    "summary": "Explore data inputs and evaluation methods for a detection problem.",
+    "skills": [
+      "Python",
+      "Data analysis"
+    ],
+    "sourceUrl": "https://github.com/nishitpatel01/Fake_News_Detection",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 44,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-4f17ad60a5aa67bcb8dd",
+    "title": "Detecting Forest Fire",
+    "sourceTitle": "Detecting Forest Fire",
+    "section": "Data science",
+    "summary": "Define a small working prototype, document design choices and test its main workflows.",
+    "skills": [
+      "Python",
+      "Data analysis"
+    ],
+    "sourceUrl": "https://github.com/Skar0/fire-detection",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 45,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-20d394521f686fbd94d8",
+    "title": "Detection of Road Lane Lines",
+    "sourceTitle": "Detection of Road Lane Lines",
+    "section": "Data science",
+    "summary": "Explore data inputs and evaluation methods for a detection problem.",
+    "skills": [
+      "Python",
+      "Data analysis"
+    ],
+    "sourceUrl": "https://github.com/amusi/awesome-lane-detection",
+    "sourceKind": "collection",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 46,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-2768472f04d7b6005eca",
+    "title": "Sentiment Analysis",
+    "sourceTitle": "Sentimental Analysis",
+    "section": "Data science",
+    "summary": "Clean and analyse data, then communicate meaningful findings.",
+    "skills": [
+      "Python",
+      "Data analysis"
+    ],
+    "sourceUrl": "https://github.com/yashspr/sentiment_analysis_ml_part",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 47,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-bdc287284abedfa35a99",
+    "title": "Speech Recognition through the Emotions",
+    "sourceTitle": "Speech Recognition through the Emotions",
+    "section": "Data science",
+    "summary": "Explore recognition methods and measure their performance.",
+    "skills": [
+      "Python",
+      "Data analysis"
+    ],
+    "sourceUrl": "https://github.com/topics/speech-emotion-recognition",
+    "sourceKind": "collection",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 48,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-7f5baebd17bc8063722b",
+    "title": "Gender Detection and Age Prediction",
+    "sourceTitle": "Gender Detection and Age Prediction",
+    "section": "Data science",
+    "summary": "Train a baseline predictive model and evaluate it on held-out data.",
+    "skills": [
+      "Python",
+      "Data analysis"
+    ],
+    "sourceUrl": "https://github.com/smahesh29/Gender-and-Age-Detection",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 49,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-4ac39959862c0330c20c",
+    "title": "Developing Chatbots",
+    "sourceTitle": "Developing Chatbots",
+    "section": "Data science",
+    "summary": "Build a conversational interface and study message or response handling.",
+    "skills": [
+      "Python",
+      "Data analysis"
+    ],
+    "sourceUrl": "https://github.com/parulnith/Building-a-Simple-Chatbot-in-Python-using-NLTK",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 50,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-25c88e2b7bf2571c576f",
+    "title": "Detection of Drowsiness in Drivers",
+    "sourceTitle": "Detection of Drowsiness in Drivers",
+    "section": "Data science",
+    "summary": "Explore data inputs and evaluation methods for a detection problem.",
+    "skills": [
+      "Python",
+      "Data analysis"
+    ],
+    "sourceUrl": "https://www.interviewbit.com/blog/data-science-projects/",
+    "sourceKind": "article",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 51,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-91b14382b782fe07e0ff",
+    "title": "Diabetic Retinopathy",
+    "sourceTitle": "Diabetic Retinopathy",
+    "section": "Data science",
+    "summary": "Define a small working prototype, document design choices and test its main workflows.",
+    "skills": [
+      "Python",
+      "Data analysis"
+    ],
+    "sourceUrl": "https://github.com/rsk97/Diabetic-Retinopathy-Detection",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 52,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-9334b0a9fe73a13021b9",
+    "title": "Detection of Credit Card Fraud",
+    "sourceTitle": "Detection of Credit Card Fraud",
+    "section": "Data science",
+    "summary": "Explore data inputs and evaluation methods for a detection problem.",
+    "skills": [
+      "Python",
+      "Data analysis"
+    ],
+    "sourceUrl": "https://github.com/curiousily/Credit-Card-Fraud-Detection-using-Autoencoders-in-Keras",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 53,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-4cfb1c313087b8d67542",
+    "title": "Bookshop Management System Using C++",
+    "sourceTitle": "Bookshop Management System Using C++",
+    "section": "C++",
+    "summary": "Model records, workflows and reporting for a management problem.",
+    "skills": [
+      "C++",
+      "Data structures"
+    ],
+    "sourceUrl": "https://github.com/aryan-khanijo/Bookshop-Management-System-CPP-Project",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 54,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-7af67f6947b3bd89889e",
+    "title": "Bank Management System In C++",
+    "sourceTitle": "Bank Management System In C++",
+    "section": "C++",
+    "summary": "Model records, workflows and reporting for a management problem.",
+    "skills": [
+      "C++",
+      "Data structures"
+    ],
+    "sourceUrl": "https://github.com/wkhaliddev/Bank-Management/tree/master/DSAproject",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 55,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-efd59f881d2f8fe6593b",
+    "title": "Student Record Management System",
+    "sourceTitle": "Student Record Management System",
+    "section": "C++",
+    "summary": "Model records, workflows and reporting for a management problem.",
+    "skills": [
+      "C++",
+      "Data structures"
+    ],
+    "sourceUrl": "https://github.com/Code-Recursion/Student-Record-Management-System",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 56,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-800e88a00c4c332afa5a",
+    "title": "Contact Management System Using C++",
+    "sourceTitle": "Contact Management System Using C++",
+    "section": "C++",
+    "summary": "Model records, workflows and reporting for a management problem.",
+    "skills": [
+      "C++",
+      "Data structures"
+    ],
+    "sourceUrl": "https://github.com/JeremyWu917/ContactManagementSystem",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 57,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-d6181868be0fe1ba1e4f",
+    "title": "Car Rental System In C++",
+    "sourceTitle": "Car Rental System In C++",
+    "section": "C++",
+    "summary": "Define a small working prototype, document design choices and test its main workflows.",
+    "skills": [
+      "C++",
+      "Data structures"
+    ],
+    "sourceUrl": "https://github.com/Ellie-Y/CarRentalSystem",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 58,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-15b74cd60e0e219d4f62",
+    "title": "Credit Card Validator",
+    "sourceTitle": "Credit Card Validator",
+    "section": "C++",
+    "summary": "Implement validation rules and test edge cases.",
+    "skills": [
+      "C++",
+      "Data structures"
+    ],
+    "sourceUrl": "https://github.com/karancodes/credit-card-validator",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 59,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-d9820a077bd99f14f985",
+    "title": "Sudoku Game",
+    "sourceTitle": "Sudoku Game",
+    "section": "C++",
+    "summary": "Implement puzzle constraints, validation and an interactive game board.",
+    "skills": [
+      "C++",
+      "Data structures"
+    ],
+    "sourceUrl": "https://github.com/AlexIzydorczyk/sudoku",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 60,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-7e765dff7f46995fea3d",
+    "title": "Trading Application Project In C++",
+    "sourceTitle": "Trading Application Project In C++",
+    "section": "C++",
+    "summary": "Prototype a trading interface and study how market data is displayed.",
+    "skills": [
+      "C++",
+      "Data structures"
+    ],
+    "sourceUrl": "https://github.com/JulyIghor/QtBitcoinTrader",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 61,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-880d30fe8bdb3f094107",
+    "title": "Casino Number Guessing Game",
+    "sourceTitle": "Casino Number Guessing Game",
+    "section": "C++",
+    "summary": "Build an interactive game with clear rules and progress feedback.",
+    "skills": [
+      "C++",
+      "Data structures"
+    ],
+    "sourceUrl": "https://github.com/KevinVillania/Baccarat-Casino-Number-Game",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 62,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-41e51c30ae546d1aa7c8",
+    "title": "Sales Management System",
+    "sourceTitle": "Sales Management System",
+    "section": "C++",
+    "summary": "Model records, workflows and reporting for a management problem.",
+    "skills": [
+      "C++",
+      "Data structures"
+    ],
+    "sourceUrl": "https://github.com/whoeverxd/sales",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 63,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-4f7036d6a97e097da2bc",
+    "title": "Face Detection App with C++",
+    "sourceTitle": "Face Detection App with C++",
+    "section": "C++",
+    "summary": "Explore data inputs and evaluation methods for a detection problem.",
+    "skills": [
+      "C++",
+      "Data structures"
+    ],
+    "sourceUrl": "https://github.com/elador/FeatureDetection",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 64,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-7589bf35cf2c18bccfd2",
+    "title": "Digital Calculator",
+    "sourceTitle": "Digital Calculator",
+    "section": "C++",
+    "summary": "Implement a calculator with validated inputs and tested operations.",
+    "skills": [
+      "C++",
+      "Data structures"
+    ],
+    "sourceUrl": "https://github.com/christopher-siewert/cpp-calculator",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 65,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-857ba4f0ba7c3620936a",
+    "title": "Home Value Prediction Project",
+    "sourceTitle": "Home Value Prediction Project",
+    "section": "Machine learning",
+    "summary": "Train a baseline predictive model and evaluate it on held-out data.",
+    "skills": [
+      "Machine learning",
+      "Python"
+    ],
+    "sourceUrl": "https://github.com/Shreyas3108/house-price-prediction",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 66,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-03305f03fa0c9340a4a5",
+    "title": "Sales Prediction Project",
+    "sourceTitle": "Sales Prediction Project",
+    "section": "Machine learning",
+    "summary": "Train a baseline predictive model and evaluate it on held-out data.",
+    "skills": [
+      "Machine learning",
+      "Python"
+    ],
+    "sourceUrl": "https://github.com/storieswithsiva/Kaggle-Predicting-Future-Sales",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 67,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-5e1e39907f3e8a94d0b0",
+    "title": "Music Recommendation System Project",
+    "sourceTitle": "Music Recommendation System Project",
+    "section": "Machine learning",
+    "summary": "Compare ways to recommend relevant items from available data.",
+    "skills": [
+      "Machine learning",
+      "Python"
+    ],
+    "sourceUrl": "https://github.com/ugis22/music_recommender",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 68,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-0b97c42770570f6a257f",
+    "title": "Black Friday Sales Prediction",
+    "sourceTitle": "Black Friday Sales Prediction",
+    "section": "Machine learning",
+    "summary": "Train a baseline predictive model and evaluate it on held-out data.",
+    "skills": [
+      "Machine learning",
+      "Python"
+    ],
+    "sourceUrl": "https://github.com/nanthasnk/Black-Friday-Sales-Prediction",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 69,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-25bbbeaeaa5ad3ae9fa6",
+    "title": "Stock Prices Predictor with the help of TimeSeries",
+    "sourceTitle": "Stock Prices Predictor with the help of TimeSeries",
+    "section": "Machine learning",
+    "summary": "Define a small working prototype, document design choices and test its main workflows.",
+    "skills": [
+      "Machine learning",
+      "Python"
+    ],
+    "sourceUrl": "https://github.com/huseinzol05/Stock-Prediction-Models",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 70,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-279f53d5ca0d9b8f5b43",
+    "title": "Predicting Wine Quality with the help of Wine Quality Dataset",
+    "sourceTitle": "Predicting Wine Quality with the help of Wine Quality Dataset",
+    "section": "Machine learning",
+    "summary": "Define a small working prototype, document design choices and test its main workflows.",
+    "skills": [
+      "Machine learning",
+      "Python"
+    ],
+    "sourceUrl": "https://github.com/amberkakkar01/Prediction-of-Wine-Quality",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 71,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-008f8c34a31779b357e7",
+    "title": "MNIST Handwritten Digit Classification",
+    "sourceTitle": "MNIST Handwritten Digit Classification",
+    "section": "Machine learning",
+    "summary": "Define a small working prototype, document design choices and test its main workflows.",
+    "skills": [
+      "Machine learning",
+      "Python"
+    ],
+    "sourceUrl": "https://github.com/anujdutt9/Handwritten-Digit-Recognition-using-Deep-Learning",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 72,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-b5f4cba290c568828969",
+    "title": "Myers-Briggs Personality Prediction",
+    "sourceTitle": "Myers-Briggs Personality Prediction",
+    "section": "Machine learning",
+    "summary": "Train a baseline predictive model and evaluate it on held-out data.",
+    "skills": [
+      "Machine learning",
+      "Python"
+    ],
+    "sourceUrl": null,
+    "sourceKind": "idea",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 73,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-4833771f79d6a36fe43a",
+    "title": "Market Basket Analysis",
+    "sourceTitle": "Market Basket Analysis",
+    "section": "Machine learning",
+    "summary": "Clean and analyse data, then communicate meaningful findings.",
+    "skills": [
+      "Machine learning",
+      "Python"
+    ],
+    "sourceUrl": "https://github.com/DiegoUsaiUK/Market_Basket_Analysis",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 74,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-9052b91477682ffc98e2",
+    "title": "Text Summarisation",
+    "sourceTitle": "Text Summarisation",
+    "section": "Machine learning",
+    "summary": "Define a small working prototype, document design choices and test its main workflows.",
+    "skills": [
+      "Machine learning",
+      "Python"
+    ],
+    "sourceUrl": "https://github.com/ebenso/TextSummarizer",
+    "sourceKind": "repository",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 75,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-611c8537b2ae01425969",
+    "title": "AI Chatbot for Mental Health Support",
+    "sourceTitle": "AI Chatbot for Mental Health Support",
+    "section": "AI & machine learning",
+    "summary": "Build a conversational interface and study message or response handling.",
+    "skills": [
+      "AI",
+      "Machine learning"
+    ],
+    "sourceUrl": null,
+    "sourceKind": "idea",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 76,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-2f7f1ad3750af7e4ad8d",
+    "title": "Predictive Traffic Pattern Analysis",
+    "sourceTitle": "Predictive Traffic Pattern Analysis",
+    "section": "AI & machine learning",
+    "summary": "Clean and analyse data, then communicate meaningful findings.",
+    "skills": [
+      "AI",
+      "Machine learning"
+    ],
+    "sourceUrl": null,
+    "sourceKind": "idea",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 77,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-c69b9e9912099772b747",
+    "title": "Image Recognition for Local Landmarks",
+    "sourceTitle": "Image Recognition for Local Landmarks",
+    "section": "AI & machine learning",
+    "summary": "Explore recognition methods and measure their performance.",
+    "skills": [
+      "AI",
+      "Machine learning"
+    ],
+    "sourceUrl": null,
+    "sourceKind": "idea",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 78,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-a29904c7ae00b7ecbac9",
+    "title": "Predictive Maintenance for Public Transport",
+    "sourceTitle": "Predictive Maintenance for Public Transport",
+    "section": "AI & machine learning",
+    "summary": "Explore transport data and build a predictive baseline.",
+    "skills": [
+      "AI",
+      "Machine learning"
+    ],
+    "sourceUrl": null,
+    "sourceKind": "idea",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 79,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-1465b1fe360565ab65d8",
+    "title": "Smart Waste Management",
+    "sourceTitle": "Smart Waste Management",
+    "section": "IoT",
+    "summary": "Model records, workflows and reporting for a management problem.",
+    "skills": [
+      "IoT",
+      "Sensors"
+    ],
+    "sourceUrl": null,
+    "sourceKind": "idea",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 80,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-74896a589f0c34bfe7bc",
+    "title": "Smart Irrigation for Agriculture",
+    "sourceTitle": "Smart Irrigation for Agriculture",
+    "section": "IoT",
+    "summary": "Use sensor inputs to prototype irrigation monitoring and decisions.",
+    "skills": [
+      "IoT",
+      "Sensors"
+    ],
+    "sourceUrl": null,
+    "sourceKind": "idea",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 81,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-72c37a9e4dfc6a371f06",
+    "title": "Blockchain Voting System",
+    "sourceTitle": "Blockchain Voting System",
+    "section": "Blockchain",
+    "summary": "Investigate a voting workflow with trust and verification requirements.",
+    "skills": [
+      "Blockchain",
+      "Smart contracts"
+    ],
+    "sourceUrl": null,
+    "sourceKind": "idea",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 82,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-de976065276a1f08c898",
+    "title": "Food Supply Chain Tracker",
+    "sourceTitle": "Food Supply Chain Tracker",
+    "section": "Blockchain",
+    "summary": "Model product movements and traceability across a supply chain.",
+    "skills": [
+      "Blockchain",
+      "Smart contracts"
+    ],
+    "sourceUrl": null,
+    "sourceKind": "idea",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 83,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-e8532ce11e08e149e69f",
+    "title": "Local Language Translator",
+    "sourceTitle": "Local Language Translator",
+    "section": "Language technology",
+    "summary": "Explore translation workflows and evaluate language outputs.",
+    "skills": [
+      "NLP",
+      "Language processing"
+    ],
+    "sourceUrl": null,
+    "sourceKind": "idea",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 84,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-e6eb2820848f7a3fa5bd",
+    "title": "NLP for Indian Languages",
+    "sourceTitle": "NLP for Indian Languages",
+    "section": "Language technology",
+    "summary": "Define a small working prototype, document design choices and test its main workflows.",
+    "skills": [
+      "NLP",
+      "Language processing"
+    ],
+    "sourceUrl": null,
+    "sourceKind": "idea",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 85,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-eb1df3beb2929d7e4c8b",
+    "title": "Course Management System",
+    "sourceTitle": "Course Management System",
+    "section": "EdTech",
+    "summary": "Model records, workflows and reporting for a management problem.",
+    "skills": [
+      "Web development",
+      "Databases"
+    ],
+    "sourceUrl": null,
+    "sourceKind": "idea",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 86,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-b4f46a4d0e366d94948b",
+    "title": "Personalized Learning Platform",
+    "sourceTitle": "Personalized Learning Platform",
+    "section": "EdTech",
+    "summary": "Prototype learning pathways and learner progress tracking.",
+    "skills": [
+      "Web development",
+      "Databases"
+    ],
+    "sourceUrl": null,
+    "sourceKind": "idea",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 87,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-6303dbdbfdba4c66ad58",
+    "title": "AI Disease Prediction",
+    "sourceTitle": "AI Disease Prediction",
+    "section": "HealthTech",
+    "summary": "Train a baseline predictive model and evaluate it on held-out data.",
+    "skills": [
+      "Software design",
+      "Data analysis"
+    ],
+    "sourceUrl": null,
+    "sourceKind": "idea",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 88,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  },
+  {
+    "id": "fyp-cf8496ded35d29fd9035",
+    "title": "Telemedicine Platform",
+    "sourceTitle": "Telemedicine Platform",
+    "section": "HealthTech",
+    "summary": "Prototype remote consultation scheduling and communication workflows.",
+    "skills": [
+      "Software design",
+      "Data analysis"
+    ],
+    "sourceUrl": null,
+    "sourceKind": "idea",
+    "notice": "",
+    "status": "published",
+    "sourceDocument": "Final Year Projects.docx",
+    "sortOrder": 89,
+    "createdAt": "2026-11-13T07:41:40Z",
+    "updatedAt": "2026-11-13T07:41:40Z"
+  }
+]

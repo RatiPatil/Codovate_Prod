@@ -295,8 +295,8 @@ function Card({ item, saved = false, onSave }) {
   return (
     <article className="opportunity-card">
       <div className="card-top">
-        <span className={"org-mark " + item.type}>
-          {item.organization.slice(0, 2).toUpperCase()}
+        <span className={"org-mark " + item.type} style={item.logoDark ? {background:"#17151f",width:"144px",height:"48px"} : undefined}>
+          {item.logo ? <img src={item.logo} alt={item.organization + " logo"} width={item.logoDark ? 128 : 40} height="40" loading="lazy" style={{objectFit:"contain"}} /> : item.organization.slice(0, 2).toUpperCase()}
         </span>
         <span className="eyebrow">
           <Icon size={13} />
@@ -341,15 +341,15 @@ function Card({ item, saved = false, onSave }) {
       </div>
       <div className="card-deadline">
         <span className="availability-dot" />{" "}
-        {item.external ? "Check official availability" : opportunityStatus(item) === "closed" ? "Closed" : "Applications open"}
+        {item.external ? (item.competitionKind === "practice" ? "Ongoing learning competition" : item.type === "competition" ? "Entry open · verify official rules" : "Check official availability") : opportunityStatus(item) === "closed" ? "Closed" : "Applications open"}
         {item.type === "hackathon" && Number.isFinite(deadlineMillis(item)) && <> · Closes {dateLabel(deadlineMillis(item))}</>}
       </div>
       <div className="card-bottom">
         <div>
           <strong>
             {item.external
-              ? item.type === "hackathon"
-                ? "See prize rules"
+              ? ["hackathon", "competition"].includes(item.type)
+                ? (item.competitionKind === "practice" ? "Learning · no cash prize" : "See prize rules")
                 : (item.compensation && !item.compensation.startsWith("Not specified") ? item.compensation : "Pay not stated")
               : money(item.stipend)}
           </strong>

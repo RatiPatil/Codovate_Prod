@@ -61,7 +61,8 @@
         "enum": [
           "internship",
           "job",
-          "hackathon"
+          "hackathon",
+          "competition"
         ]
       },
       "mode": {
@@ -127,8 +128,55 @@
         "type": "string",
         "minLength": 1,
         "maxLength": 150
+      },
+      "logo": {
+        "type": "string",
+        "pattern": "^/(company-logos|competition-logos)/[a-z0-9.-]+$",
+        "maxLength": 200
+      },
+      "logoSource": {
+        "type": "string",
+        "format": "uri",
+        "pattern": "^https://"
+      },
+      "competitionKind": {
+        "enum": [
+          "challenge",
+          "practice",
+          "game-jam"
+        ]
+      },
+      "deadlineNote": {
+        "type": "string",
+        "maxLength": 500
+      },
+      "submissionDeadline": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "logoDark": {
+        "type": "boolean"
       }
     },
-    "additionalProperties": false
+    "additionalProperties": false,
+    "allOf": [
+      {
+        "if": {
+          "properties": {
+            "type": {
+              "const": "competition"
+            }
+          }
+        },
+        "then": {
+          "required": [
+            "logo",
+            "logoSource",
+            "competitionKind",
+            "deadlineNote"
+          ]
+        }
+      }
+    ]
   }
 }
