@@ -10,13 +10,13 @@ This release adds `/mentoring` and `/updates`, their navigation/dashboard entry 
 | mentorBookings/{studentId}_{sessionId} | studentId, studentName 100, sessionId, sessionTitle, mentorName, startsAt, durationMinutes, format, location, note 1–1000, status, meetingUrl empty/HTTPS 500, createdAt, updatedAt | Student owner or admin only |
 | announcements/{id} | title 120, body 3000, category Platform news/Opportunities/Learning/Community, status draft/published, link empty/HTTPS 500, createdBy, createdAt, updatedAt | Public published records; admin creates/edits/unpublishes |
 
-Topics: Interview practice, Career direction, Resume review, Project feedback. Exact types/required fields and fixtures are in `database/firestore.schema.json` and `database/examples.json`. Fixtures are documentation only. Server timestamps and security rules govern browser writes.
+Topics: Interview practice, Career direction, Resume review, Project feedback, Team & hackathon guidance, Portfolio walkthrough. Exact types/required fields and fixtures are in `database/firestore.schema.json` and `database/examples.json`. Fixtures are documentation only. Server timestamps and security rules govern browser writes.
 
 ## Booking integrity
 
 A transaction checks the deterministic booking ID and authoritative published future session. Rules independently verify the owner/profile name and immutable session snapshot. One request per student per session, including previously cancelled requests. Session schedules are immutable after creation; close a session and create a replacement to change its time. No capacity or availability guarantee is shown.
 
-Admin transitions: pending → confirmed / declined / cancelled; confirmed → completed / cancelled. Terminal decisions cannot reopen. Students may cancel pending/confirmed requests. Online confirmation requires an HTTPS meeting link. Confirmation is blocked after session start; completion requires the session to have ended. Meeting links and notes stay private. The calendar download is available on confirmed bookings; it does not send invitations or emails. Published sessions remain discoverable after their start but cannot accept new requests.
+Admin transitions: pending → confirmed / declined / cancelled; confirmed → completed / cancelled. Terminal decisions cannot reopen. Students may cancel pending/confirmed requests. Online confirmation requires an HTTPS meeting link. Confirmation is blocked after session start; completion requires the session to have ended. Meeting links and notes stay private. The calendar download is available on confirmed bookings; it does not send invitations or emails. Student browsing hides sessions after their start; admin lists and existing bookings retain them.
 
 Admins operate mentoring on behalf of mentors; there is no separate mentor login or automated matching. Admin authorization uses the existing verified custom claim, never an email match or browser-written role.
 
@@ -39,3 +39,7 @@ npx --yes firebase-tools@15.34.2 deploy --only hosting --project codovate-dev --
 ```
 
 Storage deployment, billing upgrades, VPS changes and domain/DNS configuration are not required for the résumé-link workflow. After release, verify real student registration/profile saving, link-based application, admin publication, mentoring request/confirmation/cancellation and private meeting-link access with separate accounts. Emulator checks do not establish live provider/account readiness.
+
+## Private session workspaces
+
+See [MENTORING_WORKSPACES.md](MENTORING_WORKSPACES.md) for goal preparation, mentor action plans, live progress, post-session reflection, ownership rules and administrator operation.

@@ -40,6 +40,12 @@ export function validateDocument(collection, id, data) {
   const validate = validators[collection];
   if (!validate) return { valid: false, errors: ["Unknown collection"] };
   const errors = [];
+  if (collection === "mentorWorkspaces") {
+    if (id !== data.bookingId) errors.push("Workspace must use its booking ID.");
+    if (data.completedActions?.some((i) => i >= (data.plan?.actions?.length || 0))) errors.push("Progress must refer to an existing action.");
+    if ((data.rating === 0) !== (data.reflection === "")) errors.push("Rating and reflection must be supplied together.");
+    if ((data.plan?.actions?.length === 0) !== (data.plan?.summary === "")) errors.push("A plan needs a summary and actions together.");
+  }
   if (collection === "users" && data.onboarding) {
     const o = data.onboarding, p = data.careerPreferences || {};
     if (o.startedAt !== data.createdAt) errors.push("Onboarding must retain the original profile creation timestamp.");

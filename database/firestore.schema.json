@@ -1083,7 +1083,9 @@
             "Interview practice",
             "Career direction",
             "Resume review",
-            "Project feedback"
+            "Project feedback",
+            "Team & hackathon guidance",
+            "Portfolio walkthrough"
           ]
         },
         "description": {
@@ -2866,6 +2868,108 @@
           }
         }
       ]
+    },
+    "mentorWorkspaces": {
+      "type": "object",
+      "required": [
+        "bookingId",
+        "studentId",
+        "preparation",
+        "plan",
+        "completedActions",
+        "rating",
+        "reflection",
+        "createdAt",
+        "updatedAt"
+      ],
+      "properties": {
+        "bookingId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 260
+        },
+        "studentId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "preparation": {
+          "type": "object",
+          "required": [
+            "goal",
+            "context",
+            "artifactUrl"
+          ],
+          "properties": {
+            "goal": {
+              "type": "string",
+              "maxLength": 300
+            },
+            "context": {
+              "type": "string",
+              "maxLength": 1500
+            },
+            "artifactUrl": {
+              "type": "string",
+              "maxLength": 500,
+              "pattern": "^$|^https://[^ /]+.*$"
+            }
+          },
+          "additionalProperties": false
+        },
+        "plan": {
+          "type": "object",
+          "required": [
+            "summary",
+            "actions"
+          ],
+          "properties": {
+            "summary": {
+              "type": "string",
+              "maxLength": 1500
+            },
+            "actions": {
+              "type": "array",
+              "maxItems": 3,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 180
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "completedActions": {
+          "type": "array",
+          "maxItems": 3,
+          "uniqueItems": true,
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2
+          }
+        },
+        "rating": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 5
+        },
+        "reflection": {
+          "type": "string",
+          "maxLength": 1000
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "additionalProperties": false
     }
   }
 }

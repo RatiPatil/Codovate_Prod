@@ -336,7 +336,7 @@ service cloud.firestore {
    return d.keys().hasAll(['title','mentorName','topic','description','startsAt','durationMinutes','format','location','status','createdBy','createdAt','updatedAt'])
     && d.keys().hasOnly(['title','mentorName','topic','description','startsAt','durationMinutes','format','location','status','createdBy','createdAt','updatedAt'])
     && text(d.title,120) && d.title.size()>0 && text(d.mentorName,100) && d.mentorName.size()>0
-    && d.topic in ['Interview practice','Career direction','Resume review','Project feedback']
+    && d.topic in ['Interview practice','Career direction','Resume review','Project feedback','Team & hackathon guidance','Portfolio walkthrough']
     && text(d.description,2000) && d.description.size()>0 && d.startsAt is timestamp
     && d.durationMinutes is int && d.durationMinutes>=15 && d.durationMinutes<=120
     && d.format in ['Online','In person'] && text(d.location,180) && d.location.size()>0
@@ -386,6 +386,52 @@ service cloud.firestore {
       && (request.resource.data.status != 'confirmed' || (resource.data.startsAt>request.time && (resource.data.format != 'Online' || request.resource.data.meetingUrl.size()>0)))
       && (request.resource.data.status != 'completed' || resource.data.startsAt + duration.value(resource.data.durationMinutes,'m') <= request.time)));
    allow delete: if false;
+  }
+  function validMentorWorkspace(d, id) {
+   return d.keys().hasAll(['bookingId','studentId','preparation','plan','completedActions','rating','reflection','createdAt','updatedAt'])
+    && d.keys().hasOnly(['bookingId','studentId','preparation','plan','completedActions','rating','reflection','createdAt','updatedAt'])
+    && d.bookingId == id && text(d.studentId,128)
+    && d.preparation is map && d.preparation.keys().hasAll(['goal','context','artifactUrl'])
+    && d.preparation.keys().hasOnly(['goal','context','artifactUrl'])
+    && text(d.preparation.goal,300) && text(d.preparation.context,1500) && optionalHttps(d.preparation.artifactUrl)
+    && d.plan is map && d.plan.keys().hasAll(['summary','actions']) && d.plan.keys().hasOnly(['summary','actions'])
+    && text(d.plan.summary,1500) && d.plan.actions is list && d.plan.actions.size()<=3
+    && d.plan.actions.toSet().size()==d.plan.actions.size()
+    && (d.plan.actions.size()<1 || (text(d.plan.actions[0],180) && d.plan.actions[0].size()>0))
+    && (d.plan.actions.size()<2 || (text(d.plan.actions[1],180) && d.plan.actions[1].size()>0))
+    && (d.plan.actions.size()<3 || (text(d.plan.actions[2],180) && d.plan.actions[2].size()>0))
+    && ((d.plan.actions.size()==0 && d.plan.summary=='') || (d.plan.actions.size()>0 && d.plan.summary.size()>0))
+    && d.completedActions is list && d.completedActions.toSet().size()==d.completedActions.size()
+    && d.completedActions.hasOnly([0,1,2])
+    && (!d.completedActions.hasAny([0]) || d.plan.actions.size()>0)
+    && (!d.completedActions.hasAny([1]) || d.plan.actions.size()>1)
+    && (!d.completedActions.hasAny([2]) || d.plan.actions.size()>2)
+    && d.rating is int && d.rating>=0 && d.rating<=5 && text(d.reflection,1000)
+    && ((d.rating==0 && d.reflection=='') || (d.rating>0 && d.reflection.size()>0))
+    && d.createdAt is timestamp && d.updatedAt is timestamp;
+  }
+  function emptyMentorStudentFields(d) {
+   return d.preparation == {'goal':'','context':'','artifactUrl':''} && d.rating==0 && d.reflection=='';
+  }
+  match /mentorWorkspaces/{id} {
+   function booking() { return get(/databases/$(database)/documents/mentorBookings/$(id)).data; }
+   allow get: if signedIn() && (own(booking().studentId) || admin());
+   allow list, delete: if false;
+   allow create: if signedIn() && validMentorWorkspace(request.resource.data,id)
+    && request.resource.data.studentId == booking().studentId
+    && request.resource.data.createdAt==request.time && changedTime()
+    && request.resource.data.completedActions==[]
+    && ((own(booking().studentId) && booking().status in ['pending','confirmed','completed']
+      && request.resource.data.plan == {'summary':'','actions':[]}
+      && (booking().status=='completed' || (request.resource.data.rating==0 && request.resource.data.reflection=='')))
+     || (admin() && booking().status in ['confirmed','completed'] && emptyMentorStudentFields(request.resource.data)));
+   allow update: if signedIn() && validMentorWorkspace(request.resource.data,id) && changedTime()
+    && ((own(booking().studentId) && booking().status in ['pending','confirmed','completed']
+      && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['preparation','completedActions','rating','reflection','updatedAt'])
+      && (booking().status=='completed' || !request.resource.data.diff(resource.data).affectedKeys().hasAny(['rating','reflection'])))
+     || (admin() && booking().status in ['confirmed','completed']
+      && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['plan','completedActions','updatedAt'])
+      && request.resource.data.completedActions==[]));
   }
   function validAnnouncement(d) {
    return d.keys().hasAll(['title','body','category','status','link','createdBy','createdAt','updatedAt'])

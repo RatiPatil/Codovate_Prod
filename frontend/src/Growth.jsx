@@ -1,3 +1,4 @@
+import MentorWorkspace from "./MentorWorkspace";
 import { useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import {
@@ -167,7 +168,9 @@ function MentoringScreen({ manage }) {
   const action = useAction(data.refresh),
     [editor, setEditor] = useState(false),
     [selected, setSelected] = useState(null),
-    [search, setSearch] = useState("");
+    [search, setSearch] = useState(""),
+    [topic, setTopic] = useState("All"),
+    [workspace, setWorkspace] = useState(null);
   async function publish(e) {
     e.preventDefault();
     const raw = Object.fromEntries(new FormData(e.currentTarget));
@@ -185,14 +188,50 @@ function MentoringScreen({ manage }) {
       setParams({ view: "mine" });
     }, "Request sent. The administrator will review your booking.");
   }
-  const items = data.items.filter((s) =>
-    (s.title || s.sessionTitle || "")
-      .concat(" ", s.mentorName, " ", s.topic || "")
-      .toLowerCase()
-      .includes(search.toLowerCase()),
+  const items = data.items.filter(
+    (s) =>
+      (mine || manage || s.startsAt?.toMillis?.() > Date.now()) &&
+      (topic === "All" || mine || s.topic === topic) &&
+      (s.title || s.sessionTitle || "")
+        .concat(" ", s.mentorName, " ", s.topic || "")
+        .toLowerCase()
+        .includes(search.toLowerCase()),
   );
   return (
     <>
+      {!manage && (
+        <section className="mentor-welcome">
+          <div>
+            <span className="eyebrow">GUIDANCE THAT MOVES YOU FORWARD</span>
+            <h2>Bring a question. Build your next step.</h2>
+            <p>
+              Get a fresh perspective on your project, interview or career. Keep
+              your preparation, mentor takeaway and progress together.
+            </p>
+          </div>
+          <ol className="mentor-journey">
+            <li>
+              <span>01</span>
+              <strong>Choose your focus</strong>
+              <small>
+                Find a session for the challenge you are working on.
+              </small>
+            </li>
+            <li>
+              <span>02</span>
+              <strong>Come prepared</strong>
+              <small>Share a clear goal and your project or portfolio.</small>
+            </li>
+            <li>
+              <span>03</span>
+              <strong>Put advice into action</strong>
+              <small>
+                Follow your private action plan after the conversation.
+              </small>
+            </li>
+          </ol>
+        </section>
+      )}
       <div className="community-toolbar">
         <div className="type-tabs" role="group" aria-label="Mentoring views">
           {!manage && (
@@ -343,6 +382,17 @@ function MentoringScreen({ manage }) {
           </button>
         </form>
       )}
+      {!mine && (
+        <label className="mentor-topic-filter">
+          Session focus
+          <select value={topic} onChange={(e) => setTopic(e.target.value)}>
+            <option value="All">All topics</option>
+            {mentorTopics.map((t) => (
+              <option key={t}>{t}</option>
+            ))}
+          </select>
+        </label>
+      )}
       <label className="directory-search">
         Search loaded {mine ? "bookings" : "sessions"}
         <input
@@ -379,6 +429,15 @@ function MentoringScreen({ manage }) {
             {mine ? (
               <>
                 <div className="career-controls">
+                  <button
+                    className="button"
+                    onClick={() =>
+                      setWorkspace(workspace === s.id ? null : s.id)
+                    }
+                    aria-expanded={workspace === s.id}
+                  >
+                    {workspace === s.id ? "Close workspace" : "Open workspace"}
+                  </button>
                   {s.status === "confirmed" && (
                     <>
                       <SafeLink url={s.meetingUrl}>Open meeting</SafeLink>
@@ -401,6 +460,9 @@ function MentoringScreen({ manage }) {
                     </button>
                   )}
                 </div>
+                {workspace === s.id && (
+                  <MentorWorkspace key={s.id} booking={s} />
+                )}
                 {s.status === "pending" && (
                   <p className="hint">
                     Awaiting review. This appointment is not yet confirmed.
@@ -466,7 +528,7 @@ function MentoringScreen({ manage }) {
           <p>
             {mine
               ? "Request a mentor session to track it here."
-              : "No matching sessions in the loaded results. Try another search or load more."}
+              : "No upcoming sessions match this view. Try another topic or check back for the next published session."}
           </p>
         </div>
       )}
@@ -478,7 +540,8 @@ export function BookingAdmin() {
   const { user } = useSession();
   const data = useCareerPage("mentorBookings", null, true),
     action = useAction(data.refresh);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(""),
+    [workspace, setWorkspace] = useState(null);
   async function review(e, item) {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
@@ -533,6 +596,19 @@ export function BookingAdmin() {
                 </span>
               </div>
               <p className="community-summary">{b.note}</p>
+              <button
+                className="button secondary"
+                aria-expanded={workspace === b.id}
+                onClick={() => setWorkspace(workspace === b.id ? null : b.id)}
+              >
+                {workspace === b.id
+                  ? "Close workspace"
+                  : "Preparation & action plan"}
+              </button>
+              {workspace === b.id && (
+                <MentorWorkspace key={b.id} booking={b} manage />
+              )}
+
               {bookingTransitions[b.status]?.length > 0 && (
                 <form className="booking-review" onSubmit={(e) => review(e, b)}>
                   <label>

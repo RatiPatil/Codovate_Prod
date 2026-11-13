@@ -14,6 +14,8 @@ export const mentorTopics = [
   "Career direction",
   "Resume review",
   "Project feedback",
+  "Team & hackathon guidance",
+  "Portfolio walkthrough",
 ];
 export const updateCategories = [
   "Platform news",

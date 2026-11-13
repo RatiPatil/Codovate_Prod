@@ -197,3 +197,34 @@ it("admin edits an announcement and readers can filter categories", async () => 
   );
   expect(screen.queryByText("Learning news")).not.toBeInTheDocument();
 });
+
+it("filters future sessions by focus without showing expired availability", () => {
+  state.sessions = [
+    session,
+    {
+      ...session,
+      id: "m2",
+      title: "Team clinic",
+      topic: "Team & hackathon guidance",
+    },
+    {
+      ...session,
+      id: "old",
+      title: "Past event",
+      startsAt: { toMillis: () => 0, toDate: () => new Date(0) },
+    },
+  ];
+  open(<Mentoring />);
+  expect(
+    screen.queryByRole("heading", { name: "Past event" }),
+  ).not.toBeInTheDocument();
+  fireEvent.change(screen.getByLabelText("Session focus"), {
+    target: { value: "Team & hackathon guidance" },
+  });
+  expect(
+    screen.getByRole("heading", { name: "Team clinic" }),
+  ).toBeInTheDocument();
+  expect(
+    screen.queryByRole("heading", { name: "Project interview" }),
+  ).not.toBeInTheDocument();
+});
