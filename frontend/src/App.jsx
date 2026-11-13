@@ -1231,7 +1231,7 @@ function Workspace({ children, title, subtitle }) {
           ["/saved", "Saved opportunities", Bookmark],
           ["/resume", "Résumé templates", FileText],
           ["/placement", "Placement preparation", GraduationCap],
-          ["/projects?view=mine", "My projects", Code2],
+          ["/projects?view=library", "Project library", Code2],
           ["/teams", "Find a team", Building2],
           ["/mentoring", "Mentor sessions", GraduationCap],
           ["/updates", "Platform updates", Sparkles],
