@@ -1,3 +1,4 @@
+import { DashboardOverview } from "./DashboardOverview";
 import { saveProfileDetails } from "./profileData";
 import { validatedProfileForm } from "./profileForm";
 import { ProfileCareerFields } from "./ProfileCareerFields";
@@ -1272,147 +1273,11 @@ function RoleHome({ catalog }) {
   );
 }
 function Dashboard({ catalog }) {
-  const { user, profile, admin } = useSession();
-  const profileCompletion = completion(profile);
-  const apps = useOwned("applications", user.uid),
-    saved = useOwned("bookmarks", user.uid);
-  return (
-    <Workspace
-      title={"Hi, " + (profile?.name?.split(" ")[0] || "there") + "."}
-      subtitle="Your activity at a glance."
-    >
-      <section className="dashboard-callout">
-        <div>
-          <span className="eyebrow">YOUR PROFILE</span>
-          <h2>Ready for your next opportunity?</h2>
-          <p>{profileCompletion === 100 ? "Your profile is ready. Keep your details up to date as you grow." : "Add your skills and résumé to start applying."}</p>
-          <Link className="button" to="/profile">
-            {profileCompletion === 100 ? "View your profile" : "Complete your profile"} <ArrowRight size={16} />
-          </Link>
-        </div>
-        <div className="progress-circle" role="progressbar" aria-label="Profile completeness" aria-valuemin={0} aria-valuemax={100} aria-valuenow={profileCompletion} style={{"--progress":`${profileCompletion}%`}}>
-          <strong>{profileCompletion}%</strong>
-          <span>profile complete</span>
-        </div>
-      </section>
-      <div className="stats-grid">
-        {[
-          ["Applications", apps.items.length, "/applications"],
-          ["Saved opportunities", saved.items.length, "/saved"],
-          [
-            "Open opportunities",
-            catalog.items.filter((o) => isOpen(o)).length,
-            "/explore",
-          ],
-        ].map(([label, value, to]) => (
-          <Link to={to} className="stat panel" key={label}>
-            <span>{label}</span>
-            <strong>{value}</strong>
-            <ArrowUpRight size={19} />
-          </Link>
-        ))}
-      </div>
-      <section className="panel checklist">
-        <h2>Your next steps</h2>
-        {[
-          [
-            "Add your college and skills",
-            !!profile?.college && !!profile?.skills?.length,
-            "/profile",
-          ],
-          [
-            "Add your résumé",
-            !!(profile?.resumePath || profile?.resumeUrl),
-            "/profile",
-          ],
-          ["Send your first application", apps.items.length > 0, "/explore"],
-        ].map(([title, done, to]) => (
-          <Link key={title} to={to}>
-            <span className={done ? "check done" : "check"}>
-              {done ? <Check size={15} /> : <ChevronRight size={15} />}
-            </span>
-            {title}
-            <ArrowUpRight size={16} />
-          </Link>
-        ))}
-      </section>
-      <div className="career-controls">
-        <Link className="button" to="/planner">
-          Plan your next step <CheckCircle2 size={16} />
-        </Link>
-        <Link className="button secondary" to="/learn">
-          Build a new skill <GraduationCap size={16} />
-        </Link>
-      </div>
-      <section className="dashboard-paths">
-        <Link to="/projects?view=mine">
-          <span className="path-symbol">
-            <Code2 size={22} />
-          </span>
-          <div>
-            <h2>Show what you can build.</h2>
-            <p>Add a project to your portfolio.</p>
-          </div>
-          <ArrowUpRight size={18} />
-        </Link>
-        <Link to="/teams">
-          <span className="path-symbol sage">
-            <Building2 size={22} />
-          </span>
-          <div>
-            <h2>Meet your next teammates.</h2>
-            <p>Find a shared idea. Start building.</p>
-          </div>
-          <ArrowUpRight size={18} />
-        </Link>
-      </section>
-      <div className="career-controls">
-        <Link className="button secondary" to="/mentoring">
-          Find mentor guidance <GraduationCap size={16} />
-        </Link>
-        <Link className="button secondary" to="/updates">
-          What’s new at Codovate <Sparkles size={16} />
-        </Link>
-      </div>
-      {profile?.skills?.length > 0 && (
-        <section className="section">
-          <div className="section-heading">
-            <div>
-              <span className="eyebrow">BASED ON YOUR SKILLS</span>
-              <h2>Worth a closer look.</h2>
-            </div>
-          </div>
-          <div className="resource-grid">
-            {catalog.items
-              .filter(isOpen)
-              .map((o) => ({
-                ...o,
-                score: o.skills.filter((skill) =>
-                  profile.skills.some(
-                    (s) => s.toLowerCase() === skill.toLowerCase(),
-                  ),
-                ).length,
-              }))
-              .filter((o) => o.score > 0)
-              .sort((a, b) => b.score - a.score)
-              .slice(0, 4)
-              .map((o) => (
-                <Card item={o} key={o.id} />
-              ))}
-          </div>
-          <p className="hint">
-            Suggestions use exact skill matches from the loaded opportunity
-            catalog. <Link to="/explore">Browse all opportunities</Link>.
-          </p>
-        </section>
-      )}
-      {admin && (
-        <Link className="button secondary" to="/admin">
-          Open administration <ShieldCheck size={17} />
-        </Link>
-      )}
-    </Workspace>
-  );
+  const { user, profile } = useSession();
+  const apps = useOwned("applications", user.uid), saved = useOwned("bookmarks", user.uid);
+  return <Workspace title={"Hi, " + (profile?.name?.split(" ")[0] || "there") + "."} subtitle="Your profile, progress and next opportunities in one place.">
+    <DashboardOverview profile={profile} applications={apps} saved={saved} catalog={catalog} renderOpportunity={item=><Card item={item} key={item.id}/>} />
+  </Workspace>;
 }
 function Applications() {
   const { user } = useSession();
