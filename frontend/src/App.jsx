@@ -208,6 +208,7 @@ function Header() {
         <div className="header-actions">
           {user ? (
             <>
+              <NotificationNav iconOnly />
               <Link
                 className="button secondary small"
                 to={admin ? "/admin" : "/dashboard"}
@@ -1237,7 +1238,6 @@ function Workspace({ children, title, subtitle }) {
           ["/projects?view=library", "Project library", Code2],
           ["/teams", "Find a team", Building2],
           ["/mentoring", "Mentor sessions", GraduationCap],
-          ["/updates", "Platform updates", Sparkles],
           ["/profile", "My profile", UserRound],
           ...(admin ? [["/admin", "Administration", ShieldCheck]] : []),
         ].map(([to, label, Icon]) => (
@@ -1246,7 +1246,6 @@ function Workspace({ children, title, subtitle }) {
             {label}
           </NavLink>
         ))}
-        <NotificationNav />
         <Link className="explore-back" to="/explore">
           <Compass size={18} /> Explore opportunities
         </Link>

@@ -14,14 +14,17 @@ import {
   useUnreadNotification,
 } from "./notificationData";
 const readable = (e) => (e?.code ? errorMessage(e) : e.message);
-export function NotificationNav() {
+export function NotificationNav({ iconOnly = false }) {
   const { user } = useSession();
   const { unread, error } = useUnreadNotification(user?.uid);
   if (!user) return null;
   return (
-    <NavLink to="/notifications">
-      <Bell size={18} /> Notifications{unread ? " · New" : ""}
-      {error ? " · Refresh inbox" : ""}
+    <NavLink to="/notifications"
+      className={iconOnly ? "icon-button header-notification-bell" : undefined}
+      aria-label={iconOnly ? "Notifications" + (unread ? " · New" : "") + (error ? " · Refresh inbox" : "") : undefined}
+      title={iconOnly ? "Notifications" : undefined}>
+      <Bell size={18} />
+      {iconOnly ? (unread && <span className="notification-unread-dot" aria-hidden="true" />) : <> Notifications{unread ? " · New" : ""}{error ? " · Refresh inbox" : ""}</>}
     </NavLink>
   );
 }

@@ -3655,6 +3655,8 @@ button:disabled:hover {
 .project-reference-card details > div { margin-top:12px; }
 .project-reference-actions { margin-top:auto; display:flex; gap:12px; align-items:center; }
 .project-source-note { color:#687184; font-size:12px; line-height:1.6; }
+.header-notification-bell { position:relative; display:inline-flex; align-items:center; justify-content:center; min-width:40px; min-height:40px; flex-shrink:0; }
+.notification-unread-dot { position:absolute; right:7px; top:6px; width:7px; height:7px; border-radius:50%; background:var(--blue); border:1px solid white; }
 .project-library-pagination { display:flex; justify-content:center; margin-top:32px; }
 .project-library-pagination .button { min-height:48px; }
 @media(max-width:700px){ .project-library-filters { grid-template-columns:1fr; } }
