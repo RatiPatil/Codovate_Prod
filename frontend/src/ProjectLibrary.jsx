@@ -173,7 +173,7 @@ export function ProjectLibrary({ manage = false }) {
                   version and document your tests and results.
                 </p>
               </details>
-              {row.notice && <p className="notice">{row.notice}</p>}
+              {row.notice && <p className={row.sourceEntry ? "project-source-note" : "notice"}>{row.notice}</p>}
               <div className="project-reference-actions">
                 {row.sourceUrl ? (
                   <a
