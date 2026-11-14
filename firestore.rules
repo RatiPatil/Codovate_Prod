@@ -924,12 +924,13 @@ service cloud.firestore {
   }
   function validProjectReference(d) {
    return d.keys().hasAll(['id','title','sourceTitle','section','summary','skills','sourceUrl','sourceKind','notice','status','sourceDocument','sortOrder','createdAt','updatedAt'])
-    && d.keys().hasOnly(['id','title','sourceTitle','section','summary','skills','sourceUrl','sourceKind','notice','status','sourceDocument','sortOrder','createdAt','updatedAt'])
+    && d.keys().hasOnly(['id','title','sourceTitle','section','summary','skills','sourceUrl','sourceKind','notice','status','sourceDocument','sortOrder','createdAt','updatedAt','sourceEntry','originalSourceUrl'])
     && d.id is string && d.id.matches('fyp-[a-f0-9]{20}') && text(d.title,180) && d.title.size()>0 && text(d.sourceTitle,180) && d.sourceTitle.size()>0
-    && d.section in ['Java', 'Core Java', 'Python', 'React', 'Full stack', 'Data science', 'C++', 'Machine learning', 'AI & machine learning', 'IoT', 'Blockchain', 'Language technology', 'EdTech', 'HealthTech'] && text(d.summary,500) && d.summary.size()>0 && validSkills(d.skills) && d.skills.size()>0 && d.skills.size()<=6
+    && d.section in ['Java', 'Core Java', 'Python', 'React', 'Full stack', 'Data science', 'C++', 'Machine learning', 'AI & machine learning', 'IoT', 'Blockchain', 'Language technology', 'EdTech', 'HealthTech','Python & Django collections','Deep learning collections','NLP collections','Computer vision collections','ML engineering collections','AI & ML collections','Geospatial projects'] && text(d.summary,500) && d.summary.size()>0 && validSkills(d.skills) && d.skills.size()>0 && d.skills.size()<=6
     && d.sourceKind in ['repository','collection','article','idea']
-    && (d.sourceKind=='idea' ? d.sourceUrl==null : (d.sourceUrl is string && d.sourceUrl.size()<=1000 && d.sourceUrl.matches('https://(github[.]com/|www[.]interviewbit[.]com/).*')))
-    && text(d.notice,400) && d.status in ['published','hidden'] && d.sourceDocument=='Final Year Projects.docx'
+    && (d.sourceKind=='idea' ? d.sourceUrl==null : (d.sourceUrl is string && d.sourceUrl.size()<=1000 && d.sourceUrl.matches('https://(github[.]com/|www[.]interviewbit[.]com/|data-flair[.]training/|www[.]kdnuggets[.]com/|notebooks[.]quantumstat[.]com/|datasets[.]quantumstat[.]com/|projectworlds[.]in/|1000projects[.]org/).*')))
+    && text(d.notice,400) && d.status in ['published','hidden'] && d.sourceDocument in ['Final Year Projects.docx','500 + AI,ML Projects with Source Code.pdf']
+    && (d.sourceDocument=='Final Year Projects.docx' ? !d.keys().hasAny(['sourceEntry','originalSourceUrl']) : (d.sourceEntry is int && d.sourceEntry>=31 && d.sourceEntry<=63 && d.sourceKind=='collection' && text(d.originalSourceUrl,100) && d.originalSourceUrl.matches('https://bit[.]ly/[A-Za-z0-9]+')))
     && d.sortOrder is int && d.sortOrder>=0 && d.sortOrder<=10000 && d.createdAt is timestamp && d.updatedAt is timestamp;
   }
   // Curated references contain no student data. Hidden is a display state, not a privacy setting.

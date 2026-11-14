@@ -16,8 +16,12 @@ async function main() {
       "utf8",
     ),
   );
-  if (rows.length !== 90 || new Set(rows.map((r) => r.id)).size !== 90)
-    throw new Error("Expected 90 unique project records.");
+  if (
+    !rows.length ||
+    rows.length > 500 ||
+    new Set(rows.map((r) => r.id)).size !== rows.length
+  )
+    throw new Error("Expected 1–500 unique project records.");
   for (const row of rows) {
     const result = validateDocument("projectLibrary", row.id, row);
     if (!result.valid)
@@ -26,7 +30,7 @@ async function main() {
       );
   }
   console.log(
-    "Validated all 90 project records. Checking Firebase Admin access…",
+    `Validated all ${rows.length} project records. Checking Firebase Admin access…`,
   );
   if (process.env.FIRESTORE_EMULATOR_HOST)
     throw new Error("Production import refuses emulator settings.");

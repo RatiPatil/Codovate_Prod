@@ -2872,7 +2872,14 @@
             "Blockchain",
             "Language technology",
             "EdTech",
-            "HealthTech"
+            "HealthTech",
+            "Python & Django collections",
+            "Deep learning collections",
+            "NLP collections",
+            "Computer vision collections",
+            "ML engineering collections",
+            "AI & ML collections",
+            "Geospatial projects"
           ]
         },
         "summary": {
@@ -2900,7 +2907,7 @@
               "type": "string",
               "format": "uri",
               "maxLength": 1000,
-              "pattern": "^https://(github\\.com/|www\\.interviewbit\\.com/)"
+              "pattern": "^https://(github\\.com|www\\.interviewbit\\.com|data-flair\\.training|www\\.kdnuggets\\.com|notebooks\\.quantumstat\\.com|datasets\\.quantumstat\\.com|projectworlds\\.in|1000projects\\.org)/.*$"
             }
           ]
         },
@@ -2923,7 +2930,10 @@
           ]
         },
         "sourceDocument": {
-          "const": "Final Year Projects.docx"
+          "enum": [
+            "Final Year Projects.docx",
+            "500 + AI,ML Projects with Source Code.pdf"
+          ]
         },
         "sortOrder": {
           "type": "integer",
@@ -2937,6 +2947,16 @@
         "updatedAt": {
           "type": "string",
           "format": "date-time"
+        },
+        "sourceEntry": {
+          "type": "integer",
+          "minimum": 31,
+          "maximum": 63
+        },
+        "originalSourceUrl": {
+          "type": "string",
+          "pattern": "^https://bit[.]ly/[A-Za-z0-9]+$",
+          "maxLength": 100
         }
       },
       "additionalProperties": false,
@@ -2961,6 +2981,45 @@
               "sourceUrl": {
                 "type": "string"
               }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "sourceDocument": {
+                "const": "500 + AI,ML Projects with Source Code.pdf"
+              }
+            },
+            "required": [
+              "sourceDocument"
+            ]
+          },
+          "then": {
+            "required": [
+              "sourceEntry",
+              "originalSourceUrl"
+            ],
+            "properties": {
+              "sourceKind": {
+                "const": "collection"
+              }
+            }
+          },
+          "else": {
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "sourceEntry"
+                  ]
+                },
+                {
+                  "required": [
+                    "originalSourceUrl"
+                  ]
+                }
+              ]
             }
           }
         }

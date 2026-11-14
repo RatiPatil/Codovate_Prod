@@ -5,12 +5,12 @@ import { ProjectLibrary } from "./ProjectLibrary";
 import seed from "./projectLibrary.json";
 import { libraryRows, filterLibrary } from "./projectLibraryData";
 afterEach(cleanup);
-it("contains all 90 project entries with accurate source types", () => {
-  expect(seed).toHaveLength(90);
-  expect(new Set(seed.map((r) => r.id)).size).toBe(90);
+it("contains all 123 project references with accurate source types", () => {
+  expect(seed).toHaveLength(123);
+  expect(new Set(seed.map((r) => r.id)).size).toBe(123);
   expect(seed.filter((r) => r.sourceKind === "idea")).toHaveLength(16);
   expect(seed.filter((r) => r.sourceKind === "repository")).toHaveLength(69);
-  expect(seed.filter((r) => r.sourceKind === "collection")).toHaveLength(4);
+  expect(seed.filter((r) => r.sourceKind === "collection")).toHaveLength(37);
   expect(seed.filter((r) => r.sourceKind === "article")).toHaveLength(1);
   expect(
     seed.every((r) => (r.sourceKind === "idea") === (r.sourceUrl === null)),
@@ -18,7 +18,7 @@ it("contains all 90 project entries with accurate source types", () => {
 });
 it("searches case-insensitively and filters by technology and reference type", () => {
   render(<ProjectLibrary />);
-  expect(screen.getByRole("status")).toHaveTextContent("90 projects");
+  expect(screen.getByRole("status")).toHaveTextContent("123 projects");
   expect(screen.getAllByRole("article")).toHaveLength(12);
   fireEvent.change(screen.getByLabelText("Technology / domain"), {
     target: { value: "Core Java" },
@@ -40,9 +40,9 @@ it("searches case-insensitively and filters by technology and reference type", (
   expect(screen.queryByRole("link")).toBeNull();
 });
 it("applies admin hidden records over bundled references and pages results", () => {
-  expect(libraryRows([{ ...seed[0], status: "hidden" }])).toHaveLength(89);
+  expect(libraryRows([{ ...seed[0], status: "hidden" }])).toHaveLength(122);
   expect(libraryRows([{ ...seed[0], status: "hidden" }], true)).toHaveLength(
-    90,
+    123,
   );
   render(<ProjectLibrary />);
   fireEvent.click(screen.getByRole("button", { name: "Show more projects" }));

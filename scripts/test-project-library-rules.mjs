@@ -30,6 +30,7 @@ const rows = JSON.parse(
   ),
 );
 try {
+  await env.clearFirestore();
   const admin = env.authenticatedContext("admin", { admin: true }).firestore(),
     student = env.authenticatedContext("student").firestore(),
     anon = env.unauthenticatedContext().firestore();
@@ -63,7 +64,25 @@ try {
   await assertFails(
     updateDoc(ref, { sourceKind: "idea", updatedAt: serverTimestamp() }),
   );
-  console.log("8 project library ownership and schema checks passed");
+  for (const entry of rows.filter((r) => r.sourceEntry)) {
+    await assertSucceeds(
+      setDoc(doc(admin, "projectLibrary", entry.id), {
+        ...entry,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      }),
+    );
+  }
+  const pdf = rows.find((r) => r.sourceEntry);
+  await assertFails(
+    updateDoc(doc(admin, "projectLibrary", pdf.id), {
+      sourceEntry: 30,
+      updatedAt: serverTimestamp(),
+    }),
+  );
+  console.log(
+    "42 project library ownership, PDF provenance and schema checks passed",
+  );
 } finally {
   await env.cleanup();
 }
