@@ -3738,3 +3738,21 @@ button:disabled:hover {
 .mentor-marketplace ~ .mentoring-grid .mentor-card { border-radius:18px; padding:28px; gap:4px; }
 .mentor-card .mentor-avatar { background:#eeebff; color:var(--blue); width:56px; height:56px; font-weight:700; }
 @media(max-width:700px){.mentor-focus-picker > div{grid-template-columns:1fr 1fr;}.mentor-search-toolbar{grid-template-columns:1fr;}.mentor-marketplace{padding:24px;}}
+
+.profile-summary { background:linear-gradient(120deg,#f0edff,#fff); border-radius:18px; }
+.profile-completion { margin-left:auto; min-width:140px; display:grid; gap:10px; color:var(--blue); }
+.profile-completion progress { width:100%; height:8px; accent-color:var(--blue); }
+.profile-form > h2,.profile-career-fields > h2 { margin-top:28px; margin-bottom:18px; }
+.profile-form > h2:first-child { margin-top:0; }
+.profile-career-fields { margin-top:28px; border-top:1px solid var(--border); padding-top:8px; }
+.profile-form fieldset { min-width:0; border:1px solid var(--border); padding:18px; border-radius:12px; margin:20px 0; }
+.profile-form legend { padding:0 6px; font-weight:600; }
+.profile-interest-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+.profile-form .hub-check { flex-direction:row; align-items:flex-start; gap:10px; line-height:1.5; }
+.profile-form .hub-check input { width:16px; height:16px; padding:0; margin-top:2px; flex:0 0 16px; accent-color:var(--blue); }
+.profile-form input,.profile-form select { min-height:48px; }
+.profile-form .hub-check input { min-height:0; }
+@media(max-width:600px){.profile-interest-grid{grid-template-columns:1fr;}.profile-completion{width:100%;margin-left:0;}}
+.profile-form > .profile-edit-fields { border:0; margin:0; padding:0; }
+.profile-edit-fields > h2 { margin:28px 0 18px; }
+.profile-edit-fields > h2:first-child { margin-top:0; }

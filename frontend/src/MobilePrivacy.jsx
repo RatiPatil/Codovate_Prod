@@ -10,15 +10,16 @@ export const mobileAudiences = {
 export function mobileFormValues(mobile, visibility) {
   if (!Object.hasOwn(mobileAudiences, visibility))
     throw new Error("Wait for mobile privacy settings to load, then retry.");
-  if (!/^\d{10}$/.test(mobile || ""))
-    throw new Error("Enter a 10-digit mobile number.");
+  if (!/^[6-9]\d{9}$/.test(mobile || ""))
+    throw new Error("Enter a 10-digit mobile number starting with 6, 7, 8 or 9.");
   return { mobile: "+91" + mobile, visibility };
 }
 export function MobilePrivacyFields({ user, profile }) {
   const [audience, setAudience] = useState("only_me"),
     [mobile, setMobile] = useState(""),
     [ready, setReady] = useState(false),
-    [message, setMessage] = useState("");
+    [message, setMessage] = useState(""),
+    [revision, retry] = useState(0);
   useEffect(() => {
     setMobile(
       String(profile?.mobile || "")
@@ -36,6 +37,7 @@ export function MobilePrivacyFields({ user, profile }) {
           setReady(false);
           return;
         }
+        setMessage("");
         setAudience(snapshot.exists() ? snapshot.data().visibility : "only_me");
         setReady(true);
       },
@@ -46,7 +48,7 @@ export function MobilePrivacyFields({ user, profile }) {
         );
       },
     );
-  }, [user.uid]);
+  }, [user.uid, revision]);
   return (
     <>
       <label>
@@ -81,7 +83,7 @@ export function MobilePrivacyFields({ user, profile }) {
       </label>
       {message && (
         <p className="hint" role="alert">
-          {message}
+          {message} <button type="button" className="text-link" onClick={()=>retry(v=>v+1)}>Retry privacy settings</button>
         </p>
       )}
     </>

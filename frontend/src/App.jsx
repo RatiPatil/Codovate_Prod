@@ -1,3 +1,6 @@
+import { saveProfileDetails } from "./profileData";
+import { validatedProfileForm } from "./profileForm";
+import { ProfileCareerFields } from "./ProfileCareerFields";
 import ProfileResume from "./ProfileResume";
 import { OpportunitySaveProvider, SaveOpportunityButton } from "./OpportunitySave";
 import { ProfileInterests, profileInterests } from "./ProfileInterests";
@@ -1520,38 +1523,14 @@ function Profile() {
     [message, setMessage] = useState("");
   async function save(e) {
     e.preventDefault();
-    const values = new FormData(e.currentTarget);
-    const data = Object.fromEntries(values);
-    delete data.resume;
-    let mobilePrivacy, interests;
+    let data, mobilePrivacy, interests;
     try {
-      mobilePrivacy = mobileFormValues(data.mobile, data.mobileVisibility);
-      interests = profileInterests(values);
-    } catch (failure) {
-      setError(failure.message);
-      return;
-    }
-    delete data.mobileVisibility;
-    delete data.achievements;
-    delete data.passions;
-    data.mobile = mobilePrivacy.mobile;
-    try { data.name = normalizeFullName(data.name); if (profile?.nameParts) data.nameParts = splitFullName(data.name); }
-    catch (failure) { setError(failure.message); return; }
-    const skillsError = skillInputError(data.skills);
-    if (skillsError) {
-      setError(skillsError);
-      return;
-    }
-    data.skills = [
-      ...new Set(
-        data.skills
-          .split(",")
-          .map((s) => s.trim())
-          .filter(Boolean),
-      ),
-    ].slice(0, 20);
-    if (!validWebLink(data.portfolio)) {
-      setError("Portfolio links must start with https://");
+      ({data,mobilePrivacy,interests}=validatedProfileForm(new FormData(e.currentTarget)));
+      if(profile?.nameParts) data.nameParts=splitFullName(data.name);
+    } catch(failure) {
+      setMessage("");setError(failure.message);
+      const control=e.currentTarget.elements.namedItem(failure.field || "name");
+      if(control?.focus) control.focus(); else control?.[0]?.focus();
       return;
     }
     setBusy(true);
@@ -1559,45 +1538,7 @@ function Profile() {
     setMessage("");
     try {
       if (!profile) await createProfile(user, data.name);
-      await runTransaction(db, async (transaction) => {
-        const profileRef = doc(db, "users", user.uid);
-        const memberRef = doc(db, "memberProfiles", user.uid);
-        const current = await transaction.get(profileRef);
-        const publicCard = await transaction.get(memberRef);
-        const preferencesRef = doc(db, "discoveryPreferences", user.uid);
-        const preferences = await transaction.get(preferencesRef);
-        if (!current.exists())
-          throw new Error("Your profile is unavailable. Please retry.");
-        const sharedInterests = publicCard.exists() && publicCard.data().details && preferences.exists() && preferences.data().shareDetails === true;
-        if (preferences.exists() && preferences.data().details) transaction.update(preferencesRef, {
-          "details.achievements": interests.achievements, "details.passions": interests.passions, updatedAt: serverTimestamp(),
-        });
-        if (publicCard.exists())
-          transaction.update(memberRef, {
-            ...(sharedInterests ? { "details.achievements": interests.achievements, "details.passions": interests.passions } : {}),
-            uid: user.uid,
-            name: data.name,
-            skills: data.skills,
-            updatedAt: serverTimestamp(),
-          });
-        transaction.update(profileRef, {
-          ...data,
-          teammateCard: { photoUrl: current.data().teammateCard?.photoUrl || "", ...interests },
-          updatedAt: serverTimestamp(),
-        });
-        transaction.set(doc(db, "mobileSharing", user.uid), {
-          uid: user.uid,
-          mobile: mobilePrivacy.mobile,
-          visibility: mobilePrivacy.visibility,
-          updatedAt: serverTimestamp(),
-        });
-        transaction.set(doc(db, "adminUsers", user.uid), {
-          uid: user.uid,
-          fullName: data.name,
-          joinedAt: current.data().createdAt,
-          updatedAt: serverTimestamp(),
-        });
-      });
+      await saveProfileDetails(user,data,mobilePrivacy,interests);
       setMessage("Your profile has been saved.");
     } catch (e) {
       setError(e.code ? errorMessage(e) : e.message);
@@ -1606,7 +1547,7 @@ function Profile() {
     }
   }
   return (
-    <Workspace title="My profile" subtitle="Keep your details up to date.">
+    <Workspace title="My profile" subtitle="Introduce yourself, share your strengths, and find people to build with.">
       <div className="profile-summary panel">
         <div className="profile-avatar">
           {(profile?.name || user.email || "S")[0].toUpperCase()}
@@ -1616,25 +1557,18 @@ function Profile() {
           <p>{user.email}</p>
           <span className="pill">{admin ? "Administrator" : "Student"}</span>
         </div>
-        <strong>{completion(profile)}% complete</strong>
+        <div className="profile-completion"><strong>{completion(profile)}% complete</strong><progress value={completion(profile)} max={100} aria-label="Profile completion" /></div>
       </div>
-      {profile?.careerPreferences && <section className="panel onboarding-profile-details" aria-label="Career and collaboration profile">
-        <h2>Career & collaboration</h2>
-        <div className="form-grid">
-          <div><strong>Professional direction</strong><p>{profile.careerPreferences.desiredRole} · {profile.careerPreferences.domain}</p><p>{profile.careerPreferences.experience} · {profile.careerPreferences.yearOfStudy}</p></div>
-          <div><strong>Career goals</strong><p>{profile.careerPreferences.goals.join(" · ") || "Not selected"}</p></div>
-          <div><strong>Collaboration</strong><p>{profile.careerPreferences.mode} · {profile.careerPreferences.availability}</p><p>{profile.careerPreferences.seeking.join(" · ") || "Exploring opportunities"}</p></div>
-        </div>
-        <p className="hint">Your preferences stay private. Manage teammate discovery and optional shared details in Find a team.</p>
-        <Link className="button secondary" to="/teams?hub=people">Find teammates <ArrowUpRight size={15} /></Link>
-      </section>}
       {error && <Notice>{error}</Notice>}
       {message && <Notice kind="success">{message}</Notice>}
       <form
         className="panel profile-form"
         onSubmit={save}
+        noValidate
+        onChange={()=>{setMessage("");setError("");}}
         key={user.uid + !!profile}
       >
+        <fieldset disabled={busy} className="profile-edit-fields">
         <h2>Personal & academic details</h2>
         <div className="form-grid">
           <label>
@@ -1720,14 +1654,16 @@ function Profile() {
             placeholder="React, communication, Figma…"
           />
         </label>
+        <ProfileCareerFields profile={profile} />
         <ProfileInterests profile={profile} />
         <div className="form-footer">
-          <p>Your profile is private to you and the platform administrator.</p>
+          <p>Name and skills update your discovery card if enabled. Additional details follow your sharing settings in Find a team.</p>
           <button className="button" disabled={busy}>
             {busy ? "Saving…" : "Save profile"}
             <Check size={17} />
           </button>
         </div>
+        </fieldset>
       </form>
       <ProfileResume key={user.uid} user={user} profile={profile} />
     </Workspace>
