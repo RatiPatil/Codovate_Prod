@@ -1197,9 +1197,57 @@
             "maxLength": 60,
             "pattern": "^[^\\r\\n]+$"
           }
+        },
+        "mentoringVersion": {
+          "const": 2
         }
       },
-      "additionalProperties": false
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "required": [
+              "mentoringVersion"
+            ],
+            "properties": {
+              "status": {
+                "const": "published"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "mentorUid",
+              "mentorRole",
+              "mentorBio",
+              "outcome",
+              "expertise"
+            ],
+            "properties": {
+              "mentorUid": {
+                "type": "string",
+                "minLength": 1
+              },
+              "mentorRole": {
+                "type": "string",
+                "minLength": 1
+              },
+              "mentorBio": {
+                "type": "string",
+                "minLength": 1
+              },
+              "outcome": {
+                "type": "string",
+                "minLength": 1
+              },
+              "expertise": {
+                "type": "array",
+                "minItems": 1
+              }
+            }
+          }
+        }
+      ]
     },
     "mentorBookings": {
       "type": "object",

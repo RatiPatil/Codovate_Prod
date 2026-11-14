@@ -3724,3 +3724,17 @@ button:disabled:hover {
 .profile-resume progress { width:100%; accent-color:var(--blue); }
 .profile-resume .button { justify-self:start; }
 @media(max-width:600px){.profile-resume{padding:22px;}}
+
+.mentor-marketplace { background:linear-gradient(120deg,#f1eeff,#fff); padding:36px; }
+.mentor-marketplace > div { max-width:760px; }
+.mentor-focus-picker { margin:26px 0; }
+.mentor-focus-picker h3 { font-size:18px; margin-bottom:16px; }
+.mentor-focus-picker > div { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
+.mentor-focus-picker button { text-align:left; padding:18px; border:1px solid var(--border); border-radius:12px; background:white; font-weight:600; color:var(--navy); }
+.mentor-focus-picker button.active { border-color:var(--blue); color:var(--blue); background:#f2efff; }
+.mentor-search-toolbar { display:grid; grid-template-columns:1fr 1fr 2fr; gap:16px; align-items:end; margin:24px 0; }
+.mentor-search-toolbar > label { margin:0; max-width:none; }
+.mentor-search-toolbar input,.mentor-search-toolbar select { height:48px; }
+.mentor-marketplace ~ .mentoring-grid .mentor-card { border-radius:18px; padding:28px; gap:4px; }
+.mentor-card .mentor-avatar { background:#eeebff; color:var(--blue); width:56px; height:56px; font-weight:700; }
+@media(max-width:700px){.mentor-focus-picker > div{grid-template-columns:1fr 1fr;}.mentor-search-toolbar{grid-template-columns:1fr;}.mentor-marketplace{padding:24px;}}

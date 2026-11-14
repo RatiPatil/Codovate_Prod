@@ -11,7 +11,7 @@ Codovate mentoring extends the existing administrator-operated session catalog. 
 5. Follow the mentor takeaway and up to three concrete next steps. Checkboxes save transactionally. Live workspace updates reflect an administrator's new plan; stale checkboxes cannot mark a replacement step complete.
 6. Once the administrator marks the session completed (after its end time), submit a private usefulness rating and reflection. Cancelled/declined bookings keep a read-only workspace.
 
-The page contains no fabricated mentors, availability, ratings, booking totals, or paid-session claims. Catalogs may initially be empty: administrators must publish real sessions. When the loaded catalog has no future sessions, ten clearly marked fictional demo profiles show the exact card layout without accepting bookings or messages.
+The page contains no fabricated mentors, availability, ratings, booking totals, or paid-session claims. Catalogs may initially be empty: administrators must publish real sessions. No fictional profiles are used.
 
 ## Administrator operation
 
@@ -59,7 +59,7 @@ Availability approval remains manual. This change does not add mentor self-regis
 
 ## Real mentor assignment and private conversations
 
-Admin session creation now supports mentor role, biography, up to six expertise tags, an expected takeaway, preparation guidance, and an optional **Mentor account UID**. Session cards use the same rendering for admin-created sessions and the ten fictional examples. These optional metadata fields preserve compatibility with existing sessions. A real upcoming published session replaces the example fallback; demo profiles never enter the database or create accounts and never claim actual availability.
+Admin session creation now supports mentor role, biography, up to six expertise tags, an expected takeaway, preparation guidance, and a **Mentor account UID**. New published sessions require complete mentor metadata. Existing records remain accessible in administration and booking history.
 
 Before assigning an account, verify the real mentor has agreed to participate and has signed into Codovate. Copy their existing account UID from the admin student directory or Firebase Authentication; never use an invented UID, name or email as an authorization rule. Firestore requires the assigned UID to have an existing user profile. Assignment is fixed in the session and copied exactly into each booking by the booking transaction and checked again by rules. No global administrator role is granted.
 
@@ -72,3 +72,13 @@ Reads load the latest 50 messages, with an explicit Load earlier action up to th
 Admins can use **Mentor bookings → Remove mentor access**. This only clears `mentorUid` on the parent booking; parent-based rules immediately remove the mentor's access to notes, conversation and workspace. It does not delete student records or message history, and admins can continue coordinating the booking. Replace an incorrectly assigned session rather than trying to reuse another person's identity. Revocation cannot erase information a former participant already saw.
 
 Additional checks: `frontend/src/mentorChatData.test.js`, `MentorChat.test.jsx`, and `scripts/test-mentor-chat-rules.mjs`, including a genuine Firestore listener receiving a message across separate authenticated test contexts. No production accounts or production messages were created during development.
+
+## Real mentor discovery replacement
+
+The fictional demo dataset and its fallback rendering have been removed. Student discovery now queries published `mentoringVersion: 2` sessions only, with the included composite index, and displays only future sessions linked to a mentor UID. Existing legacy sessions/bookings remain in admin/history; they are not deleted or silently promoted as real available mentoring.
+
+New admin sessions carry version 2. Publishing requires an existing mentor account UID, nonempty specialization, biography, expertise and expected outcome in addition to the existing schedule and session fields. Both input validation and Firestore rules enforce completeness. Admins must confirm the actual mentor's identity, consent, qualifications and available time before publication; account existence alone is not professional credential verification. Create a complete replacement for a legacy session rather than changing its immutable account or schedule.
+
+The redesigned page includes a goal picker, topic/format/search filters, session details, preparation guidance and a direct booking request. My bookings and Assigned sessions retain private meeting links, live chat, action plans and post-session reflections. No fabricated reviews, mentors, prices or counts are used. It remains an administrator-operated service, without payments, self-service mentor onboarding or automatic appointment allocation. Real participating mentors must be supplied by Codovate; no identities or availability can be populated from fictional data.
+
+No database import is required; deploy rules/indexes before publishing new real sessions.

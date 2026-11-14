@@ -344,11 +344,12 @@ service cloud.firestore {
   }
   function validMentorSession(d) {
    return d.keys().hasAll(['title','mentorName','topic','description','startsAt','durationMinutes','format','location','status','createdBy','createdAt','updatedAt'])
-    && d.keys().hasOnly(['title','mentorName','topic','description','startsAt','durationMinutes','format','location','status','createdBy','createdAt','updatedAt','mentorUid','mentorRole','mentorBio','expertise','outcome','preparation'])
+    && d.keys().hasOnly(['title','mentorName','topic','description','startsAt','durationMinutes','format','location','status','createdBy','createdAt','updatedAt','mentorUid','mentorRole','mentorBio','expertise','outcome','preparation','mentoringVersion'])
     && text(d.title,120) && d.title.size()>0 && text(d.mentorName,100) && d.mentorName.size()>0
     && text(d.get('mentorUid',''),128) && text(d.get('mentorRole',''),100) && text(d.get('mentorBio',''),500)
     && text(d.get('outcome',''),300) && text(d.get('preparation',''),300)
     && validSkills(d.get('expertise',[])) && d.get('expertise',[]).size()<=6
+    && (!d.keys().hasAny(['mentoringVersion']) || (d.mentoringVersion==2 && (d.status!='published' || (d.get('mentorUid','')!='' && d.get('mentorRole','')!='' && d.get('mentorBio','')!='' && d.get('outcome','')!='' && d.get('expertise',[]).size()>0))))
     && d.topic in ['Interview practice','Career direction','Resume review','Project feedback','Team & hackathon guidance','Portfolio walkthrough']
     && text(d.description,2000) && d.description.size()>0 && d.startsAt is timestamp
     && d.durationMinutes is int && d.durationMinutes>=15 && d.durationMinutes<=120

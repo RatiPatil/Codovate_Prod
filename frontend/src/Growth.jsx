@@ -1,5 +1,4 @@
 import MentorWorkspace from "./MentorWorkspace";
-import { mentorExamples } from "./mentorExamples";
 import { useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import {
@@ -166,13 +165,20 @@ function MentoringScreen({ manage }) {
     mine || assigned ? "mentorBookings" : "mentorSessions",
     user?.uid,
     manage,
-    assigned ? "assigned" : mine ? "mine" : "default",
+    assigned
+      ? "assigned"
+      : mine
+        ? "mine"
+        : manage
+          ? "default"
+          : "realMentoring",
   );
   const action = useAction(data.refresh),
     [editor, setEditor] = useState(false),
     [selected, setSelected] = useState(null),
     [search, setSearch] = useState(""),
     [topic, setTopic] = useState("All"),
+    [format, setFormat] = useState("All"),
     [workspace, setWorkspace] = useState(null);
   async function publish(e) {
     e.preventDefault();
@@ -191,21 +197,15 @@ function MentoringScreen({ manage }) {
       setParams({ view: "mine" });
     }, "Request sent. The administrator will review your booking.");
   }
-  const showExamples =
-    !mine &&
-    !assigned &&
-    !manage &&
-    !data.loading &&
-    !data.error &&
-    !data.items.some((s) => s.startsAt?.toMillis?.() > Date.now());
-  const items = (showExamples ? mentorExamples : data.items).filter(
+  const items = data.items.filter(
     (s) =>
+      (mine || assigned || manage || s.startsAt?.toMillis?.() > Date.now()) &&
       (mine ||
         assigned ||
         manage ||
-        s.demo ||
-        s.startsAt?.toMillis?.() > Date.now()) &&
+        (s.mentoringVersion === 2 && !!s.mentorUid)) &&
       (topic === "All" || mine || assigned || s.topic === topic) &&
+      (format === "All" || mine || assigned || s.format === format) &&
       (s.title || s.sessionTitle || "")
         .concat(" ", s.mentorName, " ", s.topic || "")
         .toLowerCase()
@@ -213,14 +213,17 @@ function MentoringScreen({ manage }) {
   );
   return (
     <>
-      {!manage && (
-        <section className="mentor-welcome">
+      {!manage && !mine && !assigned && (
+        <section className="mentor-welcome mentor-marketplace">
           <div>
-            <span className="eyebrow">GUIDANCE THAT MOVES YOU FORWARD</span>
-            <h2>Bring a question. Build your next step.</h2>
+            <span className="eyebrow">
+              YOUR NEXT STEP, WITH THE RIGHT GUIDANCE
+            </span>
+            <h2>Work through your next challenge with a mentor.</h2>
             <p>
-              Get a fresh perspective on your project, interview or career. Keep
-              your preparation, mentor takeaway and progress together.
+              Book a focused conversation about your project, interview or
+              career. Review the mentor’s expertise, choose a published time,
+              and leave with practical next steps.
             </p>
           </div>
           <ol className="mentor-journey">
@@ -244,6 +247,26 @@ function MentoringScreen({ manage }) {
               </small>
             </li>
           </ol>
+        </section>
+      )}
+      {!manage && !mine && !assigned && (
+        <section
+          className="mentor-focus-picker"
+          aria-label="Choose your mentoring goal"
+        >
+          <h3>What would you like to work on?</h3>
+          <div>
+            {mentorTopics.map((t) => (
+              <button
+                key={t}
+                className={topic === t ? "active" : ""}
+                aria-pressed={topic === t}
+                onClick={() => setTopic(topic === t ? "All" : t)}
+              >
+                {t}
+              </button>
+            ))}
+          </div>
         </section>
       )}
       <div className="community-toolbar">
@@ -317,14 +340,16 @@ function MentoringScreen({ manage }) {
                 Mentor role / specialization
                 <input
                   name="mentorRole"
+                  required
                   maxLength={100}
                   placeholder="For example: Full-stack project mentor"
                 />
               </label>
               <label>
-                Mentor account UID (optional)
+                Mentor account UID
                 <input
                   name="mentorUid"
+                  required
                   maxLength={128}
                   placeholder="Existing Codovate account UID"
                 />
@@ -333,6 +358,7 @@ function MentoringScreen({ manage }) {
                 Expertise (comma-separated)
                 <input
                   name="expertise"
+                  required
                   maxLength={365}
                   placeholder="React, Node.js, Database design"
                 />
@@ -381,11 +407,11 @@ function MentoringScreen({ manage }) {
             </div>
             <label>
               About the mentor
-              <textarea name="mentorBio" maxLength={500} rows={2} />
+              <textarea name="mentorBio" required maxLength={500} rows={2} />
             </label>
             <label>
               What the student will leave with
-              <input name="outcome" maxLength={300} />
+              <input name="outcome" required maxLength={300} />
             </label>
             <label>
               What to prepare
@@ -394,8 +420,8 @@ function MentoringScreen({ manage }) {
             <p className="hint">
               Only assign a real mentor who has agreed to participate. Use their
               existing account UID to give access to assigned bookings and
-              private conversations. Leave it blank for
-              administrator-coordinated sessions.
+              private conversations. Publish only after confirming their
+              identity, expertise, consent and availability.
             </p>
             <label>
               Session description
@@ -451,36 +477,38 @@ function MentoringScreen({ manage }) {
           </button>
         </form>
       )}
-      {!mine && !assigned && (
-        <label className="mentor-topic-filter">
-          Session focus
-          <select value={topic} onChange={(e) => setTopic(e.target.value)}>
-            <option value="All">All topics</option>
-            {mentorTopics.map((t) => (
-              <option key={t}>{t}</option>
-            ))}
-          </select>
+      <div className="mentor-search-toolbar">
+        {!mine && !assigned && (
+          <label className="mentor-topic-filter">
+            Session focus
+            <select value={topic} onChange={(e) => setTopic(e.target.value)}>
+              <option value="All">All topics</option>
+              {mentorTopics.map((t) => (
+                <option key={t}>{t}</option>
+              ))}
+            </select>
+          </label>
+        )}
+        {!mine && !assigned && !manage && (
+          <label className="mentor-topic-filter">
+            Session format
+            <select value={format} onChange={(e) => setFormat(e.target.value)}>
+              <option value="All">All formats</option>
+              <option>Online</option>
+              <option>In person</option>
+            </select>
+          </label>
+        )}
+        <label className="directory-search">
+          Search loaded {mine || assigned ? "bookings" : "sessions"}
+          <input
+            type="search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Topic, session or mentor"
+          />
         </label>
-      )}
-      <label className="directory-search">
-        Search loaded {mine || assigned ? "bookings" : "sessions"}
-        <input
-          type="search"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Topic, session or mentor"
-        />
-      </label>
-      {showExamples && (
-        <div className="mentor-demo-notice" role="note">
-          <strong>10 demo mentor profiles · examples only</strong>
-          <p>
-            These fictional profiles preview the session layout. They cannot
-            receive bookings or messages. Real sessions published by your admin
-            use the same cards and replace these examples.
-          </p>
-        </div>
-      )}
+      </div>
       {assigned && (
         <p className="hint">
           Only bookings assigned to your account appear here. Open a workspace
@@ -494,15 +522,14 @@ function MentoringScreen({ manage }) {
             <div className="mentor-card-head">
               <span className="mentor-avatar">{s.mentorName?.slice(0, 1)}</span>
               <span className={"request-state state-" + s.status}>
-                {s.demo ? "Demo profile" : s.status}
+                {!mine && !assigned && !manage
+                  ? "Mentor-led session"
+                  : s.status}
               </span>
             </div>
             <span className="eyebrow">{s.topic || s.format}</span>
             <h2>{s.title || s.sessionTitle}</h2>
-            <p className="mentor-name">
-              With {s.mentorName}
-              {s.demo ? " · fictional example" : ""}
-            </p>
+            <p className="mentor-name">With {s.mentorName}</p>
             {s.mentorRole && (
               <strong className="mentor-specialty">{s.mentorRole}</strong>
             )}
@@ -517,7 +544,7 @@ function MentoringScreen({ manage }) {
             <div className="mentor-facts">
               <span>
                 <CalendarDays size={15} />
-                {s.demo ? "No real availability" : sessionTime(s)}
+                {sessionTime(s)}
               </span>
               <span>
                 <Clock size={15} />
@@ -543,11 +570,7 @@ function MentoringScreen({ manage }) {
               </details>
             )}
             <p className="hint">{s.location}</p>
-            {s.demo ? (
-              <span className="mentor-demo-label">
-                Example only · not bookable
-              </span>
-            ) : mine || assigned ? (
+            {mine || assigned ? (
               <>
                 <div className="career-controls">
                   <button
@@ -653,7 +676,7 @@ function MentoringScreen({ manage }) {
               ? "An administrator must assign your account to a session. Its student bookings will then appear here."
               : mine
                 ? "Request a mentor session to track it here."
-                : "No upcoming sessions match this view. Try another topic or check back for the next published session."}
+                : "No matching mentor sessions are available right now. Clear your filters or check back after our team publishes the next available slots."}
           </p>
         </div>
       )}

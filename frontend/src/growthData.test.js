@@ -194,3 +194,8 @@ it("admin booking decisions atomically notify the booking owner", async () => {
     }),
   );
 });
+
+it("requires complete real-account metadata for a published version-two session",()=>{
+ expect(()=>sessionInput({...draft,status:"published",mentoringVersion:2})).toThrow("real mentor account");
+ expect(sessionInput({...draft,status:"published",mentoringVersion:2,mentorUid:"mentor",mentorRole:"Project mentor",mentorBio:"A mentor biography",expertise:"Python, SQL",outcome:"An action plan"}).mentoringVersion).toBe(2);
+});

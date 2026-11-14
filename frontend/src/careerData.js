@@ -160,6 +160,8 @@ export function useCareerPage(
       !admin
     )
       filters.push(where("status", "==", "published"));
+    if (kind === "mentorSessions" && scope === "realMentoring" && !admin)
+      filters.push(where("mentoringVersion", "==", 2));
     if (kind === "teams") {
       const timer = setTimeout(() => {
         if (active)

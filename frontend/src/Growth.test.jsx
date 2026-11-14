@@ -46,6 +46,8 @@ vi.mock("./growthData", async () => ({
 import { Mentoring, Updates, BookingAdmin } from "./Growth";
 const session = {
   id: "m1",
+  mentoringVersion: 2,
+  mentorUid: "mentor",
   title: "Project interview",
   mentorName: "Mentor",
   topic: "Interview practice",
@@ -229,13 +231,10 @@ it("filters future sessions by focus without showing expired availability", () =
   ).not.toBeInTheDocument();
 });
 
-it("shows ten clearly labeled, non-bookable demo profiles when the live catalog is empty", () => {
+it("shows an honest empty catalog and never fabricates mentor profiles", () => {
   state.sessions = [];
   open(<Mentoring />);
-  expect(screen.getAllByText("Demo profile")).toHaveLength(10);
-  expect(
-    screen.getByText("10 demo mentor profiles · examples only"),
-  ).toBeInTheDocument();
+  expect(screen.queryByText("Demo profile")).not.toBeInTheDocument();
   expect(
     screen.queryByRole("button", { name: "Request a place" }),
   ).not.toBeInTheDocument();
@@ -281,3 +280,5 @@ it("assigned mentors have a separate view and cannot cancel student bookings", (
     screen.queryByRole("button", { name: "Cancel booking" }),
   ).not.toBeInTheDocument();
 });
+
+it("keeps legacy and unassigned records out of student discovery",()=>{state.sessions=[{...session,mentoringVersion:undefined,title:"Legacy session"},{...session,mentorUid:"",title:"Unassigned session"}];open(<Mentoring/>);expect(screen.queryByRole("button",{name:"Request a place"})).not.toBeInTheDocument();});

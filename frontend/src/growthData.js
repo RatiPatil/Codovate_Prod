@@ -85,6 +85,20 @@ export function sessionInput(raw, now = Date.now()) {
       "Add up to six different expertise labels, each 60 characters or fewer.",
     );
   if (expertise.length) details.expertise = expertise;
+  if (raw.mentoringVersion === 2) {
+    details.mentoringVersion = 2;
+    if (
+      raw.status === "published" &&
+      (!details.mentorUid ||
+        !details.mentorRole ||
+        !details.mentorBio ||
+        !details.outcome ||
+        !expertise.length)
+    )
+      throw new Error(
+        "Add a real mentor account, specialization, biography, expertise and expected outcome before publishing.",
+      );
+  }
   return {
     ...details,
     title,
@@ -125,7 +139,7 @@ export function announcementInput(raw) {
 }
 export async function publishSession(uid, raw) {
   await setDoc(doc(collection(db, "mentorSessions")), {
-    ...sessionInput(raw),
+    ...sessionInput({ ...raw, mentoringVersion: 2 }),
     createdBy: uid,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),

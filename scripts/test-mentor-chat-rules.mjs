@@ -55,6 +55,7 @@ try {
   });
   const session = {
     title: "Project clinic",
+    mentoringVersion:2,
     mentorName: "Real Mentor",
     mentorUid: "mentor",
     mentorRole: "Project reviewer",
@@ -74,6 +75,8 @@ try {
     updatedAt: serverTimestamp(),
   };
   await pass(setDoc(doc(admin, "mentorSessions", "chat-session"), session));
+  await fail(setDoc(doc(admin,"mentorSessions","incomplete-session"),{...session,mentorBio:""}));
+  await fail(setDoc(doc(alice,"mentorSessions","self-published"),{...session,createdBy:"alice"}));
   await fail(
     setDoc(doc(admin, "mentorSessions", "bad-mentor"), {
       ...session,
